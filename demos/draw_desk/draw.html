@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+    <script type="text/javascript" src="Socket.IO/socket.io.js"></script>
+    <script type="text/javascript" src="json.js"></script>
+    <script type="text/javascript" src="draw_desk.js"></script>
+    <script type="text/javascript">
+      var socket;
+      var draw_desk;
+      var guest = true;
+      var WEB_SOCKET_SWF_LOCATION = "Socket.IO/lib/vendor/web-socket-js/WebSocketMain.swf";
+
+      function submit_form( form ) {
+        var action = form.getAttribute( 'action' ) + '/' + form.name;
+
+        var form_data = {
+          action : action,
+          params : {}
+        }
+
+        for ( var i = 0, i_ln = form.elements.length; i < i_ln; i++ ) {
+          var element = form.elements[ i ];
+          if ( element.type != 'text' && element.type != 'password' ) continue;
+
+          form_data.params[ element.name ] = element.value;
+        }
+
+        var str_data = JSON.stringify( form_data );
+        socket.send( str_data );
+
+        return false;
+      }
+
+      function on_message( str_data ) {
+        var data;
+        try {
+          data = JSON.parse( str_data );
+        } catch( e ) {
+          data = null;
+        }
+
+        if ( data ) {
+
+          var params = data.params || {};
+
+          switch ( data.action ) {
+            case 'show_message':
+              alert( params.message );
+              break;
+
+            case 'login':
+              console.log( params );
+              document.getElementById('login_place').style.display = "none";
+              document.getElementById('draw_place').style.display = "";
+              guest = false;
+              break;
+
+            case 'draw':
+              if ( guest ) break;
+
+              draw_desk.line( params );
+              break;
+          }
+        }
+      }
+
+      window.onload = function() {
+        socket = new io.Socket( 'localhost', {
+          port : 8080
+        } );
+        socket.connect();
+        socket.on('connect', function(){
+          console.log( 'Congratulations!! You are connected' );
+        });
+        socket.on( 'disconnect', function() {
+          console.log( 'Связь разорвана, перезагрузите страницу' );
+        });
+        socket.on( 'message', on_message );
+
+        draw_desk = new DrawDesk({
+          canvas : document.getElementById('draw_place'),
+          socket : socket
+        });
+      };
+    </script>
+
+    <title>Draw desk</title>
+  </head>
+  <body>
+
+    <div id="login_place">
+      <h2>Login</h2>
+
+      <form name="login" action="action" onsubmit="return submit_form( this );">
+        <label for="login">Login</label>
+        <input id="login" name="login" type="text"/><br/>
+        <label for="pass">Password</label>
+        <input id="pass" name="pass" type="password"/><br/>
+        <input type="submit"/>
+      </form>
+
+      <h2>Registration</h2>
+
+      <form name="registration" action="action" onsubmit="return submit_form( this );">
+        <label for="login_reg">Login</label>
+        <input id="login_reg" name="login" type="text"/><br/>
+        <label for="pass_reg">Password</label>
+        <input id="pass_reg" name="pass" type="password"/><br/>
+        <label for="pass2">Password</label>
+        <input id="pass2" name="pass2" type="password"/><br/>
+        <input type="submit">
+      </form>
+    </div>
+
+    <canvas id="draw_place" width="400" height="300" style="display: none; border: 1px solid black; background-color: #ffcccc;"></canvas>
+
+  </body>
+</html>
