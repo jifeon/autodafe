@@ -3,14 +3,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
-    <script type="text/javascript" src="Socket.IO/socket.io.js"></script>
+    <script type="text/javascript" src="../../ws_client/socket.io.js"></script>
     <script type="text/javascript" src="json.js"></script>
     <script type="text/javascript" src="draw_desk.js"></script>
     <script type="text/javascript">
       var socket;
       var draw_desk;
       var guest = true;
-      var WEB_SOCKET_SWF_LOCATION = "Socket.IO/lib/vendor/web-socket-js/WebSocketMain.swf";
+      var WEB_SOCKET_SWF_LOCATION = "../../ws_client/lib/vendor/web-socket-js/WebSocketMain.swf";
 
       function submit_form( form ) {
         var action = form.getAttribute( 'action' ) + '/' + form.name;

@@ -1,5 +1,5 @@
 var Application = require('application');
-var io          = require('./Socket.IO-node');
+var io          = require('./Socket.IO');
 
 
 var WebSocketsApplication = module.exports = function( config ) {
