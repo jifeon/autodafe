@@ -1,0 +1,3 @@
+[submodule "framework/web_sockets/Socket.IO"]
+	path = framework/web_sockets/Socket.IO
+	url = git://github.com/LearnBoost/Socket.IO-node.git
