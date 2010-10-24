@@ -1,5 +1,6 @@
 var Application = require('application');
 var io          = require('./Socket.IO');
+var WSUser      = require('./web_socket_user');
 
 
 var WebSocketsApplication = module.exports = function( config ) {
@@ -33,16 +34,20 @@ WebSocketsApplication.prototype.run = function ( config ) {
 
 WebSocketsApplication.prototype._on_connect = function ( client ) {
   var self = this;
+  var user = new WSUser({
+    client : client
+  });
+
 
   client.on( 'message', function( message ) {
-    self._on_message( message, client );
+    self._on_message( message, user );
   } );
 
   client.on( 'disconnect', function() {
-    self._on_disconect( client );
+    self._on_disconect( user );
   } );
 
-  this._router.route( this.default_controller + '/client_connect', [ client ] );
+  this._router.route( this.default_controller + '/client_connect', [ user ] );
   client.send( 'OK' );
 };
 
