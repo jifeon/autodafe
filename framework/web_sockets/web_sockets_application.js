@@ -1,6 +1,6 @@
 var Application = require('application');
 var io          = require('./Socket.IO');
-var WSUser      = require('./web_socket_user');
+var UI          = require('./web_sockets_user_identity');
 
 
 var WebSocketsApplication = module.exports = function( config ) {
@@ -34,33 +34,34 @@ WebSocketsApplication.prototype.run = function ( config ) {
 
 WebSocketsApplication.prototype._on_connect = function ( client ) {
   var self = this;
-  var user = new WSUser({
+  var user_identity = new UI({
     client : client
   });
 
 
   client.on( 'message', function( message ) {
-    self._on_message( message, user );
+    self._on_message( message, user_identity );
   } );
 
   client.on( 'disconnect', function() {
-    self._on_disconect( user );
+    self._on_disconnect( user_identity );
   } );
 
-  this._router.route( this.default_controller + '/client_connect', [ user ] );
-  client.send( 'OK' );
+  this._router.route( this.default_controller + '/client_connect', user_identity );
 };
 
 
-WebSocketsApplication.prototype._on_message = function ( message, client ) {
-  var data = JSON.parse( message );
+WebSocketsApplication.prototype._on_message = function ( message, user_identity ) {
+  var data          = JSON.parse( message );
 
   if ( !data ) return console.log( 'Message: "' + message + '" is not in JSON' );
 
-  this._router.route( data.action, data.params, client );
+  console.log( 'WebSocket message has been received. user.id = ' + user_identity.get_id() +
+               ', session_id = ' + user_identity.get_session_id() );
+  this._router.route( data.action, data.params, user_identity );
 };
 
 
-WebSocketsApplication.prototype._on_disconect = function ( client ) {
+WebSocketsApplication.prototype._on_disconnect = function ( user_identity ) {
 
 };

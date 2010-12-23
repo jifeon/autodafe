@@ -155,7 +155,7 @@ CommandBuilder.prototype.create_update_command = function( table, data, criteria
   var bind_by_position = criteria.params[0] != undefined;
 
   for ( var name in data ) {
-    var value   = table[ name ];
+    var value   = data[ name ];
     var column  = table.get_column( name );
 
     if ( column != null ) {
@@ -288,9 +288,7 @@ CommandBuilder.prototype.create_criteria = function( condition, params ) {
   //todo: реакция на undefined в параметрах
 
   var criteria;
-  if ( condition instanceof Array ) criteria = new DBCriteria({
-    condition : condition
-  });
+  if ( condition instanceof Object ) criteria = new DBCriteria( condition );
   else if ( condition instanceof DBCriteria ) criteria = condition.clone();
   else criteria = new DBCriteria({
     condition : condition,

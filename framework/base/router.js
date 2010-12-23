@@ -25,7 +25,13 @@ Router.prototype.collect_controllers = function () {
   for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
     var file = files[f];
     try {
-      var controller = require( controllers_dir + file );
+      var path = controllers_dir + file;
+      var stat = fs.statSync( path );
+      if ( !stat.isFile() ) {
+        continue;
+      }
+
+      var controller = require( path );
       if ( !( controller.prototype instanceof Controller ) ) throw "NOT_CONTROLLER";
 
       var name = controller.prototype.name;
@@ -55,6 +61,7 @@ Router.prototype.collect_controllers = function () {
 
 
 Router.prototype.route = function ( route_path ) {
+  console.log( 'route to ' + route_path );
   var args = Array.prototype.splice.call( arguments, 1 );
 
   var controller_name,
@@ -77,7 +84,7 @@ Router.prototype.route = function ( route_path ) {
   }
 
   var controller    = this._controllers[ controller_name ];
-  if ( !controller ) return console.log( 'Controller "' + controller_name + '" not found' );
+  if ( !controller ) return console.log( 'Controller or route rule "' + controller_name + '" not found' );
 
   controller.run_action( action, args );
 };

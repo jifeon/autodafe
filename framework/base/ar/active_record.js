@@ -53,12 +53,6 @@ ActiveRecord.prototype._init = function( params ) {
 };
 
 
-
-ActiveRecord.prototype.remove = function () {
-
-};
-
-
 ActiveRecord.prototype.get_model = function () {
   return this.constructor.model();
 };
@@ -88,13 +82,13 @@ ActiveRecord.prototype.save = function( run_validation, attributes ) {
 
   //todo: validation
 //  if ( !run_validation || this.validate( attributes ) )
-    return this.get_isnew_record() ? this.insert( attributes ) : this.update( attributes );
+    return this.get_is_new_record() ? this.insert( attributes ) : this.update( attributes );
 //  else
 //    return false;
 }
 
 
-ActiveRecord.prototype.get_isnew_record = function() {
+ActiveRecord.prototype.get_is_new_record = function() {
   return this._new;
 }
 
@@ -105,7 +99,7 @@ ActiveRecord.prototype.set_isnew_record = function( value ) {
 
 
 ActiveRecord.prototype.insert = function( attributes ) {
-  if ( !this.get_isnew_record() )
+  if ( !this.get_is_new_record() )
     throw new Error( 'the active record cannot be inserted to database because it is not new.' );
 
 //  if ( this.before_save() ) {
@@ -156,7 +150,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
 
 
 ActiveRecord.prototype.update = function( attributes ) {
-  if ( this.get_isnew_record() )
+  if ( this.get_is_new_record() )
     throw new Error( 'the active record cannot be updated because it is new.' );
 
 //  if ( this.before_save() ) {
@@ -209,25 +203,13 @@ ActiveRecord.prototype.update = function( attributes ) {
 //}
 //
 
-//ActiveRecord.prototype.
-//delete = function() {
-//  if ( !this.get_isnew_record() ) {
-//    yii::trace( get_class( this ).
-//    '.delete()','system.db.ar.cactive_record'
-//  )
-//    ;
-//    if ( this.before_delete() ) {
-//      result = this.delete_bypk( this.get_primary_key() ) > 0;
-//      this.after_delete();
-//      return result;
-//    }
-//    else
-//      return false;
-//  }
-//  else
-//    throw new cdb_exception( yii::t( 'yii', 'the active record cannot be deleted because it is new.' ) );
-//}
-//
+ActiveRecord.prototype.remove = function() {
+  if ( !this.get_is_new_record() ) {
+    return this.delete_by_pk( this.get_primary_key() );
+  }
+  else throw new Error( 'the active record cannot be deleted because it is new.' );
+}
+
 
 //ActiveRecord.prototype.refresh = function() {
 //  yii::trace( get_class( this ).
@@ -366,6 +348,11 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
 //
 
 
+ActiveRecord.prototype.get_safe_attribute_names = function () {
+  return {};
+};
+
+
 ActiveRecord.prototype.apply_scopes = function( criteria ) {
   var c = this.get_db_criteria( false );
 
@@ -430,7 +417,7 @@ ActiveRecord.prototype.get_attributes = function( names ) {
 
   for ( var name in columns ) {
 
-    if ( this[ name ] ) attributes[name] = this[ name ];
+    if ( typeof this[ name ] != "undefined" ) attributes[name] = this[ name ];
     else if ( names === true && attributes[ name ] == undefined )
       attributes[ name ] = null;
   }
@@ -447,6 +434,30 @@ ActiveRecord.prototype.get_attributes = function( names ) {
 
   return attributes;
 }
+
+
+ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
+  if ( safe_only == undefined ) safe_only = true;
+
+  if ( !( values instanceof Object ) || values === null ) return false;
+
+  var attributes = this.get_safe_attribute_names();
+  for ( var name in values ) {
+    var value = values[ name ];
+    if ( attributes[ name ] ) this[ name ] = value;
+    else console.log( 'ActiveRecord.set_attributes try to set unsafe parameter: ' + name );
+  }
+};
+
+//
+//		$attributes=array_flip($safeOnly ? $this->getSafeAttributeNames() : $this->attributeNames());
+//		foreach($values as $name=>$value)
+//		{
+//			if(isset($attributes[$name]))
+//				$this->$name=$value;
+//			else
+//				$this->onUnsafeAttribute($name,$value);
+//		}
 
 
 ActiveRecord.prototype.populate_record = function( attributes ) {
@@ -535,7 +546,7 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
     this.fetch_obj( result, function( obj ) {
       record = self.populate_record( obj );
       return false;
-    }  );
+    } );
 
     emitter.emit( 'complete', record );
   } );
@@ -557,7 +568,6 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
 
     emitter.emit( 'complete', records );
   } );
-
   return emitter;
 }
 

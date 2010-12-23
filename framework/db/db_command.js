@@ -25,7 +25,7 @@ DBCommand.prototype.set_text = function( value ) {
 //  if ( this._connection.table_prefix !== null )
 //    this._text = value.replace( /{{(+*?)}}/ ); preg_replace( '/{{(+*?)}}/', this._connection.table_prefix + '\1', value );
 //  else
-  // todo: prefix
+//  todo: prefix
 
   this.__text = value;
 //  this.cancel();
@@ -51,36 +51,36 @@ DBCommand.prototype.bind_value = function( name, value ) {
 DBCommand.prototype.execute = function( callback ) {
   this.__apply_params();
 
-  var emitter     = new process.EventEmitter;
-  var db_command  = this;
+  var result_emitter          = new process.EventEmitter;
+  var db_command              = this;
 
-  var query_emitter = this.__connection.query( this.__text, function( result ) {
+  var text = this.__get_last_insert_id_on_success ? this.__text + ';SELECT LAST_INSERT_ID();' : this.__text;
+
+  this.__connection.query( text, function( result ) {
     var db = this;
 
-    if ( db_command.__get_last_insert_id_on_success && result && result.SUCCESS ) {
+    if ( db_command.__get_last_insert_id_on_success && result.length == 2 ) {
+      var new_result = result[0];
 
-      db_command.__connection.query( 'SELECT LAST_INSERT_ID()', function( insert_id ) {
-        this.fetch_obj( insert_id, function( obj ) {
-          result.last_insert_id = obj[ 'LAST_INSERT_ID()' ];
+      if ( new_result.SUCCESS ) db.fetch_obj( result[1], function( obj ) {
+        new_result.last_insert_id = obj[ 'LAST_INSERT_ID()' ];
 
-          query_emitter.on( 'response', function() {
-            emitter.emit( 'complete', result, db );
-          } );
-          if ( typeof callback == "function" ) callback.call( db, result );
-          return false;
-        } );
+        return false;
       } );
+
+      result_emitter.emit( 'complete', new_result, db );
+      if ( typeof callback == "function" ) callback.call( db, new_result );
     }
     else {
 
-      query_emitter.on( 'response', function() {
-        emitter.emit( 'complete', result, db );
-      } );
+      result_emitter.emit( 'complete', result, db );
       if ( typeof callback == "function" ) callback.call( db, result );
     }
+
+
   });
 
-  return emitter;
+  return result_emitter;
 };
 
 

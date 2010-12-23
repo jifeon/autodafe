@@ -17,11 +17,20 @@ Controller.prototype._init = function ( params ) {
 };
 
 
+Controller.prototype.before_action = function ( action ) {};
+Controller.prototype.after_action = function ( action ) {};
+
+
 Controller.prototype.run_action = function ( action, args ) {
   action = action || this.default_action;
 
   if ( !this._actions[ action ] || !this[ action ] )
     return console.log( 'Unspecified action "' + action + '" in Controller "' + this.name + '"' );
 
-  this[ action ].apply( this, args || [] );
+  args = args || [];
+  args.unshift( action );
+
+  if ( this.before_action.apply( this, args ) === false ) return false;
+  this[ action ].apply( this, args.slice( 1 ) );
+  this.after_action.apply( this, args );
 };

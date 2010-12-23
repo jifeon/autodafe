@@ -62,7 +62,9 @@ DBColumnSchema.prototype.typecast = function( value ) {
 
   switch ( this.type ) {
     case 'string':  return String( value );
-    case 'integer': return Number( value );
+    case 'integer':
+      value = Number( value );
+      return isNaN( value ) ? null : value;
     case 'boolean': return Boolean( value );
     case 'double':
     default: return value;
