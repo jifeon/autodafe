@@ -44,7 +44,7 @@ WebSocketsApplication.prototype._on_connect = function ( client ) {
   } );
 
   client.on( 'disconnect', function() {
-    self._on_disconect( user );
+    self._on_disconnect( user );
   } );
 
   this._router.route( this.default_controller + '/client_connect', [ user ] );
@@ -61,6 +61,6 @@ WebSocketsApplication.prototype._on_message = function ( message, client ) {
 };
 
 
-WebSocketsApplication.prototype._on_disconect = function ( client ) {
+WebSocketsApplication.prototype._on_disconnect = function ( client ) {
 
 };
