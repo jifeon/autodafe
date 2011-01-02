@@ -5,7 +5,6 @@ var config = module.exports = {
 //  default_controller  : 'task',
 //
 //  router : {
-//    base_dir : __dirname + '/../',
 //    rules     : {
 //      'test' : 'task/test'
 //    }

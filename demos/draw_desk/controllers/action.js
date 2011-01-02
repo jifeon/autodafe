@@ -12,7 +12,6 @@ ActionController.prototype.name     = 'action';
 ActionController.prototype.actions  = [
   'login',
   'registration',
-  'client_connect',
   'draw'
 ];
 
@@ -89,11 +88,6 @@ ActionController.prototype.registration_step2 = function ( client, login, pass )
     self.authorised_clients[ client.sessionId ] = true;
     self.send_message( client, 'login', 'user id: ' + user.id );
   } );
-};
-
-
-ActionController.prototype.client_connect = function ( client ) {
-  this.emit( 'client_connect' );
 };
 
 
