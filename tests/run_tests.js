@@ -43,4 +43,4 @@ assert.ok( controller instanceof ActionController );
 
 
 
-//assert.ok( app.get_db() instanceof DBConnection );
+//assert.ok( app.db instanceof DBConnection );

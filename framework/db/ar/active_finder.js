@@ -1,6 +1,6 @@
 var JoinElement   = require( './join_element' );
 var StatElement   = require( './stat_element' );
-var ActiveRecord  = require( 'ar/active_record' );
+var ActiveRecord  = require( './active_record' );
 
 var ActiveFinder = module.exports = function( params ) {
   this._init( params );

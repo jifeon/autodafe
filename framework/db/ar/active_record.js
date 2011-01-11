@@ -1,7 +1,6 @@
 var Model           = require('model');
-var autodafe        = require('autodafe');
 var DBCriteria      = require('../../db/db_criteria');
-var MetaData        = require('ar/active_record_meta_data');
+var MetaData        = require('./active_record_meta_data');
 //var ActiveFinder    = require('ar/active_finder');
 
 var ActiveRecord = module.exports = function( params ) {
@@ -39,7 +38,7 @@ ActiveRecord.prototype._init = function( params ) {
   
   this.clazz        = params.clazz || this.constructor;
   this.table        = this.clazz.get_table_name();
-  this.db           = autodafe.app().get_db();
+  this.db           = global.autodafe.app.db;
   this.related      = {};
 
   this._md          = new MetaData({

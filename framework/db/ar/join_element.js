@@ -1,4 +1,4 @@
-var ActiveRecord = require( 'ar/active_record' );
+var ActiveRecord = require( './active_record' );
 
 var JoinElement = module.exports = function( params ) {
   this._init( params );

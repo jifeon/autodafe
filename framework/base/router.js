@@ -1,5 +1,6 @@
 var fs          = require('fs');
 var Controller  = require('./controller');
+var Application           = require( 'application' );
 
 var Router = module.exports = function( config ) {
   this._init( config );
@@ -10,15 +11,12 @@ Router.prototype._init = function ( config ) {
   this._config      = config || {};
   this._controllers = {};
 
-  this.app = this._config.application;
-  if ( !this.app ) throw new Error( 'app is null in Router.init' );
-
   this.collect_controllers();
 };
 
 
 Router.prototype.collect_controllers = function () {
-  var controllers_dir = this.app.get_base_dir() + 'controllers/';
+  var controllers_dir = global.autodafe.app.base_dir + 'controllers/';
   console.log( 'collecting controllers in path: ' + controllers_dir );
 
   var files = fs.readdirSync( controllers_dir );
@@ -37,7 +35,7 @@ Router.prototype.collect_controllers = function () {
       var name = controller.prototype.name;
       if ( !name ) throw "NO_NAME";
 
-      console.log( 'controller ' + name + ' is added' );
+      console.log( 'controller "' + name + '" is added' );
       this._controllers[ name ] = new controller;
     }
     catch( e ) {
@@ -72,19 +70,23 @@ Router.prototype.route = function ( route_path ) {
       route_path = this._config.rules[ route_path ] || route_path;
     }
 
-    var route_rule = route_path.split('/');
-    if ( !route_rule.length ) return console.log( 'Incorrect rout_path: ' + route_path );
+    var route_rule = route_path.split('.');
+    if ( !route_rule.length )
+      return console.log(
+        'Incorrect route path: "' + route_path + '"\n' +
+        'Route path must be formated as controller.action or specified in router.rules section of config.'
+      );
 
     controller_name = route_rule[0];
     action          = route_rule[1];
   }
   else {
-    controller_name = this.app.default_controller;
-    action          = false;
+    controller_name = global.autodafe.app.default_controller;
+    action          = null;
   }
 
   var controller    = this._controllers[ controller_name ];
-  if ( !controller ) return console.log( 'Controller or route rule "' + controller_name + '" not found' );
+  if ( !controller ) return console.log( 'Controller or route rule "' + controller_name + '"is not found' );
 
   controller.run_action( action, args );
 };

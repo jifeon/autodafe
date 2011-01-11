@@ -4,12 +4,13 @@ var Controller = module.exports = function( params ) {
 
 
 require( 'sys' ).inherits( Controller, process.EventEmitter );
-Controller.prototype.actions = [ 'default_action' ];
-Controller.prototype.default_action = 'default_action';
+Controller.prototype.actions = [ 'index' ];
+Controller.prototype.default_action = 'index';
 
 
 Controller.prototype._init = function ( params ) {
   this._actions = {};
+  this.app = global.autodafe.app;
 
   for ( var a = 0, a_ln = this.actions.length; a < a_ln; a++ ) {
     this._actions[ this.actions[a] ] = 1;
@@ -30,7 +31,13 @@ Controller.prototype.run_action = function ( action, args ) {
   args = args || [];
   args.unshift( action );
 
-  if ( this.before_action.apply( this, args ) === false ) return false;
+  var before_action_result = this.before_action.apply( this, args );
+  if ( before_action_result === false ) return false;
+  if ( before_action_result instanceof Array ) {
+    args = before_action_result;
+    args.unshift( action );
+  }
+
   this[ action ].apply( this, args.slice( 1 ) );
   this.after_action.apply( this, args );
 };

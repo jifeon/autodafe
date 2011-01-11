@@ -1,5 +1,4 @@
-
-var UserIdentity = require('user_identity');
+var UserIdentity = require('./user_identity');
 var cookie       = require('../lib/cookie');
 
 var WebSocketsUserIdentity = module.exports = function( params ) {
