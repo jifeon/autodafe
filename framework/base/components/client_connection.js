@@ -9,13 +9,6 @@ var ClientConnection = module.exports = function( params ) {
 require('sys').inherits( ClientConnection, Component );
 
 
-ClientConnection.prototype._init = function( params ) {
-  Component.prototype._init.call( this, params );
-
-
-};
-
-
 ClientConnection.prototype._on_connect = function ( session_id ) {
   var session = new Session({
     id : session_id

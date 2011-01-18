@@ -3,7 +3,8 @@ var Component = require('components/component');
 var system_components = {
   'web_sockets_server' : require( '../../web_sockets/web_sockets_server' ),
   'user'               : require( '../../users/users_identities' ),
-  'db'                 : require( '../../db/db_controller' )
+  'db'                 : require( '../../db/db_controller' ),
+  'log_router'         : require( '../../logging/log_router' )
 };
 
 var ComponentsList = module.exports = function( components ) {
@@ -15,41 +16,55 @@ require( 'sys' ).inherits( ComponentsList, process.EventEmitter );
 
 
 ComponentsList.prototype._init = function( components ) {
-  this.items = {};
+  this._components = components;
 
-  this._init_components( components );
+  this.items = {};
+  this.app = global.autodafe.app;
 };
 
 
-ComponentsList.prototype._init_components = function ( components ) {
-  for ( var component_name in components ) {
-    var component_params = components[ component_name ];
-    if ( component_params === true ) component_params = {};
+ComponentsList.prototype.load_components = function () {
 
-    var component_class = system_components[ component_name ];
-    if ( !component_class || !( component_class.prototype instanceof Component ) ) {
-      console.log( 'Warning! Try to load unknown component: "' + component_name + '"' );
-      continue;
-    }
-
-    component_params.name = component_name;
-    this.items[ component_name ] = new component_class( component_params );
+  for ( var component_name in this._components ) {
+    this.load_component( component_name );
   }
 
   for ( component_name in system_components ) {
 
     if ( this.items[ component_name ] ) continue;
 
-    global.autodafe.app.__defineGetter__( component_name, function() {
-      console.log( 'Warning! Try to use component "' + component_name + '" which is not included. ' +
-        'To include component configure it in your config file' );
+    this.app.__defineGetter__( component_name, function() {
+      this.log(
+        'Try to use component "%s" which is not included. \
+         To include component configure it in your config file'.format( component_name ),
+        'warning'
+      );
     } );
 
-    global.autodafe.app.__defineSetter__( component_name, function( v ) {
-      console.log(
-        'Warning! Property "' + component_name + '" in Application engaged for native autodafe\'s module. ' +
-        'You can\'t set it to "' + v + '"'
+    this.app.__defineSetter__( component_name, function( v ) {
+      this.log(
+        'Property "%s" in Application engaged for native autodafe\'s module. \
+         You can\'t set it to "%s"'.format( component_name, v ),
+        'warning'
       );
     } );
   }
+};
+
+
+ComponentsList.prototype.load_component = function ( component_name ) {
+  this.app.log( 'Load component "%s"'.format( component_name ), 'trace' );
+  if ( this.items[ component_name ] ) return false;
+
+  var component_params = this._components[ component_name ];
+  if ( typeof component_params != 'object' ) component_params = {};
+
+  var component_class = system_components[ component_name ];
+  if ( !component_class || !( component_class.prototype instanceof Component ) ) {
+    this.app.log( 'Try to load unknown component: "%s"'.format( component_name ), 'warning' );
+    return false;
+  }
+
+  component_params.name = component_name;
+  this.items[ component_name ] = new component_class( component_params );
 };

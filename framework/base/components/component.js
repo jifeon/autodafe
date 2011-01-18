@@ -5,11 +5,10 @@ var Component = module.exports = function( params ) {
 
 Component.prototype._init = function( params ) {
   this.name = params.name;
-  this.app = global.autodafe.app;
+  this.app  = global.autodafe.app;
 
-  if ( !this.name || typeof this.app[ this.name ] != 'undefined' ) {
-    console.log( 'Conflict in component\'s name: "' + this.name + '"' );
-  }
+  if ( !this.name || typeof this.app[ this.name ] != 'undefined' )
+    this.app.log( 'Conflict in component\'s name: "%s"'.format( this.name ), 'warning' );
 
   this._define_getter();
 };
@@ -21,3 +20,5 @@ Component.prototype._define_getter = function () {
     return self;
   } );
 };
+
+

@@ -33,14 +33,14 @@ MysqlDBConnection.prototype.connect = function () {
 MysqlDBConnection.prototype.select_db = function () {
   var self = this;
 
-  console.log( 'dbslayer has runned successfully' );
+  this.app.log( 'dbslayer is runned successfully', 'info', 'MysqlDBConnection' );
   this.__query( 'use ' + this.base,
     function( result ) {
-      console.log( 'connection to base "' + self.base + '" has initialized' );
+      this.app.log( 'Connection to base "%s" is initialized'.format( self.base ), 'info', 'MysqlDBConnection' );
       self.emit( 'initialized' );
     },
     function( error ){
-      console.log( 'ERROR: connection to base "' + self.base + '" hasn\'t initialized' );
+      this.app.log( 'Connection to base "%s" isn\'t initialized'.format( self.base ), 'error', 'MysqlDBConnection' );
       self.standard_errback( error );
     }
   );
@@ -54,23 +54,20 @@ MysqlDBConnection.prototype.run_dbslayer = function () {
   var self = this;
 
   exec( 'pkill dbslayer', function( error ) {
-    if ( error !== null ) console.log( 'pkill dbslayer error: ' + error );
+    if ( error !== null ) self.app.log( 'pkill dbslayer: ' + error, 'error', 'MysqlDBConnection' );
 
-    console.log( 'running dbslayer...' );
+    self.app.log( 'Running dbslayer..', 'trace', 'MysqlDBConnection' );
 
     var dbslayer_error = false;
     exec(
-      [
-        'dbslayer', '-c', __dirname + '/dbslayer.conf', '-s', 'serv',
-        '-u', self.user, '-x', self.pass
-      ].join(' '),
+      'dbslayer -c %s/dbslayer.conf -s serv -u %s -x %s'.format( __dirname, self.user, self.pass ),
       function ( error, stdout, stderr ) {
-        if ( error !== null ) return console.log( 'dbslayer error: ' + error );
+        if ( error !== null ) return self.app.log( 'dbslayer: ' + error, 'error', 'MysqlDBConnection' );
 
-        if ( stdout ) console.log( stderr );
+        if ( stdout ) self.app.log( 'dbslayer stdout: ' + stdout, 'trace', 'MysqlDBConnection' );
         if ( stderr ) {
           dbslayer_error = true;
-          console.log( stderr );
+          self.app.log( 'dbslayer stderr: ' + stderr, 'error', 'MysqlDBConnection' );
         }
       }
     );
@@ -106,17 +103,17 @@ MysqlDBConnection.prototype.__query = function ( sql, callback, errback, emitter
   emitter = emitter || new process.EventEmitter;
 
   if ( typeof sql != "string" || !sql.length ) {
-    console.log( 'WRONG! Bad sql in MysqlDBConnection.query: ' + sql );
+    this.app.log( 'Bad sql "%s"'.format( sql ), 'error', 'MysqlDBConnection' );
     return emitter;
   }
   errback  = errback  || this.standard_errback;
   callback = callback || function(){};
 
-  console.log( 'quering sql: ' + sql );
+  this.app.log( 'Quering sql: ' + sql, 'trace', 'MysqlDBConnection' );
 
-  var dbslayer_config = this._config.dbslayer || {};
-  var port            = dbslayer_config.port || 9090;
-  var host            = dbslayer_config.host || 'localhost';
+  var dbslayer_config = this._config.dbslayer   || {};
+  var port            = dbslayer_config.port    || 9090;
+  var host            = dbslayer_config.host    || 'localhost';
 
   var query_string    = escape(JSON.stringify({ SQL : sql }));
 
@@ -162,7 +159,7 @@ MysqlDBConnection.prototype.__query = function ( sql, callback, errback, emitter
 
 
 MysqlDBConnection.prototype.standard_errback = function ( message ) {
-  console.log( message );
+  this.app.log( message, 'error', 'MysqlDBConnection' );
 };
 
 

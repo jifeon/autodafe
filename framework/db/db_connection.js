@@ -12,6 +12,7 @@ require( 'sys' ).inherits( DBConnection, process.EventEmitter );
 DBConnection.prototype._init = function( config ) {
   this._config = config || {};
 
+  this.app  = global.autodafe.app;
   this.user = this._config.user || 'root';
   this.pass = this._config.pass || '';
   this.base = this._config.base || 'test';

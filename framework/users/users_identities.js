@@ -30,7 +30,7 @@ UserIdentities.prototype._create_user_identity = function ( session, connector )
     case WebSocketsServer:
       var ws_client = this.app.web_sockets_server.get_client_by_session_id( session.id );
       if ( !ws_client ) {
-        return console.log( 'Warning! web sockets client is not found while creating user identity' );
+        return this.app.log( 'Web sockets client is not found while creating user identity', 'error', 'UserIdentities' );
       }
 
       user_identity = new WebSocketsUserIdentity({
@@ -48,5 +48,7 @@ UserIdentities.prototype._create_user_identity = function ( session, connector )
 
 
 UserIdentities.prototype.get_by_session_id = function ( session_id ) {
-  return this._cache[ session_id ] || console.log( 'user with session.id ' + session_id + ' is not found' );
+  var ui = this._cache[ session_id ];
+  if ( !ui ) this.app.log( 'User with session.id "%s" is not found'.format( session_id ), 'warning', 'UserIdentities' );
+  return ui || null;
 };

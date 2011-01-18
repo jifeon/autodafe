@@ -64,9 +64,11 @@ ClientConnection.prototype.get_client_by_session_id = function ( session_id ) {
 WebSocketsServer.prototype._on_message = function ( message, session_id ) {
   var data = JSON.parse( message );
 
-  if ( !data ) return console.log( 'Message: "' + message + '" is not in JSON' );
+  if ( !data ) {
+    return this.app.log( 'Message: "%s" is not in JSON'.format( message ), 'warning', 'WebSocketsServer' );
+  }
 
-  console.log( 'WebSockets message has been received. session_id = ' + session_id );
+  this.app.log( 'WebSockets message has been received. session_id = "%s"'.format( session_id ), 'trace', 'WebSocketsServer' );
   this.app.router.route( data.action, data.params, session_id );
 };
 

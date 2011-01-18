@@ -1,6 +1,5 @@
-//var WebSocketServer = require('../servers/web_socket_server');
-//var Server = require('server');
 var Router            = require('router');
+var Logger            = require('../logging/logger');
 var ComponentsList    = require('components/components_list');
 
 var Application = module.exports = function( config ) {
@@ -20,24 +19,32 @@ require( 'sys' ).inherits( Application, process.EventEmitter );
 Application.prototype._init = function ( config ) {
   this._config    = config              || {};
 
-  if ( !this._config.base_dir ) {
-    console.log( 'Error: you must set base_dir in config file!' );
-    return;
-  }
-
+  this.name       = this._config.name || 'My Autodafe application';
+  this.logger     = new Logger;
   this.router     = null;
   this.components = null;
 
-  this.name               = this._config.name               || 'My Autodafe application';
   this.default_controller = this._config.default_controller || 'action';
+
+  this._preload_components();
+  if ( !this._check_config() ) return false;
+
+  this._init_core();
+  this._init_components();
+};
+
+
+Application.prototype._check_config = function () {
+  if ( !this._config.base_dir ) {
+    this.log( 'You must set base_dir in config file!', 'error' );
+    return false;
+  }
 
   this.__defineGetter__( 'base_dir', function () {
     return this._config.base_dir;
   });
 
-
-  this._init_core();
-  this._init_components();
+  return true;
 };
 
 
@@ -45,11 +52,25 @@ Application.prototype._init_core = function () {
   require.paths.unshift( this.base_dir + 'models/' );
 
   this.router = new Router( this._config.router );
+  this.log( 'Core is initialized', 'info' );
+};
+
+
+Application.prototype._preload_components = function () {
+  this.log( 'Preload components', 'trace' );
+  this.components = new ComponentsList( this._config.components );
+
+  var preload = this._config.preload_components;
+  if ( preload instanceof Array ) preload.forEach( function( component_name ){
+    this.components.load_component( component_name );
+  }, this );
 };
 
 
 Application.prototype._init_components = function () {
-  this.components = new ComponentsList( this._config.components );
+  this.log( 'Load components', 'trace' );
+  this.components.load_components();
+  this.log( 'Components are loaded', 'info' );
 };
 
 
@@ -58,7 +79,12 @@ Application.prototype.get_param = function ( name ) {
 };
 
 
-
 Application.prototype.run = function () {
+  this.log( 'Running application', 'trace' );
   this.emit( 'run' );
+};
+
+
+Application.prototype.log = function ( message, level, module ) {
+  this.logger.log( message, level, module );
 };

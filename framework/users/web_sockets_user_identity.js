@@ -11,7 +11,10 @@ require('sys').inherits( WebSocketsUserIdentity, UserIdentity );
 
 WebSocketsUserIdentity.prototype._init = function( params ) {
   this._client = params.client;
-  if ( !this._client ) console.log( 'client is undefined in WebSocketsUserIdentity' );
+  if ( !this._client ) {
+    global.autodafe.app.log( '"client" is undefined', 'error', 'WebSocketsUserIdentity' );
+    return false;
+  }
 
   delete params.client;
   params.session_id = this._client.sessionId;

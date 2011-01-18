@@ -36,9 +36,10 @@ ActiveRecord.prototype._init = function( params ) {
 //
   params = params || {};
   
+  this.app          = global.autodafe.app;
   this.clazz        = params.clazz || this.constructor;
   this.table        = this.clazz.get_table_name();
-  this.db           = global.autodafe.app.db;
+  this.db           = this.app.db;
   this.related      = {};
 
   this._md          = new MetaData({
@@ -444,7 +445,7 @@ ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
   for ( var name in values ) {
     var value = values[ name ];
     if ( attributes[ name ] ) this[ name ] = value;
-    else console.log( 'ActiveRecord.set_attributes try to set unsafe parameter: ' + name );
+    else this.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
   }
 };
 

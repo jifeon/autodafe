@@ -1,6 +1,5 @@
 var fs          = require('fs');
 var Controller  = require('./controller');
-var Application           = require( 'application' );
 
 var Router = module.exports = function( config ) {
   this._init( config );
@@ -11,20 +10,24 @@ Router.prototype._init = function ( config ) {
   this._config      = config || {};
   this._controllers = {};
 
+  this.app = global.autodafe.app;
+
   this.collect_controllers();
 };
 
 
 Router.prototype.collect_controllers = function () {
   var controllers_dir = global.autodafe.app.base_dir + 'controllers/';
-  console.log( 'collecting controllers in path: ' + controllers_dir );
+  this.app.log( 'Collecting controllers in path: ' + controllers_dir, 'trace' );
 
-  var files = fs.readdirSync( controllers_dir );
-  for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
-    var file = files[f];
-    try {
-      var path = controllers_dir + file;
-      var stat = fs.statSync( path );
+  try {
+
+    var file;
+    var files = fs.readdirSync( controllers_dir );
+    for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
+      file      = files[f];
+      var path  = controllers_dir + file;
+      var stat  = fs.statSync( path );
       if ( !stat.isFile() ) {
         continue;
       }
@@ -35,31 +38,34 @@ Router.prototype.collect_controllers = function () {
       var name = controller.prototype.name;
       if ( !name ) throw "NO_NAME";
 
-      console.log( 'controller "' + name + '" is added' );
+      this.app.log( 'Controller "%s" is added'.format( name ), 'trace' );
       this._controllers[ name ] = new controller;
     }
-    catch( e ) {
-      switch ( e ) {
-        case 'NOT_CONTROLLER':
-          console.log( file + ' is not a controller' );
-          break;
 
-        case 'NO_NAME':
-          console.log( 'wrong: controller has no name in file: ' + file );
-          break;
+  }
+  catch( e ) {
+    switch ( e ) {
+      case 'NOT_CONTROLLER':
+        this.app.log( '"%s" is not a controller'.format( file ), 'warning' );
+        break;
 
-        default:
-          console.log( 'Bad file is in controllers folder: ' + file );
-          throw e;
-          break;
-      }
+      case 'NO_NAME':
+        this.app.log( 'Controller has no property "name" in file "%s"'.format( file ), 'warning' );
+        break;
+
+      default:
+        if ( file ) this.app.log( 'Error while including file "%s"'.format( file ), 'error' );
+        throw e;
+        break;
     }
   }
+
+  this.app.log( 'Controllers are included', 'info' );
 };
 
 
 Router.prototype.route = function ( route_path ) {
-  console.log( 'route to ' + route_path );
+  this.app.log( 'route to ' + route_path, 'trace' );
   var args = Array.prototype.splice.call( arguments, 1 );
 
   var controller_name,
@@ -72,9 +78,9 @@ Router.prototype.route = function ( route_path ) {
 
     var route_rule = route_path.split('.');
     if ( !route_rule.length )
-      return console.log(
-        'Incorrect route path: "' + route_path + '"\n' +
-        'Route path must be formated as controller.action or specified in router.rules section of config.'
+      return this.app.log(
+        'Incorrect route path: "%s". Route path must be formated as controller.action \
+         or specified in router.rules section of config.'.format( route_path )
       );
 
     controller_name = route_rule[0];
@@ -86,7 +92,9 @@ Router.prototype.route = function ( route_path ) {
   }
 
   var controller    = this._controllers[ controller_name ];
-  if ( !controller ) return console.log( 'Controller or route rule "' + controller_name + '"is not found' );
+  if ( !controller ) return this.app.log(
+    'Controller or route rule "%s"is not found'.format( controller_name ), 'error', 'router'
+  );
 
   controller.run_action( action, args );
 };

@@ -12,7 +12,7 @@ Session.get_by_id = function( id ) {
 
 Session.prototype._init = function( params ) {
   if ( typeof params.id == 'undefined' ) {
-    console.log('Error: try to create session without id');
+    global.autodafe.app.log( 'Try to create session without id', 'error', 'session' );
     return false;
   }
 

@@ -33,7 +33,7 @@ DBController.prototype._init_database = function () {
       break;
 
     default :
-      console.log( 'Warning! You must specify data base type ( db.type ) in your config file' );
+      this.app.log( 'You must specify data base type ( db.type ) in your configuration file', 'warning', this.name );
       break;
   }
 

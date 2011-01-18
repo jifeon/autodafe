@@ -9,7 +9,10 @@ UserIdentity.prototype._init = function( params ) {
   params = params || {};
 
   this._session_id = params.session_id;
-  if ( !this._session_id ) console.log( '_session_id is undeifned in UserIdentity' );
+  if ( !this._session_id ) {
+    global.autodafe.app.log( 'session_id is undeifned', 'error', 'UserIdentity' );
+    return false;
+  }
 
   if ( UserIdentity.cache[ this._session_id ] ) return UserIdentity.cache[ this._session_id ];
   UserIdentity.cache[ this._session_id ] = this;

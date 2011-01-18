@@ -28,7 +28,7 @@ MysqlTableSchema.prototype._init = function( params ) {
   };
 
   this.on( 'initialized', function() {
-    console.log( 'Table ' + this.name + ' initialized');
+    global.autodafe.app.log( 'Table "%s" initialized'.format( this.name ), 'tarce', 'MysqlTableSchema' );
   } );
 };
 
