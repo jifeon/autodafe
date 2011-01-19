@@ -12,8 +12,8 @@ require('sys').inherits( FileRoute, LogRoute );
 
 FileRoute.prototype._init = function( params ) {
   this._log_cache     = [];
-  this._log_file_path = path.join( global.autodafe.app.base_dir, 'runtime/autodafe.log' );
-  this._max_file_size = 1024;
+  this._log_file_path = null;
+  this._max_file_size = 1024;  // in KiB
   this._max_log_files = 5;
 
   var self = this;
@@ -31,50 +31,48 @@ FileRoute.prototype.on_log = function ( message ) {
 
 
 FileRoute.prototype.process_logs = function () {
-
   if ( !this._log_cache.length ) return false;
+  if ( !this._log_file_path )
+    this._log_file_path = path.join( global.autodafe.app.base_dir, 'runtime/autodafe.log' )
+
+  this.logger.log( 'Process logs', 'trace', 'FileRoute' );
 
   var file_emitter = new process.EventEmitter;
-  var self    = this;
+  var self         = this;
 
   path.exists( this._log_file_path, function( exists ) {
-
     if ( exists ) {
       fs.stat( self._log_file_path, function( e, stats ) {
         if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
         if ( stats.size > self._max_file_size * 1024 ) self._rotate_files( self._max_log_files, file_emitter );
+        else file_emitter.emit( 'ready_to_write' );
       } );
     }
     else file_emitter.emit( 'ready_to_write' );
-
   });
 
   file_emitter.on( 'ready_to_write', function() {
-//    fs.open( self._log_file_path, 'a', 0666, function( e, fd ) {
-//
-//      if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
-//
-//      this._log_cache.push('');
-//      fs.write( fd, this._log_cache.join( "\n" ), null, function( e, written ) {
-//        fs.close( fd );
-//        if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
-//      } );
-//
-//      this._log_cache = [];
-//    } );
+    self.logger.log( 'Writes logs to file', 'trace', 'FileRoute' );
 
+    fs.open( self._log_file_path, 'a', 0666, function( e, fd ) {
 
-    self._log_cache.push('');
-    fs.writeFile( self._log_file_path, self._log_cache.join( "\n" ), 'utf8', function( e ) {
       if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
+
+      self._log_cache.push('');
+      fs.write( fd, self._log_cache.join( "\n" ), null, 'utf8', function( e, written ) {
+        fs.close( fd );
+        if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
+      } );
+
+      self._log_cache = [];
     } );
 
-    self._log_cache = [];
   } );
 };
 
 
 FileRoute.prototype._rotate_files = function ( f, file_emitter ) {
+  if ( f == this._max_log_files ) this.logger.log( 'Rotate files', 'trace', 'FileRoute' );
   if ( f < 0 ) return file_emitter.emit( 'ready_to_write' );
 
   var self        = this;
