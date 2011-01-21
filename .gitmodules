@@ -4,6 +4,3 @@
 [submodule "ws_client"]
 	path = ws_client
 	url = git://github.com/LearnBoost/Socket.IO.git
-[submodule "framework/logger/color"]
-	path = framework/logger/color
-	url = git://github.com/Marak/colors.js.git
