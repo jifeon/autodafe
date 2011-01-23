@@ -36,11 +36,11 @@ MysqlDBConnection.prototype.select_db = function () {
   this.app.log( 'dbslayer is runned successfully', 'info', 'MysqlDBConnection' );
   this.__query( 'use ' + this.base,
     function( result ) {
-      this.app.log( 'Connection to base "%s" is initialized'.format( self.base ), 'info', 'MysqlDBConnection' );
+      self.app.log( 'Connection to base "%s" is initialized'.format( self.base ), 'info', 'MysqlDBConnection' );
       self.emit( 'initialized' );
     },
     function( error ){
-      this.app.log( 'Connection to base "%s" isn\'t initialized'.format( self.base ), 'error', 'MysqlDBConnection' );
+      self.app.log( 'Connection to base "%s" isn\'t initialized'.format( self.base ), 'error', 'MysqlDBConnection' );
       self.standard_errback( error );
     }
   );
@@ -106,7 +106,11 @@ MysqlDBConnection.prototype.__query = function ( sql, callback, errback, emitter
     this.app.log( 'Bad sql "%s"'.format( sql ), 'error', 'MysqlDBConnection' );
     return emitter;
   }
-  errback  = errback  || this.standard_errback;
+
+  var self = this;
+  errback  = errback  || function() {
+    self.standard_errback();
+  };
   callback = callback || function(){};
 
   this.app.log( 'Quering sql: ' + sql, 'trace', 'MysqlDBConnection' );

@@ -32,7 +32,7 @@ Logger.prototype._init = function( params ) {
     var messages = [];
     for ( var m = this.length - 1; m >= 0 || messages.length >= self._latest_trace_count; m-- ) {
       var message = this[ m ];
-      if ( message.level == message.logger.TRACE ) {
+      if ( message.level != message.logger.ERROR ) {
         message = new Message( message );
         var i = messages.push( message );
         message.text = '#%s - %s'.format( i, message );
@@ -45,10 +45,12 @@ Logger.prototype._init = function( params ) {
 
 
 Logger.prototype.log = function ( text, level, module ) {
+  var is_error = text instanceof Error;
+
   var message = new Message({
     text    : text,
-    level   : level,
-    module  : module  || this.default_module_name
+    level   : is_error ? 'error' : level,
+    module  : is_error ? level : module  || this.default_module_name
   });
 
   var messages_count = this._messages.push( message );

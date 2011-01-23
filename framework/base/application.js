@@ -1,6 +1,6 @@
 var Router            = require('router');
 var Logger            = require('../logging/logger');
-var ComponentsList    = require('components/components_list');
+var ComponentsManager    = require('components/components_manager');
 
 var Application = module.exports = function( config ) {
   if ( Application.instance ) return Application.instance;
@@ -58,7 +58,7 @@ Application.prototype._init_core = function () {
 
 Application.prototype._preload_components = function () {
   this.log( 'Preload components', 'trace' );
-  this.components = new ComponentsList( this._config.components );
+  this.components = new ComponentsManager( this._config.components );
 
   var preload = this._config.preload_components;
   if ( preload instanceof Array ) preload.forEach( function( component_name ){

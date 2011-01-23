@@ -43,7 +43,7 @@ FileRoute.prototype.process_logs = function () {
   path.exists( this._log_file_path, function( exists ) {
     if ( exists ) {
       fs.stat( self._log_file_path, function( e, stats ) {
-        if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
+        if ( e ) return self._on_error( e );
         if ( stats.size > self._max_file_size * 1024 ) self._rotate_files( self._max_log_files, file_emitter );
         else file_emitter.emit( 'ready_to_write' );
       } );
@@ -56,12 +56,12 @@ FileRoute.prototype.process_logs = function () {
 
     fs.open( self._log_file_path, 'a', 0666, function( e, fd ) {
 
-      if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
+      if ( e ) return self._on_error( e );
 
       self._log_cache.push('');
       fs.write( fd, self._log_cache.join( "\n" ), null, 'utf8', function( e, written ) {
         fs.close( fd );
-        if ( e ) return self.logger.log( e.message, 'error', 'FileRoute' );
+        if ( e ) return self._on_error( e );
       } );
 
       self._log_cache = [];
@@ -81,13 +81,21 @@ FileRoute.prototype._rotate_files = function ( f, file_emitter ) {
   path.exists( rotate_file, function( exists ) {
     if ( !exists ) return self._rotate_files( f - 1, file_emitter );
 
-    if ( f == self._max_log_files ) fs.unlink( rotate_file, function() {
+    var next = function( e ) {
+      if ( e ) return self._on_error( e );
       self._rotate_files( f - 1, file_emitter );
-    } );
-    else fs.rename( rotate_file, self._log_file_path + '.' + ( f + 1 ), function() {
-      self._rotate_files( f - 1, file_emitter );
-    } );
+    };
+
+    if ( f == self._max_log_files ) fs.unlink( rotate_file, next );
+    else fs.rename( rotate_file, self._log_file_path + '.' + ( f + 1 ), next );
   } );
+};
 
 
+FileRoute.prototype._on_error = function ( e ) {
+  this.logger.log( e.message, 'error', 'FileRoute' );
+
+  clearInterval( this._interval_id );
+
+  this.logger.log( 'File route is stopped', 'warning', 'FileRoute' );
 };

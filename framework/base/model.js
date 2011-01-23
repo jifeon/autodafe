@@ -6,3 +6,6 @@ var Model = module.exports = function( params ) {
 require('sys').inherits( Model, process.EventEmitter );
 
 
+Model.prototype._init = function ( params ) {
+  this.app          = global.autodafe.app;
+};

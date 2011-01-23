@@ -46,15 +46,15 @@ Router.prototype.collect_controllers = function () {
   catch( e ) {
     switch ( e ) {
       case 'NOT_CONTROLLER':
-        this.app.log( '"%s" is not a controller'.format( file ), 'warning' );
+        this.app.log( '"%s" is not a controller'.format( file ), 'error', 'Router' );
         break;
 
       case 'NO_NAME':
-        this.app.log( 'Controller has no property "name" in file "%s"'.format( file ), 'warning' );
+        this.app.log( 'Controller has no property "name" in file "%s"'.format( file ), 'error', 'Router' );
         break;
 
       default:
-        if ( file ) this.app.log( 'Error while including file "%s"'.format( file ), 'error' );
+        if ( file ) this.app.log( 'Error while including file "%s"'.format( file ), 'error', 'Router' );
         throw e;
         break;
     }
@@ -80,7 +80,7 @@ Router.prototype.route = function ( route_path ) {
     if ( !route_rule.length )
       return this.app.log(
         'Incorrect route path: "%s". Route path must be formated as controller.action \
-         or specified in router.rules section of config.'.format( route_path )
+         or specified in router.rules section of config.'.format( route_path ), 'error', 'Router'
       );
 
     controller_name = route_rule[0];
@@ -93,7 +93,7 @@ Router.prototype.route = function ( route_path ) {
 
   var controller    = this._controllers[ controller_name ];
   if ( !controller ) return this.app.log(
-    'Controller or route rule "%s"is not found'.format( controller_name ), 'error', 'router'
+    'Controller or route rule "%s" is not found'.format( controller_name ), 'warning', 'Router'
   );
 
   controller.run_action( action, args );

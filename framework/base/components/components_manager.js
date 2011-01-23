@@ -4,7 +4,8 @@ var system_components = {
   'web_sockets_server' : require( '../../web_sockets/web_sockets_server' ),
   'user'               : require( '../../users/users_identities' ),
   'db'                 : require( '../../db/db_controller' ),
-  'log_router'         : require( '../../logging/log_router' )
+  'log_router'         : require( '../../logging/log_router' ),
+  'files'              : require( '../../filing/file_manager' )
 };
 
 var ComponentsList = module.exports = function( components ) {
@@ -53,7 +54,7 @@ ComponentsList.prototype.load_components = function () {
 
 
 ComponentsList.prototype.load_component = function ( component_name ) {
-  this.app.log( 'Load component "%s"'.format( component_name ), 'trace' );
+  this.app.log( 'Load component "%s"'.format( component_name ), 'trace', 'ComponentsManager' );
   if ( this.items[ component_name ] ) return false;
 
   var component_params = this._components[ component_name ];
@@ -61,7 +62,7 @@ ComponentsList.prototype.load_component = function ( component_name ) {
 
   var component_class = system_components[ component_name ];
   if ( !component_class || !( component_class.prototype instanceof Component ) ) {
-    this.app.log( 'Try to load unknown component: "%s"'.format( component_name ), 'warning' );
+    this.app.log( 'Try to load unknown component: "%s"'.format( component_name ), 'warning', 'ComponentsManager' );
     return false;
   }
 

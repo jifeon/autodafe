@@ -35,8 +35,9 @@ ActiveRecord.prototype._init = function( params ) {
 //  const STAT='CStatRelation';
 //
   params = params || {};
-  
-  this.app          = global.autodafe.app;
+
+  Model.prototype._init.call( this, params );
+
   this.clazz        = params.clazz || this.constructor;
   this.table        = this.clazz.get_table_name();
   this.db           = this.app.db;

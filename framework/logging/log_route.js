@@ -26,19 +26,38 @@ LogRoute.prototype._init = function( params ) {
 
 LogRoute.prototype._log = function ( message ) {
   if ( this.levels[ message.level ] ) this.on_log( message );
-  if ( message.level == this.logger.ERROR && !this.levels[ this.logger.TRACE ] ) {
+
+  if ( message.level == this.logger.ERROR && this.levels[ this.logger.ERROR ] ) {
+
+    if ( !this.levels[ this.logger.TRACE ] ) {
+      this.on_log( new Message({
+        text    : 'Application stack:',
+        level   : this.logger.INFO,
+        module  : 'log_route'
+      }));
+
+      this.logger.messages.latest_trace.forEach( this.on_log, this );
+    }
+
     this.on_log( new Message({
-      text    : 'Stack trace:',
+      text    : 'JS stack:',
       level   : this.logger.INFO,
       module  : 'log_route'
     }));
-    this.logger.messages.latest_trace.forEach( this.on_log, this );
+
+    var stack = message.stack;
+    if ( stack ) this.on_log( new Message({
+      text    : stack,
+      level   : this.logger.TRACE,
+      module  : 'log_route'
+    }));
+    else console.trace();
+
     this.on_log( new Message({
-      text    : '-- End of stack --',
+      text    : '--- End of stack ---',
       level   : this.logger.INFO,
       module  : 'log_route'
     }));
-    console.trace();
   }
 };
 
