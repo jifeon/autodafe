@@ -12,7 +12,7 @@ require('sys').inherits( WebSocketsUserIdentity, UserIdentity );
 WebSocketsUserIdentity.prototype._init = function( params ) {
   this._client = params.client;
   if ( !this._client ) {
-    global.autodafe.app.log( '"client" is undefined', 'error', 'WebSocketsUserIdentity' );
+    this.app.log( '"client" is undefined', 'error', 'WebSocketsUserIdentity' );
     return false;
   }
 
@@ -29,6 +29,11 @@ WebSocketsUserIdentity.prototype.get_cookie = function ( cookie_name ) {
 
 
 WebSocketsUserIdentity.prototype.send = function ( controller, action, params ) {
+  this.app.log(
+    'Send message to websockets client ( id=%s ) to %s.%s'.format( this._session_id, controller, action ),
+    'trace', 'WebSocketsUserIdentity'
+  );
+
   this._client.send( JSON.stringify( {
     controller  : controller,
     action      : action,

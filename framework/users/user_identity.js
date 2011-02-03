@@ -8,9 +8,11 @@ UserIdentity.with_same_user = {};
 UserIdentity.prototype._init = function( params ) {
   params = params || {};
 
+  this.app = global.autodafe.app;
+
   this._session_id = params.session_id;
   if ( !this._session_id ) {
-    global.autodafe.app.log( 'session_id is undeifned', 'error', 'UserIdentity' );
+    this.app.log( 'session_id is undeifned', 'error', 'UserIdentity' );
     return false;
   }
 

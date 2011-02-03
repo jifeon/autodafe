@@ -7,5 +7,10 @@ require('sys').inherits( Model, process.EventEmitter );
 
 
 Model.prototype._init = function ( params ) {
-  this.app          = global.autodafe.app;
+
 };
+
+
+Model.prototype.__defineGetter__( 'app', function() {
+  return global.autodafe.app;
+} );

@@ -34,10 +34,12 @@ Controller.prototype.run_action = function ( action, args ) {
   var before_action_result = this.before_action.apply( this, args );
   if ( before_action_result === false ) return false;
   if ( before_action_result instanceof Array ) {
+    args.shift();
     args = before_action_result;
     args.unshift( action );
   }
 
   this[ action ].apply( this, args.slice( 1 ) );
   this.after_action.apply( this, args );
+  args.shift();
 };

@@ -68,35 +68,47 @@ Router.prototype.route = function ( route_path ) {
   this.app.log( 'route to ' + route_path, 'trace' );
   var args = Array.prototype.splice.call( arguments, 1 );
 
-  var controller_name,
-      action;
+  var actions = [];
 
   if ( route_path ) {
     if ( this._config.rules ) {
       route_path = this._config.rules[ route_path ] || route_path;
     }
 
-    var route_rule = route_path.split('.');
-    if ( !route_rule.length )
+    if ( !( route_path instanceof Array ) ) route_path = [ route_path ];
+    for ( var r = 0, r_ln = route_path.length; r < r_ln; r++ ) {
+      var route_rule = route_path[ r ].split('.');
+
+      if ( !route_rule.length )
       return this.app.log(
         'Incorrect route path: "%s". Route path must be formated as controller.action \
          or specified in router.rules section of config.'.format( route_path ), 'error', 'Router'
       );
 
-    controller_name = route_rule[0];
-    action          = route_rule[1];
+      actions.push({
+        controller_name : route_rule[0],
+        action          : route_rule[1]
+      });
+    }
   }
   else {
-    controller_name = global.autodafe.app.default_controller;
-    action          = null;
+
+    actions.push({
+      controller_name : global.autodafe.app.default_controller,
+      action          : null
+    });
   }
 
-  var controller    = this._controllers[ controller_name ];
-  if ( !controller ) return this.app.log(
-    'Controller or route rule "%s" is not found'.format( controller_name ), 'warning', 'Router'
-  );
+  for ( var a = 0, a_ln = actions.length; a < a_ln; a++ ) {
+    var action = actions[ a ];
 
-  controller.run_action( action, args );
+    var controller    = this._controllers[ action.controller_name ];
+    if ( !controller ) return this.app.log(
+      'Controller or route rule "%s" is not found'.format( action.controller_name ), 'warning', 'Router'
+    );
+
+    controller.run_action( action.action, args );
+  }
 };
 
 

@@ -54,9 +54,9 @@ ComponentsList.prototype.load_components = function () {
 
 
 ComponentsList.prototype.load_component = function ( component_name ) {
-  this.app.log( 'Load component "%s"'.format( component_name ), 'trace', 'ComponentsManager' );
   if ( this.items[ component_name ] ) return false;
 
+  this.app.log( 'Load component "%s"'.format( component_name ), 'trace', 'ComponentsManager' );
   var component_params = this._components[ component_name ];
   if ( typeof component_params != 'object' ) component_params = {};
 

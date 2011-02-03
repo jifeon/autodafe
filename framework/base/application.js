@@ -1,3 +1,5 @@
+var path              = require('path');
+
 var Router            = require('router');
 var Logger            = require('../logging/logger');
 var ComponentsManager    = require('components/components_manager');
@@ -39,6 +41,8 @@ Application.prototype._check_config = function () {
     this.log( 'You must set base_dir in config file!', 'error' );
     return false;
   }
+
+  this._config.base_dir = path.normalize( this._config.base_dir );
 
   this.__defineGetter__( 'base_dir', function () {
     return this._config.base_dir;
