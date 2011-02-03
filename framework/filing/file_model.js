@@ -1,6 +1,6 @@
 var Model = require('model');
-var path = require('path');
-var fs = require('fs');
+var path  = require('path');
+var fs    = require('fs');
 
 var FileModel = module.exports = function( params ) {
   this._init( params );
@@ -23,12 +23,33 @@ FileModel.prototype._init = function( params ) {
   } );
 
   this.__defineSetter__( 'name', function( name ) {
-    this.__name = name && !path.extname( name ) ? name + '.' + this.get_ext() : name;
+    var new_name = name && !path.extname( name ) ? name + '.' + this.get_ext() : name;
+
+    if ( this.__name && this.__name != new_name ) {
+      this.__rename   = true;
+      this.__src_name = this.__name;
+    }
+
+    this.__name = new_name;
+  } );
+
+  this.__defineGetter__( 'content', function() {
+    return this.__content || '';
+  } );
+
+  this.__defineSetter__( 'content', function( content ) {
+    this.__write_content = true;
+
+    this.__content = content && content.toString();
   } );
 
   this.name       = params.name;
   this.encoding   = params.encoding || 'utf8';
-  this.content    = params.content  || '';
+  this.content    = params.content;
+
+  this.__new            = true;
+  this.__rename         = false;
+  this.__write_content  = false;
 
   var self = this;
   this._path = path.join( this.app.base_dir, this.app.files.default_folder );
@@ -42,6 +63,16 @@ FileModel.prototype._init = function( params ) {
     self.emit( 'found' );
     return true;
   } );
+};
+
+
+FileModel.prototype.is_new = function () {
+  return this.__new;
+};
+
+
+FileModel.prototype.set_new = function ( n ) {
+  this.__new = n;
 };
 
 
@@ -91,7 +122,12 @@ FileModel.prototype.get = function( name ){
 
   var self = this;
   file.on( 'found', function() {
-    emitter.emit( 'complete', file );
+
+    path.exists( file.get_path(), function( exists ) {
+      file.set_new( !exists );
+
+      emitter.emit( 'complete', file );
+    } );
   } )
   .on( 'not_found', function() {
     var e = new Error( 'File %s not found'.format( file.name ) );
@@ -147,6 +183,33 @@ FileModel.prototype.save = function () {
   var emitter = new process.EventEmitter;
 
   var self = this;
+
+  var next = function() {
+    if ( self.is_new() || self.__write_content ) self.__write_file( emitter );
+    else emitter.emit( 'complete' );
+  }
+
+  if ( this.__rename ) {
+    this.app.log( 'Rename "%s" to "%s"'.format( this.__src_name, this.__name ), 'trace', 'FileModel' );
+
+    fs.rename( this.get_path( this.__src_name ), this.get_path(), function( e ) {
+      if ( e ) {
+        self.app.log( e, 'FileModel' );
+        emitter.emit( 'fail', e );
+        return false;
+      }
+
+      next();
+    } );
+  }
+  else next();
+
+  return emitter;
+};
+
+
+FileModel.prototype.__write_file = function ( emitter ) {
+  var self = this;
   fs.writeFile( this.get_path(), self.content, self.encoding, function( e ) {
     if ( e ) {
       emitter.emit( 'fail', e.message );
@@ -155,12 +218,10 @@ FileModel.prototype.save = function () {
 
     emitter.emit( 'complete' );
   } );
-
-  return emitter;
 };
 
 
-FileModel.prototype.get_path = function () {
-  return path.join( this._path, this.name );
+FileModel.prototype.get_path = function ( name ) {
+  return path.join( this._path, name || this.name );
 };
 
