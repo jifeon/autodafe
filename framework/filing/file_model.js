@@ -82,7 +82,7 @@ FileModel.prototype.get_ext = function () {
 
 
 FileModel.prototype.get_content = function( name ){
-  var file = new this.constructor( {
+  var file = !name ? this : new this.constructor( {
     name : name
   });
 
@@ -108,6 +108,8 @@ FileModel.prototype.get_content = function( name ){
     emitter.emit( 'fail', e );
     self.app.log( e, 'FileModel' );
   } );
+
+  if ( !name ) file.emit( 'found' );
 
   return emitter;
 }

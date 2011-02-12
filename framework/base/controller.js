@@ -32,7 +32,11 @@ Controller.prototype.run_action = function ( action, args ) {
   args.unshift( action );
 
   var before_action_result = this.before_action.apply( this, args );
-  if ( before_action_result === false ) return false;
+  if ( before_action_result === false ) {
+    args.shift();
+    return false;
+  }
+
   if ( before_action_result instanceof Array ) {
     args.shift();
     args = before_action_result;
