@@ -15,7 +15,7 @@ ActionController.prototype.actions  = [
 
 
 ActionController.prototype.test = function () {
-  
+  console.log('test is raning');
 };
 
 
