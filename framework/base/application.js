@@ -2,7 +2,7 @@ var path              = require('path');
 
 var Router            = require('router');
 var Logger            = require('../logging/logger');
-var ComponentsManager    = require('components/components_manager');
+var ComponentsManager = require('components/components_manager');
 
 var Application = module.exports = function( config ) {
   if ( Application.instance ) return Application.instance;
