@@ -140,12 +140,16 @@ var commands = {
             'test "id"' : function( res ){
               assert.equal( res.id, 2 );
             }
+          },
+          'jst test' : {
+            topic : 42,
+            'is it the UQoLtU&E' : function(topic){ assert.equal(topic, 42 );}
           }
         }
       }
     }
-  });
-  var t = new Post();
+  }).run();
+ // var t = new Post();
  // console.log(t.get_meta_data());
   //t.get_model().find_by_pk(2,'',{});
 }

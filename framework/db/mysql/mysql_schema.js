@@ -51,7 +51,6 @@ MysqlSchema.prototype.compare_table_names = function( name1, name2 ) {
 
 
 MysqlSchema.prototype._create_table = function( name ) {
-  console.log(name);
   var table = new MysqlTableSchema;
   this._resolve_table_names( table, name );
 
