@@ -28,34 +28,33 @@ exports.test = function(app) {
 
   require('sys').inherits(Post, ActiveRecord);
 
-var commands = {
-  find: function ( model, func, cond, attr, pk, sql)
-  {
-    var command_emitter = new process.EventEmitter;
+  var commands = {
+    find: function ( model, func, cond, attr, pk, sql) {
+      var command_emitter = new process.EventEmitter;
 
-  switch( func ) {
-    case 'find' :
-      model.find( cond, attr ).on( 'complete', function( res ) {
-          command_emitter.emit( 'success', res );
+      switch( func ) {
+        case 'find' :
+          model.find( cond, attr ).on( 'complete', function( res ) {
+            command_emitter.emit( 'success', res );
           } );
-    break;
+        break;
 
-    case 'find_all' :
-      model.find_all( cond, attr ).on( 'complete', function( res ) {
-          command_emitter.emit( 'success', res );
+        case 'find_all' :
+          model.find_all( cond, attr ).on( 'complete', function( res ) {
+            command_emitter.emit( 'success', res );
           } );
-    break;
+        break;
 
-    case 'find_by_pk' :
-      model.find_by_pk( pk, cond, attr ).on( 'complete', function( res ) {
-          command_emitter.emit( 'success', res );
+        case 'find_by_pk' :
+          model.find_by_pk( pk, cond, attr ).on( 'complete', function( res ) {
+            command_emitter.emit( 'success', res );
           } );
-    break;
+        break;
+      }
+
+      return command_emitter;
+    }
   }
-
-  return command_emitter;
-  }
-}
 
   vows.describe('active_record_tests').addBatch({
     'ActiveRecord test' : {

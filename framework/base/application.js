@@ -92,16 +92,3 @@ Application.prototype.run = function () {
 Application.prototype.log = function ( message, level, module ) {
   this.logger.log( message, level, module );
 };
-
-Application.prototype.run_tests = function () {
-  this.log( 'Running tests', 'trace' );
-  var tmp_test;
-  if( !this.tests.directory ) {
-    if( this.tests.files.length > 0 ){
-      for( var f = 0, f_ln = this.tests.files.length; f < f_ln; f++ ){
-        tmp_test = require( '../../tests/' + this.tests.files[f]);
-        tmp_test.test(this);
-      }
-    }
-  }
-};

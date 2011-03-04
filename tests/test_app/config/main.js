@@ -1,40 +1,45 @@
 var config = module.exports = {
   base_dir    : __dirname + '/../',
-  
   name            : 'TestApp',
-//  params          : {
-//    test_param    : 42
-//  },
-//
-//  application_type    : 'WebSockets',
-//  default_controller  : 'action',
-//
-//  router : {
-//    base_dir : __dirname + '/../',
-//    rules     : {
-//      'test' : 'task/test'
-//    }
-//  },
-//
-//  server : {
-//    port : 8080
-//  },
-//
-  components : {
-  db : {
-    type : 'mysql',
-    user : 'root',
-    pass : 'qwer',
-    base : 'testbase',
-    host : 'localhost',
-    dbslayer : {
-      host : 'localhost',
-      port : 9090
+
+//  default_controller  : 'site',
+
+  router : {
+
+    rules     : {
     }
   },
-  tests : {
-    directory : false,
-    files : ['unit/framework/db/ar/active_record_tests']
-  }
+
+  preload_components : [
+    'log_router',
+//    'files'
+  ],
+
+  components : {
+
+//    web_sockets_server  : true,
+//    user                : true,
+    db                  : require('./db').db,
+
+    log_router          : {
+
+      routes : {
+        console : {
+          levels : [ 'trace', 'info', 'warning', 'error' ]
+        }//,
+//        file : {
+//          levels : [ 'trace', 'info', 'warning', 'error' ]
+//        }
+      }
+    },
+
+//    files : {
+//      default_folder : 'templates'
+//    },
+
+    tests : {
+      directory : false,
+      files : ['unit/framework/db/ar/active_record_tests']
+    }
   }
 };
