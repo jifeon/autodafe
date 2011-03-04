@@ -7,3 +7,6 @@
 [submodule "framework/logging/color"]
 	path = framework/logging/color
 	url = git://github.com/Marak/colors.js.git
+[submodule "framework/tests/vows"]
+	path = framework/tests/vows
+	url = https://github.com/cloudhead/vows.git
