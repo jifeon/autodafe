@@ -46,8 +46,9 @@ var config = module.exports = {
     tests : {
       directory : false,
       files : [
-        'unit/framework/db/ar/active_record_tests',
-        'unit/framework/base/application_tests'
+        'unit/framework/base/application_tests',
+        'unit/framework/base/controller_tests',
+        'unit/framework/db/ar/active_record_tests'
       ]
     }
   }

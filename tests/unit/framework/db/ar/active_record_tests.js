@@ -1,14 +1,5 @@
-/**
- * Created by JetBrains PhpStorm.
- * User: jifeon
- * Date: 21.02.11
- * Time: 19:53
- * To change this template use File | Settings | File Templates.
- */
+exports.add_tests_to = function( suite ) {
 
-exports.test = function(app) {
-
-  var vows  = app.tests.vows;
   var assert = require('assert');
 
   var ActiveRecord = require('db/ar/active_record');
@@ -56,7 +47,7 @@ exports.test = function(app) {
     }
   }
 
-  vows.describe('active_record_tests').addBatch({
+  suite.addBatch({
     'ActiveRecord test' : {
       topic : new ( Post ),
       'db test'         : function( topic ){
@@ -147,7 +138,7 @@ exports.test = function(app) {
         }
       }
     }
-  }).run();
+  });
  // var t = new Post();
  // console.log(t.get_meta_data());
   //t.get_model().find_by_pk(2,'',{});

@@ -23,10 +23,19 @@ Tests.prototype.run = function () {
 
     if( this.files.length > 0 ){
 
-      for( var f = 0, f_ln = this.files.length; f < f_ln; f++ ){
+      // add test_app folder to paths
+      var path = require( 'path' );
+      require.paths.unshift( path.resolve( '.' ) );
+
+      var suite         = this.vows.describe( 'Autodafe tests' );
+      suite.application = this.app;
+
+      for ( var f = 0, f_ln = this.files.length; f < f_ln; f++ ){
         tmp_test = require( '../../tests/' + this.files[f]);
-        tmp_test.test( this.app );
+        tmp_test.add_tests_to( suite );
       }
+
+      suite.run();
     }
   }
 };

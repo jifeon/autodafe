@@ -4,7 +4,7 @@ var Controller = module.exports = function( params ) {
 
 
 require( 'sys' ).inherits( Controller, process.EventEmitter );
-Controller.prototype.actions = [ 'index' ];
+Controller.prototype.actions        = [ 'index' ];
 Controller.prototype.default_action = 'index';
 
 
