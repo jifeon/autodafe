@@ -1,8 +1,14 @@
 var config = module.exports = {
   base_dir    : __dirname + '/../',
-  name            : 'TestApp',
+  name        : 'TestApp',
 
-//  default_controller  : 'site',
+  default_controller  : 'test',
+  params              : {
+    param1 : 'some param',
+    param2 : 0,
+    param3 : false,
+    param4 : null
+  },
 
   router : {
 
@@ -39,7 +45,10 @@ var config = module.exports = {
 
     tests : {
       directory : false,
-      files : ['unit/framework/db/ar/active_record_tests']
+      files : [
+        'unit/framework/db/ar/active_record_tests',
+        'unit/framework/base/application_tests'
+      ]
     }
   }
 };
