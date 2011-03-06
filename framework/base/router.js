@@ -1,5 +1,6 @@
 var fs          = require('fs');
 var Controller  = require('./controller');
+var path        = require('path');
 
 var Router = module.exports = function( config ) {
   this._init( config );
@@ -7,38 +8,41 @@ var Router = module.exports = function( config ) {
 
 
 Router.prototype._init = function ( config ) {
-  this._config      = config || {};
-  this._controllers = {};
+  this._config              = config || {};
+  this._controllers         = {};
+  this._controllers_folder  = 'controllers';
 
   this.app = global.autodafe.app;
 
-  this.collect_controllers();
+  this._collect_controllers();
 };
 
 
-Router.prototype.collect_controllers = function () {
-  var controllers_dir = global.autodafe.app.base_dir + 'controllers/';
-  this.app.log( 'Collecting controllers in path: ' + controllers_dir, 'trace' );
+Router.prototype._collect_controllers = function () {
+  var controllers_dir = path.join( this.app.base_dir, this._controllers_folder );
+  this.app.log( 'Collecting controllers in path: ' + controllers_dir, 'trace', 'Router' );
 
   try {
 
     var file;
     var files = fs.readdirSync( controllers_dir );
     for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
-      file      = files[f];
-      var path  = controllers_dir + file;
-      var stat  = fs.statSync( path );
+
+      file            = files[f];
+      var file_path   = path.join( controllers_dir, file );
+      var stat        = fs.statSync( file_path );
+
       if ( !stat.isFile() ) {
         continue;
       }
 
-      var controller = require( path );
+      var controller = require( file_path );
       if ( !( controller.prototype instanceof Controller ) ) throw "NOT_CONTROLLER";
 
       var name = controller.prototype.name;
       if ( !name ) throw "NO_NAME";
 
-      this.app.log( 'Controller "%s" is added'.format( name ), 'trace' );
+      this.app.log( 'Controller "%s" is added'.format( name ), 'trace', 'Router' );
       this._controllers[ name ] = new controller;
     }
 
