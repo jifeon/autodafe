@@ -1,6 +1,7 @@
 exports.add_tests_to = function( suite ) {
 
   var assert = require('assert');
+  var app    = suite.application;
 
   var ActiveRecord = require('db/ar/active_record');
 
