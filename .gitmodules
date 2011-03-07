@@ -7,6 +7,6 @@
 [submodule "framework/logging/color"]
 	path = framework/logging/color
 	url = git://github.com/Marak/colors.js.git
-[submodule "framework/mailing/node_mailer"]
-	path = framework/mailing/node_mailer
-	url = git://github.com/Marak/node_mailer.git
+[submodule "framework/mailing/emailjs.git"]
+	path = framework/mailing/emailjs.git
+	url = git://github.com/eleith/emailjs.git

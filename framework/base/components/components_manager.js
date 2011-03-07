@@ -6,7 +6,7 @@ var system_components = {
   'db'                 : require( '../../db/db_controller' ),
   'log_router'         : require( '../../logging/log_router' ),
   'files'              : require( '../../filing/file_manager' ),
-  'mailing'            : require( '../../mailing/mailer' )
+  'mail'               : require( '../../mailing/mailer' )
 };
 
 var ComponentsList = module.exports = function( components ) {
