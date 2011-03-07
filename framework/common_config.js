@@ -2,6 +2,8 @@ var config = module.exports = {
   base_dir        : __dirname + '/../',
   name            : 'AppName',
 
+  params          : {},
+
   default_controller  : 'app',
 
   router : {
