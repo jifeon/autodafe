@@ -22,7 +22,7 @@ LogRouter.prototype._init = function( params ) {
       default:        route_class = require('./log_route');     break;
     }
 
-    this.routes[ route_type ] = new route_class( routes[ route_type ] );
+    this.routes[ route_type ] = new route_class( routes[ route_type ], this.app );
   }
 };
 

@@ -1,4 +1,5 @@
-var Component = require('components/component');
+var Component = require( 'components/component' );
+
 var Tests = module.exports = function( params ) {
   this._init( params );
 };
@@ -31,7 +32,10 @@ Tests.prototype.run = function () {
       suite.application = this.app;
 
       for ( var f = 0, f_ln = this.files.length; f < f_ln; f++ ){
-        tmp_test = require( '../../tests/' + this.files[f]);
+        var test_path = path.resolve( '../../tests', this.files[f] );
+        this.app.log( 'Collecting tests in file: %s'.format( path.basename( test_path ) ), 'trace', 'Tests' );
+
+        tmp_test = require( test_path );
         tmp_test.add_tests_to( suite );
       }
 

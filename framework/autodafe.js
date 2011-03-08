@@ -10,20 +10,20 @@ var Autodafe = global.autodafe = module.exports = new function() {
     return new Application( config );
   };
 
-  this.__defineGetter__( 'app', function() {
-    return new Application;
-  } );
-
   var show_log_on_exit = process.argv[ 2 ] == '--show_log_on_exit';
 
   process.on( 'exit', function() {
-    if (
-      !show_log_on_exit &&
-      (
-        !Application.instance ||
-        !Application.instance.log_router ||
-        !Application.instance.log_router.get_route('console')
-      ) )
+    var shown_some_log = false;
+
+    for ( var i = 0, i_ln = Application.instances.length; i < i_ln; i++ ) {
+      var instance = Application.instances[i];
+      if ( instance.log_router && instance.log_router.get_route('console') ) {
+        shown_some_log = true;
+        break;
+      }
+    }
+
+    if ( !show_log_on_exit && !shown_some_log )
       console.log(
         'If you don\'t look any log messages, preload and configure "log_router" component ' +
         'or run the application with --show_log_on_exit option' );

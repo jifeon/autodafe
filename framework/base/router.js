@@ -12,7 +12,9 @@ Router.prototype._init = function ( config ) {
   this._controllers         = {};
   this._controllers_folder  = 'controllers';
 
-  this.app = global.autodafe.app;
+  this.__defineGetter__( 'app', function() {
+    return this._config.app;
+  } );
 
   this._collect_controllers();
 };
@@ -43,7 +45,9 @@ Router.prototype._collect_controllers = function () {
       if ( !name ) throw "NO_NAME";
 
       this.app.log( 'Controller "%s" is added'.format( name ), 'trace', 'Router' );
-      this._controllers[ name ] = new controller;
+      this._controllers[ name ] = new controller({
+        app : this.app
+      });
     }
 
   }
@@ -98,7 +102,7 @@ Router.prototype.route = function ( route_path ) {
   else {
 
     actions.push({
-      controller_name : global.autodafe.app.default_controller,
+      controller_name : this.app.default_controller,
       action          : null
     });
   }

@@ -8,7 +8,9 @@ exports.add_tests_to = function( suite ) {
     'controller tests' : {
       topic : function() {
         var TestController = require('controllers/test');
-        return new TestController;
+        return new TestController({
+          app : suite.application
+        });
       },
       'instance test' : function( controller ) {
         assert.instanceOf( controller, Controller );

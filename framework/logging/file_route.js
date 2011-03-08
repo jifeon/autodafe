@@ -2,15 +2,15 @@ var LogRoute  = require('./log_route');
 var path      = require('path');
 var fs        = require('fs');
 
-var FileRoute = module.exports = function( params ) {
-  this._init( params );
+var FileRoute = module.exports = function( params, app ) {
+  this._init( params, app );
 };
 
 
 require('sys').inherits( FileRoute, LogRoute );
 
 
-FileRoute.prototype._init = function( params ) {
+FileRoute.prototype._init = function( params, app ) {
   this._log_cache     = [];
   this._log_file_path = null;
   this._max_file_size = 1024;  // in KiB
@@ -21,7 +21,7 @@ FileRoute.prototype._init = function( params ) {
     self.process_logs();
   }, 1000 );
 
-  LogRoute.prototype._init.call( this, params );
+  LogRoute.prototype._init.call( this, params, app );
 };
 
 
@@ -33,7 +33,7 @@ FileRoute.prototype.on_log = function ( message ) {
 FileRoute.prototype.process_logs = function () {
   if ( !this._log_cache.length ) return false;
   if ( !this._log_file_path )
-    this._log_file_path = path.join( global.autodafe.app.base_dir, 'runtime/autodafe.log' )
+    this._log_file_path = path.join( this.app.base_dir, 'runtime/autodafe.log' )
 
   this.logger.log( 'Process logs', 'trace', 'FileRoute' );
 

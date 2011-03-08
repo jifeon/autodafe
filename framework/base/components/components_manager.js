@@ -10,23 +10,23 @@ var system_components = {
   'mail'               : require( '../../mailing/mailer' )
 };
 
-var ComponentsList = module.exports = function( components ) {
-  this._init( components );
+var ComponentsManager = module.exports = function( components, app ) {
+  this._init( components, app );
 };
 
 
-require( 'sys' ).inherits( ComponentsList, process.EventEmitter );
+require( 'sys' ).inherits( ComponentsManager, process.EventEmitter );
 
 
-ComponentsList.prototype._init = function( components ) {
+ComponentsManager.prototype._init = function( components, app ) {
   this._components = components;
 
-  this.items = {};
-  this.app = global.autodafe.app;
+  this.items  = {};
+  this.app    = app;
 };
 
 
-ComponentsList.prototype.load_components = function () {
+ComponentsManager.prototype.load_components = function () {
 
   for ( var component_name in this._components ) {
     this.load_component( component_name );
@@ -55,7 +55,7 @@ ComponentsList.prototype.load_components = function () {
 };
 
 
-ComponentsList.prototype.load_component = function ( component_name ) {
+ComponentsManager.prototype.load_component = function ( component_name ) {
   if ( this.items[ component_name ] ) return false;
 
   this.app.log( 'Load component "%s"'.format( component_name ), 'trace', 'ComponentsManager' );
@@ -69,5 +69,6 @@ ComponentsList.prototype.load_component = function ( component_name ) {
   }
 
   component_params.name = component_name;
+  component_params.app  = this.app;
   this.items[ component_name ] = new component_class( component_params );
 };

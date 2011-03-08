@@ -34,12 +34,15 @@ UserIdentities.prototype._create_user_identity = function ( session, connector )
       }
 
       user_identity = new WebSocketsUserIdentity({
-        client : ws_client
+        client : ws_client,
+        app    : this.app
       });
       break;
 
     default :
-      user_identity = new UserIdentity();
+      user_identity = new UserIdentity({
+        app    : this.app
+      });
       break;
   }
 

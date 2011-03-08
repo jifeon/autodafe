@@ -29,7 +29,7 @@ DBController.prototype._define_getter = function () {
 DBController.prototype._init_database = function () {
   switch ( this.__db_config.type ) {
     case 'mysql':
-      this._db = new MysqlDBConnection( this.__db_config );
+      this._db = new MysqlDBConnection( this.__db_config, this.app );
       break;
 
     default :

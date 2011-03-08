@@ -1,12 +1,16 @@
 var Message = require('./message');
 
-var LogRoute = module.exports = function( params ) {
-  this._init( params );
+var LogRoute = module.exports = function( params, app ) {
+  this._init( params, app );
 };
 
 
-LogRoute.prototype._init = function( params ) {
-  this.logger = global.autodafe.app.logger;
+LogRoute.prototype._init = function( params, app ) {
+  this.__defineGetter__( 'app', function() {
+    return app;
+  } );
+
+  this.logger = this.app.logger;
 
   this.levels = {};
   ( params.levels || [] ).forEach( function( level ){
@@ -66,7 +70,7 @@ LogRoute.prototype.on_log = function ( message ) {};
 
 
 LogRoute.prototype._format = function ( message ) {
-  return '%s [%s] [%s] %s'.format(
+  return '%s [%s] [%s] [%s] %s'.format(
     message.date.format( 'D M Y h:m:s:x' ),
-    message.level, message.module, message.text );
+    this.app.name, message.level, message.module, message.text );
 };

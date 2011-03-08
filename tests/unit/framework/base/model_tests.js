@@ -9,14 +9,6 @@ exports.add_tests_to = function( suite ){
       'instance test' : function( model ){
         assert.instanceOf( model, Model );
         assert.instanceOf( model, process.EventEmitter );
-      },
-      'link to application' : function( model ) {
-        assert.equal( model.app, suite.application );
-      },
-      'link to application is read only' : function( model ) {
-        assert.throws( function() {
-          model.app = {};
-        }, TypeError );
       }
     }
   });
