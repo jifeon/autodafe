@@ -27,6 +27,11 @@ exports.add_tests_to = function( suite ) {
       'tests application link' : function( controller ){
         assert.equal( controller.app, suite.application );
       },
+      'application link is read only' : function( controller ) {
+        assert.throws( function() {
+          controller.app = {};
+        }, TypeError );
+      },
       'tests default action' : function( controller ){
         var index_action_has_runned = false;
 

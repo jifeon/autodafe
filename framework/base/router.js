@@ -88,10 +88,10 @@ Router.prototype.route = function ( route_path ) {
       var route_rule = route_path[ r ].split('.');
 
       if ( !route_rule.length )
-      return this.app.log(
-        'Incorrect route path: "%s". Route path must be formated as controller.action \
-         or specified in router.rules section of config.'.format( route_path ), 'error', 'Router'
-      );
+        return this.app.log(
+          'Incorrect route path: "%s". Route path must be formated as controller.action \
+           or specified in router.rules section of config.'.format( route_path ), 'error', 'Router'
+        );
 
       actions.push({
         controller_name : route_rule[0],
@@ -122,4 +122,9 @@ Router.prototype.route = function ( route_path ) {
 
 Router.prototype.get_controller = function ( name ) {
   return this._controllers[ name ] || null;
+};
+
+
+Router.prototype.get_controllers = function () {
+  return this._controllers;
 };
