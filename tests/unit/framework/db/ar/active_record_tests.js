@@ -5,17 +5,13 @@ exports.add_tests_to = function( suite ) {
 
   var ActiveRecord = require('db/ar/active_record');
 
-  var Post = module.exports = function(params) {
-    ActiveRecord.prototype._init.call(this, params);
+  var Post = function( params ) {
+    this._init( params );
   };
 
 
   Post.get_table_name = function () {
     return 'posts';
-  };
-
-  Post.model = function() {
-    return ActiveRecord.model(this);
   };
 
   require('sys').inherits(Post, ActiveRecord);
@@ -50,7 +46,7 @@ exports.add_tests_to = function( suite ) {
 
   suite.addBatch({
     'ActiveRecord test' : {
-      topic : new ( Post ),
+      topic : new app.model( Post ),
       'db test'         : function( topic ){
         assert.equal( topic.get_db_connection(), app.db );
       },

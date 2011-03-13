@@ -5,7 +5,7 @@ exports.add_tests_to = function( suite ){
 
   suite.addBatch({
     'model tests' : {
-      topic : new TestModel,
+      topic : new suite.application.model( TestModel ),
       'instance test' : function( model ){
         assert.instanceOf( model, Model );
         assert.instanceOf( model, process.EventEmitter );

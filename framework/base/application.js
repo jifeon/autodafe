@@ -3,7 +3,7 @@ var path              = require('path');
 var Router            = require('router');
 var Logger            = require('../logging/logger');
 var ComponentsManager = require('components/components_manager');
-
+var ProxyHandler      = require('lib/proxy/proxy_handler');
 
 var Application = module.exports = function( config ) {
   this._init( config );
@@ -31,6 +31,24 @@ Application.prototype._init = function ( config ) {
 
   this._init_core();
   this._init_components();
+
+  var self = this;
+  var get_model = function( clazz ) {
+    if ( clazz && clazz.super_ && typeof clazz.super_.model == "function" ) return clazz.super_.model( clazz, self );
+    return create_model( clazz );
+  };
+
+
+  var create_model = function( clazz ) {
+    return new clazz({
+      app : self
+    });
+  };
+
+  this.model = ProxyHandler.wrap_function(
+    get_model,     // on call
+    create_model   // on construct
+  );
 };
 
 

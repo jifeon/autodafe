@@ -13,3 +13,6 @@
 [submodule "framework/mailing/emailjs.git"]
 	path = framework/mailing/emailjs.git
 	url = git://github.com/eleith/emailjs.git
+[submodule "framework/lib/proxy/node-proxy"]
+	path = framework/lib/proxy/node-proxy
+	url = git://github.com/samshull/node-proxy.git

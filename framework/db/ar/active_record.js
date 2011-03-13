@@ -14,7 +14,7 @@ require('sys').inherits( ActiveRecord, Model );
 ActiveRecord.models = {};
 
 
-ActiveRecord.model = function( clazz ) {
+ActiveRecord.model = function( clazz, app ) {
   if ( typeof clazz != 'function' ) throw new Error( 'Class must be a function in ActiveRecord.model' );
 
   var table_name = clazz.get_table_name();
@@ -22,7 +22,8 @@ ActiveRecord.model = function( clazz ) {
   if ( this.models[ table_name ] ) return this.models[ table_name ];
 
   return this.models[ table_name ] = new clazz({
-    clazz : clazz
+    clazz : clazz,
+    app   : app
   });
 }
 
@@ -55,7 +56,7 @@ ActiveRecord.prototype._init = function( params ) {
 
 
 ActiveRecord.prototype.get_model = function () {
-  return this.constructor.model();
+  return this.app.model( this.clazz );
 };
 
 
@@ -478,7 +479,8 @@ ActiveRecord.prototype.populate_record = function( attributes ) {
 
 ActiveRecord.prototype.instantiate = function () {
   return new this.clazz({
-    _new : false
+    _new : false,
+    app  : this.app
   });
 };
 

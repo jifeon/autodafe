@@ -33,6 +33,4 @@ var Autodafe = global.autodafe = module.exports = new function() {
         console.log( '%s: "%s" in module "%s"', message.level, message.text, message.module );
       } );
   } );
-
-
 };
