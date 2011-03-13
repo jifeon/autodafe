@@ -9,6 +9,11 @@ exports.add_tests_to = function( suite ){
       'instance test' : function( model ){
         assert.instanceOf( model, Model );
         assert.instanceOf( model, process.EventEmitter );
+      },
+      'creating model without link to application in params must throw an Error' : function(){
+        assert.throws( function() {
+          new Model
+        } );
       }
     }
   });
