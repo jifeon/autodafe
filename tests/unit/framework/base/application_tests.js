@@ -1,14 +1,17 @@
 exports.add_tests_to = function( suite ) {
-  var assert            = require('assert');
-  var Router            = require('router');
-  var Logger            = require('logging/logger');
-  var ComponentsManager = require('components/components_manager');
+  var assert            = require( 'assert' );
+  var Router            = require( 'router' );
+  var Logger            = require( 'logging/logger' );
+  var ComponentsManager = require( 'components/components_manager' );
   var Autodafe          = require( 'autodafe' );
   var LogRouter         = require( 'logging/log_router' );
   var AError            = require( 'aerror' );
   var TestComponent     = require( 'tests/test_component' );
+  var Model             = require( 'model' );
+  var TestModel         = require( 'test_inhereted_model' );
+  var SuperModel        = require( 'test_super_model' );
   var path              = require( 'path' );
-  var config            = require('config/main');
+  var config            = require( 'config/main' );
 
   suite.addBatch({
     'application tests' : {
@@ -37,6 +40,7 @@ exports.add_tests_to = function( suite ) {
             app.name = '';
           }, TypeError, 'name' );
         },
+
         'application with minimalistic configurations' : {
           topic : function() {
             var min_config  = require('config/min_config');
@@ -50,7 +54,38 @@ exports.add_tests_to = function( suite ) {
         }
       },
 
-      '_preload_components' : function() {
+      '`model` method' : {
+          'returned model instance test' : function( app ){
+            var model = new app.model( TestModel );
+            assert.instanceOf( model, TestModel );
+            assert.instanceOf( model, Model );
+          },
+          'two created by `new app.model()` models should be not the same' : function( app ){
+            var model1 = new app.model( TestModel );
+            var model2 = new app.model( TestModel );
+            assert.notEqual( model1, model2, 'Models should be not the same' );
+          },
+          'calling to `model` method must return result of super_.model()' : function( app ){
+            var model1 = app.model( TestModel );
+            var model2 = app.model( TestModel );
+            assert.equal( model1, model2, 'Models should be the same' );
+          },
+          'link to application in created model' : function( app ) {
+            var model = new app.model( TestModel );
+            assert.equal( model.app, app, 'Broken link to application' );
+          },
+          'link to application in getted existing model from super_.model()' : function( app ) {
+            var model = app.model( TestModel );
+            assert.equal( model.app, app, 'Broken link to application' );
+          },
+          'if super_ hash\'t `model` method `app.model()` should return just new model' : function( app ){
+            var model = app.model( SuperModel );
+            assert.instanceOf( model, SuperModel );
+            assert.equal( model.app, app );
+          }
+        },
+
+      '`_preload_components` method' : function() {
         var preloaded_logger_config   = require( 'config/preloaded_logger_config' );
 
         var application_created       = false;
@@ -76,7 +111,7 @@ exports.add_tests_to = function( suite ) {
         assert.instanceOf( app.tests, TestComponent, 'Test component must be available after loading' );
       },
 
-      '_check_config' : {
+      '`_check_config` method' : {
         topic : require( 'config/wrong_config' ),
         'base_dir is required' : function( config ) {
           assert.throws( function() {
