@@ -6,7 +6,7 @@ exports.add_tests_to = function( suite ) {
     'session tests' : {
       topic : suite.application,
       'wrong session\'s creation' : {
-        'without link to aaplication' : function( app ){
+        'without link to application' : function( app ){
           assert.throws( function() {
             new Session({
               id : 1
