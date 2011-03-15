@@ -15,7 +15,7 @@ var config = module.exports = {
     }
   },
 
-  preload_components : [ 'log_router', 'files' ],
+  preload_components : [ 'log_router' ],
 
   components : {
 
@@ -43,10 +43,6 @@ var config = module.exports = {
           levels : [ 'trace', 'info', 'warning', 'error' ]
         }
       }
-    },
-
-    files : {
-      default_folder : 'user_files'
     },
 
     mail : {
