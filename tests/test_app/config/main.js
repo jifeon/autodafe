@@ -72,6 +72,7 @@ var config = module.exports = {
         'unit/framework/base/router_tests',
         'unit/framework/base/session_tests',
         'unit/framework/base/components/component_tests',
+        'unit/framework/base/components/components_manager_tests',
         'unit/framework/db/ar/active_record_tests'
       ]
     }

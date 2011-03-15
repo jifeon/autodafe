@@ -20,9 +20,9 @@ require( 'sys' ).inherits( ComponentsManager, process.EventEmitter );
 
 ComponentsManager.prototype._init = function( components, app ) {
   this._components = components;
+  this._items      = {};
 
-  this.items  = {};
-  this.app    = app;
+  this.app         = app;
 };
 
 
@@ -34,21 +34,23 @@ ComponentsManager.prototype.load_components = function () {
 
   for ( component_name in system_components ) {
 
-    if ( this.items[ component_name ] ) continue;
+    if ( this._items[ component_name ] ) continue;
 
     this.app.__defineGetter__( component_name, function() {
       this.log(
         'Try to use component "%s" which is not included. \
          To include component configure it in your config file'.format( component_name ),
-        'warning'
+        'warning',
+        'ComponentsManager'
       );
     } );
 
     this.app.__defineSetter__( component_name, function( v ) {
       this.log(
-        'Property "%s" in Application engaged for native autodafe\'s module. \
+        'Property "%s" in Application engaged for native autodafe\'s component. \
          You can\'t set it to "%s"'.format( component_name, v ),
-        'warning'
+        'warning',
+        'ComponentsManager'
       );
     } );
   }
@@ -56,7 +58,7 @@ ComponentsManager.prototype.load_components = function () {
 
 
 ComponentsManager.prototype.load_component = function ( component_name ) {
-  if ( this.items[ component_name ] ) return false;
+  if ( this._items[ component_name ] ) return false;
 
   this.app.log( 'Load component "%s"'.format( component_name ), 'trace', 'ComponentsManager' );
   var component_params = this._components[ component_name ];
@@ -70,5 +72,5 @@ ComponentsManager.prototype.load_component = function ( component_name ) {
 
   component_params.name = component_name;
   component_params.app  = this.app;
-  this.items[ component_name ] = new component_class( component_params );
+  this._items[ component_name ] = new component_class( component_params );
 };

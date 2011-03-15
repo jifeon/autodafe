@@ -65,6 +65,14 @@ var config = module.exports = {
 //        from    : 'another_user@host.com',
 //        subject : 'subject'
       }
+    },
+
+    tests : {
+      directory : false,
+      files : [
+        'unit/framework/base/application_tests'
+        //...
+      ]
     }
   }
 };
