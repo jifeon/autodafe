@@ -5,7 +5,6 @@ var system_components = {
   'user'               : require( '../../users/users_identities' ),
   'db'                 : require( '../../db/db_controller' ),
   'log_router'         : require( '../../logging/log_router' ),
-  'files'              : require( '../../filing/file_manager' ),
   'tests'              : require( '../../tests/test_component' ),
   'mail'               : require( '../../mailing/mailer' )
 };
