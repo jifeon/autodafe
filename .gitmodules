@@ -16,3 +16,6 @@
 [submodule "framework/lib/proxy/node-proxy"]
 	path = framework/lib/proxy/node-proxy
 	url = git://github.com/samshull/node-proxy.git
+[submodule "framework/db/mysql/node-mysql"]
+	path = framework/db/mysql/node-mysql
+	url = git://github.com/Sannis/node-mysql-libmysqlclient.git

@@ -1,6 +1,6 @@
 var DB        = require('../db_connection');
 var sys       = require('sys');
-var mysql = require('./mysql-libmysqlclient');
+var mysql = require('./node-mysql/mysql-libmysqlclient');
 
 var MysqlDBConnection = module.exports = function( config, app ) {
   this._init( config, app );
