@@ -19,10 +19,12 @@ MysqlDBConnection.prototype._init = function( config ) {
  // this.connect();
   this.conn = mysql.createConnectionSync();
   this.conn.connectSync(self.host, self.user, self.pass, self.base);
-  if (!this.conn.connectedSync()) {
-  	sys.puts("Connection error " + this.conn.connectErrno + ": " + this.conn.connectError);
+  if ( !this.conn.connectedSync() ) {
+  	this.app.log( "Connection error " + this.conn.connectErrno + ": " + this.conn.connectError );
   	process.exit(1);
-	} 
+	} else {
+    this.app.log( "Connection success" );
+  }
   this.initialized = true;
   this.query = this.__query;
 };

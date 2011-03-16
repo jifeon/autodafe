@@ -32,6 +32,7 @@ var config = module.exports = {
       routes : {
         console : {
           levels : [ 'trace', 'info', 'warning', 'error' ]
+          //levels : [ 'error' ]
         }//,
 //        file : {
 //          levels : [ 'trace', 'info', 'warning', 'error' ]
