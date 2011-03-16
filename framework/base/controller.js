@@ -9,8 +9,13 @@ Controller.prototype.default_action = 'index';
 
 
 Controller.prototype._init = function ( params ) {
+
+  if ( !params || !params.app ) throw new Error( 'Link to application is undefined in Controller._init' );
+  this.__defineGetter__( 'app', function() {
+    return params.app;
+  } )
+
   this._actions = {};
-  this.app = global.autodafe.app;
 
   for ( var a = 0, a_ln = this.actions.length; a < a_ln; a++ ) {
     this._actions[ this.actions[a] ] = 1;

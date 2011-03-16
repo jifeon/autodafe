@@ -15,6 +15,10 @@ MysqlTableSchema.prototype._init = function( params ) {
    * @var string name of the schema (database) that this table belongs to.
    * Defaults to null, meaning no schema (or the current database).
    */
+  this.__defineGetter__( 'app', function() {
+    return params.app;
+  } )
+
   this.schema_name = null;
 
   this._initialized   = {
@@ -27,8 +31,9 @@ MysqlTableSchema.prototype._init = function( params ) {
     all_count     : 2
   };
 
+  var self = this;
   this.on( 'initialized', function() {
-    global.autodafe.app.log( 'Table "%s" initialized'.format( this.name ), 'tarce', 'MysqlTableSchema' );
+    self.app.log( 'Table "%s" initialized'.format( this.name ), 'tarce', 'MysqlTableSchema' );
   } );
 };
 

@@ -2,6 +2,7 @@ var config = module.exports = {
   base_dir        : __dirname + '/../',
   name            : 'AppName',
 
+  params          : {},
   default_controller  : 'app',
 
   router : {
@@ -45,10 +46,6 @@ var config = module.exports = {
       }
     },
 
-    files : {
-      default_folder : 'user_files'
-    },
-
     mail : {
       smtp : {
         user : 'username',
@@ -63,6 +60,14 @@ var config = module.exports = {
 //        from    : 'another_user@host.com',
 //        subject : 'subject'
       }
+    },
+
+    tests : {
+      directory : false,
+      files : [
+        'unit/framework/base/application_tests'
+        //...
+      ]
     }
   }
 };

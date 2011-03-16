@@ -24,6 +24,7 @@ TestController.prototype.index = function () {
 
 TestController.prototype.test = function () {
   this.emit( 'test action', arguments );
+  this.app.emit( 'test.test', arguments );
 };
 
 

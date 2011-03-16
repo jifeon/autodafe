@@ -4,8 +4,6 @@ var Message = module.exports = function( params ) {
 
 
 Message.prototype._init = function( params ) {
-  this.logger = global.autodafe.app.logger;
-
   this._e = null;
   if ( params.text instanceof Error ) {
     this._e       = params.text;
@@ -18,7 +16,7 @@ Message.prototype._init = function( params ) {
   } );
 
   this.text   = params.text   || '(no text)';
-  this.level  = params.level  || this.logger && this.logger.TRACE;
+  this.level  = params.level  || 'trace';
   this.date   = params.date   || new Date();
   this.module = params.module || 'global';
 };

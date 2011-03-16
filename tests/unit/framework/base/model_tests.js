@@ -5,18 +5,15 @@ exports.add_tests_to = function( suite ){
 
   suite.addBatch({
     'model tests' : {
-      topic : new TestModel,
+      topic : new suite.application.model( TestModel ),
       'instance test' : function( model ){
         assert.instanceOf( model, Model );
         assert.instanceOf( model, process.EventEmitter );
       },
-      'link to application' : function( model ) {
-        assert.equal( model.app, suite.application );
-      },
-      'link to application is read only' : function( model ) {
+      'creating model without link to application in params must throw an Error' : function(){
         assert.throws( function() {
-          model.app = {};
-        }, TypeError );
+          new Model
+        } );
       }
     }
   });

@@ -6,9 +6,13 @@ UserIdentity.cache = {};
 UserIdentity.with_same_user = {};
 
 UserIdentity.prototype._init = function( params ) {
-  params = params || {};
+  if ( !params || !params.app ) throw new Error(
+    'Link to application is undefined in UserIdentity._init'
+  );
 
-  this.app = global.autodafe.app;
+  this.__defineGetter__( 'app', function() {
+    return params.app
+  } );
 
   this._session_id = params.session_id;
   if ( !this._session_id ) {

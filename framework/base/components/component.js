@@ -5,7 +5,7 @@ var Component = module.exports = function( params ) {
 
 Component.prototype._init = function( params ) {
   this.name = params.name;
-  this.app  = global.autodafe.app;
+  this.app  = params.app;
 
   if ( !this.name || typeof this.app[ this.name ] != 'undefined' )
     this.app.log( 'Conflict in component\'s name: "%s"'.format( this.name ), 'warning' );

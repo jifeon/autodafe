@@ -7,10 +7,9 @@ require('sys').inherits( Model, process.EventEmitter );
 
 
 Model.prototype._init = function ( params ) {
-
+  params = params || {};
+  this.app = params.app;
+  if ( !this.app ) {
+    throw new Error( 'You need specify `app` parameter when you create model instance' );
+  }
 };
-
-
-Model.prototype.__defineGetter__( 'app', function() {
-  return global.autodafe.app;
-} );

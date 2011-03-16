@@ -2,16 +2,16 @@ var DB        = require('../db_connection');
 var sys       = require('sys');
 var mysql = require('./mysql-libmysqlclient');
 
-var MysqlDBConnection = module.exports = function( config ) {
-  this._init( config );
+var MysqlDBConnection = module.exports = function( config, app ) {
+  this._init( config, app );
 };
 
 
 require('sys').inherits( MysqlDBConnection, DB );
 
 
-MysqlDBConnection.prototype._init = function( config ) {
-  DB.prototype._init.call( this, config );
+MysqlDBConnection.prototype._init = function( config, app ) {
+  DB.prototype._init.call( this, config, app );
   var self = this;
 
   this.initialized  = false;

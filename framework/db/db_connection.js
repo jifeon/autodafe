@@ -1,18 +1,21 @@
 var MysqlSchema = require( './mysql/mysql_schema' );
 var DBCommand   = require( './db_command' );
 
-var DBConnection = module.exports = function( config ) {
-  this._init( config );
+var DBConnection = module.exports = function( config, app ) {
+  this._init( config, app );
 };
 
 
 require( 'sys' ).inherits( DBConnection, process.EventEmitter );
 
 
-DBConnection.prototype._init = function( config ) {
+DBConnection.prototype._init = function( config, app ) {
   this._config = config || {};
 
-  this.app  = global.autodafe.app;
+  this.__defineGetter__( 'app', function() {
+    return app;
+  } );
+
   this.user = this._config.user || 'root';
   this.pass = this._config.pass || '';
   this.base = this._config.base || 'test';
@@ -21,7 +24,8 @@ DBConnection.prototype._init = function( config ) {
   this.table_prefix = null;
 
   this._schema = new MysqlSchema( {
-    connection : this
+    connection : this,
+    app        : this.app
   } );
 };
 

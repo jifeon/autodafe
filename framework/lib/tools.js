@@ -60,18 +60,7 @@ Object.recursive_merge = function( obj1, obj2 ) {
 Object.empty = function( v ) {
   if ( !v ) return true;
   if ( v instanceof Array && !v.length ) return true;
-  if ( v instanceof Object ) {
-    var empty = true;
-
-    for ( var prop in v ) {
-      empty = false;
-      break;
-    }
-
-    if ( empty ) return true;
-  }
-
-  return false;
+  return v instanceof Object && !this.keys( v ).length;
 };
 
 
