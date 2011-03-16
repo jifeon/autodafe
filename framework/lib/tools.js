@@ -1,29 +1,19 @@
 Array.prototype.diff = function( ar ) {
-  if ( !( ar instanceof Array ) ) return this;
-  var res = [];
+  if ( !Array.isArray( ar ) ) return new TypeError;
 
-  for ( var i = 0, i_ln = this.length; i < i_ln; i++ ) {
-    if ( ar.indexOf( this[i] ) == -1 ) res.push( this[i] );
-  }
-
-  return res;
+  return this.filter( function( el ) {
+    return ar.indexOf( el ) == -1;
+  } );
 };
 
 
 Array.prototype.merge = function( ar ) {
-  if ( !( ar instanceof Array ) ) return this;
-  var res = this.slice( 0 );
-
-  for ( var i = 0, i_ln = ar.length; i < i_ln; i++ ) {
-    if ( res.indexOf( ar[i] ) == -1 ) res.push( ar[i] );
-  }
-
-  return res;
+  return this.push.apply( this.slice( 0 ), this.diff( ar ) );
 };
 
 
 Object.merge = function( obj1, obj2 ) {
-  if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return obj1;
+  if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return new TypeError;
 
   var res = {}, prop;
 
@@ -40,7 +30,7 @@ Object.merge = function( obj1, obj2 ) {
 
 
 Object.recursive_merge = function( obj1, obj2 ) {
-  if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return obj1;
+  if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return new TypeError;
 
   var res = {}, prop;
 
@@ -60,7 +50,7 @@ Object.recursive_merge = function( obj1, obj2 ) {
 Object.empty = function( v ) {
   if ( !v ) return true;
   if ( v instanceof Array && !v.length ) return true;
-  return v instanceof Object && !this.keys( v ).length;
+  return v instanceof this && !this.keys( v ).length;
 };
 
 

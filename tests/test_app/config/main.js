@@ -59,10 +59,6 @@ var config = module.exports = {
       }
     },
 
-//    files : {
-//      default_folder : 'templates'
-//    },
-
     tests : {
       directory : false,
       files : [
@@ -74,6 +70,7 @@ var config = module.exports = {
         'unit/framework/base/components/component_tests',
         'unit/framework/base/components/components_manager_tests',
         'unit/framework/db/ar/active_record_tests'
+        'unit/framework/lib/tools_tests'
       ]
     }
   }
