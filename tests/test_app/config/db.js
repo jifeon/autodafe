@@ -1,7 +1,7 @@
 exports.db = {
   type : 'mysql',
   user : 'root',
-  pass : 'LJUji9',
+  pass : 'qwer',
   base : 'testbase',
   host : 'localhost',
   dbslayer : {

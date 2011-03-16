@@ -3,7 +3,6 @@ var config = module.exports = {
   name            : 'AppName',
 
   params          : {},
-
   default_controller  : 'app',
 
   router : {
@@ -17,7 +16,7 @@ var config = module.exports = {
     }
   },
 
-  preload_components : [ 'log_router' ],
+  preload_components : [ 'log_router', 'files' ],
 
   components : {
 

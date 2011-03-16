@@ -15,6 +15,8 @@ MysqlTableSchema.prototype._init = function( params ) {
    * @var string name of the schema (database) that this table belongs to.
    * Defaults to null, meaning no schema (or the current database).
    */
+  if ( !params.app ) throw new Error( 'Link to application is undefined in MysqlTableSchema.init' );
+
   this.__defineGetter__( 'app', function() {
     return params.app;
   } )
