@@ -11,16 +11,6 @@ require( 'sys' ).inherits( MysqlTableSchema, DBTableSchema );
 MysqlTableSchema.prototype._init = function( params ) {
   DBTableSchema.prototype._init.call( this, params );
 
-  /**
-   * @var string name of the schema (database) that this table belongs to.
-   * Defaults to null, meaning no schema (or the current database).
-   */
-  if ( !params.app ) throw new Error( 'Link to application is undefined in MysqlTableSchema.init' );
-
-  this.__defineGetter__( 'app', function() {
-    return params.app;
-  } )
-
   this.schema_name = null;
 
   this._initialized   = {
