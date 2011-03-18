@@ -1,46 +1,47 @@
-var DBColumnSchema = module.exports = function( params ) {
-  this._init( params );
+var DBColumnSchema = module.exports = function() {
+  throw new Error( 'You can\'t instantiate abstract class DBColumnSchema' );
 };
 
 
 DBColumnSchema.prototype._init = function( params ) {
-  this.name           = null;
-  this.raw_name       = null;
-  this.allow_null     = null;
-  this.db_type        = null;
-  this.type           = null;
-  this.default_value  = null;
-  this.size           = null;
-  this.precision      = null;
-  this.scale          = null;
-  this.is_primary_key = null;
+  if ( !params || !params.db_schema ) throw new Error( 'Link to DB schema is undefined in DBColumnSchema.init' );
+
+  this.db_schema      = params.db_schema;
+  this.name           = params.name           || null;
+  this.allow_null     = params.allow_null     || null;
+  this.db_type        = params.db_type        || null;
+  this.type           = params.type           || null;
+  this.default_value  = params.default_value  || null;
+  this.size           = params.size           || null;
+  this.precision      = params.precision      || null;
+  this.scale          = params.scale          || null;
+  this.is_primary_key = params.is_primary_key || null;
+
+  this.raw_name       = this.name ? this.db_schema.quote_column_name( this.name ) : null;
+
+  this._extract_type();
+  this._extract_limit();
+
+  if ( this.default_value != null ) this._extract_default();
 };
 
 
-DBColumnSchema.prototype.deferred_init = function( db_type, default_value ) {
-  this.db_type = db_type;
+DBColumnSchema.prototype._extract_type = function() {
+  if ( !this.db_type ) return this.type = "string";
 
-  this._extract_type(  db_type );
-  this._extract_limit( db_type );
-
-  if ( default_value !== null ) this._extract_default( default_value );
+  if ( this.db_type.toLowerCase().indexOf( 'int' ) != -1 )           this.type = 'integer';
+  else if ( this.db_type.toLowerCase().indexOf( 'bool' ) !== false ) this.type = 'boolean';
+  else if ( this.db_type.search( /(real|floa|doub)/i ) != -1 )       this.type = 'double';
+  else                                                               this.type = 'string';
 }
 
 
-DBColumnSchema.prototype._extract_type = function( db_type ) {
-  if ( db_type.toLowerCase().indexOf( 'int' ) != -1 )           this.type = 'integer';
-  else if ( db_type.toLowerCase().indexOf( 'bool' ) !== false ) this.type = 'boolean';
-  else if ( db_type.search( /(real|floa|doub)/i ) != -1 )       this.type = 'double';
-  else                                                          this.type = 'string';
-}
-
-
-DBColumnSchema.prototype._extract_limit = function( db_type ) {
+DBColumnSchema.prototype._extract_limit = function() {
   var matches;
 
   if (
-    ( db_type.indexOf( '(' ) != -1 ) &&
-    ( matches = db_type.match( /\((.*)\)/ ) )
+    ( this.db_type.indexOf( '(' ) != -1 ) &&
+    ( matches = this.db_type.match( /\((.*)\)/ ) )
   ) {
     var values  = matches[1].split( ',' );
     this.size   = this.precision  = Number( values[0] );
@@ -49,8 +50,8 @@ DBColumnSchema.prototype._extract_limit = function( db_type ) {
 }
 
 
-DBColumnSchema.prototype._extract_default = function( default_value ) {
-  this.default_value = this.typecast( default_value );
+DBColumnSchema.prototype._extract_default = function() {
+  this.default_value = this.typecast( this.default_value );
 }
 
 

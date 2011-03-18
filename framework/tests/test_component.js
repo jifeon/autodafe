@@ -18,7 +18,7 @@ Tests.prototype._init = function( params ) {
 
 Tests.prototype.run = function () {
   this.app.log( 'Running tests', 'trace', 'Tests' );
-//console.log(this.app);
+
   var tmp_test;
   if( !this.directory ) {
 
