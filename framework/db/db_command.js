@@ -8,7 +8,6 @@ DBCommand.prototype._init = function( params ) {
   this.__text       = '';
 
   this.set_text( params.text );
-//  this.__statement  = null;
   this.__params     = {};
   this.__qm_params  = [];
 
@@ -22,13 +21,7 @@ DBCommand.prototype.get_text = function() {
 
 
 DBCommand.prototype.set_text = function( value ) {
-//  if ( this._connection.table_prefix !== null )
-//    this._text = value.replace( /{{(+*?)}}/ ); preg_replace( '/{{(+*?)}}/', this._connection.table_prefix + '\1', value );
-//  else
-//  todo: prefix
-
   this.__text = value;
-//  this.cancel();
 }
 
 

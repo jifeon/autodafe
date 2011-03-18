@@ -26,17 +26,15 @@ CommandBuilder.prototype.get_schema = function () {
 
 
 CommandBuilder.prototype._ensure_table = function( table ) {
-  var table_name;
-
-  if ( typeof table == "string" && (table = this._schema.get_table( table_name = table )) === null )
-    throw new Error( 'Table ' + table_name + ' does not exist.' );
+  if ( typeof table != "string" || this._schema.get_table( table ) == null )
+    throw new Error( 'Table `' + table + '` does not exist.' );
 }
 
 
 CommandBuilder.prototype.create_find_command = function( table, criteria, alias ) {
   this._ensure_table( table );
 
-  var select = criteria.select instanceof Array ? criteria.select.join(',') : criteria.select;
+  var select = Array.isArray( criteria.select ) ? criteria.select.join(',') : criteria.select;
 
   alias = criteria.alias != '' ? criteria.alias : alias || 't';
   alias = this._schema.quote_table_name( alias );
@@ -368,54 +366,6 @@ CommandBuilder.prototype.create_column_criteria = function( table, columns, cond
   return criteria;
 }
 
-
-//CommandBuilder.prototype.create_search_condition = function( table, columns, keywords, prefix = null, case_sensitive = true ) {
-//  this._ensure_table( table );
-//  if ( !keywords instanceof Array )
-//    keywords = preg_split( '/\s+/u', keywords, -1, _p_r_e_g__s_p_l_i_t__n_o__e_m_p_t_y );
-//  if ( empty( keywords ) )
-//    return '';
-//  if ( prefix === null )
-//    prefix = table.raw_name.
-//  '.';
-//  conditions = array();
-//  foreach( columns
-//  as
-//  name
-//)
-//  {
-//    if ( (column = table.get_column( name )) === null )
-//      throw new _c_db_exception( _yii::t( 'yii', '_table "{table}" does not have a column named "{column}".',
-//        array( '{table}' = > table.name, '{column}' = > name )
-//  ))
-//    ;
-//    condition = array();
-//    foreach( keywords
-//    as
-//    keyword
-//  )
-//    {
-//      if ( case_sensitive )
-//        condition[] = prefix.column.raw_name.
-//      ' _l_i_k_e '.
-//      this._connection.quote_value( '%'.keyword.
-//      '%'
-//    )
-//      ;
-//    else
-//      condition[] = '_l_o_w_e_r('.prefix.column.raw_name.
-//      ') _l_i_k_e _l_o_w_e_r('.
-//      this._connection.quote_value( '%'.keyword.
-//      '%'
-//    ).
-//      ')';
-//    }
-//    conditions[] = implode( ' _a_n_d ', condition );
-//  }
-//  return '('.implode( ' _o_r ', conditions ).
-//  ')';
-//}
-//
 
 CommandBuilder.prototype.create_in_condition = function( table, column_name, values, prefix ) {
   if ( Object.empty( values ) ) return '0=1';

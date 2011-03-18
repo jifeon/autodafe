@@ -303,8 +303,6 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
   all       = all     || false;
 
   criteria  = this.apply_scopes( criteria );
-  //todo: with
-//  if( criteria._with ) return this._with( criteria._with ).query( criteria, all );
 
   if( !all ) criteria.limit = 1;
 
@@ -429,16 +427,6 @@ ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
     else this.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
   }
 };
-
-//
-//		$attributes=array_flip($safeOnly ? $this->getSafeAttributeNames() : $this->attributeNames());
-//		foreach($values as $name=>$value)
-//		{
-//			if(isset($attributes[$name]))
-//				$this->$name=$value;
-//			else
-//				$this->onUnsafeAttribute($name,$value);
-//		}
 
 
 ActiveRecord.prototype.populate_record = function( attributes ) {
