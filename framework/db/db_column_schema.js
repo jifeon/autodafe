@@ -5,7 +5,7 @@ var DBColumnSchema = module.exports = function( params ) {
 
 DBColumnSchema.prototype._init = function( params ) {
   this.name           = null;
-  this.rawName        = null;
+  this.raw_name       = null;
   this.allow_null     = null;
   this.db_type        = null;
   this.type           = null;
@@ -14,7 +14,6 @@ DBColumnSchema.prototype._init = function( params ) {
   this.precision      = null;
   this.scale          = null;
   this.is_primary_key = null;
-  this.is_foreign_key = null;
 };
 
 

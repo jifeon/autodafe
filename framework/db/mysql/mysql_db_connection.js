@@ -1,6 +1,7 @@
 var DB        = require('../db_connection');
 var sys       = require('sys');
 var http      = require('http');
+var MysqlSchema = require( './mysql_schema' );
 
 var MysqlDBConnection = module.exports = function( config, app ) {
   this._init( config, app );
@@ -12,6 +13,11 @@ require('sys').inherits( MysqlDBConnection, DB );
 
 MysqlDBConnection.prototype._init = function( config, app ) {
   DB.prototype._init.call( this, config, app );
+
+  this._schema = new MysqlSchema( {
+    connection : this,
+    app        : this.app
+  } );
 
   this.initialized  = false;
 

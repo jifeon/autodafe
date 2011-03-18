@@ -1,5 +1,5 @@
-var DBTableSchema = module.exports = function( params ) {
-  this._init( params );
+var DBTableSchema = module.exports = function() {
+  throw new Error( 'You can\'t instantiate abstract class DBTableSchema' );
 };
 
 
@@ -14,10 +14,9 @@ DBTableSchema.prototype._init = function( params ) {
   } );
 
   this.name           = null;
-  this.rawName        = null;
+  this.raw_name       = null;
   this.primary_key    = null;
   this.sequence_name  = null;
-  this.foreign_keys   = [];
   this.columns        = {};
 };
 
@@ -28,13 +27,7 @@ DBTableSchema.prototype.get_column = function( name ) {
 
 
 DBTableSchema.prototype.get_column_names = function() {
-  var names = [];
-
-  for ( var name in this.columns ) {
-    names.push( name );
-  }
-  
-  return names;
+  return Object.keys( this.columns );
 };
 
 

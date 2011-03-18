@@ -1,17 +1,24 @@
-var DB    = require('../db_connection');
-var sys   = require('sys');
-var mysql = require('./node-mysql/mysql-libmysqlclient');
+var DB          = require('../db_connection');
+var sys         = require('sys');
+var mysql       = require('./node-mysql/mysql-libmysqlclient');
+var MysqlSchema = require( './mysql_schema' );
 
-var MysqlDBConnection = module.exports = function( config, app ) {
-  this._init( config, app );
+var MysqlDBConnection = module.exports = function( config ) {
+  this._init( config );
 };
 
 
 require('sys').inherits( MysqlDBConnection, DB );
 
 
-MysqlDBConnection.prototype._init = function( config, app ) {
-  DB.prototype._init.call( this, config, app );
+MysqlDBConnection.prototype._init = function( config ) {
+  DB.prototype._init.call( this, config );
+
+  this._schema = new MysqlSchema( {
+    connection : this,
+    app        : this.app
+  } );
+
   var self = this;
 
   this.initialized  = false;
@@ -55,10 +62,11 @@ MysqlDBConnection.prototype.__query = function ( sql, callback, errback, emitter
   this.app.log( 'Quering sql: ' + sql, 'trace', 'MysqlDBConnection' );
   var db = this;
   this.conn.query( sql, function( err, res) {
-  	  if (err) {
-  	      errback( 'mysql error: ' + err );
-  	  }
-  	  callback.call(db, res);
+    if (err) {
+        errback( 'mysql error: ' + err );
+    }
+    callback.call(db, res);
+    emitter.emit( 'response', res, db );
   });
   return emitter;
 };

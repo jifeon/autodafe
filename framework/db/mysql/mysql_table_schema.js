@@ -11,17 +11,9 @@ require( 'sys' ).inherits( MysqlTableSchema, DBTableSchema );
 MysqlTableSchema.prototype._init = function( params ) {
   DBTableSchema.prototype._init.call( this, params );
 
-  this.schema_name = null;
+  this.schema_name  = null;
 
-  this._initialized   = {
-    all           : false,
-    params        : {
-      columns       : false,
-      foreign_keys  : false
-    },
-    count         : 0,
-    all_count     : 2
-  };
+  this._initialized = false;
 
   var self = this;
   this.on( 'initialized', function() {
@@ -30,21 +22,12 @@ MysqlTableSchema.prototype._init = function( params ) {
 };
 
 
-MysqlTableSchema.prototype.init_param = function ( param ) {
-  var i = this._initialized;
-  if ( i.params[ param ] == undefined ) return false;
-
-  i.params[ param ] = true;
-  this.emit( 'initialized_param', param );
-
-  i.count++;
-  if ( i.count == i.all_count ) {
-    i.all = true;
-    this.emit( 'initialized' );
-  }
+MysqlTableSchema.prototype.set_initialized = function () {
+  this._initialized = true;
+  this.emit( 'initialized' );
 };
 
 
-MysqlTableSchema.prototype.initialized = function ( param ) {
-  return param ? this._initialized.params[ param ] : this._initialized.all;
+MysqlTableSchema.prototype.is_initialized = function () {
+  return this._initialized;
 };
