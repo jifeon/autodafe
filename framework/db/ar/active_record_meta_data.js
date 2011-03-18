@@ -21,7 +21,7 @@ ActiveRecordMetaData.prototype._init = function( params ) {
 
   var self = this;
 
-  if ( table.initialized() ) this.deferred_init( table );
+  if ( table.is_initialized() ) this.deferred_init( table );
   else table.on( 'initialized', function() {
     self.deferred_init( table );
   } );

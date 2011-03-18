@@ -81,7 +81,7 @@ MysqlSchema.prototype._find_columns = function( table ) {
       }
     });
 
-    table.init_param( 'columns' );
+    table.set_initialized();
   } );
 
   return columns_emitter;
