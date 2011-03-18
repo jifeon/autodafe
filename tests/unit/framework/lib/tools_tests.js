@@ -42,9 +42,68 @@ exports.add_tests_to = function( suite ) {
           p3 : undefined,
           p4 : false,
           p5 : true,
-          p6 : 'just string'
+          p6 : 'just string',
+          p7 : {
+            v : 8
+          }
         },
         'Object merge' : {
+          'bad arguments' : function( obj ){
+            assert.throws( function() {
+              Object.merge( {}, 'not object' );
+            }, TypeError );
+            assert.throws( function() {
+              Object.merge( [], undefined );
+            }, TypeError );
+            assert.throws( function() {
+              Object.merge( [], [] );
+            }, TypeError );
+            assert.throws( function() {
+              Object.merge( false, {} );
+            }, TypeError );
+          },
+          'normal work' : function( obj ) {
+            assert.deepEqual( Object.merge( obj, {
+              p1 : false,
+              p2 : 12,
+              p3 : undefined,
+              p7 : {
+                v : 7
+              }
+            } ), {
+              p1 : false,
+              p2 : 12,
+              p3 : undefined,
+              p4 : false,
+              p5 : true,
+              p6 : 'just string',
+              p7 : {
+                v : 7
+              }
+            } );
+          }
+        },
+        'Object recursive merge' : {
+          topic : {
+
+          },
+          'bad arguments' : function( obj ){
+            assert.throws( function() {
+              Object.recursive_merge( {}, 'not object' );
+            }, TypeError );
+            assert.throws( function() {
+              Object.recursive_merge( [], undefined );
+            }, TypeError );
+            assert.throws( function() {
+              Object.recursive_merge( [], [] );
+            }, TypeError );
+            assert.throws( function() {
+              Object.recursive_merge( false, {} );
+            }, TypeError );
+          },
+          'normal work' : function( obj ){
+
+          }
         }
       }
     }
