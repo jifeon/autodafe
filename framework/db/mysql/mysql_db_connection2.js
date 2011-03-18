@@ -1,5 +1,5 @@
-var DB        = require('../db_connection');
-var sys       = require('sys');
+var DB    = require('../db_connection');
+var sys   = require('sys');
 var mysql = require('./node-mysql/mysql-libmysqlclient');
 
 var MysqlDBConnection = module.exports = function( config, app ) {
@@ -73,9 +73,10 @@ MysqlDBConnection.prototype.fetch_array = function ( res, callback ) {
   //	if ( (res.fieldCountGetter() > 0) || (typeof callback != 'function') ) return false;
   if ( (this.conn.affectedRowsSync() == 0) || (typeof callback != 'function') ) return false;
 
-	while (row = res.fetchArraySync()) {
-    	if ( callback.call( this, row ) === false ) break;
-	}
+  var row;
+  while (row = res.fetchArraySync()) {
+    if ( callback.call( this, row ) === false ) break;
+  }
 };
 
 
@@ -83,7 +84,8 @@ MysqlDBConnection.prototype.fetch_args = function ( res, callback ) {
 //  	if ( (res.fieldCountGetter() > 0) || (typeof callback != 'function') ) return false;
   if ( (this.conn.affectedRowsSync() == 0) || (typeof callback != 'function') ) return false;
 
-	while (row = res.fetchArraySync()) {
+  var row;
+  while (row = res.fetchArraySync()) {
     	if ( callback.apply( this, row ) === false ) break;
 	}
 };
@@ -92,11 +94,12 @@ MysqlDBConnection.prototype.fetch_args = function ( res, callback ) {
 MysqlDBConnection.prototype.fetch_obj = function ( res, callback ) {
   if ( (this.conn.affectedRowsSync() == 0) || (typeof callback != 'function') ) return false;
 
-	while (row = res.fetchArraySync()) {
+  var row;
+  while (row = res.fetchArraySync()) {
     var obj = {};
-	  for(var i = 0, ln = row.length; i < ln; i++){
-	    obj[ res.fetchFieldDirectSync(i).name ] = row[ i ];
-	  }
-	  if ( callback.call( this, obj ) === false ) break;
-	}
+    for(var i = 0, ln = row.length; i < ln; i++){
+      obj[ res.fetchFieldDirectSync(i).name ] = row[ i ];
+    }
+    if ( callback.call( this, obj ) === false ) break;
+  }
 };
