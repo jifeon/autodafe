@@ -153,7 +153,8 @@ exports.add_tests_to = function( suite ){
     'test' : {
       topic : suite.application.model( Post ),
       'test' : function( t ) {
-        t.get_db_connection().query( "select * from posts", function( res ) {
+        t.find_all().on( "complete", function( res ) {
+//        t.get_db_connection().query( "select * from posts", function( res ) {
           console.log(res);
         } );
       }

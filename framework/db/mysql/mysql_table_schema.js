@@ -16,11 +16,10 @@ MysqlTableSchema.prototype._init = function( params ) {
   this._initialized   = {
     all           : false,
     params        : {
-      columns       : false,
-      foreign_keys  : false
+      columns       : false
     },
     count         : 0,
-    all_count     : 2
+    all_count     : 1
   };
 
   var self = this;

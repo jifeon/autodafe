@@ -7,17 +7,13 @@ var DBSchema = module.exports = function( params ) {
 
 
 DBSchema.prototype._init = function( params ) {
-  if ( !params.app ) throw new Error( 'Link to application is not defined in DBSchema.init' );
-
-  this.__defineGetter__( 'app', function() {
-    return params.app;
-  } );
-
-  this._tableNames    = [];
   this._tables        = {};
   this._connection    = params.connection;
   this._builder       = null;
-  this._cacheExclude  = [];
+
+  this.__defineGetter__( 'app', function() {
+    return this._connection.app;
+  } );
 };
 
 

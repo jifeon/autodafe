@@ -43,15 +43,4 @@ ActiveRecordMetaData.prototype.deferred_init = function ( table ) {
 
   this.initialized = true;
   this.emit( 'initialized' );
-
-  //todo: relations
-//  for ( var name in this.__model.relations ) {
-//    var config = this.__model.relations[ name ];
-//
-//    if( config[0] && config[1] && config[2] )  // relation class, ar class, fk
-//      this.relations[name]=new config[0](name,config[1],config[2],array_slice(config,3));
-//    else
-//      throw new cdb_exception(yii::t('yii','active record "{class}" has an invalid configuration for relation "{relation}". it must specify the relation type, the related active record class and the foreign key.',
-//        array('{class}'=>get_class(model),'{relation}'=>name)));
-//  }
 };

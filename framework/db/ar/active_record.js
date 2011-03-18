@@ -1,10 +1,9 @@
 var Model           = require('model');
 var DBCriteria      = require('../../db/db_criteria');
 var MetaData        = require('./active_record_meta_data');
-//var ActiveFinder    = require('ar/active_finder');
 
 var ActiveRecord = module.exports = function( params ) {
-  this._init( params );
+  throw new Error( 'ActiveRecord is abstract class. You can\'t instantiate it!' );
 };
 
 
@@ -29,12 +28,6 @@ ActiveRecord.model = function( clazz, app ) {
 
 
 ActiveRecord.prototype._init = function( params ) {
-//  const BELONGS_TO='CBelongsToRelation';
-//  const HAS_ONE='CHasOneRelation';
-//  const HAS_MANY='CHasManyRelation';
-//  const MANY_MANY='CManyManyRelation';
-//  const STAT='CStatRelation';
-//
   params = params || {};
 
   Model.prototype._init.call( this, params );
@@ -334,20 +327,6 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
 
   return emitter;
 };
-
-
-//ActiveRecord.prototype._with = function () {
-//  if ( arguments.length == 0 ) return this
-//
-//  var _with = arguments;
-//  if( _with[ 0 ] instanceof Array ) _with = _with[0];
-//
-//  return new ActiveFinder({
-//    model : this,
-//    _with : _with
-//  });
-//};
-//
 
 
 ActiveRecord.prototype.get_safe_attribute_names = function () {

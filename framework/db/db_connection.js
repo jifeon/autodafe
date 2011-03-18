@@ -1,19 +1,18 @@
-var MysqlSchema = require( './mysql/mysql_schema' );
 var DBCommand   = require( './db_command' );
 
-var DBConnection = module.exports = function( config, app ) {
-  this._init( config, app );
+var DBConnection = module.exports = function( config ) {
+  throw new Error( 'DBConnection is abstract class. You can\'t instantiate it!' );
 };
 
 
 require( 'sys' ).inherits( DBConnection, process.EventEmitter );
 
 
-DBConnection.prototype._init = function( config, app ) {
+DBConnection.prototype._init = function( config ) {
   this._config = config || {};
 
   this.__defineGetter__( 'app', function() {
-    return app;
+    return this._config.app;
   } );
 
   this.user = this._config.user || 'root';
@@ -21,12 +20,9 @@ DBConnection.prototype._init = function( config, app ) {
   this.base = this._config.base || 'test';
   this.host = this._config.host || 'localhost';
 
-  this.table_prefix = null;
+//  this.table_prefix = null;
 
-  this._schema = new MysqlSchema( {
-    connection : this,
-    app        : this.app
-  } );
+  this._schema = null;
 };
 
 /**
