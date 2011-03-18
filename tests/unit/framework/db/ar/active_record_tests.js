@@ -61,6 +61,7 @@ exports.add_tests_to = function(suite) {
           return commands.find( topic, 'find', '', {}, 0, '' )
         },
         'tests instance, id' : function( res ){
+//          console.log( res );
           assert.instanceOf(res, Post);
           assert.equal( res.id, 12 );
         }
@@ -70,6 +71,7 @@ exports.add_tests_to = function(suite) {
           return commands.find( topic, 'find', 'id=:id', { id : 5 }, 0, '' )
         },
         'tests "instance, id"'  : function( res ) {
+//          console.log( res );
           assert.instanceOf( res, Post );
           assert.equal( res.id, 15 );
           }
@@ -105,7 +107,7 @@ exports.add_tests_to = function(suite) {
       },
       'find_all without result' : {
         topic         : function( topic ) {
-          return commands.find( topic, 'find_all', 'id = 5', {}, 0, '')
+          return commands.find( topic, 'find_all', 'id = 6', {}, 0, '')
         },
         'empty result?' : function( res ) {
           console.log(res);
