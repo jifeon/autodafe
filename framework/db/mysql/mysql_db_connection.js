@@ -56,9 +56,11 @@ MysqlDBConnection.prototype.__query = function (sql, callback, errback, emitter)
     this.app.log('Bad sql "%s"'.format(sql), 'error', 'MysqlDBConnection');
     return emitter;
   }
-  errback = errback || this.standard_errback;
-  callback = callback || function() {
-  };
+  var self = this;
+  errback = errback || function() {
+    self.standard_errback();
+  }
+  callback = callback || function() {};
 
   this.app.log('Quering sql: ' + sql, 'trace', 'MysqlDBConnection');
   var db = this;

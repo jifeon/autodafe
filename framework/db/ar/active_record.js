@@ -35,7 +35,6 @@ ActiveRecord.prototype._init = function( params ) {
   this.clazz        = params.clazz || this.constructor;
   this.table        = this.clazz.get_table_name();
   this.db           = this.app.db;
-  this.related      = {};
 
   this._md          = new MetaData({
     model : this
@@ -75,11 +74,7 @@ ActiveRecord.prototype.get_primary_key = function () {
 ActiveRecord.prototype.save = function( run_validation, attributes ) {
   if ( run_validation == undefined ) run_validation = true;
 
-  //todo: validation
-//  if ( !run_validation || this.validate( attributes ) )
     return this.get_is_new_record() ? this.insert( attributes ) : this.update( attributes );
-//  else
-//    return false;
 }
 
 
@@ -95,9 +90,9 @@ ActiveRecord.prototype.set_isnew_record = function( value ) {
 
 ActiveRecord.prototype.insert = function( attributes ) {
   if ( !this.get_is_new_record() )
-    throw new Error( 'the active record cannot be inserted to database because it is not new.' );
+    throw new Error( 'The active record cannot be inserted to database because it is not new.' );
 
-//  if ( this.before_save() ) {
+  this.app.log( 'insert', 'trace', 'ActiveRecord' );
 
   var builder = this.get_command_builder();
   var table   = this.get_meta_data().table_schema;
@@ -132,14 +127,11 @@ ActiveRecord.prototype.insert = function( attributes ) {
     }
 
     self._pk = self.get_primary_key();
-//    this.after_save();
     self.set_isnew_record( false );
     emitter.emit( 'complete', result );
 
-//    this.set_scenario( 'update' );
   } );
 
-//  }
   return emitter;
 }
 
@@ -148,7 +140,8 @@ ActiveRecord.prototype.update = function( attributes ) {
   if ( this.get_is_new_record() )
     throw new Error( 'the active record cannot be updated because it is new.' );
 
-//  if ( this.before_save() ) {
+  this.app.log( 'update', 'trace', 'ActiveRecord' );
+
   if ( this._pk == null )
     this._pk = this.get_primary_key();
 
@@ -159,9 +152,7 @@ ActiveRecord.prototype.update = function( attributes ) {
     self._pk = self.get_primary_key();
   } );
 
-  //  this.after_save();
   return update_emitter;
-//  }
 }
 
 
@@ -199,59 +190,59 @@ ActiveRecord.prototype.update = function( attributes ) {
 //
 
 ActiveRecord.prototype.remove = function() {
-  if ( !this.get_is_new_record() ) {
-    return this.delete_by_pk( this.get_primary_key() );
-  }
-  else throw new Error( 'the active record cannot be deleted because it is new.' );
+  if ( this.get_is_new_record() ) throw new Error( 'the active record cannot be deleted because it is new.' );
+
+  this.app.log( 'remove', 'trace', 'ActiveRecord' );
+
+  return this.delete_by_pk( this.get_primary_key() );
 }
 
 
-//ActiveRecord.prototype.refresh = function() {
-//  yii::trace( get_class( this ).
-//  '.refresh()','system.db.ar.cactive_record'
-//)
-//  ;
-//  if ( !this.get_isnew_record() && (record = this.find_bypk( this.get_primary_key() )) !== null ) {
-//    this._attributes = array();
-//    this._related = array();
-//    foreach( this.get_meta_data().columns
-//    as
-//    name =
-//  >
-//    column
-//  )
-//    this.name = record.name;
-//    return true;
-//  }
-//  else
-//    return false;
-//}
-//
+ActiveRecord.prototype.refresh = function() {
+  this.app.log( 'refresh', 'trace', 'ActiveRecord' );
 
-//ActiveRecord.prototype.equals = function( record ) {
-//  return this.table_name() === record.table_name() && this.get_primary_key() === record.get_primary_key();
-//}
-//
+  var emitter = new process.EventEmitter;
 
-//ActiveRecord.prototype.set_primary_key = function( value ) {
-//  this._pk = this.get_primary_key();
-//  table = this.get_meta_data().table_schema;
-//  if ( is_string( table.primary_key ) )
-//    this.
-//  {
-//    table.primary_key
-//  }
-//  = value;
-//else
-//  if ( is_array( table.primary_key ) ) {
-//    values = array();
-//    foreach( table.primary_key
-//    as
-//    name
-//  )
-//    this.name = values[name];
-//  }
-//}
+  if ( this.get_is_new_record() ) {
+    process.nextTick( function() {
+      emitter.emit( 'complete' );
+    } );
+    return emitter;
+  }
+
+  var self = this;
+  this.find_by_pk( this.get_primary_key() ).on( 'complete', function( record ) {
+    if ( !record ) return emitter.emit('complete');
+
+    self._attributes = {};
+    for ( var name in self.get_meta_data().columns ) {
+      if ( typeof self[ name ] != 'undefined' ) self[ name ] = record[ name ];
+      else self._attributes[ name ] = record[ name ];
+    }
+
+    emitter.emit( 'complete' );
+  } );
+
+  return emitter;
+}
+
+
+ActiveRecord.prototype.equals = function( record ) {
+  return this.table_name() === record.table_name() && this.get_primary_key() === record.get_primary_key();
+}
+
+
+ActiveRecord.prototype.set_primary_key = function( value ) {
+  this._pk  = this.get_primary_key();
+  var table = this.get_meta_data().table_schema;
+
+  if ( typeof table.primary_key == "string" )
+    this[ table.primary_key ] = value;
+
+  else if ( Array.isArray( table.primary_key ) )
+    for ( var name in table.primary_key )
+      this[ name ] = value[ name ];
+}
 
 
 ActiveRecord.prototype.get_old_primary_key = function() {
@@ -351,14 +342,7 @@ ActiveRecord.prototype.get_db_criteria = function ( create_if_null ) {
   if ( this.__c == null ) {
     var c = this.default_scope();
 
-    var empty_scope = true;
-
-    for ( var prop in c ) {
-      empty_scope = false;
-      break;
-    }
-
-    if( !empty_scope || create_if_null )
+    if( !Object.empty( c ) || create_if_null )
       this.__c = new DBCriteria( c );
   }
 
@@ -462,6 +446,8 @@ ActiveRecord.prototype.get_table_alias = function( quote ) {
 
 
 ActiveRecord.prototype.find = function ( condition, params ) {
+  this.app.log( 'find', 'trace', 'ActiveRecord' );
+
   var criteria = this.get_command_builder().create_criteria( condition, params );
 
   return this.query( criteria );
@@ -469,6 +455,8 @@ ActiveRecord.prototype.find = function ( condition, params ) {
 
 
 ActiveRecord.prototype.find_all = function( condition, params ) {
+  this.app.log( 'find_all', 'trace', 'ActiveRecord' );
+
   var criteria = this.get_command_builder().create_criteria( condition, params );
 
   return this.query( criteria, true );
@@ -476,6 +464,8 @@ ActiveRecord.prototype.find_all = function( condition, params ) {
 
 
 ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
+  this.app.log( 'find_by_pk', 'trace', 'ActiveRecord' );
+
   var prefix    = this.get_table_alias( true ) + '.';
   var criteria  = this.get_command_builder().create_pk_criteria( this.get_table_schema(), pk, condition, params, prefix );
 
@@ -484,13 +474,18 @@ ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
 
 
 ActiveRecord.prototype.find_all_by_pk = function( pk, condition, params ) {
+  this.app.log( 'find_all_by_pk', 'trace', 'ActiveRecord' );
+
   var prefix = this.get_table_alias( true ) + '.';
   var criteria = this.get_command_builder().create_pk_criteria( this.get_table_schema(), pk, condition, params, prefix );
+
   return this.query( criteria, true );
 }
 
 
 ActiveRecord.prototype.find_by_attributes = function( attributes, condition, params ) {
+  this.app.log( 'find_by_attributes', 'trace', 'ActiveRecord' );
+
   var prefix = this.get_table_alias( true ) + '.';
   var criteria = this.get_command_builder()
                      .create_column_criteria( this.get_table_schema(), attributes, condition, params, prefix );
@@ -500,13 +495,18 @@ ActiveRecord.prototype.find_by_attributes = function( attributes, condition, par
 
 
 ActiveRecord.prototype.find_all_by_attributes = function( attributes, condition, params ) {
+  this.app.log( 'find_all_by_attributes', 'trace', 'ActiveRecord' );
+
   var prefix = this.get_table_alias( true ) + '.';
   var criteria = this.get_command_builder().create_column_criteria( this.get_table_schema(), attributes, condition, params, prefix );
+
   return this.query( criteria, true );
 }
 
 
 ActiveRecord.prototype.find_by_sql = function( sql, params ) {
+  this.app.log( 'find_by_sql', 'trace', 'ActiveRecord' );
+
   var command = this.get_command_builder().create_sql_command( sql, params );
   var emitter = new process.EventEmitter;
   var self = this;
@@ -526,6 +526,8 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
 
 
 ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
+  this.app.log( 'find_all_by_sql', 'trace', 'ActiveRecord' );
+
   var command = this.get_command_builder().create_sql_command( sql, params );
   var emitter = new process.EventEmitter;
   var self = this;
@@ -583,6 +585,8 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
 
 
 ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, params ) {
+  this.app.log( 'update_by_pk', 'trace', 'ActiveRecord' );
+
   var builder   = this.get_command_builder();
   var table     = this.get_table_schema();
   var criteria  = builder.create_pk_criteria( table, pk, condition, params );
@@ -592,6 +596,8 @@ ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, param
 
 
 ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
+  this.app.log( 'update_all', 'trace', 'ActiveRecord' );
+
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
   var command   = builder.create_update_command( this.get_table_schema(), attributes, criteria );
@@ -600,6 +606,8 @@ ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
 
 
 ActiveRecord.prototype.update_counters = function( counters, condition, params ) {
+  this.app.log( 'update_counters', 'trace', 'ActiveRecord' );
+
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
   var command   = builder.create_update_counter_command( this.get_table_schema(), counters, criteria );
@@ -608,6 +616,8 @@ ActiveRecord.prototype.update_counters = function( counters, condition, params )
 
 
 ActiveRecord.prototype.delete_by_pk = function( pk, condition, params ) {
+  this.app.log( 'delete_by_pk', 'trace', 'ActiveRecord' );
+
   var builder   = this.get_command_builder();
   var criteria  = builder.create_pk_criteria( this.get_table_schema(), pk, condition, params );
   var command   = builder.create_delete_command( this.get_table_schema(), criteria );
@@ -616,6 +626,8 @@ ActiveRecord.prototype.delete_by_pk = function( pk, condition, params ) {
 
 
 ActiveRecord.prototype.delete_all = function( condition, params ) {
+  this.app.log( 'delete_all', 'trace', 'ActiveRecord' );
+
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
   var command   = builder.create_delete_command( this.get_table_schema(), criteria );
@@ -624,6 +636,8 @@ ActiveRecord.prototype.delete_all = function( condition, params ) {
 
 
 ActiveRecord.prototype.delete_all_by_attributes = function( attributes, condition, params ) {
+  this.app.log( 'delete_all_by_attributes', 'trace', 'ActiveRecord' );
+
   var builder   = this.get_command_builder();
   var table     = this.get_table_schema();
   var criteria  = builder.create_column_criteria( table, attributes, condition, params );

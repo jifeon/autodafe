@@ -26,8 +26,10 @@ CommandBuilder.prototype.get_schema = function () {
 
 
 CommandBuilder.prototype._ensure_table = function( table ) {
-  if ( typeof table != "string" || this._schema.get_table( table ) == null )
-    throw new Error( 'Table `' + table + '` does not exist.' );
+  var table_name;
+
+  if ( typeof table == "string" && (table = this._schema.get_table( table_name = table )) === null )
+    throw new Error( 'Table ' + table_name + ' does not exist.' );
 }
 
 
