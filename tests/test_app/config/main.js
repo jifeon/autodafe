@@ -62,15 +62,15 @@ var config = module.exports = {
     tests : {
       directory : false,
       files : [
-//        'unit/framework/base/application_tests',
-//        'unit/framework/base/controller_tests',
-//        'unit/framework/base/model_tests',
-//        'unit/framework/base/router_tests',
-//        'unit/framework/base/session_tests',
-//        'unit/framework/base/components/component_tests',
-//        'unit/framework/base/components/components_manager_tests',
-        'unit/framework/db/ar/active_record_tests'
-//        'unit/framework/lib/tools_tests'
+        'unit/framework/base/application_tests',
+        'unit/framework/base/controller_tests',
+        'unit/framework/base/model_tests',
+        'unit/framework/base/router_tests',
+        'unit/framework/base/session_tests',
+        'unit/framework/base/components/component_tests',
+        'unit/framework/base/components/components_manager_tests',
+        'unit/framework/db/ar/active_record_tests',
+        'unit/framework/lib/tools_tests'
       ]
     }
   }
