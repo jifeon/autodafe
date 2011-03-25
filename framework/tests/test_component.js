@@ -1,4 +1,5 @@
-var Component = require( 'components/component' );
+var Component   = require( 'components/component' );
+var TestsBatch  = require( 'tests/tests_batch' );
 
 var Tests = module.exports = function( params ) {
   this._init( params );
@@ -25,18 +26,23 @@ Tests.prototype.run = function () {
     if( this.files.length > 0 ){
 
       // add test_app folder to paths
-      var path = require( 'path' );
+      var path    = require( 'path' );
+      var assert  = require( 'assert' );
       require.paths.unshift( path.resolve( '.' ) );
 
       var suite         = this.vows.describe( 'Autodafe tests' );
-      suite.application = this.app;
 
       for ( var f = 0, f_ln = this.files.length; f < f_ln; f++ ){
         var test_path = path.resolve( '../../tests', this.files[f] );
         this.app.log( 'Collecting tests in file: %s'.format( path.basename( test_path ) ), 'trace', 'Tests' );
 
-        tmp_test = require( test_path );
-        tmp_test.add_tests_to( suite );
+        tmp_test  = require( test_path );
+        new TestsBatch({
+          name  : path.basename( test_path ).replace(/_/g, ' '),
+          tests : tmp_test.get_batch( this.app, assert ),
+          suite : suite,
+          app   : this.app
+        });
       }
 
       suite.run();
