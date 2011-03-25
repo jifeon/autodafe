@@ -29,11 +29,7 @@ var config = module.exports = {
       user : 'username',
       pass : 'password',
       base : 'db_name',
-      host : 'localhost',
-      dbslayer : {
-        host : 'localhost',
-        port : 9090
-      }
+      host : 'localhost'
     },
 
     log_router          : {
