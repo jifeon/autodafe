@@ -1,5 +1,3 @@
-// todo: отлавливать предупреждения
-
 exports.get_batch = function( application, assert ) {
   var Router          = require('router');
   var Autodafe        = require('autodafe');

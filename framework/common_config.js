@@ -65,6 +65,10 @@ var config = module.exports = {
         'unit/framework/base/application_tests'
         //...
       ]
+    },
+
+    user_component : {
+      param : 42
     }
   }
 };
