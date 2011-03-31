@@ -1,17 +1,9 @@
 exports.get_batch = function( application, assert ) {
-  var assert    = require('assert');
   var Component = require('components/component');
 
   return {
     topic : application,
     'wrong component creation' : {
-      'without link to application' : function( app ){
-        assert.throws( function() {
-          new Component({
-            name : 'test'
-          });
-        } );
-      },
       'without name' : function( app ) {
         assert.throws( function() {
           new Component({
@@ -53,14 +45,6 @@ exports.get_batch = function( application, assert ) {
       'public properties' : {
         '`name` is "uniq"' : function( component ){
            assert.equal( component.name, 'uniq' );
-        },
-        'link to application' : function( component ) {
-          assert.equal( component.app, application );
-        },
-        'link to application is read only' : function( component ) {
-          assert.throws(function(){
-            component.app = {};
-          });
         }
       },
       'link to component from application' : function( component ) {

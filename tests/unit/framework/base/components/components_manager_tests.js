@@ -7,17 +7,6 @@ exports.get_batch = function( application, assert ) {
   return {
     topic : application.components,
 
-    'link to application' : {
-      'refer to right application' : function( components ){
-        assert.equal( components.app, application );
-      },
-      'is read only' : function( components ) {
-        assert.throws( function(){
-          components.app = {};
-        }, TypeError );
-      }
-    },
-
     'loaded components' : {
       topic : function() {
         var config = require('config/config_with_different_components');

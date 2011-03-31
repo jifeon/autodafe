@@ -21,14 +21,6 @@ exports.get_batch = function( application, assert ) {
     'default action is "index"' : function( controller ){
       assert.equal( controller.default_action, 'index' );
     },
-    'tests application link' : function( controller ){
-      assert.equal( controller.app, application );
-    },
-    'application link is read only' : function( controller ) {
-      assert.throws( function() {
-        controller.app = {};
-      }, TypeError );
-    },
     'tests default action' : function( controller ){
       var index_action_has_runned = false;
 

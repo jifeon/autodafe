@@ -56,14 +56,6 @@ exports.get_batch = function( application, assert ) {
     'instance test' : function( router ) {
       assert.instanceOf( router, Router );
     },
-    'link to application' : function( router ) {
-      assert.equal( router.app, application );
-    },
-    'link to application is read only' : function( router ){
-      assert.throws( function(){
-        router.app = {};
-      }, TypeError );
-    },
     '`get_controller` method' : {
       topic : function( router ) {
         return router.get_controller('test');
