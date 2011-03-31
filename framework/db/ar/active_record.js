@@ -39,7 +39,7 @@ ActiveRecord.prototype._init = function( params ) {
   });
   this._attributes  = {};
   this._pk          = null;
-  this._new         = params._new == undefined ? true : params._new;
+  this._new         = params._new == undefined ? false : params._new;
 
   this.__c          = null;
 };
@@ -52,7 +52,7 @@ ActiveRecord.prototype.get_model = function () {
 
 ActiveRecord.prototype.get_primary_key = function () {
   var table = this.get_model().get_meta_data().table_schema;
-
+  
   if( typeof table.primary_key == 'string' )
     return this[ table.primary_key ];
 
@@ -61,7 +61,7 @@ ActiveRecord.prototype.get_primary_key = function () {
 
     for ( var name in table.primary_key )
       values[ name ] = this[ name ];
-    
+
     return values;
   }
   else
@@ -81,7 +81,7 @@ ActiveRecord.prototype.get_is_new_record = function() {
 }
 
 
-ActiveRecord.prototype.set_isnew_record = function( value ) {
+ActiveRecord.prototype.set_is_new_record = function( value ) {
   this._new = value;
 }
 
@@ -102,13 +102,13 @@ ActiveRecord.prototype.insert = function( attributes ) {
 
   command.execute( function( result ) {
 
-    if ( !result.SUCCESS ) return false;
+    if ( !result ) return false;
 
     var primary_key = table.primary_key;
     if ( table.sequence_name != null ) {
 
       if ( typeof primary_key == "string" && self[ primary_key ] == null )
-        self[ primary_key ] = result.last_insert_id;
+        self[ primary_key ] = result.insertId;
 
       else if ( primary_key instanceof Array ) {
 
@@ -116,7 +116,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
           var pk = primary_key[i];
 
           if ( !self[ pk ] ) {
-            self[ pk ] = result.last_insert_id;
+            self[ pk ] = result.insertId;
             break;
           }
         }
@@ -125,7 +125,8 @@ ActiveRecord.prototype.insert = function( attributes ) {
     }
 
     self._pk = self.get_primary_key();
-    self.set_isnew_record( false );
+//    this.after_save();
+    self.set_is_new_record( false );
     emitter.emit( 'complete', result );
 
   } );
@@ -308,7 +309,7 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
 
       if ( !all ) return false;
     } );
-    
+
     emitter.emit( 'complete', all ? res : res[0] || null );
   } );
 
@@ -394,7 +395,7 @@ ActiveRecord.prototype.get_attributes = function( names ) {
   }
 
   return attributes;
-}
+};
 
 
 ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
@@ -402,12 +403,32 @@ ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
 
   if ( !( values instanceof Object ) || values === null ) return false;
 
-  var attributes = this.get_safe_attribute_names();
-  for ( var name in values ) {
-    var value = values[ name ];
-    if ( attributes[ name ] ) this[ name ] = value;
-    else this.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning' );
-  }
+  var self = this;
+//  var emitter = new process.EventEmitter;
+
+  this.get_table_schema( function( schema ){
+    var attributes = schema.columns;
+    var pk = schema.primary_key;
+
+    for ( var name in values ) {
+      var value = values[ name ];
+      if ( attributes[ name ] ){
+        if( pk instanceof Object ){
+          if( !pk[ name ] ) {
+            self[ name ] = value;
+          }
+        } else {
+          if( pk != name ){
+            self[ name ] = value;
+          }
+        }
+        /*if( safe_only ) */self._attributes[ name ] = value;
+      }
+      else self.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning' );
+    }
+    //emitter.emit( 'set' );
+  });
+//  return emitter;
 };
 
 

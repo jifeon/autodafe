@@ -49,28 +49,28 @@ DBCommand.prototype.execute = function( callback ) {
   var result_emitter          = new process.EventEmitter;
   var db_command              = this;
 
-  var text = this.__get_last_insert_id_on_success ? this.__text + ';SELECT LAST_INSERT_ID();' : this.__text;
+//  var text = this.__get_last_insert_id_on_success ? this.__text + ';SELECT LAST_INSERT_ID();' : this.__text;
 
-  this.__connection.query( text, function( result ) {
+  this.__connection.query( this.__text, function( result ) {
     var db = this;
+//
+//    if ( db_command.__get_last_insert_id_on_success && ( result != undefined ) ) {
+//      var new_result = result[0];
+//
+//      if ( new_result.SUCCESS ) db.fetch_obj( result[1], function( obj ) {
+//        new_result.last_insert_id = obj[ 'LAST_INSERT_ID()' ];
+//
+//        return false;
+//      } );
+//
+//      result_emitter.emit( 'complete', new_result, db );
+//      if ( typeof callback == "function" ) callback.call( db, new_result );
+//    }
+//    else {
 
-    if ( db_command.__get_last_insert_id_on_success && result.length == 2 ) {
-      var new_result = result[0];
-
-      if ( new_result.SUCCESS ) db.fetch_obj( result[1], function( obj ) {
-        new_result.last_insert_id = obj[ 'LAST_INSERT_ID()' ];
-
-        return false;
-      } );
-
-      result_emitter.emit( 'complete', new_result, db );
-      if ( typeof callback == "function" ) callback.call( db, new_result );
-    }
-    else {
-
-      result_emitter.emit( 'complete', result, db );
-      if ( typeof callback == "function" ) callback.call( db, result );
-    }
+    result_emitter.emit( 'complete', result, db );
+    if ( typeof callback == "function" ) callback.call( db, result );
+//    }
 
 
   });

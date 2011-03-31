@@ -66,7 +66,7 @@ var config = module.exports = {
       ],
       exclude : [    // may be regexp or string which will be searched in path
 //        'active_record_tests'//,
-//        'components_manager'
+//        'application_tests'
       ]
     }
   }

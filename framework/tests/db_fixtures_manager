@@ -1,0 +1,83 @@
+var DBFixtureManager = module.exports = function( params ) {
+  return this._init( params );
+};
+
+require( 'sys' ).inherits( DBFixtureManager, process.EventEmitter );
+
+DBFixtureManager.prototype._init = function( params ){
+  this.app          = params.app;
+  this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
+  this.current_fixture_count = 0;
+  this.get_fixtures();
+  return this;
+}
+
+DBFixtureManager.prototype.get_fixtures = function () {
+//  var emitter = new process.EventEmitter;
+  var path = require( 'path' );
+  var self = this;
+  this.fixtures = {};
+  var fs = require('fs');
+  var dir = this.fixtures_dir;
+  var f_name, fixture;
+  path.exists( dir, function( exists ) {
+    if( exists ){
+      fs.readdir( dir, function( err, files ){
+        if( files.length > 0 ){
+          for( var f = 0, f_ln = files.length; f < f_ln; f++ ){
+            f_name = path.basename(files[ f ], '.js' );
+            fixture = require( dir + '/' + f_name );
+            self.fixtures[ f_name ] = fixture;
+            self.fixtures[ f_name ].fixtures_names = [];
+            for( var f in fixture ){
+              self.fixtures[ f_name ].fixtures_names.push( f );
+            }
+          }
+      } else {
+          self.app.log( 'There is no fixtures files', 'warning' );
+        }
+        //self.load_fixtures();
+          self.emit( 'get_fixtures', Object.keys( self.fixtures ) );
+      });
+    } else {
+      self.app.log('Fixtures dir does not exist', 'warning');
+      self.emit( 'get_fixtures', false );
+    }
+  });
+//  return emitter;
+};
+
+DBFixtureManager.prototype.load_fixtures = function( /*emitter*/ ){
+  var self = this;
+  for( table_name in this.fixtures ) {
+      this.load_fixture( table_name/*, emitter*/ );
+  }
+};
+
+DBFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
+  var schema  = this.app.db._schema;
+  var builder = schema.get_command_builder();
+  var table   = schema.get_table( table_name );
+  var self = this;
+  table.on( 'initialized', function() {
+    schema.truncate_table( table_name, function( res ){
+      if( res != undefined ){
+        var fixtures = self.fixtures[ table_name ];
+        self.current_fixture_count = fixtures.fixtures_names.length - 1;
+        self.insert( fixtures, builder, table, 0);
+      }
+    })
+  })
+};
+
+DBFixtureManager.prototype.insert = function( fixtures, builder, table, counter ){
+  if( counter < this.current_fixture_count ){
+    var command = builder.create_insert_command( table, fixtures[ fixtures.fixtures_names[ counter ] ] );
+    var self = this;
+    command.execute( function(){
+      self.insert( fixtures, builder, table, ++counter )
+    } );
+  } else {
+    this.emit( 'load_fixture' );
+  }
+}

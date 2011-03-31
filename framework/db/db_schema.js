@@ -42,3 +42,10 @@ DBSchema.prototype.create_command_builder = function () {
     schema : this
   });
 };
+
+DBSchema.prototype.truncate_table = function( table_name, callback ){
+  var self = this;
+  this.app.db.query( 'TRUNCATE TABLE %s'.format( table_name ), callback, function( err ){
+    self.app.log( err, 'warning' );
+  })
+};
