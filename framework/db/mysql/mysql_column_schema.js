@@ -8,28 +8,28 @@ var MysqlColumnSchema = module.exports = function( params ) {
 require('sys').inherits( MysqlColumnSchema, DBColumnSchema );
 
 
-MysqlColumnSchema.prototype._extract_type = function( db_type ) {
-  if ( db_type.substr( 0, 4 ) == 'enum' )                       this.type = 'string';
-  else if ( db_type.search( /(bigint|float|double)/ ) != -1 )   this.type = 'double';
-  else if ( db_type.indexOf( 'bool' ) != -1 )                   this.type = 'boolean';
-  else if ( db_type.search( /(int|bit)/ ) != -1 )               this.type = 'integer';
-  else                                                          this.type = 'string';
+MysqlColumnSchema.prototype._extract_type = function() {
+  if ( this.db_type.substr( 0, 4 ) == 'enum' )                       this.type = 'string';
+  else if ( this.db_type.search( /(bigint|float|double)/ ) != -1 )   this.type = 'double';
+  else if ( this.db_type.indexOf( 'bool' ) != -1 )                   this.type = 'boolean';
+  else if ( this.db_type.search( /(int|bit)/ ) != -1 )               this.type = 'integer';
+  else                                                               this.type = 'string';
 }
 
-MysqlColumnSchema.prototype._extract_default = function( default_value ) {
-  if ( this.db_type === 'timestamp' && default_value === 'current_timestamp' )
+MysqlColumnSchema.prototype._extract_default = function() {
+  if ( this.db_type === 'timestamp' && this.default_value === 'current_timestamp' )
     this.default_value = null;
   else
-    DBColumnSchema.prototype._extract_default.call( this, default_value );
+    DBColumnSchema.prototype._extract_default.call( this );
 };
 
 
-MysqlColumnSchema.prototype._extract_limit = function( db_type ) {
+MysqlColumnSchema.prototype._extract_limit = function() {
   var matches;
 
   if (
-    ( db_type.substr( 0, 4 ) == 'enum' ) &&
-    ( matches = db_type.match( /\((.*)\)/ ) )
+    ( this.db_type.substr( 0, 4 ) == 'enum' ) &&
+    ( matches = this.db_type.match( /\((.*)\)/ ) )
   ) {
     var values  = matches[1].split( ',' );
     var size    = 0;
@@ -41,5 +41,5 @@ MysqlColumnSchema.prototype._extract_limit = function( db_type ) {
 
     this.size = this.precision = size - 2;
   }
-  else DBColumnSchema.prototype._extract_limit.call( this, db_type );
+  else DBColumnSchema.prototype._extract_limit.call( this );
 };

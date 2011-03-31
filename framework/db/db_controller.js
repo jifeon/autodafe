@@ -1,5 +1,5 @@
 var Component         = require('components/component');
-var MysqlDBConnection = require('./mysql/mysql_db_connection2');
+var MysqlDBConnection = require('./mysql/mysql_db_connection');
 
 var DBController = module.exports = function( params ) {
   this._init( params );

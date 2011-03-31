@@ -55,7 +55,7 @@ ActiveRecord.prototype.get_model = function () {
 
 ActiveRecord.prototype.get_primary_key = function () {
   var table = this.get_model().get_meta_data().table_schema;
-
+  
   if( typeof table.primary_key == 'string' )
     return this[ table.primary_key ];
 
@@ -64,7 +64,7 @@ ActiveRecord.prototype.get_primary_key = function () {
 
     for ( var name in table.primary_key )
       values[ name ] = this[ name ];
-    
+
     return values;
   }
   else
@@ -106,7 +106,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
   var emitter = new process.EventEmitter;
 
   var self = this;
-  
+
   command.execute( function( result ) {
 
     if ( !result ) return false;
@@ -314,7 +314,7 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
 
       if ( !all ) return false;
     } );
-    
+
     emitter.emit( 'complete', all ? res : res[0] || null );
   } );
 
@@ -429,21 +429,31 @@ ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
   if ( !( values instanceof Object ) || values === null ) return false;
 
   var self = this;
-  var emitter = new process.EventEmitter;
+//  var emitter = new process.EventEmitter;
 
   this.get_table_schema( function( schema ){
     var attributes = schema.columns;
+    var pk = schema.primary_key;
+
     for ( var name in values ) {
       var value = values[ name ];
       if ( attributes[ name ] ){
-        self[ name ] = value;
-        if( safe_only ) self._attributes[ name ] = value;
+        if( pk instanceof Object ){
+          if( !pk[ name ] ) {
+            self[ name ] = value;
+          }
+        } else {
+          if( pk != name ){
+            self[ name ] = value;
+          }
+        }
+        /*if( safe_only ) */self._attributes[ name ] = value;
       }
       else self.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
     }
-    emitter.emit( 'set' );
+    //emitter.emit( 'set' );
   });
-  return emitter;
+//  return emitter;
 };
 
 //

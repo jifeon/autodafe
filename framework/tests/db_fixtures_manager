@@ -19,14 +19,13 @@ DBFixtureManager.prototype.get_fixtures = function () {
   this.fixtures = {};
   var fs = require('fs');
   var dir = this.fixtures_dir;
-  var f_name, fixture, names = [];
+  var f_name, fixture;
   path.exists( dir, function( exists ) {
     if( exists ){
       fs.readdir( dir, function( err, files ){
         if( files.length > 0 ){
           for( var f = 0, f_ln = files.length; f < f_ln; f++ ){
             f_name = path.basename(files[ f ], '.js' );
-            names.push( f_name );
             fixture = require( dir + '/' + f_name );
             self.fixtures[ f_name ] = fixture;
             self.fixtures[ f_name ].fixtures_names = [];
@@ -38,7 +37,7 @@ DBFixtureManager.prototype.get_fixtures = function () {
           self.app.log( 'There is no fixtures files', 'warning' );
         }
         //self.load_fixtures();
-          self.emit( 'get_fixtures', names );
+          self.emit( 'get_fixtures', Object.keys( self.fixtures ) );
       });
     } else {
       self.app.log('Fixtures dir does not exist', 'warning');

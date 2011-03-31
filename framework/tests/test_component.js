@@ -1,54 +1,88 @@
-var Component       = require( 'components/component' );
-var FixturesManager = require( './db_fixtures_manager' );
+var Component   = require( 'components/component' );
+var TestsBatch  = require( 'tests/tests_batch' );
+var path        = require( 'path' );
+var fs          = require( 'fs' );
+var assert      = require( 'assert' );
+var FixtureManager          = require( 'tests/db_fixtures_manager' );
 
-var Tests = module.exports = function( params ) {
+
+var TestComponent = module.exports = function( params ) {
   this._init( params );
 };
 
-require('sys').inherits( Tests, Component );
+require('sys').inherits( TestComponent, Component );
 
 
-Tests.prototype._init = function( params ) {
+TestComponent.prototype._init = function( params ) {
   Component.prototype._init.call( this, params );
 
-  this.vows         = require('./vows/lib/vows');
-  this.directory    = params.directory || false;
-  this.files        = params.files || [];
-  this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
-  this.fm           = new FixturesManager({
-    app           : this.app,
-    fixtures_dir  : this.fixtures_dir
+  this.vows       = require('./vows/lib/vows');
+  this.paths      = params.paths    || [];
+  this.exclude    = params.exclude  || [];
+  this.suite      = this.vows.describe( 'Autodafe tests' );
+  this.fm         = new FixtureManager({
+    app : this.app
+  });
+
+};
+
+
+TestComponent.prototype.run = function () {
+  this.app.log( 'Collecting tests', 'trace', 'TestComponent' );
+
+  // add test_app folder to paths
+  require.paths.unshift( path.resolve( '.' ) );
+
+  this.paths.forEach( function( test_path ) {
+    test_path = path.join( this.app.base_dir, test_path );
+
+    var test_path_origin = test_path;
+    if ( !path.existsSync( test_path ) && !path.existsSync( test_path += '.js' ) ) {
+      return this.app.log(
+        'Path "%s" does not exist. Check your configuration file ( tests.paths )'.format( test_path_origin ),
+        'error', 'TestComponent' );
+    }
+
+    this._collect_tests_in_path( test_path );
+  }, this );
+
+  this.app.log( 'Running tests', 'trace', 'TestComponent' );
+  var self = this;
+  this.fm.on( 'get_fixtures', function(){
+    self.suite.run();
   });
 };
 
 
-Tests.prototype.run = function () {
-  this.app.log( 'Running tests', 'trace', 'Tests' );
-  var tmp_test;
-  if( !this.directory ) {
+TestComponent.prototype._collect_tests_in_path = function ( test_path ) {
+  if ( this.exclude.some( function( elem ) {
+    return test_path.search( elem ) != -1;
+  } ) ) return false;
 
-    if( this.files.length > 0 ){
+  var stats = fs.statSync( test_path );
 
-      var self = this;
-      this.fm.on( 'get_fixtures', function( names ){
-        // add test_app folder to paths
-        var path = require( 'path' );
-        require.paths.unshift( path.resolve( '.' ) );
+  if ( stats.isDirectory() ) {
+    fs.readdirSync( test_path ).forEach( function( file ) {
+      this._collect_tests_in_path( path.join( test_path, file ) );
+    }, this );
+  }
+  else if ( stats.isFile() ) {
+    var test_name = path.basename( test_path, '.js' );
+    this.app.log( 'Collecting tests in file: %s'.format( test_name ), 'trace', 'TestComponent' );
 
-        var suite         = self.vows.describe( 'Autodafe tests' );
-        suite.application = self.app;
-        suite.fm          = self.fm;
-        suite.fix_names   = names;
-
-        for ( var f = 0, f_ln = self.files.length; f < f_ln; f++ ){
-          var test_path = path.resolve( '../../tests', self.files[f] );
-          self.app.log( 'Collecting tests in file: %s'.format( path.basename( test_path ) ), 'trace', 'Tests' );
-
-          tmp_test = require( test_path );
-          tmp_test.add_tests_to( suite );
-        }
-        suite.run();
-      });
+    var test  = require( test_path );
+    if ( !test || typeof test.get_batch != 'function' ) {
+      return this.app.log(
+        'File with tests (%s) should contain `exports.get_batch` method'.format( test_name ),
+        'error', 'TestComponent' );
     }
+
+    new TestsBatch({
+      name  : test_name.replace(/_/g, ' '),
+      tests : test.get_batch( this.app, assert ),
+      suite : this.suite,
+      app   : this.app,
+      fm    : this.fm
+    });
   }
 };
