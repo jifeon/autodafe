@@ -3,35 +3,13 @@ exports.add_tests_to = function(suite) {
   var assert = require('assert');
   var app = suite.application;
   var Post = require("post_model");
-
   var commands = {
     find: function (model, func, cond, attr, pk, sql) {
       var command_emitter = new process.EventEmitter;
 
-//      model[ func ].apply( model, Array.prototype.slice.call( arguments, 2 ) ).on( 'complete', function() {
-//        command_emitter.emit('success', res);
-//      } );
-
-      switch (func) {
-        case 'find' :
-          model.find(cond, attr).on('complete', function(res) {
-            command_emitter.emit('success', res);
-          });
-          break;
-
-        case 'find_all' :
-          model.find_all(cond, attr).on('complete', function(res) {
-            command_emitter.emit('success', res);
-          });
-          break;
-
-        case 'find_by_pk' :
-          model.find_by_pk(pk, cond, attr).on('complete', function(res) {
-            command_emitter.emit('success', res);
-          });
-          break;
-      }
-
+      model[ func ].apply( model, Array.prototype.slice.call( arguments, 2 ) ).on( 'complete', function( res ) {
+        command_emitter.emit('success', res);
+      } );
       return command_emitter;
     }
   }
@@ -63,7 +41,7 @@ exports.add_tests_to = function(suite) {
         'tests instance, id' : function( res ){
 //          console.log( res );
           assert.instanceOf(res, Post);
-          assert.equal( res.id, 12 );
+          assert.equal( res.id, 1 );
         }
       },
       'find with condition command'  : {
@@ -73,7 +51,7 @@ exports.add_tests_to = function(suite) {
         'tests "instance, id"'  : function( res ) {
 //          console.log( res );
           assert.instanceOf( res, Post );
-          assert.equal( res.id, 15 );
+          assert.equal( res.id, 5 );
           }
         },
       'find without result'  : {
@@ -110,8 +88,7 @@ exports.add_tests_to = function(suite) {
           return commands.find( topic, 'find_all', 'id = 6', {}, 0, '')
         },
         'empty result?' : function( res ) {
-          console.log(res);
-//          assert.length( res, 0 );
+          assert.length( res, 0 );
         }
       }
     }

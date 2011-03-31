@@ -42,7 +42,7 @@ ActiveRecord.prototype._init = function( params ) {
   });
   this._attributes  = {};
   this._pk          = null;
-  this._new         = params._new == undefined ? true : params._new;
+  this._new         = params._new == undefined ? false : params._new;
 
   this.__c          = null;
 };
@@ -88,7 +88,7 @@ ActiveRecord.prototype.get_is_new_record = function() {
 }
 
 
-ActiveRecord.prototype.set_isnew_record = function( value ) {
+ActiveRecord.prototype.set_is_new_record = function( value ) {
   this._new = value;
 }
 
@@ -106,16 +106,16 @@ ActiveRecord.prototype.insert = function( attributes ) {
   var emitter = new process.EventEmitter;
 
   var self = this;
-
+  
   command.execute( function( result ) {
 
-    if ( !result.SUCCESS ) return false;
+    if ( !result ) return false;
 
     var primary_key = table.primary_key;
     if ( table.sequence_name != null ) {
 
       if ( typeof primary_key == "string" && self[ primary_key ] == null )
-        self[ primary_key ] = result.last_insert_id;
+        self[ primary_key ] = result.insertId;
 
       else if ( primary_key instanceof Array ) {
 
@@ -123,7 +123,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
           var pk = primary_key[i];
 
           if ( !self[ pk ] ) {
-            self[ pk ] = result.last_insert_id;
+            self[ pk ] = result.insertId;
             break;
           }
         }
@@ -133,7 +133,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
 
     self._pk = self.get_primary_key();
 //    this.after_save();
-    self.set_isnew_record( false );
+    self.set_is_new_record( false );
     emitter.emit( 'complete', result );
 
 //    this.set_scenario( 'update' );
@@ -233,25 +233,18 @@ ActiveRecord.prototype.remove = function() {
 //}
 //
 
-//ActiveRecord.prototype.set_primary_key = function( value ) {
-//  this._pk = this.get_primary_key();
-//  table = this.get_meta_data().table_schema;
-//  if ( is_string( table.primary_key ) )
-//    this.
-//  {
-//    table.primary_key
-//  }
-//  = value;
-//else
-//  if ( is_array( table.primary_key ) ) {
-//    values = array();
-//    foreach( table.primary_key
-//    as
-//    name
-//  )
-//    this.name = values[name];
-//  }
-//}
+ActiveRecord.prototype.set_primary_key = function( value ) {
+  this._pk = this.get_primary_key();
+  table = this.get_meta_data().table_schema;
+  if ( typeof table.primary_key == 'string'  ){
+    this[ table.primary_key ] = value;
+  }
+  else if ( table.primary_key instanceof Object ) {
+    for(var name in table.primary_key){
+      this[ name ] = value[ name ];
+    }
+  }
+};
 
 
 ActiveRecord.prototype.get_old_primary_key = function() {
@@ -414,20 +407,43 @@ ActiveRecord.prototype.get_attributes = function( names ) {
   }
 
   return attributes;
-}
+};
 
+
+//ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
+//  if ( safe_only == undefined ) safe_only = true;
+//
+//  if ( !( values instanceof Object ) || values === null ) return false;
+//
+//  var attributes = this.get_safe_attribute_names();
+//  for ( var name in values ) {
+//    var value = values[ name ];
+//    if ( attributes[ name ] ) this[ name ] = value;
+//    else this.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
+//  }
+//};
 
 ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
   if ( safe_only == undefined ) safe_only = true;
 
   if ( !( values instanceof Object ) || values === null ) return false;
 
-  var attributes = this.get_safe_attribute_names();
-  for ( var name in values ) {
-    var value = values[ name ];
-    if ( attributes[ name ] ) this[ name ] = value;
-    else this.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
-  }
+  var self = this;
+  var emitter = new process.EventEmitter;
+
+  this.get_table_schema( function( schema ){
+    var attributes = schema.columns;
+    for ( var name in values ) {
+      var value = values[ name ];
+      if ( attributes[ name ] ){
+        self[ name ] = value;
+        if( safe_only ) self._attributes[ name ] = value;
+      }
+      else self.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
+    }
+    emitter.emit( 'set' );
+  });
+  return emitter;
 };
 
 //

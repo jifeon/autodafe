@@ -28,7 +28,7 @@ MysqlDBConnection.prototype._init = function(config) {
   this.conn.connectSync(self.host, self.user, self.pass, self.base);
   if (!this.conn.connectedSync()) {
     this.app.log("Connection error " + this.conn.connectErrno + ": " + this.conn.connectError);
-    process.exit(1);
+    //process.exit(1);
   } else {
     this.app.log("Connection success");
   }
@@ -56,7 +56,11 @@ MysqlDBConnection.prototype.__query = function (sql, callback, errback, emitter)
     this.app.log('Bad sql "%s"'.format(sql), 'error', 'MysqlDBConnection');
     return emitter;
   }
-  errback = errback || this.standard_errback;
+  var self = this;
+  errback  = errback  || function( message ) {
+    self.standard_errback( message );
+  };
+//  errback = errback || this.standard_errback;
   callback = callback || function() {
   };
 
@@ -64,7 +68,7 @@ MysqlDBConnection.prototype.__query = function (sql, callback, errback, emitter)
   var db = this;
   this.conn.query(sql, function(err, res) {
     if (err) {
-      errback('mysql error: ' + err);
+      errback(/*'mysql error: ' + */err);
     }
     callback.call(db, res);
     emitter.emit('response', res, db);

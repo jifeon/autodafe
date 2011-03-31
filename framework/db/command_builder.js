@@ -480,7 +480,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
     return this._create_composite_in_condition( table, values, prefix );
   }
   else
-    throw new Error( 'Column name must be either a string or an array.' );
+    throw new Error( 'Column name must be either a string or an array ( now: %s).'.format( column_name ) );
 }
 
 
