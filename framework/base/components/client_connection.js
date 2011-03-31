@@ -1,12 +1,11 @@
 var Component = require('./component');
 var Session   = require('session');
 
-var ClientConnection = module.exports = function( params ) {
+module.exports = ClientConnection.inherits( Component );
+
+function ClientConnection( params ) {
   this._init( params );
-};
-
-
-require('sys').inherits( ClientConnection, Component );
+}
 
 
 ClientConnection.prototype._on_connect = function ( session_id ) {

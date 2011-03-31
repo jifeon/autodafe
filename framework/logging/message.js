@@ -1,6 +1,8 @@
-var Message = module.exports = function( params ) {
+module.exports = Message;
+
+function Message( params ) {
   this._init( params );
-};
+}
 
 
 Message.prototype._init = function( params ) {

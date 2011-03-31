@@ -1,15 +1,16 @@
 var Message = require('./message');
+var AppModule       = require('app_module');
 
-var LogRoute = module.exports = function( params, app ) {
-  this._init( params, app );
-};
+module.exports = LogRoute.inherits( AppModule );
+
+function LogRoute( params ) {
+  this._init( params );
+}
 
 
-LogRoute.prototype._init = function( params, app ) {
-  this.__defineGetter__( 'app', function() {
-    return app;
-  } );
-
+LogRoute.prototype._init = function( params ) {
+  this.super_._init( params );
+  
   this.logger = this.app.logger;
 
   this.levels = {};

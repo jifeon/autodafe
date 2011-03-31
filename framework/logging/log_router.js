@@ -1,15 +1,14 @@
 var Component = require('components/component');
 
-var LogRouter = module.exports = function( params ) {
+module.exports = LogRouter.inherits( Component );
+
+function LogRouter( params ) {
   this._init( params );
-};
-
-
-require('sys').inherits( LogRouter, Component );
+}
 
 
 LogRouter.prototype._init = function( params ) {
-  Component.prototype._init.call( this, params );
+  this.super_._init( params );
 
   this.routes = {};
 
@@ -22,7 +21,10 @@ LogRouter.prototype._init = function( params ) {
       default:        route_class = require('./log_route');     break;
     }
 
-    this.routes[ route_type ] = new route_class( routes[ route_type ], this.app );
+    var route_params = routes[ route_type ] || {};
+    route_params.app = this.app;
+
+    this.routes[ route_type ] = new route_class( routes[ route_type ] );
   }
 };
 

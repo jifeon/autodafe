@@ -1,13 +1,13 @@
 var Model           = require('model');
 var DBCriteria      = require('../../db/db_criteria');
 var MetaData        = require('./active_record_meta_data');
+var AppModule       = require('app_module');
 
-var ActiveRecord = module.exports = function( params ) {
+module.exports = ActiveRecord.inherits( Model );
+
+function ActiveRecord() {
   throw new Error( 'ActiveRecord is abstract class. You can\'t instantiate it!' );
-};
-
-
-require('sys').inherits( ActiveRecord, Model );
+}
 
 
 ActiveRecord.models = {};
@@ -28,9 +28,7 @@ ActiveRecord.model = function( clazz, app ) {
 
 
 ActiveRecord.prototype._init = function( params ) {
-  params = params || {};
-
-  Model.prototype._init.call( this, params );
+  this.super_._init( params );
 
   this.clazz        = params.clazz || this.constructor;
   this.table        = this.clazz.get_table_name();
@@ -92,7 +90,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
   if ( !this.get_is_new_record() )
     throw new Error( 'The active record cannot be inserted to database because it is not new.' );
 
-  this.app.log( 'insert', 'trace', 'ActiveRecord' );
+  this.log( 'insert' );
 
   var builder = this.get_command_builder();
   var table   = this.get_meta_data().table_schema;
@@ -140,7 +138,7 @@ ActiveRecord.prototype.update = function( attributes ) {
   if ( this.get_is_new_record() )
     throw new Error( 'the active record cannot be updated because it is new.' );
 
-  this.app.log( 'update', 'trace', 'ActiveRecord' );
+  this.log( 'update' );
 
   if ( this._pk == null )
     this._pk = this.get_primary_key();
@@ -192,14 +190,14 @@ ActiveRecord.prototype.update = function( attributes ) {
 ActiveRecord.prototype.remove = function() {
   if ( this.get_is_new_record() ) throw new Error( 'the active record cannot be deleted because it is new.' );
 
-  this.app.log( 'remove', 'trace', 'ActiveRecord' );
+  this.log( 'remove' );
 
   return this.delete_by_pk( this.get_primary_key() );
 }
 
 
 ActiveRecord.prototype.refresh = function() {
-  this.app.log( 'refresh', 'trace', 'ActiveRecord' );
+  this.log( 'refresh' );
 
   var emitter = new process.EventEmitter;
 
@@ -408,7 +406,7 @@ ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
   for ( var name in values ) {
     var value = values[ name ];
     if ( attributes[ name ] ) this[ name ] = value;
-    else this.app.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning', 'AR' );
+    else this.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning' );
   }
 };
 
@@ -446,7 +444,7 @@ ActiveRecord.prototype.get_table_alias = function( quote ) {
 
 
 ActiveRecord.prototype.find = function ( condition, params ) {
-  this.app.log( 'find', 'trace', 'ActiveRecord' );
+  this.log( 'find' );
 
   var criteria = this.get_command_builder().create_criteria( condition, params );
 
@@ -455,7 +453,7 @@ ActiveRecord.prototype.find = function ( condition, params ) {
 
 
 ActiveRecord.prototype.find_all = function( condition, params ) {
-  this.app.log( 'find_all', 'trace', 'ActiveRecord' );
+  this.log( 'find_all' );
 
   var criteria = this.get_command_builder().create_criteria( condition, params );
 
@@ -464,7 +462,7 @@ ActiveRecord.prototype.find_all = function( condition, params ) {
 
 
 ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
-  this.app.log( 'find_by_pk', 'trace', 'ActiveRecord' );
+  this.log( 'find_by_pk' );
 
   var prefix    = this.get_table_alias( true ) + '.';
   var criteria  = this.get_command_builder().create_pk_criteria( this.get_table_schema(), pk, condition, params, prefix );
@@ -474,7 +472,7 @@ ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
 
 
 ActiveRecord.prototype.find_all_by_pk = function( pk, condition, params ) {
-  this.app.log( 'find_all_by_pk', 'trace', 'ActiveRecord' );
+  this.log( 'find_all_by_pk' );
 
   var prefix = this.get_table_alias( true ) + '.';
   var criteria = this.get_command_builder().create_pk_criteria( this.get_table_schema(), pk, condition, params, prefix );
@@ -484,7 +482,7 @@ ActiveRecord.prototype.find_all_by_pk = function( pk, condition, params ) {
 
 
 ActiveRecord.prototype.find_by_attributes = function( attributes, condition, params ) {
-  this.app.log( 'find_by_attributes', 'trace', 'ActiveRecord' );
+  this.log( 'find_by_attributes' );
 
   var prefix = this.get_table_alias( true ) + '.';
   var criteria = this.get_command_builder()
@@ -495,7 +493,7 @@ ActiveRecord.prototype.find_by_attributes = function( attributes, condition, par
 
 
 ActiveRecord.prototype.find_all_by_attributes = function( attributes, condition, params ) {
-  this.app.log( 'find_all_by_attributes', 'trace', 'ActiveRecord' );
+  this.log( 'find_all_by_attributes' );
 
   var prefix = this.get_table_alias( true ) + '.';
   var criteria = this.get_command_builder().create_column_criteria( this.get_table_schema(), attributes, condition, params, prefix );
@@ -505,7 +503,7 @@ ActiveRecord.prototype.find_all_by_attributes = function( attributes, condition,
 
 
 ActiveRecord.prototype.find_by_sql = function( sql, params ) {
-  this.app.log( 'find_by_sql', 'trace', 'ActiveRecord' );
+  this.log( 'find_by_sql' );
 
   var command = this.get_command_builder().create_sql_command( sql, params );
   var emitter = new process.EventEmitter;
@@ -526,7 +524,7 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
 
 
 ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
-  this.app.log( 'find_all_by_sql', 'trace', 'ActiveRecord' );
+  this.log( 'find_all_by_sql' );
 
   var command = this.get_command_builder().create_sql_command( sql, params );
   var emitter = new process.EventEmitter;
@@ -585,7 +583,7 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
 
 
 ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, params ) {
-  this.app.log( 'update_by_pk', 'trace', 'ActiveRecord' );
+  this.log( 'update_by_pk' );
 
   var builder   = this.get_command_builder();
   var table     = this.get_table_schema();
@@ -596,7 +594,7 @@ ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, param
 
 
 ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
-  this.app.log( 'update_all', 'trace', 'ActiveRecord' );
+  this.log( 'update_all' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
@@ -606,7 +604,7 @@ ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
 
 
 ActiveRecord.prototype.update_counters = function( counters, condition, params ) {
-  this.app.log( 'update_counters', 'trace', 'ActiveRecord' );
+  this.log( 'update_counters' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
@@ -616,7 +614,7 @@ ActiveRecord.prototype.update_counters = function( counters, condition, params )
 
 
 ActiveRecord.prototype.delete_by_pk = function( pk, condition, params ) {
-  this.app.log( 'delete_by_pk', 'trace', 'ActiveRecord' );
+  this.log( 'delete_by_pk' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_pk_criteria( this.get_table_schema(), pk, condition, params );
@@ -626,7 +624,7 @@ ActiveRecord.prototype.delete_by_pk = function( pk, condition, params ) {
 
 
 ActiveRecord.prototype.delete_all = function( condition, params ) {
-  this.app.log( 'delete_all', 'trace', 'ActiveRecord' );
+  this.log( 'delete_all' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
@@ -636,7 +634,7 @@ ActiveRecord.prototype.delete_all = function( condition, params ) {
 
 
 ActiveRecord.prototype.delete_all_by_attributes = function( attributes, condition, params ) {
-  this.app.log( 'delete_all_by_attributes', 'trace', 'ActiveRecord' );
+  this.log( 'delete_all_by_attributes' );
 
   var builder   = this.get_command_builder();
   var table     = this.get_table_schema();

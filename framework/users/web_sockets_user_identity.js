@@ -1,25 +1,21 @@
 var UserIdentity = require('./user_identity');
 var cookie       = require('../lib/cookie');
 
-var WebSocketsUserIdentity = module.exports = function( params ) {
+module.exports = WebSocketsUserIdentity.inherits( UserIdentity );
+
+function WebSocketsUserIdentity( params ) {
   return this._init( params );
-};
-
-
-require('sys').inherits( WebSocketsUserIdentity, UserIdentity );
+}
 
 
 WebSocketsUserIdentity.prototype._init = function( params ) {
-  this._client = params.client;
-  if ( !this._client ) {
-    this.app.log( '"client" is undefined', 'error', 'WebSocketsUserIdentity' );
-    return false;
-  }
+  if ( !params || !params.client ) throw new Error( '`client` is not defined in WebSocketsUserIdentity._init' );
 
-  delete params.client;
+  this._client      = params.client;
   params.session_id = this._client.sessionId;
+  delete params.client;
 
-  return UserIdentity.prototype._init.call( this, params );
+  return this.super_._init( params );
 };
 
 
@@ -29,9 +25,8 @@ WebSocketsUserIdentity.prototype.get_cookie = function ( cookie_name ) {
 
 
 WebSocketsUserIdentity.prototype.send = function ( controller, action, params ) {
-  this.app.log(
-    'Send message to websockets client ( id=%s ) to %s.%s'.format( this._session_id, controller, action ),
-    'trace', 'WebSocketsUserIdentity'
+  this.log(
+    'Send message to websockets client ( id=%s ) to %s.%s'.format( this._session_id, controller, action )
   );
 
   this._client.send( JSON.stringify( {

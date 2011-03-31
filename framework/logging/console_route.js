@@ -1,14 +1,13 @@
 var LogRoute = require('./log_route');
 
-var ConsoleRoute = module.exports = function( params, app ) {
-  this._init( params, app );
-};
+module.exports = ConsoleRoute.inherits( LogRoute );
+
+function ConsoleRoute( params ) {
+  this._init( params );
+}
 
 
-require('sys').inherits( ConsoleRoute, LogRoute );
-
-
-ConsoleRoute.prototype._init = function( params, app ) {
+ConsoleRoute.prototype._init = function( params ) {
   require('./color/colors');
 
   this.__level2style = {};
@@ -17,7 +16,7 @@ ConsoleRoute.prototype._init = function( params, app ) {
   this.__level2style[ 'warning' ] = 'magenta';
   this.__level2style[ 'error' ]   = 'red';
 
-  LogRoute.prototype._init.call( this, params, app );
+  this.super_._init( params );
 };
 
 

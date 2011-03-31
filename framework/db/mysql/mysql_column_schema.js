@@ -1,11 +1,10 @@
 var DBColumnSchema = require('../db_column_schema');
 
-var MysqlColumnSchema = module.exports = function( params ) {
+module.exports = MysqlColumnSchema.inherits( DBColumnSchema );
+
+function MysqlColumnSchema( params ) {
   this._init( params );
-};
-
-
-require('sys').inherits( MysqlColumnSchema, DBColumnSchema );
+}
 
 
 MysqlColumnSchema.prototype._extract_type = function() {

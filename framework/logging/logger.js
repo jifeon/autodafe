@@ -49,8 +49,8 @@ Logger.prototype.log = function ( text, level, module ) {
 
   var message = new Message({
     text    : text,
-    level   : is_error ? 'error' : level,
-    module  : is_error ? level : module  || this.default_module_name
+    level   : is_error ? level || 'error' : level,
+    module  : module  || this.default_module_name
   });
 
   var messages_count = this._messages.push( message );

@@ -1,6 +1,8 @@
-var DBCommand = module.exports = function( params ) {
+module.exports = DBCommand;
+
+function DBCommand( params ) {
   this._init( params );
-};
+}
 
 
 DBCommand.prototype._init = function( params ) {

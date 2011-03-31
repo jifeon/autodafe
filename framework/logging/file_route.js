@@ -2,15 +2,14 @@ var LogRoute  = require('./log_route');
 var path      = require('path');
 var fs        = require('fs');
 
-var FileRoute = module.exports = function( params, app ) {
-  this._init( params, app );
-};
+module.exports = FileRoute.inherits( LogRoute );
+
+function FileRoute( params) {
+  this._init( params);
+}
 
 
-require('sys').inherits( FileRoute, LogRoute );
-
-
-FileRoute.prototype._init = function( params, app ) {
+FileRoute.prototype._init = function( params ) {
   this._log_cache     = [];
   this._log_file_path = null;
   this._max_file_size = 1024;  // in KiB
@@ -21,7 +20,7 @@ FileRoute.prototype._init = function( params, app ) {
     self.process_logs();
   }, 1000 );
 
-  LogRoute.prototype._init.call( this, params, app );
+  this.super_._init( params );
 };
 
 

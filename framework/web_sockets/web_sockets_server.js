@@ -2,17 +2,15 @@ var io                = require('./Socket.IO');
 var http              = require('http');
 var ClientConnection  = require('components/client_connection');
 
-var WebSocketsServer = module.exports = function( config ) {
+module.exports = WebSocketsServer.inherits( ClientConnection );
+
+function WebSocketsServer( config ) {
   this._init( config );
-};
-
-
-require( 'sys' ).inherits( WebSocketsServer, ClientConnection );
+}
 
 
 WebSocketsServer.prototype._init = function ( params ) {
-  ClientConnection.prototype._init.call( this, params );
-  
+  this.super_._init( params );
   this.__io     = null;
 
   this._server  = null;
@@ -65,10 +63,10 @@ WebSocketsServer.prototype._on_message = function ( message, session_id ) {
   var data = JSON.parse( message );
 
   if ( !data ) {
-    return this.app.log( 'Message: "%s" is not in JSON'.format( message ), 'warning', 'WebSocketsServer' );
+    return this.log( 'Message: "%s" is not in JSON'.format( message ), 'warning' );
   }
 
-  this.app.log( 'WebSockets message has been received. session_id = "%s"'.format( session_id ), 'trace', 'WebSocketsServer' );
+  this.log( 'WebSockets message has been received. session_id = "%s"'.format( session_id ) );
   this.app.router.route( data.action, data.params, session_id );
 };
 

@@ -1,7 +1,7 @@
 var Model = require('model');
 
-var TestModel = module.exports = function( params ) {
-  this._init( params );
-};
+module.exports = TestModel.inherits( Model );
 
-require('sys').inherits( TestModel, Model );
+function TestModel( params ) {
+  this._init( params );
+}

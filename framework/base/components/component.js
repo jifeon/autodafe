@@ -1,14 +1,16 @@
-var Component = module.exports = function( params ) {
+var AppModule = require('app_module');
+
+module.exports = Component.inherits( AppModule );
+
+function Component( params ) {
   this._init( params );
-};
+}
 
 
 Component.prototype._init = function( params ) {
-  this.name = params.name;
-  this.app  = params.app;
+  this.super_._init( params );
 
-  if ( !this.name || typeof this.app[ this.name ] != 'undefined' )
-    this.app.log( 'Conflict in component\'s name: "%s"'.format( this.name ), 'warning' );
+  this.name = params.name;
 
   this._define_getter();
 };

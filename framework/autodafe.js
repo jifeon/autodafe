@@ -1,8 +1,8 @@
 require.paths.unshift( __dirname );
 require.paths.unshift( __dirname + '/base/' );
 
-var Application           = require( 'application' );
 var tools                 = require( './lib/tools' );
+var Application           = require( 'application' );
 
 var Autodafe = global.autodafe = module.exports = new function() {
 

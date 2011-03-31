@@ -1,10 +1,10 @@
 var Controller  = require( 'controller' );
 
-var GoodController = module.exports = function( params ) {
+module.exports = GoodController.inherits( Controller );
+
+function GoodController( params ) {
   this._init( params );
 }
-
-require('sys').inherits( GoodController, Controller );
 
 
 GoodController.prototype.name     = 'good';

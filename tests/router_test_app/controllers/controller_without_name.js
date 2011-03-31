@@ -1,10 +1,10 @@
 var Controller  = require( 'controller' );
 
-var WithoutNameController = module.exports = function( params ) {
+module.exports = WithoutNameController.inherits( Controller );
+
+function WithoutNameController( params ) {
   this._init( params );
 }
-
-require('sys').inherits( WithoutNameController, Controller );
 
 
 WithoutNameController.prototype.name     = 'withoutName';

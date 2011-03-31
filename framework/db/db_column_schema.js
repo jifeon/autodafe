@@ -1,6 +1,8 @@
-var DBColumnSchema = module.exports = function() {
+module.exports = DBColumnSchema;
+
+function DBColumnSchema() {
   throw new Error( 'You can\'t instantiate abstract class DBColumnSchema' );
-};
+}
 
 
 DBColumnSchema.prototype._init = function( params ) {

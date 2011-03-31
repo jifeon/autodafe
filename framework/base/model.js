@@ -1,15 +1,7 @@
-var Model = module.exports = function( params ) {
+var AppModule = require('app_module');
+
+module.exports = Model.inherits( AppModule );
+
+function Model( params ) {
   this._init( params );
-};
-
-
-require('sys').inherits( Model, process.EventEmitter );
-
-
-Model.prototype._init = function ( params ) {
-  params = params || {};
-  this.app = params.app;
-  if ( !this.app ) {
-    throw new Error( 'You need specify `app` parameter when you create model instance' );
-  }
-};
+}

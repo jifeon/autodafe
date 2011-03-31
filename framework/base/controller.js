@@ -1,19 +1,17 @@
-var Controller = module.exports = function( params ) {
+var AppModule = require('app_module');
+
+module.exports = Controller.inherits( AppModule );
+
+function Controller( params ) {
   this._init( params );
 }
 
-
-require( 'sys' ).inherits( Controller, process.EventEmitter );
 Controller.prototype.actions        = [ 'index' ];
 Controller.prototype.default_action = 'index';
 
 
 Controller.prototype._init = function ( params ) {
-
-  if ( !params || !params.app ) throw new Error( 'Link to application is undefined in Controller._init' );
-  this.__defineGetter__( 'app', function() {
-    return params.app;
-  } )
+  this.super_._init( params );
 
   this._actions = {};
 
@@ -31,7 +29,7 @@ Controller.prototype.run_action = function ( action, args ) {
   action = action || this.default_action;
 
   if ( !this._actions[ action ] || !this[ action ] )
-    return this.app.log( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ), 'warning' );
+    return this.log( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ), 'warning' );
 
   args = args || [];
   args.unshift( action );

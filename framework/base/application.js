@@ -80,7 +80,11 @@ Application.prototype._init_core = function () {
 
 Application.prototype._preload_components = function () {
   this.log( 'Preload components', 'trace' );
-  this.components = new ComponentsManager( this._config.components, this );
+
+  this.components = new ComponentsManager( {
+    components : this._config.components,
+    app        : this
+  } );
 
   var preload = this._config.preload_components;
   if ( preload instanceof Array ) preload.forEach( function( component_name ){

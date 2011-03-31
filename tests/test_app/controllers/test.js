@@ -1,13 +1,13 @@
 var Controller  = require( 'controller' );
 
-var TestController = module.exports = function( params ) {
+module.exports = TestController.inherits( Controller );
+
+function TestController( params ) {
   this._init( params );
   // log_routes exists here only if it is preloaded
   process.emit( 'Preloaded logger component', this.app.log_router );
   process.emit( 'Not preloaded tests component', this.app.tests );
 }
-
-require('sys').inherits( TestController, Controller );
 
 
 TestController.prototype.name     = 'test';

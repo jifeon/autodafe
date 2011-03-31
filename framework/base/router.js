@@ -1,20 +1,22 @@
-var fs          = require('fs');
 var Controller  = require('./controller');
+var AppModule   = require('app_module');
+var fs          = require('fs');
 var path        = require('path');
 
-var Router = module.exports = function( config ) {
-  this._init( config );
-};
+
+module.exports = Router.inherits( AppModule );
+
+function Router( params ) {
+  this._init( params );
+}
 
 
-Router.prototype._init = function ( config ) {
-  this._config              = config || {};
+Router.prototype._init = function ( params ) {
+  this.super_._init( params );
+
+  this._rules               = params.rules || {};
   this._controllers         = {};
   this._controllers_folder  = 'controllers';
-
-  this.__defineGetter__( 'app', function() {
-    return this._config.app;
-  } );
 
   this._collect_controllers();
 };
@@ -22,7 +24,7 @@ Router.prototype._init = function ( config ) {
 
 Router.prototype._collect_controllers = function () {
   var controllers_dir = path.join( this.app.base_dir, this._controllers_folder );
-  this.app.log( 'Collecting controllers in path: ' + controllers_dir, 'trace', 'Router' );
+  this.log( 'Collecting controllers in path: ' + controllers_dir, 'trace' );
 
   try {
 
@@ -44,7 +46,7 @@ Router.prototype._collect_controllers = function () {
       var name = controller.prototype.name;
       if ( !name ) throw "NO_NAME";
 
-      this.app.log( 'Controller "%s" is added'.format( name ), 'trace', 'Router' );
+      this.log( 'Controller "%s" is added'.format( name ), 'trace' );
       this._controllers[ name ] = new controller({
         app : this.app
       });
@@ -54,33 +56,33 @@ Router.prototype._collect_controllers = function () {
   catch( e ) {
     switch ( e ) {
       case 'NOT_CONTROLLER':
-        this.app.log( '"%s" is not a controller'.format( file ), 'error', 'Router' );
+        this.log( '"%s" is not a controller'.format( file ), 'error' );
         break;
 
       case 'NO_NAME':
-        this.app.log( 'Controller has no property "name" in file "%s"'.format( file ), 'error', 'Router' );
+        this.log( 'Controller has no property "name" in file "%s"'.format( file ), 'error' );
         break;
 
       default:
-        if ( file ) this.app.log( 'Error while including file "%s"'.format( file ), 'error', 'Router' );
+        if ( file ) this.log( 'Error while including file "%s"'.format( file ), 'error' );
         throw e;
         break;
     }
   }
 
-  this.app.log( 'Controllers are included', 'info' );
+  this.log( 'Controllers are included', 'info' );
 };
 
 
 Router.prototype.route = function ( route_path ) {
-  this.app.log( 'route to ' + route_path, 'trace' );
+  this.log( 'route to ' + route_path, 'trace' );
   var args = Array.prototype.splice.call( arguments, 1 );
 
   var actions = [];
 
   if ( route_path ) {
-    if ( this._config.rules ) {
-      route_path = this._config.rules[ route_path ] || route_path;
+    if ( this._rules ) {
+      route_path = this._rules[ route_path ] || route_path;
     }
 
     if ( !( route_path instanceof Array ) ) route_path = [ route_path ];
@@ -88,9 +90,9 @@ Router.prototype.route = function ( route_path ) {
       var route_rule = route_path[ r ].split('.');
 
       if ( !route_rule.length )
-        return this.app.log(
+        return this.log(
           'Incorrect route path: "%s". Route path must be formated as controller.action \
-           or specified in router.rules section of config.'.format( route_path ), 'error', 'Router'
+           or specified in router.rules section of config.'.format( route_path ), 'error'
         );
 
       actions.push({
@@ -111,8 +113,8 @@ Router.prototype.route = function ( route_path ) {
     var action = actions[ a ];
 
     var controller    = this._controllers[ action.controller_name ];
-    if ( !controller ) return this.app.log(
-      'Controller or route rule "%s" is not found'.format( action.controller_name ), 'warning', 'Router'
+    if ( !controller ) return this.log(
+      'Controller or route rule "%s" is not found'.format( action.controller_name ), 'warning'
     );
 
     controller.run_action( action.action, args );

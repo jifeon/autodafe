@@ -1,24 +1,20 @@
 var DBCommand   = require( './db_command' );
+var AppModule       = require('app_module');
 
-var DBConnection = module.exports = function( config ) {
+module.exports = DBConnection.inherits( AppModule );
+
+function DBConnection() {
   throw new Error( 'DBConnection is abstract class. You can\'t instantiate it!' );
-};
+}
 
 
-require( 'sys' ).inherits( DBConnection, process.EventEmitter );
+DBConnection.prototype._init = function( params ) {
+  this.super_._init( params );
 
-
-DBConnection.prototype._init = function( config ) {
-  this._config = config || {};
-
-  this.__defineGetter__( 'app', function() {
-    return this._config.app;
-  } );
-
-  this.user = this._config.user || 'root';
-  this.pass = this._config.pass || '';
-  this.base = this._config.base || 'test';
-  this.host = this._config.host || 'localhost';
+  this.user = params.user || 'root';
+  this.pass = params.pass || '';
+  this.base = params.base || 'test';
+  this.host = params.host || 'localhost';
 
 //  this.table_prefix = null;
 

@@ -1,9 +1,8 @@
-var ActiveRecordMetaData = module.exports = function( params ) {
+module.exports = ActiveRecordMetaData.inherits( process.EventEmitter );
+
+function ActiveRecordMetaData( params ) {
   this._init( params );
-};
-
-
-require( 'sys' ).inherits( ActiveRecordMetaData, process.EventEmitter );
+}
 
 
 ActiveRecordMetaData.prototype._init = function( params ) {

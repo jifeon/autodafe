@@ -1,16 +1,15 @@
 var Component         = require('components/component');
 var MysqlDBConnection = require('./mysql/mysql_db_connection');
 
-var DBController = module.exports = function( params ) {
+module.exports = DBController.inherits( Component );
+
+function DBController( params ) {
   this._init( params );
-};
-
-
-require('sys').inherits( DBController, Component );
+}
 
 
 DBController.prototype._init = function( params ) {
-  Component.prototype._init.call( this, params );
+  this.super_._init( params );
 
   this._db          = null;
   this.__db_config  = params;
@@ -35,7 +34,7 @@ DBController.prototype._init_database = function () {
       break;
 
     default :
-      this.app.log( 'You must specify data base type ( db.type ) in your configuration file', 'warning', this.name );
+      this.log( 'You must specify data base type ( db.type ) in your configuration file', 'error' );
       break;
   }
 

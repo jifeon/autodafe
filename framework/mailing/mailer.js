@@ -2,21 +2,21 @@ var Component = require('components/component');
 var email     = require('./emailjs.git/email');
 var os        = require('os');
 
-var Mailer = module.exports = function( params ) {
+module.exports = Mailer.inherits( Component );
+
+function Mailer( params ) {
   this._init( params );
-};
+}
 
-
-require('sys').inherits( Mailer, Component );
 
 var message_id = 0;
 Mailer.prototype._init = function( params ) {
-  Component.prototype._init.call( this, params );
+  this.super_._init( params );
   this._configured = true;
 
   if ( !params.smtp || !params.smtp.user || !params.smtp.pass || !params.smtp.host ) {
-    this.app.log( 'You must specify smtp parametres in your config file for correct work of mailing.' +
-                  ' smtp.user, smtp.pass, smtp.host are required', 'warning', 'Mailer' );
+    this.log( 'You must specify smtp parametres in your config file for correct work of mailing.' +
+                  ' smtp.user, smtp.pass, smtp.host are required', 'warning' );
     this._configured = false;
     return false;
   }
@@ -44,9 +44,9 @@ Mailer.prototype.send = function ( params, callback ) {
   var from = params.from  || this._default_message.from;
 
   if ( !to || !from ) {
-    this.app.log(
+    this.log(
       'You must specify `%s` parameter in config file or in parametres of `send` function'.format( !to ? 'to' : 'from' ),
-      'warning', 'Mailer'
+      'warning'
     );
     return false;
   }
@@ -74,11 +74,11 @@ Mailer.prototype.send = function ( params, callback ) {
   }
 
   message.id = message_id++;
-  this.app.log( 'Sending message with id=%s'.format( message.id ), 'trace', 'Mailer' );
+  this.log( 'Sending message with id=%s'.format( message.id ) );
   var self = this;
   this._server.send( message, function( e, message ){
-    if ( e ) self.app.log( e, 'Mailer' );
-    else self.app.log( 'Message with id=%s has been sent'.format( message.id ), 'info', 'Mailer' );
+    if ( e ) self.log( e );
+    else self.log( 'Message with id=%s has been sent'.format( message.id ), 'info' );
     if ( typeof callback == "function" ) callback( e, message );
   } );
 };

@@ -1,13 +1,18 @@
-var TestsBatch = module.exports = function( params ) {
+var AppModule = require('app_module');
+
+module.exports = TestsBatch.inherits( AppModule );
+
+function TestsBatch( params ) {
   this._init( params );
-};
+}
 
 
 TestsBatch.prototype._init = function( params ) {
+  this.super_._init( params );
+
   this.name  = params.name;
   this.tests = params.tests;
   this.suite = params.suite;
-  this.app   = params.app;
 
   this._transform_first_topic();
   this._add_tests();
@@ -28,7 +33,7 @@ TestsBatch.prototype._transform_first_topic = function () {
   var self    = this;
   var topic   = tests.topic;
   tests.topic = function() {
-    self.app.log( 'Running %s'.format( self.name ), 'trace', 'TestsBatch' );
+    self.log( 'Running %s'.format( self.name ) );
     return typeof topic == 'function' ? topic.apply( this, arguments ) : topic;
   }
 };

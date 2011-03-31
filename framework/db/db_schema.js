@@ -1,19 +1,16 @@
 var CommandBuilder = require( './command_builder' );
 
+module.exports = DBSchema;
 
-var DBSchema = module.exports = function( params ) {
+function DBSchema( params ) {
   this._init( params );
-};
+}
 
 
 DBSchema.prototype._init = function( params ) {
   this._tables        = {};
   this._connection    = params.connection;
   this._builder       = null;
-
-  this.__defineGetter__( 'app', function() {
-    return this._connection.app;
-  } );
 };
 
 

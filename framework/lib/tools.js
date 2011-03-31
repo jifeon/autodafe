@@ -74,6 +74,47 @@ Object.clone = function( obj ) {
   return result;
 };
 
+var Proxy             = require( './proxy/node-proxy/lib/node-proxy' );
+var ForwardingHandler = require( './proxy/proxy_handler' );
+
+Function.prototype.inherits = function( super_class ) {
+  require('util').inherits( this, super_class );
+
+  Object.defineProperty( this.prototype, 'super_', {
+    get : function() {
+
+      var super_prototype = super_class.prototype;
+      var handler         = ForwardingHandler( super_prototype );
+
+      var self    = this;
+      handler.get = function( receiver, name ) {
+        return typeof super_prototype[name] == 'function' ? function() {
+
+          var super_prototype_with_own_method = super_prototype;
+
+          while (
+            !super_prototype_with_own_method.hasOwnProperty( name ) ||
+            arguments.callee.caller == super_prototype_with_own_method[ name ]
+          ) {
+            try {
+              super_prototype_with_own_method = super_prototype_with_own_method.constructor.super_.prototype;
+            }
+            catch (e) {
+              throw new TypeError( name + ' is not a function' );
+            }
+          }
+
+          super_prototype_with_own_method[ name ].apply( self, arguments );
+        } : super_prototype[name];
+      }
+
+      return this.constructor.proxy = Proxy.create( handler );
+    }
+  } );
+
+  return this;
+}
+
 
 String.prototype.format = function() {
   var i = 0;

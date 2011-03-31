@@ -1,10 +1,10 @@
 var Controller  = require( 'controller' );
 
-var AnotherTestController = module.exports = function( params ) {
+module.exports = AnotherTestController.inherits( Controller );
+
+function AnotherTestController( params ) {
   this._init( params );
 }
-
-require('sys').inherits( AnotherTestController, Controller );
 
 
 AnotherTestController.prototype.name     = 'another_test';

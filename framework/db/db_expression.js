@@ -1,6 +1,8 @@
-var DBExpression = module.exports = function( params ) {
+module.exports = DBExpression;
+
+function DBExpression( params ) {
   this._init( params );
-};
+}
 
 
 DBExpression.prototype._init = function( params ) {

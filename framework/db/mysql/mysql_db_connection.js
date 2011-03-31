@@ -3,16 +3,15 @@ var sys = require('sys');
 var mysql = require('./node-mysql/mysql-libmysqlclient');
 var MysqlSchema = require('./mysql_schema');
 
-var MysqlDBConnection = module.exports = function(config) {
-  this._init(config);
-};
+module.exports = MysqlDBConnection.inherits( DB );
+
+function MysqlDBConnection( params ) {
+  this._init( params );
+}
 
 
-require('sys').inherits(MysqlDBConnection, DB);
-
-
-MysqlDBConnection.prototype._init = function(config) {
-  DB.prototype._init.call(this, config);
+MysqlDBConnection.prototype._init = function(params) {
+  this.super_._init( params );
 
   this._schema = new MysqlSchema({
     connection : this,
@@ -27,10 +26,10 @@ MysqlDBConnection.prototype._init = function(config) {
   this.conn = mysql.createConnectionSync();
   this.conn.connectSync(self.host, self.user, self.pass, self.base);
   if (!this.conn.connectedSync()) {
-    this.app.log("Connection error " + this.conn.connectErrno + ": " + this.conn.connectError);
-    process.exit(1);
-  } else {
-    this.app.log("Connection success");
+    throw new Error( 'Connection error ( %s ): %s '.format( this.conn.connectErrno, this.conn.connectError ) );
+  }
+  else {
+    this.log( 'Connection success', 'info' );
   }
   this.initialized = true;
   this.query = this.__query;
@@ -53,16 +52,17 @@ MysqlDBConnection.prototype.__query = function (sql, callback, errback, emitter)
   emitter = emitter || new process.EventEmitter;
 
   if (typeof sql != "string" || !sql.length) {
-    this.app.log('Bad sql "%s"'.format(sql), 'error', 'MysqlDBConnection');
+    this.log( 'Bad sql "%s"'.format( sql ), 'error' );
     return emitter;
   }
+
   var self = this;
   errback = errback || function() {
     self.standard_errback();
   }
   callback = callback || function() {};
 
-  this.app.log('Quering sql: ' + sql, 'trace', 'MysqlDBConnection');
+  this.log( 'Quering sql: ' + sql, 'trace', 'MysqlDBConnection');
   var db = this;
   this.conn.query(sql, function(err, res) {
     if (err) {
@@ -76,7 +76,7 @@ MysqlDBConnection.prototype.__query = function (sql, callback, errback, emitter)
 
 
 MysqlDBConnection.prototype.standard_errback = function (message) {
-  this.app.log(message, 'error', 'MysqlDBConnection');
+  this.log( message, 'error' );
 };
 
 

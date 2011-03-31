@@ -1,15 +1,14 @@
 var DBTableSchema = require( '../db_table_schema' );
 
-var MysqlTableSchema = module.exports = function( params ) {
+module.exports = MysqlTableSchema.inherits( DBTableSchema );
+
+function MysqlTableSchema( params ) {
   this._init( params );
-};
-
-
-require( 'sys' ).inherits( MysqlTableSchema, DBTableSchema );
+}
 
 
 MysqlTableSchema.prototype._init = function( params ) {
-  DBTableSchema.prototype._init.call( this, params );
+  this.super_._init( params );
 
   this.schema_name  = null; // name of other database
 
@@ -20,7 +19,7 @@ MysqlTableSchema.prototype._init = function( params ) {
 
   var self = this;
   this.on( 'initialized', function() {
-    self.app.log( 'Table "%s" initialized'.format( this.name ), 'tarce', 'MysqlTableSchema' );
+    self.log( 'Table "%s" initialized'.format( this.name ) );
   } );
 };
 
@@ -31,9 +30,8 @@ MysqlTableSchema.prototype.is_initialized = function () {
 
 
 MysqlTableSchema.prototype._resolve_table_name = function( name ) {
-  if ( typeof name != "string" || !name ) return this.app.log(
-    new Error( 'You can\'t create table without name' ),
-    'MysqlTableSchema'
+  if ( typeof name != "string" || !name ) return this.log(
+    new Error( 'You can\'t create table without name' )
   );
 
   var parts = name.replace( '`', '' ).split( '.' );

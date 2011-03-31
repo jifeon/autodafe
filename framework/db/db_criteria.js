@@ -1,6 +1,8 @@
-var DBCriteria = module.exports = function( params ) {
+module.exports = DBCriteria;
+
+function DBCriteria( params ) {
   this._init( params );
-};
+}
 
 
 DBCriteria.prototype._init = function( params ) {

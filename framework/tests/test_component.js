@@ -4,27 +4,25 @@ var path        = require( 'path' );
 var fs          = require( 'fs' );
 var assert      = require( 'assert' );
 
+module.exports = TestComponent.inherits( Component );
 
-var TestComponent = module.exports = function( params ) {
+function TestComponent( params ) {
   this._init( params );
-};
-
-require('sys').inherits( TestComponent, Component );
+}
 
 
 TestComponent.prototype._init = function( params ) {
-  Component.prototype._init.call( this, params );
+  this.super_._init( params );
 
   this.vows       = require('./vows/lib/vows');
   this.paths      = params.paths    || [];
   this.exclude    = params.exclude  || [];
   this.suite      = this.vows.describe( 'Autodafe tests' );
-
 };
 
 
 TestComponent.prototype.run = function () {
-  this.app.log( 'Collecting tests', 'trace', 'TestComponent' );
+  this.log( 'Collecting tests' );
 
   // add test_app folder to paths
   require.paths.unshift( path.resolve( '.' ) );
@@ -34,15 +32,15 @@ TestComponent.prototype.run = function () {
 
     var test_path_origin = test_path;
     if ( !path.existsSync( test_path ) && !path.existsSync( test_path += '.js' ) ) {
-      return this.app.log(
+      return this.log(
         'Path "%s" does not exist. Check your configuration file ( tests.paths )'.format( test_path_origin ),
-        'error', 'TestComponent' );
+        'error' );
     }
 
     this._collect_tests_in_path( test_path );
   }, this );
 
-  this.app.log( 'Running tests', 'trace', 'TestComponent' );
+  this.log( 'Running tests' );
   this.suite.run();
 };
 
@@ -61,13 +59,13 @@ TestComponent.prototype._collect_tests_in_path = function ( test_path ) {
   }
   else if ( stats.isFile() ) {
     var test_name = path.basename( test_path, '.js' );
-    this.app.log( 'Collecting tests in file: %s'.format( test_name ), 'trace', 'TestComponent' );
+    this.log( 'Collecting tests in file: %s'.format( test_name ) );
 
     var test  = require( test_path );
     if ( !test || typeof test.get_batch != 'function' ) {
-      return this.app.log(
+      return this.log(
         'File with tests (%s) should contain `exports.get_batch` method'.format( test_name ),
-        'error', 'TestComponent' );
+        'error' );
     }
 
     new TestsBatch({

@@ -1,9 +1,10 @@
-var DBTableSchema = module.exports = function() {
+var AppModule       = require('app_module');
+
+module.exports = DBTableSchema.inherits( AppModule );
+
+function DBTableSchema() {
   throw new Error( 'You can\'t instantiate abstract class DBTableSchema' );
-};
-
-
-require( 'sys' ).inherits( DBTableSchema, process.EventEmitter );
+}
 
 
 DBTableSchema.prototype._init = function( params ) {
@@ -16,8 +17,8 @@ DBTableSchema.prototype._init = function( params ) {
   this.sequence_name  = null;
   this.columns        = {};
 
-  this.__defineGetter__( 'app', function() {
-    return this.db_schema.app;
+  this.super_._init( {
+    app : this.db_schema.app
   } );
 };
 

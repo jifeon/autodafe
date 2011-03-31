@@ -1,6 +1,5 @@
-var AutodafeWarning = module.exports = function() {
+module.exports = AutodafeWarning.inherits( Error );
+
+function AutodafeWarning() {
 
 }
-
-
-require( 'sys' ).inherits( AutodafeWarning, Error );

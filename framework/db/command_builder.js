@@ -1,9 +1,11 @@
 var DBCriteria    = require('./db_criteria');
 var DBExpression  = require('./db_expression');
 
-var CommandBuilder = module.exports = function( params ) {
+module.exports = CommandBuilder;
+
+function CommandBuilder( params ) {
   this._init( params );
-};
+}
 
 
 CommandBuilder.prototype.PARAM_PREFIX = ':atdf';

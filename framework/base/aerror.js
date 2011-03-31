@@ -1,6 +1,5 @@
-var AutodafeError = module.exports = function() {
+module.exports = AutodafeError.inherits( Error );
+
+function AutodafeError() {
 
 }
-
-
-require( 'sys' ).inherits( AutodafeError, Error );

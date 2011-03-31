@@ -1,22 +1,20 @@
-var UserIdentity = module.exports = function( params ) {
+var AppModule = require('app_module');
+
+module.exports = UserIdentity.inherits( AppModule );
+
+function UserIdentity( params ) {
   return this._init( params );
-};
+}
 
 UserIdentity.cache = {};
 UserIdentity.with_same_user = {};
 
 UserIdentity.prototype._init = function( params ) {
-  if ( !params || !params.app ) throw new Error(
-    'Link to application is undefined in UserIdentity._init'
-  );
-
-  this.__defineGetter__( 'app', function() {
-    return params.app
-  } );
+  this.super_._init( params );
 
   this._session_id = params.session_id;
   if ( !this._session_id ) {
-    this.app.log( 'session_id is undeifned', 'error', 'UserIdentity' );
+    this.log( 'session_id is undeifned', 'error' );
     return false;
   }
 

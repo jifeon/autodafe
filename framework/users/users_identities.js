@@ -3,16 +3,15 @@ var WebSocketsServer  = require( '../web_sockets/web_sockets_server' );
 var UserIdentity      = require( './user_identity' );
 var WebSocketsUserIdentity  = require( './web_sockets_user_identity' );
 
-var UserIdentities = module.exports = function( params ) {
+module.exports = UserIdentities.inherits( Component );
+
+function UserIdentities( params ) {
   this._init( params );
-};
-
-
-require( 'sys' ).inherits( UserIdentities, Component );
+}
 
 
 UserIdentities.prototype._init = function( params ) {
-  Component.prototype._init.call( this, params );
+  this.super_._init( params );
 
   this._cache = {};
 
@@ -30,7 +29,7 @@ UserIdentities.prototype._create_user_identity = function ( session, connector )
     case WebSocketsServer:
       var ws_client = this.app.web_sockets_server.get_client_by_session_id( session.id );
       if ( !ws_client ) {
-        return this.app.log( 'Web sockets client is not found while creating user identity', 'error', 'UserIdentities' );
+        return this.log( 'Web sockets client is not found while creating user identity', 'error' );
       }
 
       user_identity = new WebSocketsUserIdentity({
@@ -52,6 +51,6 @@ UserIdentities.prototype._create_user_identity = function ( session, connector )
 
 UserIdentities.prototype.get_by_session_id = function ( session_id ) {
   var ui = this._cache[ session_id ];
-  if ( !ui ) this.app.log( 'User with session.id "%s" is not found'.format( session_id ), 'warning', 'UserIdentities' );
+  if ( !ui ) this.log( 'User with session.id "%s" is not found'.format( session_id ), 'warning' );
   return ui || null;
 };
