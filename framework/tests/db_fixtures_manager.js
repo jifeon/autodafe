@@ -1,11 +1,14 @@
-var DBFixtureManager = module.exports = function( params ) {
-  return this._init( params );
-};
+var AppModule = require('app_module');
 
-require( 'sys' ).inherits( DBFixtureManager, process.EventEmitter );
+module.exports = DBFixtureManager.inherits( AppModule );
+
+function DBFixtureManager( params ) {
+  return this._init( params );
+}
 
 DBFixtureManager.prototype._init = function( params ){
-  this.app          = params.app;
+  this.super_._init( params );
+
   this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
   this.current_fixture_count = 0;
   this.get_fixtures();
@@ -34,13 +37,13 @@ DBFixtureManager.prototype.get_fixtures = function () {
             }
           }
       } else {
-          self.app.log( 'There is no fixtures files', 'warning' );
+          self.log( 'There is no fixtures files', 'warning' );
         }
         //self.load_fixtures();
           self.emit( 'get_fixtures', Object.keys( self.fixtures ) );
       });
     } else {
-      self.app.log('Fixtures dir does not exist', 'warning');
+      self.log('Fixtures dir does not exist', 'warning');
       self.emit( 'get_fixtures', false );
     }
   });

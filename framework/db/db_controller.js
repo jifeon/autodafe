@@ -28,6 +28,8 @@ DBController.prototype._init_database = function () {
   var db_type = this.__db_config.type;
   delete this.__db_config.type;
 
+  this.__db_config.app = this.app;
+
   switch ( db_type ) {
     case 'mysql':
       this._db = new MysqlDBConnection( this.__db_config );

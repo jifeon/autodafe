@@ -27,7 +27,8 @@ MysqlSchema.prototype.quote_column_name = function( name ) {
 MysqlSchema.prototype._create_table = function( name ) {
   return new MysqlTableSchema({
     db_schema : this,
-    name      : name
+    name      : name,
+    app       : this.app
   });
 }
 

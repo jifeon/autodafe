@@ -1,6 +1,7 @@
 var CommandBuilder = require( './command_builder' );
+var AppModule      = require( 'app_module' );
 
-module.exports = DBSchema;
+module.exports = DBSchema.inherits( AppModule );
 
 function DBSchema( params ) {
   this._init( params );
@@ -8,6 +9,8 @@ function DBSchema( params ) {
 
 
 DBSchema.prototype._init = function( params ) {
+  this.super_._init( params );
+
   this._tables        = {};
   this._connection    = params.connection;
   this._builder       = null;

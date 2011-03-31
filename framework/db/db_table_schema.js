@@ -8,6 +8,8 @@ function DBTableSchema() {
 
 
 DBTableSchema.prototype._init = function( params ) {
+  this.super_._init( params );
+  
   if ( !params.db_schema ) throw new Error( 'Link to DB schema is undefined in DBTableSchema.init' );
 
   this.db_schema      = params.db_schema;
@@ -16,10 +18,6 @@ DBTableSchema.prototype._init = function( params ) {
   this.primary_key    = null;
   this.sequence_name  = null;
   this.columns        = {};
-
-  this.super_._init( {
-    app : this.db_schema.app
-  } );
 };
 
 
