@@ -1,11 +1,11 @@
-module.exports = DBCommand;
+module.exports = DbCommand;
 
-function DBCommand( params ) {
+function DbCommand( params ) {
   this._init( params );
 }
 
 
-DBCommand.prototype._init = function( params ) {
+DbCommand.prototype._init = function( params ) {
   this.__connection = params.connection;
   this.__text       = '';
 
@@ -17,22 +17,22 @@ DBCommand.prototype._init = function( params ) {
 };
 
 
-DBCommand.prototype.get_text = function() {
+DbCommand.prototype.get_text = function() {
   return this.__text;
 };
 
 
-DBCommand.prototype.set_text = function( value ) {
+DbCommand.prototype.set_text = function( value ) {
   this.__text = value;
 }
 
 
-DBCommand.prototype.get_connection = function() {
+DbCommand.prototype.get_connection = function() {
   return this._connection;
 }
 
 
-DBCommand.prototype.bind_value = function( name, value ) {
+DbCommand.prototype.bind_value = function( name, value ) {
   if ( name == Number( name ) ) {
     this.__qm_params[ name ] = value;
     return this;
@@ -43,7 +43,7 @@ DBCommand.prototype.bind_value = function( name, value ) {
 };
 
 
-DBCommand.prototype.execute = function( callback ) {
+DbCommand.prototype.execute = function( callback ) {
   this.__apply_params();
 
   var result_emitter          = new process.EventEmitter;
@@ -79,7 +79,7 @@ DBCommand.prototype.execute = function( callback ) {
 };
 
 
-DBCommand.prototype.__apply_params = function () {
+DbCommand.prototype.__apply_params = function () {
   var i = 0;
   var self = this;
 
@@ -93,11 +93,11 @@ DBCommand.prototype.__apply_params = function () {
 };
 
 
-DBCommand.prototype.get_last_insert_id_on_success = function ( value ) {
+DbCommand.prototype.get_last_insert_id_on_success = function ( value ) {
   this.__get_last_insert_id_on_success = value;
 };
 
 
-DBCommand.prototype.need_get_last_insert_id = function () {
+DbCommand.prototype.need_get_last_insert_id = function () {
   return this.__get_last_insert_id_on_success;
 };

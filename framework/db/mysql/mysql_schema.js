@@ -1,8 +1,8 @@
-var DBSchema          = require( '../db_schema' );
+var DbSchema          = require( '../db_schema' );
 var MysqlTableSchema  = require( './mysql_table_schema' );
 var MysqlColumnSchema = require( './mysql_column_schema' );
 
-module.exports = MysqlSchema.inherits( DBSchema );
+module.exports = MysqlSchema.inherits( DbSchema );
 
 function MysqlSchema( params ) {
   this._init( params );

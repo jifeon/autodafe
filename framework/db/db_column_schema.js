@@ -1,12 +1,12 @@
-module.exports = DBColumnSchema;
+module.exports = DbColumnSchema;
 
-function DBColumnSchema() {
-  throw new Error( 'You can\'t instantiate abstract class DBColumnSchema' );
+function DbColumnSchema() {
+  throw new Error( 'You can\'t instantiate abstract class DbColumnSchema' );
 }
 
 
-DBColumnSchema.prototype._init = function( params ) {
-  if ( !params || !params.db_schema ) throw new Error( 'Link to DB schema is undefined in DBColumnSchema.init' );
+DbColumnSchema.prototype._init = function( params ) {
+  if ( !params || !params.db_schema ) throw new Error( 'Link to Db schema is undefined in DbColumnSchema.init' );
 
   this.db_schema      = params.db_schema;
   this.name           = params.name           || null;
@@ -28,7 +28,7 @@ DBColumnSchema.prototype._init = function( params ) {
 };
 
 
-DBColumnSchema.prototype._extract_type = function() {
+DbColumnSchema.prototype._extract_type = function() {
   if ( !this.db_type ) return this.type = "string";
 
   if ( this.db_type.toLowerCase().indexOf( 'int' ) != -1 )           this.type = 'integer';
@@ -38,7 +38,7 @@ DBColumnSchema.prototype._extract_type = function() {
 }
 
 
-DBColumnSchema.prototype._extract_limit = function() {
+DbColumnSchema.prototype._extract_limit = function() {
   var matches;
 
   if (
@@ -52,12 +52,12 @@ DBColumnSchema.prototype._extract_limit = function() {
 }
 
 
-DBColumnSchema.prototype._extract_default = function() {
+DbColumnSchema.prototype._extract_default = function() {
   this.default_value = this.typecast( this.default_value );
 }
 
 
-DBColumnSchema.prototype.typecast = function( value ) {
+DbColumnSchema.prototype.typecast = function( value ) {
   if ( this.__get_type( value ) == this.type || value == null || value instanceof Error ) return value;
 
   if ( value === '' ) return this.type == 'string' ? '' : null;
@@ -74,7 +74,7 @@ DBColumnSchema.prototype.typecast = function( value ) {
 };
 
 
-DBColumnSchema.prototype.__get_type = function ( value ) {
+DbColumnSchema.prototype.__get_type = function ( value ) {
   var t = typeof value;
   if ( t == 'string' || t == 'boolean' ) return t;
   if ( t == 'number' ) return Math.round( t ) == t ? 'integer' : 'double';

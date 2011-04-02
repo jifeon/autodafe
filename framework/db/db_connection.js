@@ -1,14 +1,14 @@
-var DBCommand   = require( './db_command' );
+var DbCommand   = require( './db_command' );
 var AppModule       = require('app_module');
 
-module.exports = DBConnection.inherits( AppModule );
+module.exports = DbConnection.inherits( AppModule );
 
-function DBConnection() {
-  throw new Error( 'DBConnection is abstract class. You can\'t instantiate it!' );
+function DbConnection() {
+  throw new Error( 'DbConnection is abstract class. You can\'t instantiate it!' );
 }
 
 
-DBConnection.prototype._init = function( params ) {
+DbConnection.prototype._init = function( params ) {
   this.super_._init( params );
 
   this.user = params.user || 'root';
@@ -24,22 +24,22 @@ DBConnection.prototype._init = function( params ) {
 /**
  * Creates a command for execution.
  * @param string SQL statement associated with the new command.
- * @return DbCommand the DB command
+ * @return DbCommand the Db command
  * @throws Exception if the connection is not active
  */
-DBConnection.prototype.create_command = function( sql ) {
-  return new DBCommand({
+DbConnection.prototype.create_command = function( sql ) {
+  return new DbCommand({
     connection  : this,
     text        : sql
   });
 };
 
-DBConnection.prototype.get_schema = function () {
+DbConnection.prototype.get_schema = function () {
   return this._schema;
 };
 
 
-DBConnection.prototype.quote_value = function ( x ) {
+DbConnection.prototype.quote_value = function ( x ) {
   switch ( typeof x ) {
     case 'string':
       return "'" + this.__add_slashes( x ) + "'";
@@ -67,19 +67,19 @@ DBConnection.prototype.quote_value = function ( x ) {
           + "'";
       }
       else {
-        throw new Error( 'DBCommand.sqlstr: unsupported type "object"' );
+        throw new Error( 'DbCommand.sqlstr: unsupported type "object"' );
       }
 
     case 'boolean':
       return x === true ? '1' : '0';
 
     default:
-      throw new Error( 'DBConnection.quote_value: unknown type: ' + typeof x );
+      throw new Error( 'DbConnection.quote_value: unknown type: ' + typeof x );
   }
 };
 
 
-DBConnection.prototype.__add_slashes = function( str ) {
+DbConnection.prototype.__add_slashes = function( str ) {
   // Backslash-escape single quotes, double quotes and backslash. Morph 0x00 into \0.
   return str.replace( /(['"\\])/g, '\\$1' ).replace( /\x00/g, '\\0' );
 }

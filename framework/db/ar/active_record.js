@@ -1,5 +1,5 @@
 var Model           = require('model');
-var DBCriteria      = require('../../db/db_criteria');
+var DbCriteria      = require('../../db/db_criteria');
 var MetaData        = require('./active_record_meta_data');
 var AppModule       = require('app_module');
 
@@ -342,7 +342,7 @@ ActiveRecord.prototype.get_db_criteria = function ( create_if_null ) {
     var c = this.default_scope();
 
     if( !Object.empty( c ) || create_if_null )
-      this.__c = new DBCriteria( c );
+      this.__c = new DbCriteria( c );
   }
 
   return this.__c;

@@ -1,6 +1,6 @@
-var DBColumnSchema = require('../db_column_schema');
+var DbColumnSchema = require('../db_column_schema');
 
-module.exports = MysqlColumnSchema.inherits( DBColumnSchema );
+module.exports = MysqlColumnSchema.inherits( DbColumnSchema );
 
 function MysqlColumnSchema( params ) {
   this._init( params );
@@ -19,7 +19,7 @@ MysqlColumnSchema.prototype._extract_default = function() {
   if ( this.db_type === 'timestamp' && this.default_value === 'current_timestamp' )
     this.default_value = null;
   else
-    DBColumnSchema.prototype._extract_default.call( this );
+    DbColumnSchema.prototype._extract_default.call( this );
 };
 
 
@@ -40,5 +40,5 @@ MysqlColumnSchema.prototype._extract_limit = function() {
 
     this.size = this.precision = size - 2;
   }
-  else DBColumnSchema.prototype._extract_limit.call( this );
+  else DbColumnSchema.prototype._extract_limit.call( this );
 };

@@ -1,12 +1,12 @@
 var AppModule = require('app_module');
 
-module.exports = DBFixtureManager.inherits( AppModule );
+module.exports = DbFixtureManager.inherits( AppModule );
 
-function DBFixtureManager( params ) {
+function DbFixtureManager( params ) {
   return this._init( params );
 }
 
-DBFixtureManager.prototype._init = function( params ){
+DbFixtureManager.prototype._init = function( params ){
   this.super_._init( params );
 
   this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
@@ -15,7 +15,7 @@ DBFixtureManager.prototype._init = function( params ){
   return this;
 }
 
-DBFixtureManager.prototype.get_fixtures = function () {
+DbFixtureManager.prototype.get_fixtures = function () {
 //  var emitter = new process.EventEmitter;
   var path = require( 'path' );
   var self = this;
@@ -50,14 +50,14 @@ DBFixtureManager.prototype.get_fixtures = function () {
 //  return emitter;
 };
 
-DBFixtureManager.prototype.load_fixtures = function( /*emitter*/ ){
+DbFixtureManager.prototype.load_fixtures = function( /*emitter*/ ){
   var self = this;
   for( table_name in this.fixtures ) {
       this.load_fixture( table_name/*, emitter*/ );
   }
 };
 
-DBFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
+DbFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
   var schema  = this.app.db._schema;
   var builder = schema.get_command_builder();
   var table   = schema.get_table( table_name );
@@ -73,7 +73,7 @@ DBFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
   })
 };
 
-DBFixtureManager.prototype.insert = function( fixtures, builder, table, counter ){
+DbFixtureManager.prototype.insert = function( fixtures, builder, table, counter ){
   if( counter < this.current_fixture_count ){
     var command = builder.create_insert_command( table, fixtures[ fixtures.fixtures_names[ counter ] ] );
     var self = this;

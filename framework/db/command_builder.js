@@ -1,5 +1,5 @@
-var DBCriteria    = require('./db_criteria');
-var DBExpression  = require('./db_expression');
+var DbCriteria    = require('./db_criteria');
+var DbExpression  = require('./db_expression');
 
 module.exports = CommandBuilder;
 
@@ -108,7 +108,7 @@ CommandBuilder.prototype.create_insert_command = function( table, data ) {
     if ( column != null && ( value != null || column.allow_null ) ) {
       fields.push( column.raw_name );
 
-      if ( value instanceof DBExpression ) {
+      if ( value instanceof DbExpression ) {
         placeholders.push( value.expression );
 
         for ( var n in value.params ) {
@@ -162,7 +162,7 @@ CommandBuilder.prototype.create_update_command = function( table, data, criteria
 
     if ( column != null ) {
 
-      if ( value instanceof DBExpression ) {
+      if ( value instanceof DbExpression ) {
         fields.push( column.raw_name + '=' + value.expression );
 
         for ( var n in value.params ) {
@@ -290,9 +290,9 @@ CommandBuilder.prototype.create_criteria = function( condition, params ) {
   //todo: реакция на undefined в параметрах
 
   var criteria;
-  if ( condition instanceof Object ) criteria = new DBCriteria( condition );
-  else if ( condition instanceof DBCriteria ) criteria = condition.clone();
-  else criteria = new DBCriteria({
+  if ( condition instanceof Object ) criteria = new DbCriteria( condition );
+  else if ( condition instanceof DbCriteria ) criteria = condition.clone();
+  else criteria = new DbCriteria({
     condition : condition,
     params    : params
   });

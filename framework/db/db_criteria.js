@@ -1,11 +1,11 @@
-module.exports = DBCriteria;
+module.exports = DbCriteria;
 
-function DBCriteria( params ) {
+function DbCriteria( params ) {
   this._init( params );
 }
 
 
-DBCriteria.prototype._init = function( params ) {
+DbCriteria.prototype._init = function( params ) {
   this.select     = '*';
   this.distinct   = false;
   this.condition  = '';
@@ -23,7 +23,7 @@ DBCriteria.prototype._init = function( params ) {
   }
 };
 
-DBCriteria.prototype.merge_with = function( criteria, use_and ) {
+DbCriteria.prototype.merge_with = function( criteria, use_and ) {
   var and = use_and || use_and == undefined ? 'AND' : 'OR';
 
   if ( criteria instanceof Object ) criteria = new this.constructor( criteria );

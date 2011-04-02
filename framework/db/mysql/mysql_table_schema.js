@@ -1,6 +1,6 @@
-var DBTableSchema = require( '../db_table_schema' );
+var DbTableSchema = require( '../db_table_schema' );
 
-module.exports = MysqlTableSchema.inherits( DBTableSchema );
+module.exports = MysqlTableSchema.inherits( DbTableSchema );
 
 function MysqlTableSchema( params ) {
   this._init( params );

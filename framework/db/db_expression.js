@@ -1,16 +1,16 @@
-module.exports = DBExpression;
+module.exports = DbExpression;
 
-function DBExpression( params ) {
+function DbExpression( params ) {
   this._init( params );
 }
 
 
-DBExpression.prototype._init = function( params ) {
+DbExpression.prototype._init = function( params ) {
   this.expression = params.expression;
   this.params     = params.params || {};
 };
 
 
-DBExpression.prototype.toString = function () {
+DbExpression.prototype.toString = function () {
   return this.expression;
 };
