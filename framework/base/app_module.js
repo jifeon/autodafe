@@ -1,3 +1,5 @@
+var Proxy = global.Proxy;
+
 module.exports = AppModule.inherits( process.EventEmitter );
 
 function AppModule() {
@@ -33,3 +35,19 @@ AppModule.prototype._init = function( params ) {
 AppModule.prototype.log = function ( message, type ) {
   this.app.logger.log( message, type, this.constructor.name );
 };
+
+var handler = Proxy.Handler({});
+handler.get = function(_, name) {
+  return function() {
+    var args = Array.prototype.slice.call( arguments );
+    var f = function( rcvr ) {
+      return rcvr[ name ].apply( rcvr, args );
+    };
+    f.selector  = name;
+    f.args      = args;
+    return f;
+  }
+}
+
+// turns messages into functions
+AppModule.prototype._ = Proxy.create( handler );

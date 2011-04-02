@@ -3,6 +3,8 @@ exports.get_batch = function( application, assert ) {
   var LogRouter       = require( 'logging/log_router' );
   var ConsoleRoute    = require( 'logging/console_route' );
   var UserIdentities  = require( 'users/users_identities' );
+  var Component       = require( 'components/component' );
+  var UserComponent   = require( 'users/users_identities' );
 
   return {
     topic : application.components,
@@ -26,10 +28,32 @@ exports.get_batch = function( application, assert ) {
         'false' : function( app ){
           assert.isUndefined( app.web_sockets_server, 'WebSocketServer must be not included' );
         }
+      },
+
+      'user component' : {
+        'should be instance of `Component`' : function( app ) {
+          assert.instanceOf( app.user_component, Component );
+        },
+        'param of user\'s component should be equal 42' : function( app ) {
+          assert.equal( app.user_component.param, 42 );
+        }
+      },
+
+      'nested user component' : {
+        'should be instance of `Component`' : function( app ) {
+          assert.instanceOf( app.nested_user_component, Component );
+        },
+        'param of nested user\'s component should be equal 42' : function( app ) {
+          assert.equal( app.nested_user_component.param, 43 );
+        }
+      },
+
+      'hidden component in `lib` folder should not be loaded' : function( app ) {
+        assert.isUndefined( app.hidden_component );
       }
     },
 
-    'try load unknwn component' : function( components ) {
+    'try load unknown component' : function( components ) {
       assert.throws( function() {
         components.load( 'unknown_component' );
       } );

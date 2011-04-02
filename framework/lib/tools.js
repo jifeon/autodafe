@@ -74,8 +74,8 @@ Object.clone = function( obj ) {
   return result;
 };
 
-var Proxy             = require( './proxy/node-proxy/lib/node-proxy' );
-var ForwardingHandler = require( './proxy/proxy_handler' );
+var Proxy = global.Proxy  = require( './proxy/node-proxy/lib/node-proxy' );
+var ForwardingHandler     = require( './proxy/proxy_handler' );
 
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );

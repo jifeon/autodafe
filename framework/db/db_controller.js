@@ -16,11 +16,8 @@ DBController.prototype._init = function( params ) {
 };
 
 
-DBController.prototype._define_getter = function () {
-  var self = this;
-  this.app.__defineGetter__( 'db', function() {
-    return self._db ? self._db : self._init_database();
-  } );
+DBController.prototype.get = function () {
+  return this._db ? this._db : this._init_database();
 };
 
 

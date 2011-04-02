@@ -11,16 +11,11 @@ Component.prototype._init = function( params ) {
   this.super_._init( params );
 
   this.name = params.name;
-
-  this._define_getter();
 };
 
 
-Component.prototype._define_getter = function () {
-  var self = this;
-  this.app.__defineGetter__( this.name, function() {
-    return self;
-  } );
+Component.prototype.get = function () {
+  return this;
 };
 
 

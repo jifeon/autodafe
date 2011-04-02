@@ -32,27 +32,8 @@ ComponentsManager.prototype.load_components = function () {
     this.load_component( component_name );
   }
 
-  var self = this;
-  for ( component_name in system_components ) {
-
-    if ( this._items[ component_name ] ) continue;
-
-    this.app.__defineGetter__( component_name, function() {
-      self.log(
-        'Try to use component "%s" which is not included. \
-         To include component configure it in your config file'.format( component_name ),
-        'warning'
-      );
-    } );
-
-    this.app.__defineSetter__( component_name, function( v ) {
-      self.log(
-        'Property "%s" in Application engaged for native autodafe\'s component. \
-         You can\'t set it to "%s"'.format( component_name, v ),
-        'warning'
-      );
-    } );
-  }
+  for ( var name in system_components )
+    if ( !this._items[ name ] ) this.app.register_component( name );
 };
 
 
@@ -71,5 +52,8 @@ ComponentsManager.prototype.load_component = function ( component_name ) {
 
   component_params.name = component_name;
   component_params.app  = this.app;
-  this._items[ component_name ] = new component_class( component_params );
+
+  var component                 = new component_class( component_params );
+  this._items[ component_name ] = component;
+  this.app.register_component( component_name, component );
 };

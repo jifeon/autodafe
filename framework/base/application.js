@@ -100,6 +100,28 @@ Application.prototype._init_components = function () {
 };
 
 
+Application.prototype.register_component = function ( name, component ) {
+  Object.defineProperty( this, name, {
+    get : function() {
+      return component
+        ? component.get()
+        : this.log(
+          'Try to use component "%s" which is not included. \
+           To include component configure it in your config file'.format( name ),
+          'warning'
+        )
+    },
+    set : function( v ) {
+      this.log(
+        'Property "%s" in Application engaged for native autodafe\'s component. \
+         You can\'t set it to "%s"'.format( name, v ),
+        'warning'
+      );
+    }
+  } )
+};
+
+
 Application.prototype.get_param = function ( name ) {
   return this._config.params[ name ] || null;
 };
