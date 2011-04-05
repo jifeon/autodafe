@@ -1,6 +1,5 @@
 var DbSchema          = require( '../db_schema' );
 var MysqlTableSchema  = require( './mysql_table_schema' );
-var MysqlColumnSchema = require( './mysql_column_schema' );
 
 module.exports = MysqlSchema.inherits( DbSchema );
 
@@ -9,18 +8,13 @@ function MysqlSchema( params ) {
 }
 
 
-MysqlSchema.prototype._init = function( params ) {
-  this.super_._init( params );
-};
-
-
-MysqlSchema.prototype.quote_table_name = function( name ) {
-  return '`' + name + '`';
+MysqlSchema.prototype.quote_simple_table_name = function( name ) {
+  return '`' + this.db_connection.escape_sql_str( name ) + '`';
 }
 
 
-MysqlSchema.prototype.quote_column_name = function( name ) {
-  return '`' + name + '`';
+MysqlSchema.prototype.quote_simple_column_name = function( name ) {
+  return '`' + this.db_connection.escape_sql_str( name ) + '`';
 }
 
 
@@ -31,19 +25,22 @@ MysqlSchema.prototype._load_table = function( name, callback ) {
     app       : this.app
   });
   
-  table.on( 'initialized', function() {
-    callback( null, table );
+  table.on( 'initialized', function( e ) {
+    callback( e, table );
   } );
 }
 
 
-MysqlSchema.prototype._create_column = function( column ) {
-  return new MysqlColumnSchema({
-    name           : column['Field'],
-    allow_null     : column['Null'] == 'YES',
-    is_primary_key : column['Key'].indexOf( 'PRI' ) != -1,
-    db_type        : column['Type'],
-    default_value  : column['Default'],
-    db_schema      : this
-  });
-}
+MysqlSchema.prototype._find_table_names = function ( schema, callback ) {
+  var from_schema = schema
+    ? ' FROM ' + this.quote_table_name( schema )
+    : '';
+
+  this.connection.create_command( 'SHOW TABLES' + from_schema ).execute( function( names ) {
+    return schema
+      ? names.map( function( name ) {
+          return schema + '.' + name
+        } )
+      : names;
+  } );
+};

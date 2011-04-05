@@ -1,4 +1,5 @@
-var DbTableSchema = require( '../db_table_schema' );
+var DbTableSchema     = require( '../db_table_schema' );
+var MysqlColumnSchema = require( './mysql_column_schema' );
 
 module.exports = MysqlTableSchema.inherits( DbTableSchema );
 
@@ -55,7 +56,7 @@ MysqlTableSchema.prototype._find_columns = function() {
   columns_emitter.on( 'complete', function( result, db ) {
 
     db.fetch_obj( result, function( column ) {
-      var col = self.db_schema._create_column( column );
+      var col = self._create_column( column );
       self.columns[ col.name ] = col;
 
       if ( col.is_primary_key ) {
@@ -79,4 +80,16 @@ MysqlTableSchema.prototype._find_columns = function() {
   } );
 
   return columns_emitter;
+}
+
+
+MysqlTableSchema.prototype._create_column = function( column ) {
+  return new MysqlColumnSchema({
+    name           : column['Field'],
+    allow_null     : column['Null'] == 'YES',
+    is_primary_key : column['Key'].indexOf( 'PRI' ) != -1,
+    db_type        : column['Type'],
+    default_value  : column['Default'],
+    db_schema      : this.db_schema
+  });
 }
