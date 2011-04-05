@@ -24,12 +24,16 @@ MysqlSchema.prototype.quote_column_name = function( name ) {
 }
 
 
-MysqlSchema.prototype._create_table = function( name ) {
-  return new MysqlTableSchema({
+MysqlSchema.prototype._load_table = function( name, callback ) {
+  var table = this._tables[ name ] = new MysqlTableSchema({
     db_schema : this,
     name      : name,
     app       : this.app
   });
+  
+  table.on( 'initialized', function() {
+    callback( null, table );
+  } );
 }
 
 

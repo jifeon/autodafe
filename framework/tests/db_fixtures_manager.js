@@ -59,18 +59,17 @@ DbFixtureManager.prototype.load_fixtures = function( /*emitter*/ ){
 
 DbFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
   var schema  = this.app.db._schema;
-  var builder = schema.get_command_builder();
-  var table   = schema.get_table( table_name );
+  var builder = schema.command_builder;
   var self = this;
-  table.on( 'initialized', function() {
-    schema.truncate_table( table_name, function( res ){
+  schema.get_table( table_name, function() {
+    self.app.db.query( schema.truncate_table( table_name ), function( res ){
       if( res != undefined ){
         var fixtures = self.fixtures[ table_name ];
         self.current_fixture_count = fixtures.fixtures_names.length - 1;
         self.insert( fixtures, builder, table, 0);
       }
     })
-  })
+  } );
 };
 
 DbFixtureManager.prototype.insert = function( fixtures, builder, table, counter ){

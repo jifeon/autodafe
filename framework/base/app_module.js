@@ -5,6 +5,12 @@ function AppModule() {
 }
 
 
+var __ide_hack__ = {
+  class_name : 1,
+  app        : 1
+}
+
+
 AppModule.prototype._init = function( params ) {
   if ( !params || !params.app ) throw new Error(
     'Link to application is undefined' + ( this.constructor.name
@@ -13,6 +19,10 @@ AppModule.prototype._init = function( params ) {
       '`function Name() {}` instead of `var Name = function() {}` because AppModule uses `this.constructor.name` property for logging'
     )
   );
+
+  Object.defineProperty( this, 'class_name', {
+    value : this.constructor.name
+  } );
 
   var application = params.app;
   delete params.app;

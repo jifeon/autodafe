@@ -14,8 +14,8 @@ MysqlDbConnection.prototype._init = function(params) {
   this.super_._init( params );
 
   this._schema = new MysqlSchema({
-    connection : this,
-    app        : this.app
+    db_connection : this,
+    app           : this.app
   });
 
   var self = this;

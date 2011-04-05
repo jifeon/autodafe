@@ -260,7 +260,7 @@ ActiveRecord.prototype.primary_key = function () {
 
 
 ActiveRecord.prototype.get_command_builder = function () {
-  return this.db.get_schema().get_command_builder();
+  return this.db.get_schema().command_builder;
 };
 
 

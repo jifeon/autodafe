@@ -12,6 +12,30 @@ Array.prototype.merge = function( ar ) {
 };
 
 
+Array.prototype.for_each = function ( fun/*, thisp*/ ) {
+  "use strict";
+
+  if (this === void 0 || this === null)
+    throw new TypeError();
+
+  var t   = Object(this);
+  var len = t.length >>> 0;
+  if (typeof fun !== "function") throw new TypeError();
+
+  var thisp = arguments[1];
+  var args  = this.prototype.slice.call( arguments, 2 );
+  args.unshift( null );
+
+  for (var i = 0; i < len; i++)
+  {
+    if ( i in t ){
+      args[0] = t[i];
+      fun.apply( thisp, args );
+    }
+  }
+};
+
+
 Object.merge = function( obj1, obj2 ) {
   if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return new TypeError;
 

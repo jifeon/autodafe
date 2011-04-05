@@ -49,7 +49,7 @@ MysqlTableSchema.prototype._resolve_table_name = function( name ) {
 
 MysqlTableSchema.prototype._find_columns = function() {
   var sql             = 'SHOW COLUMNS FROM ' + this.raw_name;
-  var columns_emitter = this.db_schema.get_db_connection().create_command( sql ).execute();
+  var columns_emitter = this.db_schema.db_connection.create_command( sql ).execute();
   var self            = this;
 
   columns_emitter.on( 'complete', function( result, db ) {

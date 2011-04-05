@@ -42,7 +42,7 @@ DbConnection.prototype.get_schema = function () {
 DbConnection.prototype.quote_value = function ( x ) {
   switch ( typeof x ) {
     case 'string':
-      return "'" + this.__add_slashes( x ) + "'";
+      return "'" + this.escape_sql_str( x ) + "'";
 
     case 'number':
       return x.toString();
@@ -79,7 +79,7 @@ DbConnection.prototype.quote_value = function ( x ) {
 };
 
 
-DbConnection.prototype.__add_slashes = function( str ) {
+DbConnection.prototype.escape_sql_str = function( str ) {
   // Backslash-escape single quotes, double quotes and backslash. Morph 0x00 into \0.
   return str.replace( /(['"\\])/g, '\\$1' ).replace( /\x00/g, '\\0' );
 }

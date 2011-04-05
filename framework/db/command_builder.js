@@ -13,7 +13,7 @@ CommandBuilder.prototype.PARAM_PREFIX = ':atdf';
 
 CommandBuilder.prototype._init = function( params ) {
   this._schema      = params.schema;
-  this._connection  = this._schema.get_db_connection();
+  this._connection  = this._schema.db_connection;
 };
 
 
@@ -27,17 +27,7 @@ CommandBuilder.prototype.get_schema = function () {
 };
 
 
-CommandBuilder.prototype._ensure_table = function( table ) {
-  var table_name;
-
-  if ( typeof table == "string" && (table = this._schema.get_table( table_name = table )) === null )
-    throw new Error( 'Table ' + table_name + ' does not exist.' );
-}
-
-
 CommandBuilder.prototype.create_find_command = function( table, criteria, alias ) {
-  this._ensure_table( table );
-
   var select = Array.isArray( criteria.select ) ? criteria.select.join(',') : criteria.select;
 
   alias = criteria.alias != '' ? criteria.alias : alias || 't';
@@ -59,8 +49,7 @@ CommandBuilder.prototype.create_find_command = function( table, criteria, alias 
 
 
 CommandBuilder.prototype.create_count_command = function( table, criteria, alias ) {
-  this._ensure_table( table );
-  
+
   alias = criteria.alias != '' ? criteria.alias : alias || 't';
   alias = this._schema.quote_table_name( alias );
 
@@ -76,7 +65,6 @@ CommandBuilder.prototype.create_count_command = function( table, criteria, alias
 
 
 CommandBuilder.prototype.create_delete_command = function( table, criteria ) {
-  this._ensure_table( table );
 
   var sql = "DELETE FROM " +table.raw_name;
   sql = this.apply_join(      sql, criteria.join      );
@@ -93,7 +81,6 @@ CommandBuilder.prototype.create_delete_command = function( table, criteria ) {
 
 
 CommandBuilder.prototype.create_insert_command = function( table, data ) {
-  this._ensure_table( table );
 
   var fields        = [];
   var values        = {};
@@ -147,7 +134,6 @@ CommandBuilder.prototype.create_insert_command = function( table, data ) {
 
 
 CommandBuilder.prototype.create_update_command = function( table, data, criteria ) {
-  this._ensure_table( table );
 
   var fields = [];
   var values = {};
@@ -198,7 +184,6 @@ CommandBuilder.prototype.create_update_command = function( table, data, criteria
 
 
 CommandBuilder.prototype.create_update_counter_command = function( table, counters, criteria ) {
-  this._ensure_table( table );
 
   var fields = [];
 
@@ -302,7 +287,6 @@ CommandBuilder.prototype.create_criteria = function( condition, params ) {
 
 
 CommandBuilder.prototype.create_pk_criteria = function( table, pk, condition, params, prefix ) {
-  this._ensure_table( table );
 
   var criteria = this.create_criteria( condition, params );
   if ( criteria.alias != '' ) prefix = this._schema.quote_table_name( criteria.alias ) + '.';
@@ -320,13 +304,11 @@ CommandBuilder.prototype.create_pk_criteria = function( table, pk, condition, pa
 
 
 CommandBuilder.prototype.create_pk_condition = function( table, values, prefix ) {
-  this._ensure_table( table );
   return this.create_in_condition( table, table.primary_key, values, prefix );
 }
 
 
 CommandBuilder.prototype.create_column_criteria = function( table, columns, condition, params, prefix ) {
-  this._ensure_table( table );
 
   var criteria = this.create_criteria( condition, params );
   if ( criteria.alias != '' ) prefix = this._schema.quote_table_name( criteria.alias ) + '.';
@@ -373,8 +355,6 @@ CommandBuilder.prototype.create_column_criteria = function( table, columns, cond
 
 CommandBuilder.prototype.create_in_condition = function( table, column_name, values, prefix ) {
   if ( Object.empty( values ) ) return '0=1';
-
-  this._ensure_table( table );
 
   if ( !prefix ) prefix = table.raw_name + '.';
 
