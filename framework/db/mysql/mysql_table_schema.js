@@ -57,7 +57,7 @@ MysqlTableSchema.prototype._find_columns = function() {
 
     db.fetch_obj( result, function( column ) {
       var col = self._create_column( column );
-      self.columns[ col.name ] = col;
+      self._columns[ col.name ] = col;
 
       if ( col.is_primary_key ) {
 
@@ -71,7 +71,7 @@ MysqlTableSchema.prototype._find_columns = function() {
           self.primary_key.push( col.name );
 
         if ( column['Extra'].toLowerCase().indexOf( 'auto_increment' ) != -1 )
-          self.sequence_name = '';
+          self.in_sequence = true;
       }
     });
 

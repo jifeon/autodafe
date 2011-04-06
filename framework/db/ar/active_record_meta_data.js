@@ -8,7 +8,6 @@ function ActiveRecordMetaData( params ) {
 ActiveRecordMetaData.prototype._init = function( params ) {
 
   this.table_schema       = null;
-  this.columns            = {};
   this.relations          = {};
   this.attribute_defaults = {};
   this.initialized        = false
@@ -30,13 +29,12 @@ ActiveRecordMetaData.prototype.deferred_init = function ( table ) {
   if( table.primary_key == null ) table.primary_key = this.__model.primary_key();
 
   this.table_schema = table;
-  this.columns      = table.columns;
 
-  for ( var name in table.columns ) {
-    var column = table.columns[ name ];
+  table.get_column_names().forEach( function( name ) {
+    var column = table.get_column( name );
     if( !column.is_primary_key && column.default_value != null )
       this.attribute_defaults[ name ] = column.default_value;
-  }
+  }, this );
 
   this.initialized = true;
   this.emit( 'initialized' );

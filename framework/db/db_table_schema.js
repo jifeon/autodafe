@@ -1,33 +1,41 @@
-var AppModule       = require('app_module');
+var AppModule = require('app_module');
 
 module.exports = DbTableSchema.inherits( AppModule );
 
 function DbTableSchema() {
-  throw new Error( 'You can\'t instantiate abstract class DbTableSchema' );
+  throw new TypeError( 'You can\'t instantiate abstract class DbTableSchema' );
+}
+
+
+var __ide_hack__ = {
+  db_schema : 1
 }
 
 
 DbTableSchema.prototype._init = function( params ) {
   this.super_._init( params );
-  
-  if ( !params.db_schema ) throw new Error( 'Link to Db schema is undefined in DbTableSchema.init' );
 
-  this.db_schema      = params.db_schema;
+  if ( !params.db_schema ) throw new TypeError( 'Link to Db schema is not defined in DbTableSchema.init' );
+  Object.defineProperty( this, 'db_schema', {
+    value : params.db_schema
+  } );
+
   this.name           = null;
   this.raw_name       = null;
   this.primary_key    = null;
-  this.sequence_name  = null;
-  this.columns        = {};
+  this.in_sequence    = false;
+
+  this._columns       = {};
 };
 
 
 DbTableSchema.prototype.get_column = function( name ) {
-  return this.columns[ name ] ? this.columns[ name ] : null;
+  return this._columns[ name ] || null;
 };
 
 
 DbTableSchema.prototype.get_column_names = function() {
-  return Object.keys( this.columns );
+  return Object.keys( this._columns );
 };
 
 

@@ -105,7 +105,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
     if ( !result ) return false;
 
     var primary_key = table.primary_key;
-    if ( table.sequence_name != null ) {
+    if ( table.in_sequence ) {
 
       if ( typeof primary_key == "string" && self[ primary_key ] == null )
         self[ primary_key ] = result.insertId;
@@ -406,13 +406,12 @@ ActiveRecord.prototype.set_attributes = function ( values, safe_only ) {
   var self = this;
 //  var emitter = new process.EventEmitter;
 
-  this.get_table_schema( function( schema ){
-    var attributes = schema.columns;
-    var pk = schema.primary_key;
+  this.get_table_schema( function( table ){
+    var pk = table.primary_key;
 
     for ( var name in values ) {
       var value = values[ name ];
-      if ( attributes[ name ] ){
+      if ( table.get_column( name ) ){
         if( pk instanceof Object ){
           if( !pk[ name ] ) {
             self[ name ] = value;

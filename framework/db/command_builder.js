@@ -363,7 +363,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
   var column, value, name;
 
   if ( typeof column_name == "string" ) {// simple key
-    column = table.columns[ column_name ];
+    column = table.get_column( column_name );
 
     if ( !column ) throw new Error( 'Table ' + table.name + ' does not have a column named ' + column_name + '.' );
 
@@ -384,7 +384,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
 
     for ( var c = 0, c_ln = column_name.length; c < c_ln; c++ ) {
       name    = column_name[ c ];
-      column  = table.columns[ name ];
+      column  = table.get_column( name );
 
       if ( !column ) throw new Error( 'Table ' + table.name + ' does not have a column named ' + name + '.' );
 
@@ -405,7 +405,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
       var entries = [];
       for ( name in values[0] ) {
         value = values[0][ name ];
-        entries.push( prefix + table.columns[name].raw_name + ( value == null ? ' IS NULL' : '=' + value ) );
+        entries.push( prefix + table.get_column( name ).raw_name + ( value == null ? ' IS NULL' : '=' + value ) );
       }
 
       return entries.join( 'AND ' );
@@ -420,7 +420,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
 
 CommandBuilder.prototype._create_composite_in_condition = function( table, values, prefix ) {
   var key_names = [];
-  for ( var name in values[0] ) key_names.push( prefix + table.columns[name].raw_name );
+  for ( var name in values[0] ) key_names.push( prefix + table.get_column(name).raw_name );
 
   var vs = [];
   for ( var v = 0, v_ln = values.length; v < v_ln; v++ ) {
