@@ -11,39 +11,30 @@ function MysqlTableSchema( params ) {
 MysqlTableSchema.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this.schema_name  = null; // name of other database
-
-  this._initialized = false;
+  this.db_schema_name = null; // name of other database
 
   this._resolve_table_name( params.name );
   this._find_columns();
 
-  var self = this;
   this.on( 'initialized', function() {
-    self.log( 'Table "%s" initialized'.format( this.name ) );
+    this.log( 'Table "%s" has initialized'.format( this.name ) );
   } );
 };
 
 
-MysqlTableSchema.prototype.is_initialized = function () {
-  return this._initialized;
-};
-
-
 MysqlTableSchema.prototype._resolve_table_name = function( name ) {
-  if ( typeof name != "string" || !name ) return this.log(
-    new Error( 'You can\'t create table without name' )
-  );
+  if ( typeof name != "string" || !name ) throw new Error( 'You can\'t create table without name' );
 
   var parts = name.replace( '`', '' ).split( '.' );
   if ( parts[1] ) {
-    this.schema_name = parts[0];
-    this.name        = parts[1];
-    this.raw_name    = this.db_schema.quote_table_name( this.schema_name ) + '.' + this.db_schema.quote_table_name( this.name );
+    this.db_schema_name = parts[0];
+    this.name           = parts[1];
+    this.raw_name       = this.db_schema.quote_table_name( this.db_schema_name ) + '.' +
+                          this.db_schema.quote_table_name( this.name );
   }
   else {
-    this.name      = parts[0];
-    this.raw_name  = this.db_schema.quote_table_name( this.name );
+    this.name           = parts[0];
+    this.raw_name       = this.db_schema.quote_table_name( this.name );
   }
 }
 
@@ -75,11 +66,8 @@ MysqlTableSchema.prototype._find_columns = function() {
       }
     });
 
-    self._initialized = true;
     self.emit( 'initialized' );
   } );
-
-  return columns_emitter;
 }
 
 
