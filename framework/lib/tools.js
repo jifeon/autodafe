@@ -115,10 +115,12 @@ Function.prototype.inherits = function( super_class ) {
         return typeof super_prototype[name] == 'function' ? function() {
 
           var super_prototype_with_own_method = super_prototype;
+          var caller        = arguments.callee.caller;
+          var calling_chain = caller.chain || [ caller ];
 
           while (
             !super_prototype_with_own_method.hasOwnProperty( name ) ||
-            arguments.callee.caller == super_prototype_with_own_method[ name ]
+            calling_chain.indexOf( super_prototype_with_own_method[ name ] ) != -1
           ) {
             try {
               super_prototype_with_own_method = super_prototype_with_own_method.constructor.super_.prototype;
@@ -128,7 +130,11 @@ Function.prototype.inherits = function( super_class ) {
             }
           }
 
-          super_prototype_with_own_method[ name ].apply( self, arguments );
+          var method = super_prototype_with_own_method[ name ];
+          calling_chain.push( method );
+          method.chain = calling_chain;
+          method.apply( self, arguments );
+          delete method.chain;
         } : super_prototype[name];
       }
 

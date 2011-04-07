@@ -61,8 +61,9 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
-        '../unit/framework/db/'
-//        '../unit/framework/base/application_tests'
+        '../unit/framework/'
+//        '../unit/framework/db/'
+//        '../unit/framework/base/autodafe_part'
       ],
       exclude : [    // may be regexp or string which will be searched in path
 //        'active_record_tests'//,

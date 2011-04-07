@@ -27,10 +27,10 @@ function C() {
   this.init();
 }
 
-//C.prototype.init = function () {
-//  console.log( 'C' );
-//  this.super_.init();
-//};
+C.prototype.init = function CI () {
+  console.log( 'C' );
+  this.super_.init();
+};
 
 
 D.inherits( C );

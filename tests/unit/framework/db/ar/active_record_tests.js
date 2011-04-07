@@ -13,7 +13,9 @@ exports.get_batch = function( application, assert ) {
   }
 
   return {
-    topic : new application.model( Post ),
+    topic : function() {
+      return new application.model( Post );
+    },
     'db test'        : function( topic ) {
       assert.equal( topic.get_db_connection(), application.db );
     },
