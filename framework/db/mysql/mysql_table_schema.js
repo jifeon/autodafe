@@ -78,6 +78,7 @@ MysqlTableSchema.prototype._create_column = function( column ) {
     is_primary_key : column['Key'].indexOf( 'PRI' ) != -1,
     db_type        : column['Type'],
     default_value  : column['Default'],
-    db_schema      : this.db_schema
+    db_schema      : this.db_schema,
+    app            : this.app
   });
 }

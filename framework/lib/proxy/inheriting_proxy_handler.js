@@ -42,7 +42,9 @@ InheritingProxyHandler.prototype.get = function ( receiver, name ) {
         var method = super_prototype[ name ];
         calling_chain.push( method );
         method.chain = calling_chain;
-        method.apply( self.context, arguments );
+        var result = method.apply( self.context, arguments );
         delete method.chain;
+      
+        return result;
       };
 };
