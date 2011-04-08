@@ -98,8 +98,7 @@ Object.clone = function( obj ) {
   return result;
 };
 
-var Proxy             = require( './proxy/node-proxy/lib/node-proxy' );
-var ForwardingHandler = require( './proxy/proxy_handler' );
+var InheritingProxyHandler = require( './proxy/inheriting_proxy_handler' );
 
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );
@@ -107,38 +106,12 @@ Function.prototype.inherits = function( super_class ) {
   Object.defineProperty( this.prototype, 'super_', {
     get : function() {
 
-      var super_prototype = super_class.prototype;
-      var handler         = ForwardingHandler( super_prototype );
+      var handler = new InheritingProxyHandler( {
+        target  : super_class.prototype,
+        context : this
+      } );
 
-      var self    = this;
-      handler.get = function( receiver, name ) {
-        return typeof super_prototype[name] == 'function' ? function() {
-
-          var super_prototype_with_own_method = super_prototype;
-          var caller        = arguments.callee.caller;
-          var calling_chain = caller.chain || [ caller ];
-
-          while (
-            !super_prototype_with_own_method.hasOwnProperty( name ) ||
-            calling_chain.indexOf( super_prototype_with_own_method[ name ] ) != -1
-          ) {
-            try {
-              super_prototype_with_own_method = super_prototype_with_own_method.constructor.super_.prototype;
-            }
-            catch (e) {
-              throw new TypeError( name + ' is not a function' );
-            }
-          }
-
-          var method = super_prototype_with_own_method[ name ];
-          calling_chain.push( method );
-          method.chain = calling_chain;
-          method.apply( self, arguments );
-          delete method.chain;
-        } : super_prototype[name];
-      }
-
-      return this.constructor.proxy = Proxy.create( handler );
+      return handler.get_proxy();
     }
   } );
 

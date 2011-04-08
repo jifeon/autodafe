@@ -1,10 +1,9 @@
-var path              = require('path');
+var path                  = require('path');
 
-var Router            = require('router');
-var Logger            = require('../logging/logger');
-var ComponentsManager = require('components/components_manager');
-var ProxyHandler      = require('lib/proxy/proxy_handler');
-var Proxy             = require('lib/proxy/node-proxy/lib/node-proxy');
+var Router                = require('router');
+var Logger                = require('../logging/logger');
+var ComponentsManager     = require('components/components_manager');
+var FunctionProxyHandler  = require('lib/proxy/function_proxy_handler');
 
 var Application = module.exports = function( config ) {
   this._init( config );
@@ -46,13 +45,12 @@ Application.prototype._init = function ( config ) {
     });
   };
 
-  var handler = ProxyHandler( get_model );
+  var handler = new FunctionProxyHandler( {
+    on_call       : get_model,
+    on_construct  : create_model
+  } );
 
-  this.model = Proxy.createFunction(
-    handler,
-    get_model,     // on call
-    create_model   // on construct
-  );
+  this.model = handler.get_proxy();
 };
 
 
