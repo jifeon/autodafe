@@ -1,5 +1,6 @@
 var CommandBuilder = require( './command_builder' );
 var AppModule      = require( 'app_module' );
+var DbConnection   = require( 'db/db_connection' );
 
 module.exports = DbSchema.inherits( AppModule );
 
@@ -7,19 +8,13 @@ function DbSchema() {
   throw new TypeError( 'You can\'t instantiate abstract class DbSchema' );
 }
 
-var __ide_hack__ = {
-  db_connection   : 1,
-  command_builder : 1
-}
 
 DbSchema.prototype._init = function( params ) {
   this.super_._init( params );
 
-  var connection = params.db_connection;
-  if ( !connection ) throw new Error( '`db_connection` is not defined in DbSchema._init' );
-  Object.defineProperty( this, 'db_connection', {
-    value : connection
-  });
+  this._.db_connection = params.db_connection;
+  if ( !( this.db_connection instanceof DbConnection ) )
+    throw new Error( '`db_connection` in DbSchema._init should be instance of DbConnection' );
 
   var command_builder = null;
   Object.defineProperty( this, 'command_builder', {

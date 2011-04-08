@@ -27,14 +27,14 @@ MysqlTableSchema.prototype._resolve_table_name = function( name ) {
 
   var parts = name.replace( '`', '' ).split( '.' );
   if ( parts[1] ) {
-    this.db_schema_name = parts[0];
-    this.name           = parts[1];
-    this.raw_name       = this.db_schema.quote_table_name( this.db_schema_name ) + '.' +
-                          this.db_schema.quote_table_name( this.name );
+    this._.db_schema_name = parts[0];
+    this._.name           = parts[1];
+    this._.raw_name       = this.db_schema.quote_table_name( this.db_schema_name ) + '.' +
+                            this.db_schema.quote_table_name( this.name );
   }
   else {
-    this.name           = parts[0];
-    this.raw_name       = this.db_schema.quote_table_name( this.name );
+    this._.name           = parts[0];
+    this._.raw_name       = this.db_schema.quote_table_name( this.name );
   }
 }
 
