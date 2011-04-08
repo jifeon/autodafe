@@ -1,5 +1,5 @@
-var Component         = require('components/component');
-var MysqlDbConnection = require('./mysql/mysql_db_connection');
+var Component       = require('components/component');
+var MysqlConnection = require('./mysql/mysql_connection');
 
 module.exports = DbController.inherits( Component );
 
@@ -32,7 +32,7 @@ DbController.prototype._init_database = function () {
 
   switch ( db_type ) {
     case 'mysql':
-      this._db = new MysqlDbConnection( this.__db_config );
+      this._db = new MysqlConnection( this.__db_config );
       break;
 
     default :

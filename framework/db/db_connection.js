@@ -16,23 +16,17 @@ DbConnection.prototype._init = function( params ) {
   this.base = params.base || 'test';
   this.host = params.host || 'localhost';
 
-//  this.table_prefix = null;
-
   this._schema = null;
 };
 
-/**
- * Creates a command for execution.
- * @param string SQL statement associated with the new command.
- * @return DbCommand the Db command
- * @throws Exception if the connection is not active
- */
+
 DbConnection.prototype.create_command = function( sql ) {
   return new DbCommand({
     connection  : this,
     text        : sql
   });
 };
+
 
 DbConnection.prototype.get_schema = function () {
   return this._schema;

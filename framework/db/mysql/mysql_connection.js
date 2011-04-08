@@ -3,14 +3,14 @@ var sys = require('sys');
 var mysql = require('./node-mysql/mysql-libmysqlclient');
 var MysqlSchema = require('./mysql_schema');
 
-module.exports = MysqlDbConnection.inherits( Db );
+module.exports = MysqlConnection.inherits( Db );
 
-function MysqlDbConnection( params ) {
+function MysqlConnection( params ) {
   this._init( params );
 }
 
 
-MysqlDbConnection.prototype._init = function(params) {
+MysqlConnection.prototype._init = function(params) {
   this.super_._init( params );
 
   this._schema = new MysqlSchema({
@@ -35,7 +35,7 @@ MysqlDbConnection.prototype._init = function(params) {
   this.query = this.__query;
 };
 
-MysqlDbConnection.prototype.query = function (sql, callback, errback) {
+MysqlConnection.prototype.query = function (sql, callback, errback) {
   var self = this;
 
   var emitter = new process.EventEmitter;
@@ -48,7 +48,7 @@ MysqlDbConnection.prototype.query = function (sql, callback, errback) {
 };
 
 
-MysqlDbConnection.prototype.__query = function (sql, callback, errback, emitter) {
+MysqlConnection.prototype.__query = function (sql, callback, errback, emitter) {
   emitter = emitter || new process.EventEmitter;
 
   if (typeof sql != "string" || !sql.length) {
@@ -62,7 +62,7 @@ MysqlDbConnection.prototype.__query = function (sql, callback, errback, emitter)
   }
   callback = callback || function() {};
 
-  this.log( 'Quering sql: ' + sql, 'trace', 'MysqlDbConnection');
+  this.log( 'Quering sql: ' + sql, 'trace', 'MysqlConnection');
   var db = this;
   this.conn.query(sql, function(err, res) {
     if (err) {
@@ -75,12 +75,12 @@ MysqlDbConnection.prototype.__query = function (sql, callback, errback, emitter)
 };
 
 
-MysqlDbConnection.prototype.standard_errback = function (message) {
+MysqlConnection.prototype.standard_errback = function (message) {
   this.log( message, 'error' );
 };
 
 
-MysqlDbConnection.prototype.fetch_array = function (res, callback) {
+MysqlConnection.prototype.fetch_array = function (res, callback) {
   //	if ( (res.fieldCountGetter() > 0) || (typeof callback != 'function') ) return false;
     if ((res.numRowsSync() == 0) || (typeof callback != 'function')) return false;
 
@@ -91,7 +91,7 @@ MysqlDbConnection.prototype.fetch_array = function (res, callback) {
 };
 
 
-MysqlDbConnection.prototype.fetch_args = function (res, callback) {
+MysqlConnection.prototype.fetch_args = function (res, callback) {
 //  	if ( (res.fieldCountGetter() > 0) || (typeof callback != 'function') ) return false;
     if ((res.numRowsSync() == 0) || (typeof callback != 'function')) return false;
 
@@ -102,7 +102,7 @@ MysqlDbConnection.prototype.fetch_args = function (res, callback) {
 };
 
 
-MysqlDbConnection.prototype.fetch_obj = function (res, callback) {
+MysqlConnection.prototype.fetch_obj = function (res, callback) {
   if ((res.numRowsSync() == 0) || (typeof callback != 'function')) return false;
   var row;
   while (row = res.fetchArraySync()) {
