@@ -6,7 +6,7 @@ function DbCommand( params ) {
 
 
 DbCommand.prototype._init = function( params ) {
-  this.__connection = params.connection;
+  this.__connection = params.db_connection;
   this.__text       = '';
 
   this.set_text( params.text );
@@ -28,7 +28,7 @@ DbCommand.prototype.set_text = function( value ) {
 
 
 DbCommand.prototype.get_connection = function() {
-  return this._connection;
+  return this.__connection;
 }
 
 

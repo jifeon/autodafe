@@ -58,7 +58,7 @@ DbFixtureManager.prototype.load_fixtures = function( /*emitter*/ ){
 };
 
 DbFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
-  var schema  = this.app.db._schema;
+  var schema  = this.app.db.db_schema;
   var builder = schema.command_builder;
   var self = this;
   schema.get_table( table_name, function() {

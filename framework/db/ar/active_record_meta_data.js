@@ -17,7 +17,7 @@ ActiveRecordMetaData.prototype._init = function( params ) {
   var table_name  = this.__model.table_name();
 
   var self = this;
-  this.__model.get_db_connection().get_schema().get_table( table_name, function( e, table ) {
+  this.__model.get_db_connection().db_schema.get_table( table_name, function( e, table ) {
     if ( e ) throw e;
 
     self.deferred_init( table );

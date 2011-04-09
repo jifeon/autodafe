@@ -13,7 +13,7 @@ function MysqlConnection( params ) {
 MysqlConnection.prototype._init = function(params) {
   this.super_._init( params );
 
-  this._schema = new MysqlSchema({
+  this._.db_schema = new MysqlSchema({
     db_connection : this,
     app           : this.app
   });

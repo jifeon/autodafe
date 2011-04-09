@@ -12,7 +12,7 @@ CommandBuilder.prototype.PARAM_PREFIX = ':atdf';
 
 
 CommandBuilder.prototype._init = function( params ) {
-  this._schema      = params.schema;
+  this._schema      = params.db_schema;
   this._connection  = this._schema.db_connection;
 };
 

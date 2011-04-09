@@ -1,35 +1,30 @@
+var AppModule   = require('app_module');
 var DbCommand   = require( './db_command' );
-var AppModule       = require('app_module');
 
 module.exports = DbConnection.inherits( AppModule );
 
 function DbConnection() {
-  throw new Error( 'DbConnection is abstract class. You can\'t instantiate it!' );
+  throw new TypeError( 'DbConnection is abstract class. You can\'t instantiate it!' );
 }
 
 
 DbConnection.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this.user = params.user || 'root';
-  this.pass = params.pass || '';
-  this.base = params.base || 'test';
-  this.host = params.host || 'localhost';
+  this._.user     = params.user || 'root';
+  this._.pass     = params.pass || '';
+  this._.base     = params.base || 'test';
+  this._.host     = params.host || 'localhost';
 
-  this._schema = null;
+  this.db_schema  = null;
 };
 
 
 DbConnection.prototype.create_command = function( sql ) {
   return new DbCommand({
-    connection  : this,
-    text        : sql
+    db_connection : this,
+    text          : sql
   });
-};
-
-
-DbConnection.prototype.get_schema = function () {
-  return this._schema;
 };
 
 
@@ -42,10 +37,10 @@ DbConnection.prototype.quote_value = function ( x ) {
       return x.toString();
 
     case 'object':
-      if ( x === null ) {
+      if ( x == null ) {
         return 'NULL';
       }
-      else if ( x.constructor === Date ) {
+      else if ( x instanceof Date ) {
         return "'"
           + x.getFullYear()
           + '-'
@@ -61,11 +56,12 @@ DbConnection.prototype.quote_value = function ( x ) {
           + "'";
       }
       else {
-        throw new Error( 'DbCommand.sqlstr: unsupported type "object"' );
+        this.log( 'Unknown type of `object`. Trying `toString` method', 'warning' );
+        return this.quote_value( x.toString() );
       }
 
     case 'boolean':
-      return x === true ? '1' : '0';
+      return Number( !!x ).toString();
 
     default:
       throw new Error( 'DbConnection.quote_value: unknown type: ' + typeof x );

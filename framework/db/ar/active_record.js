@@ -260,7 +260,7 @@ ActiveRecord.prototype.primary_key = function () {
 
 
 ActiveRecord.prototype.get_command_builder = function () {
-  return this.db.get_schema().command_builder;
+  return this.db.db_schema.command_builder;
 };
 
 
@@ -459,7 +459,7 @@ ActiveRecord.prototype.get_table_alias = function( quote ) {
 
   var alias = criteria != null && criteria.alias != '' ? criteria.alias : 't';
 
-  return quote ? this.get_db_connection().get_schema().quote_table_name( alias ) : alias;
+  return quote ? this.get_db_connection().db_schema.quote_table_name( alias ) : alias;
 }
 
 
