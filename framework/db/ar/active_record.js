@@ -302,7 +302,7 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
   command.execute( function( result ) {
     var res = [];
 
-    this.fetch_obj( result, function( obj ) {
+    result.fetch_obj( function( obj ) {
       var record = self.populate_record( obj );
 
       res.push( record );
@@ -531,7 +531,7 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
 
   command.execute( function( result ) {
     var record;
-    this.fetch_obj( result, function( obj ) {
+    result.fetch_obj( function( obj ) {
       record = self.populate_record( obj );
       return false;
     } );
@@ -552,7 +552,7 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
 
   command.execute( function( result ) {
     var records = [];
-    this.fetch_obj( result, function( obj ) {
+    result.fetch_obj( function( obj ) {
       records.push( self.populate_record( obj ) );
     }  );
 

@@ -1,9 +1,8 @@
-var Db = require('../db_connection');
-var sys = require('sys');
-var mysql = require('./node-mysql/mysql-libmysqlclient');
-var MysqlSchema = require('./mysql_schema');
+var DbConnection  = require('../db_connection');
+var MysqlSchema   = require('./mysql_schema');
+var MysqlResult   = require('./mysql_result');
 
-module.exports = MysqlConnection.inherits( Db );
+module.exports = MysqlConnection.inherits( DbConnection );
 
 function MysqlConnection( params ) {
   this._init( params );
@@ -18,98 +17,43 @@ MysqlConnection.prototype._init = function(params) {
     app           : this.app
   });
 
+  var mysql_client    = require('./node-mysql/mysql-libmysqlclient');
+  this._._connection  = mysql_client.createConnectionSync();
+
   var self = this;
+  this._connection.connect( this.host, this.user, this.pass, this.base, function( e ) {
+    if ( e ) throw e;
 
-  this.initialized = false;
+    self.log( 'Connection success', 'info' );
+    self.emit( 'connect' );
+  } );
 
-  // this.connect();
-  this.conn = mysql.createConnectionSync();
-  this.conn.connectSync(self.host, self.user, self.pass, self.base);
-  if (!this.conn.connectedSync()) {
-    throw new Error( 'Connection error ( %s ): %s '.format( this.conn.connectErrno, this.conn.connectError ) );
-  }
-  else {
-    this.log( 'Connection success', 'info' );
-  }
-  this.initialized = true;
-  this.query = this.__query;
-};
-
-MysqlConnection.prototype.query = function (sql, callback, errback) {
-  var self = this;
-
-  var emitter = new process.EventEmitter;
-
-  this.on('initialized', function() {
-    self.__query(sql, callback, errback, emitter);
+  this.on( 'connect', function() {
+    this.query = this.__query;
   });
-
-  return emitter;
 };
 
 
-MysqlConnection.prototype.__query = function (sql, callback, errback, emitter) {
-  emitter = emitter || new process.EventEmitter;
-
-  if (typeof sql != "string" || !sql.length) {
-    this.log( 'Bad sql "%s"'.format( sql ), 'error' );
-    return emitter;
-  }
-
+MysqlConnection.prototype.query = function ( sql, callback ) {
   var self = this;
-  errback = errback || function() {
-    self.standard_errback();
-  }
-  callback = callback || function() {};
 
-  this.log( 'Quering sql: ' + sql, 'trace', 'MysqlConnection');
-  var db = this;
-  this.conn.query(sql, function(err, res) {
-    if (err) {
-      errback('mysql error: ' + err);
-    }
-    callback.call(db, res);
-    emitter.emit('response', res, db);
+  this.on( 'connect', function() {
+    self.__query( sql, callback );
   });
-  return emitter;
 };
 
 
-MysqlConnection.prototype.standard_errback = function (message) {
-  this.log( message, 'error' );
-};
+MysqlConnection.prototype.__query = function ( sql, callback ) {
 
+  callback = callback || function( e ) { if ( e ) throw e; };
+  if ( typeof sql != "string" || !sql.length ) return callback( 'Bad sql: ' + sql );
 
-MysqlConnection.prototype.fetch_array = function (res, callback) {
-  //	if ( (res.fieldCountGetter() > 0) || (typeof callback != 'function') ) return false;
-    if ((res.numRowsSync() == 0) || (typeof callback != 'function')) return false;
+  this.log( 'Querying sql: ' + sql );
+  this._connection.query( sql, function( e, res ) {
+    if ( e ) return callback( e );
 
-  var row;
-  while (row = res.fetchArraySync()) {
-    if (callback.call(this, row) === false) break;
-  }
-};
-
-
-MysqlConnection.prototype.fetch_args = function (res, callback) {
-//  	if ( (res.fieldCountGetter() > 0) || (typeof callback != 'function') ) return false;
-    if ((res.numRowsSync() == 0) || (typeof callback != 'function')) return false;
-
-  var row;
-  while (row = res.fetchArraySync()) {
-    if (callback.apply(this, row) === false) break;
-  }
-};
-
-
-MysqlConnection.prototype.fetch_obj = function (res, callback) {
-  if ((res.numRowsSync() == 0) || (typeof callback != 'function')) return false;
-  var row;
-  while (row = res.fetchArraySync()) {
-    var obj = {};
-    for (var i = 0, ln = row.length; i < ln; i++) {
-      obj[ res.fetchFieldDirectSync(i).name ] = row[ i ];
-    }
-    if (callback.call(this, obj) === false) break;
-  }
+    callback( null, new MysqlResult({
+      source : res
+    }) );
+  } );
 };

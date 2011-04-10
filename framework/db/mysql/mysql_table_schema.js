@@ -46,7 +46,7 @@ MysqlTableSchema.prototype._find_columns = function() {
 
   columns_emitter.on( 'complete', function( result, db ) {
 
-    db.fetch_obj( result, function( column ) {
+    result.fetch_obj( function( column ) {
       var col = self._create_column( column );
       self._columns[ col.name ] = col;
 

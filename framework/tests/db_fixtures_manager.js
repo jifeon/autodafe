@@ -62,7 +62,7 @@ DbFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
   var builder = schema.command_builder;
   var self = this;
   schema.get_table( table_name, function() {
-    self.app.db.query( schema.truncate_table( table_name ), function( res ){
+    self.app.db.query( schema.truncate_table( table_name ), function( e, res ){
       if( res != undefined ){
         var fixtures = self.fixtures[ table_name ];
         self.current_fixture_count = fixtures.fixtures_names.length - 1;

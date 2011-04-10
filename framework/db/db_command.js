@@ -51,8 +51,8 @@ DbCommand.prototype.execute = function( callback ) {
 
 //  var text = this.__get_last_insert_id_on_success ? this.__text + ';SELECT LAST_INSERT_ID();' : this.__text;
 
-  this.__connection.query( this.__text, function( result ) {
-    var db = this;
+  this.__connection.query( this.__text, function( e, result ) {
+    var db = db_command.__connection;
 //
 //    if ( db_command.__get_last_insert_id_on_success && ( result != undefined ) ) {
 //      var new_result = result[0];
