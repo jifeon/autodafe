@@ -41,12 +41,14 @@ MysqlTableSchema.prototype._resolve_table_name = function( name ) {
 
 MysqlTableSchema.prototype._find_columns = function() {
   var sql             = 'SHOW COLUMNS FROM ' + this.raw_name;
-  var columns_emitter = this.db_schema.db_connection.create_command( sql ).execute();
   var self            = this;
 
-  columns_emitter.on( 'complete', function( result, db ) {
+  this.db_schema.db_connection.create_command( sql ).execute( function( e, result ) {
+
+    if ( e ) throw e;
 
     result.fetch_obj( function( column ) {
+
       var col = self._create_column( column );
       self._columns[ col.name ] = col;
 

@@ -36,11 +36,13 @@ MysqlSchema.prototype._find_table_names = function ( schema, callback ) {
     ? ' FROM ' + this.quote_table_name( schema )
     : '';
 
-  this.connection.create_command( 'SHOW TABLES' + from_schema ).execute( function( names ) {
-    return schema
-      ? names.map( function( name ) {
-          return schema + '.' + name
-        } )
-      : names;
+  this.connection.create_command( 'SHOW TABLES' + from_schema ).execute( function( e, names ) {
+    if ( e ) return callback( e );
+
+    if ( schema ) names = names.map( function( name ) {
+      return schema + '.' + name
+    } );
+
+    callback( null, names );
   } );
 };

@@ -123,7 +123,6 @@ CommandBuilder.prototype.create_insert_command = function( table, data ) {
             'VALUES (' + placeholders.join(', ') + ')';
 
   var command = this._connection.create_command( sql );
-  command.get_last_insert_id_on_success( true );
 
   for ( name in values ) {
     command.bind_value( name, values[ name ] );
@@ -176,7 +175,6 @@ CommandBuilder.prototype.create_update_command = function( table, data, criteria
   sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
 
   var command = this._connection.create_command( sql );
-  command.get_last_insert_id_on_success( true );
 
   this.bind_values( command, Object.merge( values, criteria.params ) );
   return command;

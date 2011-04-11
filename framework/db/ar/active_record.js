@@ -69,10 +69,10 @@ ActiveRecord.prototype.get_primary_key = function () {
 };
 
 
-ActiveRecord.prototype.save = function( run_validation, attributes ) {
+ActiveRecord.prototype.save = function( run_validation, attributes, callback ) {
   if ( run_validation == undefined ) run_validation = true;
 
-    return this.get_is_new_record() ? this.insert( attributes ) : this.update( attributes );
+    return this.get_is_new_record() ? this.insert( attributes, callback ) : this.update( attributes, callback );
 }
 
 
@@ -100,7 +100,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
 
   var self = this;
 
-  command.execute( function( result ) {
+  command.execute( function( e, result ) {
 
     if ( !result ) return false;
 
@@ -135,7 +135,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
 }
 
 
-ActiveRecord.prototype.update = function( attributes ) {
+ActiveRecord.prototype.update = function( attributes, callback ) {
   if ( this.get_is_new_record() )
     throw new Error( 'the active record cannot be updated because it is new.' );
 
@@ -143,15 +143,15 @@ ActiveRecord.prototype.update = function( attributes ) {
 
   if ( this._pk == null )
     this._pk = this.get_primary_key();
-
-  var update_emitter = this.update_by_pk( this.get_old_primary_key(), this.get_attributes( attributes ) );
-
   var self = this;
-  update_emitter.on( 'complete', function() {
-    self._pk = self.get_primary_key();
-  } );
 
-  return update_emitter;
+  this.update_by_pk(
+    this.get_old_primary_key(), this.get_attributes( attributes ), undefined, undefined,
+    function( e, result ) {
+      self._pk = self.get_primary_key();
+      callback( null, result );
+    }
+  );
 }
 
 
@@ -299,7 +299,7 @@ ActiveRecord.prototype.__query = function ( criteria, all, emitter ) {
   var self = this;
   var command = this.get_command_builder().create_find_command( this.get_table_schema(), criteria );
 
-  command.execute( function( result ) {
+  command.execute( function( e, result ) {
     var res = [];
 
     result.fetch_obj( function( obj ) {
@@ -529,7 +529,7 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
   var emitter = new process.EventEmitter;
   var self = this;
 
-  command.execute( function( result ) {
+  command.execute( function( e, result ) {
     var record;
     result.fetch_obj( function( obj ) {
       record = self.populate_record( obj );
@@ -550,7 +550,7 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
   var emitter = new process.EventEmitter;
   var self = this;
 
-  command.execute( function( result ) {
+  command.execute( function( e, result ) {
     var records = [];
     result.fetch_obj( function( obj ) {
       records.push( self.populate_record( obj ) );
@@ -602,65 +602,65 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
 //}
 
 
-ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, params ) {
+ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, params, callback ) {
   this.log( 'update_by_pk' );
 
   var builder   = this.get_command_builder();
   var table     = this.get_table_schema();
   var criteria  = builder.create_pk_criteria( table, pk, condition, params );
   var command   = builder.create_update_command( table, attributes, criteria );
-  return command.execute();
+  return command.execute( callback );
 }
 
 
-ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
+ActiveRecord.prototype.update_all = function( attributes, condition, params, callback ) {
   this.log( 'update_all' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
   var command   = builder.create_update_command( this.get_table_schema(), attributes, criteria );
-  return command.execute();
+  return command.execute( callback );
 }
 
 
-ActiveRecord.prototype.update_counters = function( counters, condition, params ) {
+ActiveRecord.prototype.update_counters = function( counters, condition, params, callback ) {
   this.log( 'update_counters' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
   var command   = builder.create_update_counter_command( this.get_table_schema(), counters, criteria );
-  return command.execute();
+  return command.execute( callback );
 }
 
 
-ActiveRecord.prototype.delete_by_pk = function( pk, condition, params ) {
+ActiveRecord.prototype.delete_by_pk = function( pk, condition, params, callback ) {
   this.log( 'delete_by_pk' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_pk_criteria( this.get_table_schema(), pk, condition, params );
   var command   = builder.create_delete_command( this.get_table_schema(), criteria );
-  return command.execute();
+  return command.execute( callback );
 }
 
 
-ActiveRecord.prototype.delete_all = function( condition, params ) {
+ActiveRecord.prototype.delete_all = function( condition, params, callback ) {
   this.log( 'delete_all' );
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
   var command   = builder.create_delete_command( this.get_table_schema(), criteria );
-  return command.execute();
+  return command.execute( callback );
 }
 
 
-ActiveRecord.prototype.delete_all_by_attributes = function( attributes, condition, params ) {
+ActiveRecord.prototype.delete_all_by_attributes = function( attributes, condition, params, callback ) {
   this.log( 'delete_all_by_attributes' );
 
   var builder   = this.get_command_builder();
   var table     = this.get_table_schema();
   var criteria  = builder.create_column_criteria( table, attributes, condition, params );
   var command   = builder.create_delete_command( table, criteria );
-  return command.execute();
+  return command.execute( callback );
 }
 
 
