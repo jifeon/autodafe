@@ -79,24 +79,40 @@ Object.empty = function( v ) {
 
 
 Object.clone = function( obj ) {
-  var result;
 
-  if ( obj instanceof Array ) {
-    result = [];
-    for ( var c = 0, c_ln = obj.length; c < c_ln; c++ ) {
-      result.push( this.clone( obj[c] ) );
-    }
+  if ( Array.isArray( obj ) ) return obj.map( function( item ) {
+    return Object.clone( item );
+  } );
+
+  if ( !Object.isObject( obj ) ) return obj;
+
+  var result = {};
+  for ( var prop in obj ) {
+    result[ prop ] = this.clone( obj[ prop ] );
   }
-  else if ( obj instanceof Object ) {
-    result = {};
-    for ( var prop in obj ) {
-      result[ prop ] = this.clone( obj[ prop ] );
-    }
-  }
-  else result = obj;
 
   return result;
 };
+
+
+Object.isObject = function( v ) {
+  return v && v instanceof this;
+}
+
+
+Object.not_deep_clone = function( obj ) {
+
+  if ( Array.isArray( obj ) ) return obj.slice( 0 );
+
+  if ( !Object.isObject( obj ) ) return obj;
+
+  var result = {};
+  for ( var prop in obj )
+    result[ prop ] = obj[ prop ];
+
+  return result;
+}
+
 
 var InheritingProxyHandler = require( './proxy/inheriting_proxy_handler' );
 

@@ -28,6 +28,11 @@ DbConnection.prototype.create_command = function( sql ) {
 };
 
 
+DbConnection.prototype.query = function ( sql, callback ) {
+  throw new Error( 'You should implement method `query` in inherited classes' );
+};
+
+
 DbConnection.prototype.quote_value = function ( x ) {
   switch ( typeof x ) {
     case 'string':
@@ -41,19 +46,7 @@ DbConnection.prototype.quote_value = function ( x ) {
         return 'NULL';
       }
       else if ( x instanceof Date ) {
-        return "'"
-          + x.getFullYear()
-          + '-'
-          + ( x.getMonth() + 1 )
-          + '-'
-          + x.getDate()
-          + ' '
-          + x.getHours()
-          + ':'
-          + x.getMinutes()
-          + ':'
-          + x.getSeconds()
-          + "'";
+        return x.format( "'Y-M-D h:m:s'" );
       }
       else {
         this.log( 'Unknown type of `object`. Trying `toString` method', 'warning' );
