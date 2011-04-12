@@ -20,7 +20,8 @@ DbSchema.prototype._init = function( params ) {
   Object.defineProperty( this, 'command_builder', {
     get : function() {
       return command_builder || ( command_builder = new CommandBuilder({
-        db_schema : this
+        db_schema : this,
+        app       : this.app
       }) );
     },
     // uses in `refresh` to delete cached link to command builder.

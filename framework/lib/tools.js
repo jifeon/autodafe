@@ -135,7 +135,19 @@ Function.prototype.inherits = function( super_class ) {
 }
 
 
+Function.prototype.instantiate = function ( obj ) {
+  return obj instanceof this;
+};
+
+
 String.prototype.format = function() {
+  var obj = arguments[0];
+  if ( Object.isObject( obj ) ) {
+    var res = this;
+    for ( var str in obj ) res = res.replace( str, obj[ str ] );
+    return res;
+  }
+
   var i = 0;
   var args = arguments;
   return this.replace( /%s|%d/g, function() {

@@ -1,7 +1,8 @@
 var DbCriteria    = require('./db_criteria');
 var DbExpression  = require('./db_expression');
+var AppModule     = require('app_module');
 
-module.exports = CommandBuilder;
+module.exports = CommandBuilder.inherits( AppModule );
 
 function CommandBuilder( params ) {
   this._init( params );
@@ -12,26 +13,22 @@ CommandBuilder.prototype.PARAM_PREFIX = ':atdf';
 
 
 CommandBuilder.prototype._init = function( params ) {
-  this._schema      = params.db_schema;
-  this._connection  = this._schema.db_connection;
-};
+  this.super_._init( params );
 
+  var DbSchema = require( './db_schema' );
+  if ( !DbSchema.instantiate( params.db_schema ) )
+    throw new Error( '`db_schema` is not instance of DbSchema in CommandBuilder.init' );
 
-CommandBuilder.prototype.get_db_connection = function () {
-  return this._connection;
-};
-
-
-CommandBuilder.prototype.get_schema = function () {
-  return this._schema;
+  this._.db_schema      = params.db_schema;
+  this._.db_connection  = this.db_schema.db_connection;
 };
 
 
 CommandBuilder.prototype.create_find_command = function( table, criteria, alias ) {
   var select = Array.isArray( criteria.select ) ? criteria.select.join(',') : criteria.select;
 
-  alias = criteria.alias != '' ? criteria.alias : alias || 't';
-  alias = this._schema.quote_table_name( alias );
+  alias = criteria.alias ? criteria.alias : alias || 't';
+  alias = this.db_schema.quote_table_name( alias );
 
   var sql = ( criteria.distinct ? 'SELECT DISTINCT ' : 'SELECT ' ) +
             select + " FROM " + table.raw_name + " AS "  + alias;
@@ -42,25 +39,21 @@ CommandBuilder.prototype.create_find_command = function( table, criteria, alias 
   sql = this.apply_order(     sql, criteria.order     );
   sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
 
-  var command = this._connection.create_command( sql );
-  this.bind_values( command, criteria.params );
-  return command;
+  return this.create_sql_command( sql, criteria.params );
 }
 
 
 CommandBuilder.prototype.create_count_command = function( table, criteria, alias ) {
 
   alias = criteria.alias != '' ? criteria.alias : alias || 't';
-  alias = this._schema.quote_table_name( alias );
+  alias = this.db_schema.quote_table_name( alias );
 
   var sql = ( criteria.distinct ? 'SELECT DISTINCT' : 'SELECT' ) +
             " COUNT(*) FROM " + table.raw_name + " AS " + alias;
   sql = this.apply_join( sql, criteria.join );
   sql = this.apply_condition( sql, criteria.condition );
 
-  var command = this._connection.create_command( sql );
-  this.bind_values( command, criteria.params );
-  return command;
+  return this.create_sql_command( sql, criteria.params );
 }
 
 
@@ -74,9 +67,7 @@ CommandBuilder.prototype.create_delete_command = function( table, criteria ) {
   sql = this.apply_order(     sql, criteria.order     );
   sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
 
-  var command = this._connection.create_command( sql );
-  this.bind_values( command, criteria.params );
-  return command;
+  return this.create_sql_command( sql, criteria.params );
 }
 
 
@@ -88,47 +79,57 @@ CommandBuilder.prototype.create_insert_command = function( table, data ) {
 
   var i = 0;
 
-  for ( var name in data ) {
-    var value   = data[ name ];
-    var column  = table.get_column( name );
+  for ( var column_name in data ) {
+    var value   = data[ column_name ];
+    var column  = table.get_column( column_name );
 
-    if ( column != null && ( value != null || column.allow_null ) ) {
-      fields.push( column.raw_name );
+    if ( !column ) {
+      this.log(
+        'CommandBuilder.create_insert_command can\'t find column `%s` in table `%s`'.format( column_name, table.name ),
+        'warning'
+      );
+      continue;
+    }
 
-      if ( value instanceof DbExpression ) {
-        placeholders.push( value.expression );
+    if ( value == null && !column.allow_null ) {
+      this.log(
+        'CommandBuilder.create_insert_command has aborted try of setting NULL to column `%s` in table `%s`, which is not allow NULL'.format( column_name, table.name ),
+        'warning'
+      );
+      continue;
+    }
 
-        for ( var n in value.params ) {
-          values[ n ] = value.params[ n ];
-        }
+    fields.push( column.raw_name );
+
+    if ( value instanceof DbExpression ) {
+      placeholders.push( value.expression );
+
+      for ( var n in value.params ) {
+        values[ n ] = value.params[ n ];
       }
-      else {
-        placeholders.push( this.PARAM_PREFIX + i );
-        values[ this.PARAM_PREFIX + i ] = column.typecast( value );
-        i++;
-      }
+    }
+    else {
+      placeholders.push( this.PARAM_PREFIX + i );
+      values[ this.PARAM_PREFIX + i ] = column.typecast( value );
+      i++;
     }
   }
 
   if ( !fields.length ) {
-    var pks = table.primary_key instanceof Array ? table.primary_key : [ table.primary_key ];
 
-    for ( var p = 0, p_ln = pks.length; p < p_ln; p++ ) {
-      fields.push( table.get_column( pks[ p ] ).raw_name );
+    table.each_primary_key( function( pk ) {
+      fields.push( table.get_column( pk ).raw_name );
       placeholders.push( 'NULL' );
-    }
+    } );
   }
 
-  var sql = "INSERT INTO " + table.raw_name + " (" + fields.join(', ') + ') ' +
-            'VALUES (' + placeholders.join(', ') + ')';
+  var sql = "INSERT INTO table (fields) VALUES (placeholders)".format({
+    table         : table.raw_name,
+    fields        : fields.join(', '),
+    placeholders  : placeholders.join(', ')
+  });
 
-  var command = this._connection.create_command( sql );
-
-  for ( name in values ) {
-    command.bind_value( name, values[ name ] );
-  }
-
-  return command;
+  return this.create_sql_command( sql, values );
 }
 
 
@@ -174,10 +175,7 @@ CommandBuilder.prototype.create_update_command = function( table, data, criteria
   sql = this.apply_order(     sql, criteria.order     );
   sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
 
-  var command = this._connection.create_command( sql );
-
-  this.bind_values( command, Object.merge( values, criteria.params ) );
-  return command;
+  return this.create_sql_command( sql, Object.merge( values, criteria.params ) );
 }
 
 
@@ -202,18 +200,14 @@ CommandBuilder.prototype.create_update_counter_command = function( table, counte
     sql = this.apply_order(     sql, criteria.order     );
     sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
 
-    var command = this._connection.create_command( sql );
-    this.bind_values( command, criteria.params );
-    return command;
+    return this.create_sql_command( sql, criteria.params );
   }
   else throw new Error( 'No counter columns are being updated for table ' + table.name );
 }
 
 
 CommandBuilder.prototype.create_sql_command = function( sql, params ) {
-  var command = this._connection.create_command( sql );
-  this.bind_values( command, params );
-  return command;
+  return this.db_connection.create_command( sql ).bind_values( params );
 }
 
 
@@ -250,22 +244,6 @@ CommandBuilder.prototype.apply_having = function( sql, having ) {
 };
 
 
-CommandBuilder.prototype.bind_values = function( command, values ) {
-  if ( Object.empty( values ) ) return;
-
-  if ( values instanceof Array ) { // question mark placeholders
-    for ( var i = 0, i_ln = values.length; i < i_ln; i++ )
-      command.bind_value( i, values[ i ] );
-  }
-  else {// named placeholders
-    for ( var name in values ) {
-      var true_name = name[0] == ':' ? name : ':' + name;
-      command.bind_value( true_name, values[ name ] );
-    }
-  }
-}
-
-
 CommandBuilder.prototype.create_criteria = function( condition, params ) {
   condition = condition || '';
   params    = params    || {};
@@ -287,7 +265,7 @@ CommandBuilder.prototype.create_criteria = function( condition, params ) {
 CommandBuilder.prototype.create_pk_criteria = function( table, pk, condition, params, prefix ) {
 
   var criteria = this.create_criteria( condition, params );
-  if ( criteria.alias != '' ) prefix = this._schema.quote_table_name( criteria.alias ) + '.';
+  if ( criteria.alias != '' ) prefix = this.db_schema.quote_table_name( criteria.alias ) + '.';
   if ( !( pk instanceof Array ) ) pk = [ pk ];
   if ( table.primary_key instanceof Array && pk[0] == undefined && !Object.empty( pk ) ) // single composite key
     pk = [ pk ];
@@ -309,7 +287,7 @@ CommandBuilder.prototype.create_pk_condition = function( table, values, prefix )
 CommandBuilder.prototype.create_column_criteria = function( table, columns, condition, params, prefix ) {
 
   var criteria = this.create_criteria( condition, params );
-  if ( criteria.alias != '' ) prefix = this._schema.quote_table_name( criteria.alias ) + '.';
+  if ( criteria.alias != '' ) prefix = this.db_schema.quote_table_name( criteria.alias ) + '.';
 
   var bind_by_position = ( criteria.params[0] != undefined );
   var conditions  = [];
@@ -356,7 +334,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
 
   if ( !prefix ) prefix = table.raw_name + '.';
 
-  var db = this._connection;
+  var db = this.db_connection;
 
   var column, value, name;
 

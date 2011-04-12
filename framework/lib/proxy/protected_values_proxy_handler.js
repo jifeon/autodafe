@@ -10,14 +10,15 @@ require('util').inherits( ProtectedValuesProxyHandler, ProxyHandler );
 
 
 ProtectedValuesProxyHandler.prototype.set = function ( receiver, name, value ) {
-  if ( this.target[ name ] ) delete this[ name ];
+  var target = this.target;
+  if ( target[ name ] ) delete this[ name ];
 
-  Object.defineProperty( this.target, name, {
+  Object.defineProperty( target, name, {
     get           : function() {
       return value;
     },
     set           : function() {
-      throw new TypeError( 'Property `%s` of `%s` is read only'.format( name, this.target.class_name ) );
+      throw new TypeError( 'Property `%s` of `%s` is read only'.format( name, target.class_name ) );
     },
     configurable  : false
   } );

@@ -18,8 +18,8 @@ DbCommand.prototype._init = function( params ) {
 
   this.text         = params.text || '';
 
-  this._._params    = {};
-  this._._qm_params = [];
+  this._params    = {};
+  this._qm_params = [];
 };
 
 
@@ -27,7 +27,10 @@ DbCommand.prototype.bind_values = function ( params ) {
   if ( !Object.isObject( params ) )
     throw new Error( "`params` should be instance of Object or Array in DbCommand.bind_values" );
 
+  if ( Object.empty( params ) ) return this;
   this[ Array.isArray( params ) ? '_qm_params' : '_params' ] = Object.not_deep_clone( params );
+
+  return this;
 };
 
 
@@ -65,6 +68,7 @@ DbCommand.prototype._apply_params = function () {
   } );
 
   for ( var name in this._params ) {
-    this.text = this.text.replace( name, this.db_connection.quote_value( this._params[ name ] ) );
+    var true_name = name[0] == ':' ? name : ':' + name;
+    this.text = this.text.replace( true_name, this.db_connection.quote_value( this._params[ name ] ) );
   }
 };
