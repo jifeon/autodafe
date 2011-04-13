@@ -16,31 +16,50 @@ DbCommand.prototype._init = function( params ) {
 
   this._.db_connection = params.db_connection;
 
-  this.text         = params.text || '';
+  this._text            = params.text || '';
+  this._params          = {};
+  this._params_applied  = false;
+};
 
-  this._params    = {};
-  this._qm_params = [];
+
+DbCommand.prototype.reset = function () {
+  this._text            = '';
+  this._params          = {};
+  this._params_applied  = false;
+
+  return this;
+};
+
+
+DbCommand.prototype.get_text = function () {
+  this._apply_params();
+  return this._text;
+};
+
+
+DbCommand.prototype.set_text = function ( text ) {
+  this._params_applied  = false;
+  this._text            = text;
+
+  return this;
 };
 
 
 DbCommand.prototype.bind_values = function ( params ) {
-  if ( !Object.isObject( params ) )
-    throw new Error( "`params` should be instance of Object or Array in DbCommand.bind_values" );
+  if ( !Object.isObject( params ) || Array.isArray( params ) )
+    throw new Error( "DbCommand.bind_values: `params` should be instance of Object and not an Array" );
 
   if ( Object.empty( params ) ) return this;
-  this[ Array.isArray( params ) ? '_qm_params' : '_params' ] = Object.not_deep_clone( params );
+  this._params         = Object.not_deep_clone( params );
+  this._params_applied = false;
 
   return this;
 };
 
 
 DbCommand.prototype.bind_value = function( name, value ) {
-  if ( name == Number( name ) ) {
-    this._qm_params[ name ] = value;
-    return this;
-  }
-
   this._params[ name ] = value;
+  this._params_applied = false;
   return this;
 };
 
@@ -55,20 +74,18 @@ DbCommand.prototype.execute = function( callback ) {
     callback( e );
   }
 
-  this.db_connection.query( this.text, callback );
+  this.db_connection.query( this._text, callback );
+  return this;
 };
 
 
 DbCommand.prototype._apply_params = function () {
-  var i     = 0;
-  var self  = this;
-
-  this.text = this.text.replace( /\?/g, function(){
-    return self.db_connection.quote_value( self._qm_params[ i++ ] );
-  } );
+  if ( this._params_applied ) return;
 
   for ( var name in this._params ) {
     var true_name = name[0] == ':' ? name : ':' + name;
-    this.text = this.text.replace( true_name, this.db_connection.quote_value( this._params[ name ] ) );
+    this._text = this._text.replace( true_name, this.db_connection.quote_value( this._params[ name ] ) );
   }
+
+  this._params_applied = true;
 };
