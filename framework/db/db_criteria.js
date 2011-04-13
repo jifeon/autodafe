@@ -59,7 +59,7 @@ DbCriteria.prototype.merge_with = function( criteria, use_and ) {
     if ( this.condition === '' )
       this.condition = criteria.condition;
     else if ( criteria.condition !== '' )
-      this.condition = "({this.condition}) " + and + " ({criteria.condition})";
+      this.condition = "(" + this.condition + ") " + and + " (" + criteria.condition + ")";
   }
 
   if ( this.params !== criteria.params )
