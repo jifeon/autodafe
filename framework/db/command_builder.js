@@ -138,36 +138,35 @@ CommandBuilder.prototype.create_update_command = function( table, data, criteria
   var fields = [];
   var values = {};
   var i      = 0;
-  var v      = 0;
 
-  var bind_by_position = criteria.params[0] != undefined;
+  for ( var column_name in data ) {
+    var value   = data[ column_name ];
+    var column  = table.get_column( column_name );
 
-  for ( var name in data ) {
-    var value   = data[ name ];
-    var column  = table.get_column( name );
+    if ( !column ) {
+      this.log(
+        'CommandBuilder.create_update_command can\'t find column `%s` in table `%s`'.format( column_name, table.name ),
+        'warning'
+      );
+      continue;
+    }
 
-    if ( column != null ) {
+    if ( value instanceof DbExpression ) {
+      fields.push( column.raw_name + '=' + value.expression );
 
-      if ( value instanceof DbExpression ) {
-        fields.push( column.raw_name + '=' + value.expression );
-
-        for ( var n in value.params ) {
-          values[ n ] = value.params[ n ];
-        }
+      for ( var n in value.params ) {
+        values[ n ] = value.params[ n ];
       }
-      else if ( bind_by_position ) {
-        fields.push( column.raw_name + '=?' );
-        values[ v++ ] = column.typecast( value );
-      }
-      else {
-        fields.push( column.raw_name + '=' + this.PARAM_PREFIX + i );
-        values[ this.PARAM_PREFIX + i ] = column.typecast( value );
-        i++;
-      }
+    }
+    else {
+      fields.push( column.raw_name + '=' + this.PARAM_PREFIX + i );
+      values[ this.PARAM_PREFIX + i ] = column.typecast( value );
+      i++;
     }
   }
 
-  if ( !fields.length ) throw new Error( 'No columns are being updated for table ' + table.name );
+  if ( !fields.length )
+    throw new Error( 'CommandBuilder.create_update_command: No columns are being updated for table ' + table.name );
 
   var sql = "UPDATE " + table.raw_name + " SET " + fields.join( ', ' );
   sql = this.apply_join(      sql, criteria.join      );
@@ -183,26 +182,32 @@ CommandBuilder.prototype.create_update_counter_command = function( table, counte
 
   var fields = [];
 
-  for ( var name in counters ) {
-    var value   = counters[ name ];
-    var column  = table.get_column( name );
+  for ( var column_name in counters ) {
+    var value   = counters[ column_name ];
+    var column  = table.get_column( column_name );
 
-    if ( column != null ) {
-      if ( value < 0 ) fields.push( column.raw_name + '=' + column.raw_name + value );
-      else             fields.push( column.raw_name + '=' + column.raw_name + '+' + value );
+    if ( !column ) {
+      this.log(
+        'CommandBuilder.create_update_counter_command can\'t find column `%s` in table `%s`'.format( column_name, table.name ),
+        'warning'
+      );
+      continue;
     }
+
+    fields.push( column.raw_name + '=' + column.raw_name + ( value < 0 ? '' : '+' ) + value );
   }
 
-  if ( fields.length ) {
-    var sql = "UPDATE " + table.raw_name + " SET " + fields.join(', ');
-    sql = this.apply_join(      sql, criteria.join      );
-    sql = this.apply_condition( sql, criteria.condition );
-    sql = this.apply_order(     sql, criteria.order     );
-    sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
+  if ( !fields.length )
+    throw new Error( 'No counter columns are being updated for table ' + table.name );
 
-    return this.create_sql_command( sql, criteria.params );
-  }
-  else throw new Error( 'No counter columns are being updated for table ' + table.name );
+  var sql = "UPDATE " + table.raw_name + " SET " + fields.join(', ');
+  sql = this.apply_join(      sql, criteria.join      );
+  sql = this.apply_condition( sql, criteria.condition );
+  sql = this.apply_order(     sql, criteria.order     );
+  sql = this.apply_limit(     sql, criteria.limit, criteria.offset );
+
+  return this.create_sql_command( sql, criteria.params );
+
 }
 
 
@@ -248,11 +253,9 @@ CommandBuilder.prototype.create_criteria = function( condition, params ) {
   condition = condition || '';
   params    = params    || {};
 
-  //todo: реакция на undefined в параметрах
-
   var criteria;
-  if ( condition instanceof Object ) criteria = new DbCriteria( condition );
-  else if ( condition instanceof DbCriteria ) criteria = condition.clone();
+  if ( condition instanceof DbCriteria ) criteria = condition.clone();
+  else if ( condition instanceof Object ) criteria = new DbCriteria( condition );
   else criteria = new DbCriteria({
     condition : condition,
     params    : params
@@ -390,7 +393,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
     return this._create_composite_in_condition( table, values, prefix );
   }
   else
-    throw new Error( 'Column name must be either a string or an array ( now: %s).'.format( column_name ) );
+    throw new Error( 'Column name must be either a string or an array ( now: %s ).'.format( column_name ) );
 }
 
 

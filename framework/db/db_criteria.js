@@ -23,6 +23,24 @@ DbCriteria.prototype._init = function( params ) {
   }
 };
 
+
+DbCriteria.prototype.clone = function () {
+  return new this.constructor({
+    select    : this.select,
+    distinct  : this.distinct,
+    condition : this.condition,
+    params    : this.params,
+    limit     : this.limit,
+    offset    : this.offset,
+    order     : this.order,
+    group     : this.group,
+    join      : this.join,
+    having    : this.having,
+    alias     : this.alias
+  });
+};
+
+
 DbCriteria.prototype.merge_with = function( criteria, use_and ) {
   var and = use_and || use_and == undefined ? 'AND' : 'OR';
 
