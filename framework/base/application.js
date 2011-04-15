@@ -4,27 +4,34 @@ var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
 var FunctionProxyHandler  = require('lib/proxy/function_proxy_handler');
+var AutodafePart          = require('autodafe_part');
 
-var Application = module.exports = function( config ) {
+module.exports = Application.inherits( AutodafePart );
+
+function Application( config ) {
   this._init( config );
 }
 
 
 Application.instances = [];
 
-require( 'sys' ).inherits( Application, process.EventEmitter );
-
-
 Application.prototype._init = function ( config ) {
+  this.super_._init();
+
   Application.instances.push( this );
   this._config    = config            || {};
 
-  this.name       = this._config.name || 'My Autodafe application';
+  if ( !this._config.name )
+    throw new Error( 'Please specify application name in your config file' );
+  this._.name     = this._config.name || 'My Autodafe application';
+
   this.logger     = new Logger;
   this.router     = null;
   this.components = null;
 
   this.default_controller = this._config.default_controller || 'action';
+
+  this._runned = false;
 
   this._preload_components();
   if ( !this._check_config() ) return false;
@@ -103,13 +110,16 @@ Application.prototype._init_components = function () {
 
 
 Application.prototype.get_param = function ( name ) {
-  return this._config.params[ name ] || null;
+  return this._config.params[ name ] === undefined ? null : this._config.params[ name ];
 };
 
 
 Application.prototype.run = function () {
+  if ( this._runned ) return false;
   this.log( 'Running application', 'trace' );
   this.emit( 'run' );
+  this._runned = true;
+  return true;
 };
 
 

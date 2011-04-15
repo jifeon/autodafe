@@ -4,7 +4,6 @@ exports.get_batch = function( application, assert ) {
   var ComponentsManager = require( 'components/components_manager' );
   var Autodafe          = require( 'autodafe' );
   var LogRouter         = require( 'logging/log_router' );
-  var AError            = require( 'aerror' );
   var TestComponent     = require( 'tests/test_component' );
   var Model             = require( 'model' );
   var TestModel         = require( 'test_inherited_model' );
@@ -114,13 +113,13 @@ exports.get_batch = function( application, assert ) {
       'base_dir is required' : function( config ) {
         assert.throws( function() {
           Autodafe.create_application( config );
-        }, AError );
+        }, Error );
       },
       'name is required' : function( config ) {
         config.base_dir = path.resolve('.');
         assert.throws( function() {
           Autodafe.create_application( config );
-        }, AError );
+        }, Error );
       },
       'only name and base_dir are required' : function( config ) {
         config.name = 'working_app';

@@ -1,6 +1,5 @@
 exports.get_batch = function( application, assert ) {
   var Controller  = require( 'controller' );
-  var AWarning    = require( 'awarning' );
 
   return {
     topic : function() {
@@ -60,7 +59,7 @@ exports.get_batch = function( application, assert ) {
     'tests declared unimplemented action' : function( controller ){
       assert.throws( function() {
         controller.run_action( 'unexist_test_action' );
-      }, AWarning );
+      }, Error );
     },
     'tests implemented undeclared action' : function( controller ){
       var undeclared_action_has_runned = false;
@@ -71,7 +70,7 @@ exports.get_batch = function( application, assert ) {
 
       assert.throws( function() {
         controller.run_action( 'some_implemented_action' );
-      }, AWarning );
+      }, Error );
 
       assert.isFalse( undeclared_action_has_runned, 'Undeclared actions must not be runned' );
     },

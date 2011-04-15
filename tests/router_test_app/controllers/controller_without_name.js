@@ -7,7 +7,6 @@ function WithoutNameController( params ) {
 }
 
 
-WithoutNameController.prototype.name     = 'withoutName';
 WithoutNameController.prototype.actions  = [
   'test'
 ];

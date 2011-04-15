@@ -1,5 +1,7 @@
 Array.prototype.diff = function( ar ) {
-  if ( !Array.isArray( ar ) ) return new TypeError;
+  "use strict";
+
+  if ( !Array.isArray( ar ) ) throw new TypeError;
 
   return this.filter( function( el ) {
     return ar.indexOf( el ) == -1;
@@ -8,7 +10,22 @@ Array.prototype.diff = function( ar ) {
 
 
 Array.prototype.merge = function( ar ) {
-  return this.push.apply( this.slice( 0 ), this.diff( ar ) );
+  "use strict";
+
+  if ( !Array.isArray( ar ) ) throw new TypeError;
+
+  var new_ar = this.slice( 0 );
+  this.push.apply( new_ar, ar.diff( this ) );
+  return new_ar.unique();
+};
+
+
+Array.prototype.unique = function () {
+  "use strict";
+
+  return this.filter( function( el, i ) {
+    return this.indexOf( el ) == i;
+  }, this );
 };
 
 
@@ -37,16 +54,12 @@ Array.prototype.for_each = function ( fun/*, thisp*/ ) {
 
 
 Object.merge = function( obj1, obj2 ) {
-  if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return new TypeError;
+  if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
 
-  var res = {}, prop;
+  var res = Object.not_deep_clone( obj1 );
 
-  for ( prop in obj2 ) {
+  for ( var prop in obj2 ) {
     res[ prop ] = obj2[ prop ];
-  }
-
-  for ( prop in obj1 ) {
-    res[ prop ] = obj1[ prop ];
   }
 
   return res;
@@ -54,17 +67,14 @@ Object.merge = function( obj1, obj2 ) {
 
 
 Object.recursive_merge = function( obj1, obj2 ) {
-  if ( !( obj1 instanceof Object ) || !( obj2 instanceof Object ) ) return new TypeError;
+  if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
 
-  var res = {}, prop;
+  var res = Object.clone( obj1 );
 
-  for ( prop in obj2 ) {
-    res[ prop ] = obj2[ prop ];
-  }
-
-  for ( prop in obj1 ) {
-    if ( res[ prop ] instanceof Object ) res[ prop ] = this.recursive_merge( obj1[ prop ], res[ prop ] );
-    else res[ prop ] = obj1[ prop ];
+  for ( var prop in obj2 ) {
+    if ( res[ prop ] && res[ prop ] instanceof Object && obj2[ prop ] && obj2[ prop ] instanceof Object )
+      res[ prop ] = this.recursive_merge( res[ prop ], obj2[ prop ] );
+    else res[ prop ] = obj2[ prop ];
   }
 
   return res;
@@ -96,7 +106,7 @@ Object.clone = function( obj ) {
 
 
 Object.isObject = function( v ) {
-  return v && v instanceof this;
+  return v && v instanceof this && !Array.isArray( v );
 }
 
 

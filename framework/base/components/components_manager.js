@@ -61,6 +61,8 @@ ComponentsManager.prototype.load_component = function ( component_name ) {
 
   this.log( 'Load component "%s"'.format( component_name ), 'trace' );
   var component_params = this._components[ component_name ];
+  if ( !component_params ) return false;
+
   if ( typeof component_params != 'object' ) component_params = {};
 
   var component_class = system_components[ component_name ];
