@@ -3,7 +3,7 @@ var path                  = require('path');
 var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
-var FunctionProxyHandler  = require('lib/proxy/function_proxy_handler');
+var ModelsProxyHandler    = require('lib/proxy/handlers/models_proxy_handler');
 var AutodafePart          = require('autodafe_part');
 
 module.exports = Application.inherits( AutodafePart );
@@ -39,25 +39,12 @@ Application.prototype._init = function ( config ) {
   this._init_core();
   this._init_components();
 
-  var self = this;
-  var get_model = function( clazz ) {
-    if ( clazz && clazz.super_ && typeof clazz.super_.model == "function" ) return clazz.super_.model( clazz, self );
-    return create_model( clazz );
-  };
-
-
-  var create_model = function( clazz ) {
-    return new clazz({
-      app : self
-    });
-  };
-
-  var handler = new FunctionProxyHandler( {
-    on_call       : get_model,
-    on_construct  : create_model
-  } );
-
-  this.model = handler.get_proxy();
+  var models_handler = new ModelsProxyHandler({
+    target : {},
+    app    : this
+  });
+  
+  this.models = models_handler.get_proxy();
 };
 
 

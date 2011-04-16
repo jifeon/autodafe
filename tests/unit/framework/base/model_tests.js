@@ -4,10 +4,11 @@ exports.get_batch = function( application, assert ){
 
   return {
     topic : function() {
-      return new application.model( TestModel );
+      return new application.models.test_model;
     },
     'instance test' : function( model ){
       assert.instanceOf( model, Model );
+      assert.instanceOf( model, TestModel );
     }
   }
 }

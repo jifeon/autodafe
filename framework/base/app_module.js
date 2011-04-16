@@ -11,7 +11,7 @@ AppModule.prototype._init = function( params ) {
   this.super_._init( params );
 
   if ( !params || !params.app ) throw new Error(
-    'Link to application is undefined' + ( this.class_name
+    'Link to application is not defined' + ( this.class_name
       ? ' in `%s._init`'.format( this.class_name )
       : ' in `_init` method of class inherited from AppModule. Also class inherited from AppModule should be defined as ' +
       '`function Name() {}` instead of `var Name = function() {}` because AppModule uses `this.constructor.name` property for logging'

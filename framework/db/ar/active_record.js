@@ -10,22 +10,6 @@ function ActiveRecord() {
 }
 
 
-ActiveRecord.models = {};
-
-
-ActiveRecord.model = function( clazz, app ) {
-  if ( typeof clazz != 'function' ) throw new Error( 'Class must be a function in ActiveRecord.model' );
-
-  var table_name = clazz.get_table_name();
-
-  if ( this.models[ table_name ] ) return this.models[ table_name ];
-
-  return this.models[ table_name ] = new clazz({
-    clazz : clazz,
-    app   : app
-  });
-}
-
 
 ActiveRecord.prototype._init = function( params ) {
   this.super_._init( params );
@@ -46,7 +30,7 @@ ActiveRecord.prototype._init = function( params ) {
 
 
 ActiveRecord.prototype.get_model = function () {
-  return this.app.model( this.clazz );
+  return this;
 };
 
 
@@ -435,7 +419,6 @@ ActiveRecord.prototype.populate_record = function( attributes ) {
   if ( !attributes ) return null;
 
   var record  = this.instantiate( attributes );
-  var md      = record.get_model().get_meta_data();
 
   for ( var name in attributes ) {
     record[ name ] = attributes[ name ];

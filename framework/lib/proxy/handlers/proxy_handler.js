@@ -41,7 +41,7 @@
 // http://wiki.ecmascript.org/doku.php?id=harmony:proxy_defaulthandler
 module.exports = ProxyHandler;
 
-var Proxy = require( './node-proxy/lib/node-proxy' );
+var Proxy = require( '../node-proxy/lib/node-proxy' );
 
 function ProxyHandler( params ) {
   this._init( params );

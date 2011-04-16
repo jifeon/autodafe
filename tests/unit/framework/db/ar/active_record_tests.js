@@ -1,6 +1,6 @@
 exports.get_batch = function( application, assert ) {
 
-  var Post = require("post_model");
+  var Post = require("post");
   var commands = {
     find: function (model, func, cond, attr, pk, sql) {
       var command_emitter = new process.EventEmitter;
@@ -14,7 +14,7 @@ exports.get_batch = function( application, assert ) {
 
   return {
     topic : function() {
-      return new application.model( Post );
+      return new application.models.post;
     },
     'db test'        : function( topic ) {
       assert.equal( topic.get_db_connection(), application.db );

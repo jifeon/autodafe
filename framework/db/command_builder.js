@@ -16,7 +16,7 @@ CommandBuilder.prototype._init = function( params ) {
   this.super_._init( params );
 
   var DbSchema = require( './db_schema' );
-  if ( !DbSchema.instantiate( params.db_schema ) )
+  if ( !DbSchema.is_instantiate( params.db_schema ) )
     throw new Error( '`db_schema` is not instance of DbSchema in CommandBuilder.init' );
 
   this._.db_schema      = params.db_schema;
