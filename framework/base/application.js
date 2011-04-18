@@ -40,10 +40,14 @@ Application.prototype._init = function ( config ) {
   this._init_components();
 
   var models_handler = new ModelsProxyHandler({
-    target : {},
+    target : get_model,
     app    : this
   });
-  
+
+  function get_model( constructor, params ) {
+    return models_handler.create_model( constructor, params );
+  }
+
   this.models = models_handler.get_proxy();
 };
 

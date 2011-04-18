@@ -1,8 +1,8 @@
-var ProxyHandler = require('./proxy_handler');
-var ModelProxyHandler = require('./model_proxy_handler');
-var AppModule    = require('app_module');
+var FunctionProxyHandler  = require('./function_proxy_handler');
+var ModelProxyHandler     = require('./model_proxy_handler');
+var AppModule             = require('app_module');
 
-module.exports = ModelsProxyHandler.inherits( ProxyHandler );
+module.exports = ModelsProxyHandler.inherits( FunctionProxyHandler );
 
 function ModelsProxyHandler( params ) {
   this._init( params );
@@ -30,26 +30,36 @@ ModelsProxyHandler.prototype.get = function ( receiver, name ) {
     throw new Error( 'Can\'t find model `%s`'.format( name ) );
   }
 
+  this.target[ name ] = this.get_by_class( model );
+  return this.target[ name ];
+};
+
+
+ModelsProxyHandler.prototype.get_by_class = function ( constructor, params ) {
   var self = this;
 
   var create_model = function() {
-    var model_instance = new model({
-      app : self.app
-    });
-
-    var handler = new ModelProxyHandler({
-      target    : model_instance,
-      instance  : model_instance
-    });
-
-    return handler.get_object_proxy();
+    return self.create_model( constructor, params );
   }
 
   var model_handler = new ModelProxyHandler({
     on_call : create_model
   });
 
-  this.target[ name ] = model_handler.get_proxy();
+  return model_handler.get_proxy();
+};
 
-  return this.target[ name ];
+
+ModelsProxyHandler.prototype.create_model = function ( constructor, params ) {
+  params     = params || {};
+  params.app = this.app;
+
+  var model_instance = new constructor( params );
+
+  var handler = new ModelProxyHandler({
+    target    : model_instance,
+    instance  : model_instance
+  });
+
+  return handler.get_object_proxy();
 };

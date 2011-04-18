@@ -13,7 +13,7 @@ FunctionProxyHandler.prototype._init = function ( params ) {
     target : params.on_call || params.target
   } );
 
-  this.on_construct = params.on_construct || params.on_call;
+  this.on_construct = params.on_construct || params.on_call || params.target;
 };
 
 
