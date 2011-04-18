@@ -40,14 +40,14 @@ Array.prototype.for_each = function ( fun/*, thisp*/ ) {
   if (typeof fun !== "function") throw new TypeError();
 
   var thisp = arguments[1];
-  var args  = this.prototype.slice.call( arguments, 2 );
+  var args  = this.slice.call( arguments, 2 );
   args.unshift( null );
 
   for (var i = 0; i < len; i++)
   {
     if ( i in t ){
       args[0] = t[i];
-      fun.apply( thisp, args );
+      if ( fun.apply( thisp, args ) === false ) break;
     }
   }
 };

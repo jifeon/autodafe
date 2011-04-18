@@ -269,6 +269,7 @@ CommandBuilder.prototype.create_pk_criteria = function( table, pk, condition, pa
 
   var criteria = this.create_criteria( condition, params );
   if ( criteria.alias != '' ) prefix = this.db_schema.quote_table_name( criteria.alias ) + '.';
+
   if ( !( pk instanceof Array ) ) pk = [ pk ];
   if ( table.primary_key instanceof Array && pk[0] == undefined && !Object.empty( pk ) ) // single composite key
     pk = [ pk ];
@@ -332,59 +333,54 @@ CommandBuilder.prototype.create_column_criteria = function( table, columns, cond
 }
 
 
+CommandBuilder.prototype.__get_exist_column = function ( table, column_name ) {
+  var column = table.get_column( column_name );
+  if ( !column )
+      throw new Error( 'Table "%s" does not have a column named "%s"'.format( table.name, column_name ) );
+  return column;
+};
+
+
 CommandBuilder.prototype.create_in_condition = function( table, column_name, values, prefix ) {
   if ( Object.empty( values ) ) return '0=1';
 
   if ( !prefix ) prefix = table.raw_name + '.';
 
-  var db = this.db_connection;
+  var column;
+  var value;
 
-  var column, value, name;
+  if ( typeof column_name == "string" ) {      // single key
 
-  if ( typeof column_name == "string" ) {// simple key
-    column = table.get_column( column_name );
+    column = this.__get_exist_column( table, column_name );
 
-    if ( !column ) throw new Error( 'Table ' + table.name + ' does not have a column named ' + column_name + '.' );
+    values = values.map( function( value ) {
+      return this.db_connection.quote_value( column.typecast( value ) );
+    }, this );
 
-    for ( var v = 0, v_ln = values.length; v < v_ln; v++ ) {
-      value = values[ v ];
-
-      value = column.typecast( value );
-      if ( typeof value == "string" )
-        value = db.quote_value( value );
-
-      values[ v ] = value;
-    }
-
-    if ( values.length == 1 ) return prefix + column.raw_name + ( values[0] === null ? ' IS NULL' : '=' + values[0] );
-    else return prefix + column.raw_name + ' IN (' + values.join(', ') + ')';
+    if ( values.length == 1 )
+      return prefix + column.raw_name + ( values[0] == 'NULL' ? ' IS NULL' : '=' + values[0] );
+    else
+      return prefix + column.raw_name + ' IN (' + values.join(', ') + ')';
   }
+
   else if ( column_name instanceof Array ) {// composite key: values=array(array('pk1'=>'v1','pk2'=>'v2'),array(...))
 
-    for ( var c = 0, c_ln = column_name.length; c < c_ln; c++ ) {
-      name    = column_name[ c ];
-      column  = table.get_column( name );
+    column_name.forEach( function( name ) {
+      column = this.__get_exist_column( table, name );
 
-      if ( !column ) throw new Error( 'Table ' + table.name + ' does not have a column named ' + name + '.' );
+      values = values.forEach( function( value ) {
+        if ( typeof value[ name ] == 'undefined' )
+          throw new Error( 'The value for the column `%s` is not supplied when querying the table `%s`'.format( name, table.name ) );
 
-      for ( var i = 0; i < n; ++i ) {
-        if ( values[i][name] != undefined ) {
+        value[ name ] = this.db_connection.quote_value( column.typecast( value[ name ] ) );
 
-          value = column.typecast( values[i][name] );
-
-          if ( typeof value == "string" ) values[i][name] = db.quote_value( value );
-          else values[i][name] = value;
-        }
-        else throw new Error( 'The value for the column ' + name + 
-                              ' is not supplied when querying the table ' + table.name );
-      }
-    }
+    }, this ); }, this );
 
     if ( values.length == 1 ) {
       var entries = [];
-      for ( name in values[0] ) {
+      for ( var name in values[0] ) {
         value = values[0][ name ];
-        entries.push( prefix + table.get_column( name ).raw_name + ( value == null ? ' IS NULL' : '=' + value ) );
+        entries.push( prefix + table.get_column( name ).raw_name + ( value == 'NULL' ? ' IS NULL' : '=' + value ) );
       }
 
       return entries.join( 'AND ' );
@@ -392,6 +388,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
 
     return this._create_composite_in_condition( table, values, prefix );
   }
+
   else
     throw new Error( 'Column name must be either a string or an array ( now: %s ).'.format( column_name ) );
 }

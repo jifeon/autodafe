@@ -5,7 +5,7 @@ exports.get_batch = function( application, assert ) {
     find: function (model, func, cond, attr, pk, sql) {
       var command_emitter = new process.EventEmitter;
 
-      model[ func ].apply( model, Array.prototype.slice.call( arguments, 2 ) ).on( 'complete', function( res ) {
+      model[ func ].apply( model, Array.prototype.slice.call( arguments, 2 ) ).on( 'success', function( res ) {
         command_emitter.emit('success', res);
       } );
       return command_emitter;
@@ -17,16 +17,16 @@ exports.get_batch = function( application, assert ) {
       return new application.models.post;
     },
     'db test'        : function( topic ) {
-      assert.equal( topic.get_db_connection(), application.db );
+      assert.equal( topic.db_connection, application.db );
     },
     'table name test'      : function( topic ) {
-      assert.equal( topic.table, 'posts' );
+      assert.equal( topic.table_name, 'posts' );
     },
     'table schema' : {
       topic : function( topic ) {
-        topic.get_table_schema( this.callback );
+        topic.get_table( this.callback );
       },
-      'get table' : function( table, err ){
+      'get table' : function( err, table ){
         assert.isTrue( table._initialized );
       }
     },
@@ -118,7 +118,7 @@ exports.get_batch = function( application, assert ) {
 //          topic.set_is_new_record( true );
 //
 //          var emitter = new process.EventEmitter;
-//          topic.save().on( 'complete', function(res){
+//          topic.save().on( 'success', function(res){
 //            emitter.emit('success', res);
 //          });
 //          return emitter;

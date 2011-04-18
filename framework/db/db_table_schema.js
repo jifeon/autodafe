@@ -34,14 +34,14 @@ DbTableSchema.prototype.get_column_names = function() {
 };
 
 
-DbTableSchema.prototype.each_primary_key = function ( fun, context ) {
+DbTableSchema.prototype.each_primary_key = function ( callback, context ) {
   if ( this.primary_key == null ) return this.log(
     'DbTableSchema.each_primary_key try to use primary_key in table `%s`, but it is null'.format( this.name ),
     'warning'
   );
 
   var pks = Array.isArray( this.primary_key ) ? this.primary_key : [ this.primary_key ];
-  pks.forEach( fun, context );
+  pks.for_each( callback, context );
 };
 
 

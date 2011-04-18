@@ -11,7 +11,8 @@ MysqlResult.prototype._init = function( params ) {
   this.super_._init( params );
 
   if ( !params || !params.source ) throw new Error( '`source` is not defined in MysqlResult.init' );
-  this._.source = params.source;
+  this._.source     = params.source;
+  this._.insert_id  = this.source.insertId;
 };
 
 

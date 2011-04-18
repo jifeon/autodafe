@@ -37,7 +37,7 @@ ActionController.prototype.login = function ( params, client ) {
       ':login'  : params.login,
       ':pass'   : params.pass
     } )
-    .on( 'complete', function( user ) {
+    .on( 'success', function( user ) {
       if ( !user ) return self.send_message( client, 'show_message', {
         message : 'Пользователя с таким паролем не существует!'
       } );
@@ -68,7 +68,7 @@ ActionController.prototype.registration = function ( params, client ) {
     .find( 'login=:login', {
       ':login' : login
     } )
-    .on( 'complete', function( user ) {
+    .on( 'success', function( user ) {
       if ( user ) return self.send_message( client, 'show_message', {
          message : 'Пользователь с таким логином уже существует'
       });
@@ -84,7 +84,7 @@ ActionController.prototype.registration_step2 = function ( client, login, pass )
   var user = new User;
   user.login  = login;
   user.pass   = pass;
-  user.save().on( 'complete', function() {
+  user.save().on( 'success', function() {
     self.authorised_clients[ client.sessionId ] = true;
     self.send_message( client, 'login', 'user id: ' + user.id );
   } );
