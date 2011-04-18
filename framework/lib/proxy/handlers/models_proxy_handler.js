@@ -31,10 +31,18 @@ ModelsProxyHandler.prototype.get = function ( receiver, name ) {
   }
 
   var self = this;
+
   var create_model = function() {
-    return new model({
+    var model_instance = new model({
       app : self.app
     });
+
+    var handler = new ModelProxyHandler({
+      target    : model_instance,
+      instance  : model_instance
+    });
+
+    return handler.get_object_proxy();
   }
 
   var model_handler = new ModelProxyHandler({

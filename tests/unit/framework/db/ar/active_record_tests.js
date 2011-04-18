@@ -1,6 +1,8 @@
 exports.get_batch = function( application, assert ) {
 
-  var Post = require("post");
+  var Post          = require("post");
+  var DbTableSchema = require( 'db/db_table_schema' );
+
   var commands = {
     find: function (model, func, cond, attr, pk, sql) {
       var command_emitter = new process.EventEmitter;
@@ -27,7 +29,7 @@ exports.get_batch = function( application, assert ) {
         topic.get_table( this.callback );
       },
       'get table' : function( err, table ){
-        assert.isTrue( table._initialized );
+        assert.instanceOf( table, DbTableSchema );
       }
     },
     'set attributes'  : function( topic ) {
@@ -61,9 +63,9 @@ exports.get_batch = function( application, assert ) {
       },
     'find without result'  : {
       topic         : function( topic ) {
-        return commands.find( topic, 'find', 'id=6', {}, 0, '' )
+        return topic.find( 'id=6' );
       },
-      'tests no result'  : function( res ) {
+      'tests no result'  : function( e, res ) {
         assert.isNull( res, 'should be equal null' );
       }
     },
@@ -97,7 +99,7 @@ exports.get_batch = function( application, assert ) {
       }
     }//,
 //    'insert test' : {
-//      topic : new application.model( Post ),
+//      topic : new application.models.post,
 //      'attributes test' : function( topic ){
 //        var tmp ={
 //          id          : null,
@@ -115,7 +117,6 @@ exports.get_batch = function( application, assert ) {
 //          topic.create_time = '2000-01-06 00:00:00';
 //          topic.author_id   = 1;
 //          topic.content     = 'test post content 1';
-//          topic.set_is_new_record( true );
 //
 //          var emitter = new process.EventEmitter;
 //          topic.save().on( 'success', function(res){

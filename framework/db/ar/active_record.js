@@ -1,5 +1,6 @@
 var Model           = require('model');
 var DbCriteria      = require('db/db_criteria');
+var DbCommand       = require('db/db_command');
 var AppModule       = require('app_module');
 var Emitter         = process.EventEmitter;
 
@@ -21,7 +22,6 @@ ActiveRecord.prototype._init = function( params ) {
 
   this._.db_connection  = this.app.db;
 
-  this._attributes  = {};
   this._primary_key = null;
 
   this.is_new       = params.is_new == undefined ? true : params.is_new;
@@ -63,14 +63,10 @@ ActiveRecord.prototype.insert = function( attributes ) {
   if ( !this.is_new )
     throw new Error( 'The active record cannot be inserted to database because it is not new.' );
 
-  var emitter = new process.EventEmitter;
-  var self    = this;
-
-  this.get_table( function( e, table ) {
-    if ( e ) return emitter.emit( 'error', e );
-
+  var self = this;
+  return this.__wrap_to_get_table( function( table, emitter ) {
     var builder = this.get_command_builder();
-    var command = builder.create_insert_command( table, self.get_attributes( table, attributes ) );
+    var command = builder.create_insert_command( table, this.get_attributes( table, attributes ) );
 
     command.execute( function( e, result ) {
       if ( e ) return emitter.emit( 'error', e );
@@ -88,13 +84,11 @@ ActiveRecord.prototype.insert = function( attributes ) {
 
       emitter.emit( 'success', result );
     });
-  });
-
-  return emitter;
+  } );
 }
 
 
-ActiveRecord.prototype.update = function( attributes, callback ) {
+ActiveRecord.prototype.update = function( attributes ) {
   this.log( 'update' );
 
   if ( this.is_new )
@@ -210,10 +204,9 @@ ActiveRecord.prototype.refresh = function() {
       .on( 'success', function( record ) {
         if ( !record ) return emitter.emit( 'error', new Error( 'Can\'t find reflection of record in data base' ) );
 
-        self._attributes = {};
+        self.clean_attributes();
         table.get_column_names().forEach( function( name ) {
-          if ( typeof self[ name ] != 'undefined' ) self[ name ] = record[ name ];
-          else self._attributes[ name ] = record[ name ];
+          self.set_attribute( name, record[ name ] );
         } );
 
         emitter.emit( 'success' );
@@ -268,75 +261,6 @@ ActiveRecord.prototype.query = function ( criteria, all ) {
   } );
 
   return emitter;
-};
-
-
-ActiveRecord.prototype.get_safe_attribute_names = function () {
-  return {};
-};
-
-
-ActiveRecord.prototype.get_attributes = function( table, names ) {
-  if ( typeof names == 'undefined' ) names = true;
-
-  var attributes = this._attributes;
-
-  table.get_column_names().forEach( function( name ) {
-
-    if ( typeof this[ name ] != "undefined" )
-      attributes[name] = this[ name ];
-
-    else if ( names === true && attributes[ name ] == undefined )
-      attributes[ name ] = null;
-
-  }, this );
-
-
-  if ( names instanceof Array ) {
-
-    var attrs = {};
-
-    names.forEach( function( name ){
-      attrs[ name ] = attributes[ name ] != undefined ? attributes[ name ] : null;
-    });
-
-    return attrs;
-  }
-
-  return attributes;
-};
-
-
-ActiveRecord.prototype.set_attributes = function ( values ) {
-  if ( !( values instanceof Object ) || values === null ) return false;
-
-  var self = this;
-//  var emitter = new process.EventEmitter;
-
-  this.get_table( function( e, table ){
-    if ( e ) throw e;
-    
-    var pk = table.primary_key;
-
-    for ( var name in values ) {
-      var value = values[ name ];
-      if ( table.get_column( name ) ){
-        if( pk instanceof Object ){
-          if( !pk[ name ] ) {
-            self[ name ] = value;
-          }
-        } else {
-          if( pk != name ){
-            self[ name ] = value;
-          }
-        }
-
-        self._attributes[ name ] = value;
-      }
-      else self.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning' );
-    }
-  });
-//  return emitter;
 };
 
 
@@ -415,9 +339,9 @@ ActiveRecord.prototype.__wrap_to_get_table = function ( fun ) {
   this.get_table( function( e, table ) {
     if ( e ) return emitter.emit( 'error', e );
 
-    var res = fun.call( self, table );
+    var res = fun.call( self, table, emitter );
     if ( res instanceof Emitter ) self.__re_emit( res, emitter );
-    else self.__execute_command( res, emitter );
+    else if ( res instanceof DbCommand ) self.__execute_command( res, emitter );
   });
 
   return emitter;
