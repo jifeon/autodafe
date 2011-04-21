@@ -19,6 +19,7 @@ DbTableSchema.prototype._init = function( params ) {
   this.raw_name       = null;
   this.primary_key    = null;
   this.in_sequence    = false;
+  this.is_inited      = false;
 
   this._._columns     = {};
 };

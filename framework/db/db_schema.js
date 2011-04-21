@@ -36,9 +36,18 @@ DbSchema.prototype._init = function( params ) {
 
 
 DbSchema.prototype.get_table = function( name, callback ) {
-  if ( this._tables[ name ] ) return callback( null, this._tables[ name ] );
+  var table = this._tables[ name ];
 
-  this._load_table( name, callback );
+  if ( !table ) return this._load_table( name, callback );
+
+  if ( table.is_inited ) callback( null, table );
+  else table
+    .on( 'initialized', function() {
+      callback( null, table );
+    } )
+    .on( 'error', function( e ) {
+      callback( e );
+    } );
 };
 
 

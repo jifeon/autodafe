@@ -16,6 +16,11 @@ MysqlResult.prototype._init = function( params ) {
 };
 
 
+MysqlResult.prototype.get_all_rows = function () {
+  return this.source.fetchAllSync();
+};
+
+
 MysqlResult.prototype.fetch_array = function ( callback, context ) {
   if ( this.source.numRowsSync() == 0 || typeof callback != 'function' ) return false;
 

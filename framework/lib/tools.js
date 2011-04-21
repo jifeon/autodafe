@@ -66,6 +66,13 @@ Object.merge = function( obj1, obj2 ) {
 };
 
 
+Object.values = function( obj ) {
+  return Object.keys( obj ).map( function( v ) {
+    return obj[v];
+  } );
+}
+
+
 Object.recursive_merge = function( obj1, obj2 ) {
   if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
 
@@ -81,7 +88,7 @@ Object.recursive_merge = function( obj1, obj2 ) {
 };
 
 
-Object.empty = function( v ) {
+Object.isEmpty = function( v ) {
   if ( !v ) return true;
   if ( v instanceof Array && !v.length ) return true;
   return v instanceof this && !this.keys( v ).length;

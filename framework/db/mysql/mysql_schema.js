@@ -25,9 +25,13 @@ MysqlSchema.prototype._load_table = function( name, callback ) {
     app       : this.app
   });
   
-  table.on( 'initialized', function( e ) {
-    callback( e, table );
-  } );
+  table
+    .on( 'initialized', function() {
+      callback( null, table );
+    } )
+    .on( 'error', function( e ) {
+      callback( e, null );
+    } );
 }
 
 

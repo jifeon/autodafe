@@ -17,8 +17,8 @@ MysqlColumnSchema.prototype._extract_type = function() {
 }
 
 MysqlColumnSchema.prototype._extract_default = function( default_value ) {
-  if ( this.db_type == 'timestamp' && default_value == 'current_timestamp' ) return null;
-  else return this.super_._extract_default();
+  if ( this.db_type == 'timestamp' && default_value == 'CURRENT_TIMESTAMP' ) return null;
+  else return this.super_._extract_default( default_value );
 };
 
 

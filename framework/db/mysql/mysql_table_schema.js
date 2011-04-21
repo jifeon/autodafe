@@ -17,6 +17,7 @@ MysqlTableSchema.prototype._init = function( params ) {
   this._find_columns();
 
   this.on( 'initialized', function() {
+    this.is_inited = true;
     this.log( 'Table "%s" has initialized'.format( this.name ) );
   } );
 };
@@ -45,7 +46,7 @@ MysqlTableSchema.prototype._find_columns = function() {
 
   this.db_schema.db_connection.create_command( sql ).execute( function( e, result ) {
 
-    if ( e ) throw e;
+    if ( e ) return self.emit( 'error', e );
 
     result.fetch_obj( function( column ) {
 

@@ -23,7 +23,8 @@ DbConnection.prototype._init = function( params ) {
 DbConnection.prototype.create_command = function( sql ) {
   return new DbCommand({
     db_connection : this,
-    text          : sql
+    text          : sql,
+    app           : this.app
   });
 };
 

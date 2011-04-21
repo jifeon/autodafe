@@ -9,7 +9,7 @@ function CommandBuilder( params ) {
 }
 
 
-CommandBuilder.prototype.PARAM_PREFIX = ':atdf';
+CommandBuilder.prototype.PARAM_PREFIX = ':ap';
 
 
 CommandBuilder.prototype._init = function( params ) {
@@ -212,7 +212,7 @@ CommandBuilder.prototype.create_update_counter_command = function( table, counte
 
 
 CommandBuilder.prototype.create_sql_command = function( sql, params ) {
-  return this.db_connection.create_command( sql ).bind_values( params );
+  return this.db_connection.create_command( sql ).bind_values( params || {} );
 }
 
 
@@ -270,8 +270,8 @@ CommandBuilder.prototype.create_pk_criteria = function( table, pk, condition, pa
   var criteria = this.create_criteria( condition, params );
   if ( criteria.alias != '' ) prefix = this.db_schema.quote_table_name( criteria.alias ) + '.';
 
-  if ( !( pk instanceof Array ) ) pk = [ pk ];
-  if ( table.primary_key instanceof Array && pk[0] == undefined && !Object.empty( pk ) ) // single composite key
+  if ( !Object.isObject( pk ) && !Array.isArray( pk ) ) pk = [ pk ];
+  if ( table.primary_key instanceof Array && Object.isObject( pk ) && !Object.isEmpty( pk ) ) // single composite key
     pk = [ pk ];
 
   condition = this.create_in_condition( table, table.primary_key, pk, prefix );
@@ -293,9 +293,8 @@ CommandBuilder.prototype.create_column_criteria = function( table, columns, cond
   var criteria = this.create_criteria( condition, params );
   if ( criteria.alias != '' ) prefix = this.db_schema.quote_table_name( criteria.alias ) + '.';
 
-  var bind_by_position = ( criteria.params[0] != undefined );
   var conditions  = [];
-  var values      = [];
+  var values      = {};
   var i = 0;
 
   if ( prefix == null ) prefix = table.raw_name + '.';
@@ -308,15 +307,9 @@ CommandBuilder.prototype.create_column_criteria = function( table, columns, cond
     if ( value instanceof Array )
       conditions.push( this.create_in_condition( table, name, value, prefix ) );
     else if ( value != null ) {
-      if ( bind_by_position ) {
-        conditions.push( prefix + column.raw_name + '=?' );
-        values.push( value );
-      }
-      else {
-        conditions.push( prefix + column.raw_name + '=' + this.PARAM_PREFIX + i );
-        values[ this.PARAM_PREFIX + i ] = value;
-        i++;
-      }
+      conditions.push( prefix + column.raw_name + '=' + this.PARAM_PREFIX + i );
+      values[ this.PARAM_PREFIX + i ] = value;
+      i++;
     }
     else
       conditions.push( prefix + column.raw_name + ' IS NULL' );
@@ -342,7 +335,7 @@ CommandBuilder.prototype.__get_exist_column = function ( table, column_name ) {
 
 
 CommandBuilder.prototype.create_in_condition = function( table, column_name, values, prefix ) {
-  if ( Object.empty( values ) ) return '0=1';
+  if ( Object.isEmpty( values ) ) return '0=1';
 
   if ( !prefix ) prefix = table.raw_name + '.';
 
@@ -368,7 +361,8 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
     column_name.forEach( function( name ) {
       column = this.__get_exist_column( table, name );
 
-      values = values.forEach( function( value ) {
+      values.forEach( function( value ) {
+
         if ( typeof value[ name ] == 'undefined' )
           throw new Error( 'The value for the column `%s` is not supplied when querying the table `%s`'.format( name, table.name ) );
 
@@ -383,7 +377,7 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
         entries.push( prefix + table.get_column( name ).raw_name + ( value == 'NULL' ? ' IS NULL' : '=' + value ) );
       }
 
-      return entries.join( 'AND ' );
+      return entries.join( ' AND ' );
     }
 
     return this._create_composite_in_condition( table, values, prefix );
@@ -398,11 +392,10 @@ CommandBuilder.prototype._create_composite_in_condition = function( table, value
   var key_names = [];
   for ( var name in values[0] ) key_names.push( prefix + table.get_column(name).raw_name );
 
-  var vs = [];
-  for ( var v = 0, v_ln = values.length; v < v_ln; v++ ) {
-    vs.push( '(' + values[v].join( ', ' ) + ')' );
-  }
+  values = values.map( function( value ) {
+    return '(' + Object.values( value ).join( ', ' ) + ')';
+  } ).join(', ');
 
-  return '(' + key_names.join( ', ' ) + ') IN (' + vs.join(', ') + ')';
+  return '(' + key_names.join( ', ' ) + ') IN (' + values + ')';
 }
 
