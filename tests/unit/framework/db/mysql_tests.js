@@ -97,7 +97,6 @@ exports.get_batch = function( application, assert ) {
         }
       },
 
-
       'table `posts`' : {
         topic : function( schema ) {
           schema.get_table( 'posts', this.callback );

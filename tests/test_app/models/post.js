@@ -8,4 +8,4 @@ function Post( params ) {
 
 
 Post.table_name       = 'posts';
-Post.attribute_names  = [ 'id', 'title' ];
+Post.attribute_names  = [ 'title' ];

@@ -15,9 +15,12 @@ ModelProxyHandler.prototype._init = function( params ) {
 
 
 ModelProxyHandler.prototype.get = function ( receiver, name ) {
-  if ( name == 'prototype' || name in Function.prototype ) return this.target[ name ];
+  if ( name == 'prototype' || name in Function.prototype && name != 'constructor' )
+    return this.target[ name ];
 
   if ( !this._instance ) this._instance = this.target();
+  if ( name == 'constructor' ) return this._instance.constructor;
+  
   return name == '__origin__' ? this._instance : this._instance.get_attribute( name );
 };
 

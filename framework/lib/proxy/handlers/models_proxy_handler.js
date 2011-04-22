@@ -1,8 +1,8 @@
-var FunctionProxyHandler  = require('./function_proxy_handler');
-var ModelProxyHandler     = require('./model_proxy_handler');
-var AppModule             = require('app_module');
+var ProxyHandler        = require('./proxy_handler');
+var ModelProxyHandler   = require('./model_proxy_handler');
+var AppModule           = require('app_module');
 
-module.exports = ModelsProxyHandler.inherits( FunctionProxyHandler );
+module.exports = ModelsProxyHandler.inherits( ProxyHandler );
 
 function ModelsProxyHandler( params ) {
   this._init( params );
@@ -43,7 +43,10 @@ ModelsProxyHandler.prototype.get_by_class = function ( constructor, params ) {
   }
 
   var model_handler = new ModelProxyHandler({
-    on_call : create_model
+    target       : function() {
+      return self._get_instance( constructor, params );
+    },
+    on_construct : create_model
   });
 
   return model_handler.get_proxy();
@@ -51,10 +54,7 @@ ModelsProxyHandler.prototype.get_by_class = function ( constructor, params ) {
 
 
 ModelsProxyHandler.prototype.create_model = function ( constructor, params ) {
-  params     = params || {};
-  params.app = this.app;
-
-  var model_instance = new constructor( params );
+  var model_instance = this._get_instance( constructor, params );
 
   var handler = new ModelProxyHandler({
     target    : model_instance,
@@ -62,4 +62,12 @@ ModelsProxyHandler.prototype.create_model = function ( constructor, params ) {
   });
 
   return handler.get_object_proxy();
+};
+
+
+ModelsProxyHandler.prototype._get_instance = function ( constructor, params ) {
+  params     = params || {};
+  params.app = this.app;
+
+  return new constructor( params );
 };
