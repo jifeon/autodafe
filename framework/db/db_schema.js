@@ -40,6 +40,8 @@ DbSchema.prototype.get_table = function( name, callback ) {
 
   if ( !table ) return this._load_table( name, callback );
 
+  table.setMaxListeners( 100 );
+
   if ( table.is_inited ) callback( null, table );
   else table
     .on( 'initialized', function() {

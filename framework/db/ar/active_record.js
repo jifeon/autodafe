@@ -29,7 +29,7 @@ ActiveRecord.prototype.get_table = function ( callback ) {
 };
 
 
-ActiveRecord.prototype.__wrap_to_get_table = function ( fun ) {
+ActiveRecord.prototype.__wrap_to_get_table = function ( fun, option ) {
   var emitter = new Emitter;
   var self    = this;
 
@@ -37,16 +37,17 @@ ActiveRecord.prototype.__wrap_to_get_table = function ( fun ) {
     if ( e ) return emitter.emit( 'error', e );
 
     var res = fun.call( self, table, emitter );
+
     if ( res instanceof Emitter ) self.__re_emit( res, emitter );
-    else if ( res instanceof DbCommand ) self.__execute_command( res, emitter );
+    else if ( res instanceof DbCommand ) self.__execute_command( res, emitter, option == 'scalar' );
   });
 
   return emitter;
 };
 
 
-ActiveRecord.prototype.__execute_command = function ( command, emitter ) {
-  command.execute( function( e, result ) {
+ActiveRecord.prototype.__execute_command = function ( command, emitter, scalar ) {
+  command[ scalar ? 'query_scalar' : 'execute' ]( function( e, result ) {
     emitter.emit( e ? 'error' : 'success', e || result );
   } );
 };
@@ -95,10 +96,8 @@ ActiveRecord.prototype.set_primary_key = function( table_schema, primary_key ) {
 }
 
 
-ActiveRecord.prototype.save = function( run_validation, attributes, callback ) {
-  if ( run_validation == undefined ) run_validation = true;
-
-    return this.is_new ? this.insert( attributes, callback ) : this.update( attributes, callback );
+ActiveRecord.prototype.save = function( attributes ) {
+  return this.is_new ? this.insert( attributes ) : this.update( attributes );
 }
 
 
@@ -299,6 +298,8 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
   var self = this;
 
   command.execute( function( e, result ) {
+    if ( e ) return emitter.emit( 'error', e );
+
     var record;
     result.fetch_obj( function( obj ) {
       record = self.populate_record( obj );
@@ -320,6 +321,8 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
   var self = this;
 
   command.execute( function( e, result ) {
+    if ( e ) return emitter.emit( 'error', e );
+    
     var records = [];
     result.fetch_obj( function( obj ) {
       records.push( self.populate_record( obj ) );
@@ -330,30 +333,27 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
   return emitter;
 }
 
-// todo: count
+ActiveRecord.prototype.count = function( condition, params ) {
+  this.log( 'count' );
 
-//ActiveRecord.prototype.count = function( condition, params ) {
-//  var builder   = this.get_command_builder();
-//  var criteria  = builder.create_criteria( condition, params );
-//
-//  this.apply_scopes( criteria );
-//
-////  if ( empty( criteria.with ) )
-//  return builder.create_count_command( this.get_table_schema(), criteria ).query_scalar();
-////else
-////  return this.
-////  with ( criteria.with ).
-////  count( criteria );
-//}
+  var builder   = this.get_command_builder();
+  var criteria  = builder.create_criteria( condition, params );
+
+  return this.__wrap_to_get_table( function( table ) {
+    return builder.create_count_command( table, criteria );
+  }, 'scalar' );
+}
 
 
-//ActiveRecord.prototype.count_by_sql = function( sql, params = array() ) {
-//  yii::trace( get_class( this ).
-//  '.count_bysql()','system.db.ar.cactive_record'
-//)
-//  ;
-//  return this.get_command_builder().create_sql_command( sql, params ).query_scalar();
-//}
+ActiveRecord.prototype.count_by_sql = function( sql, params ) {
+  this.log( 'count_by_sql' );
+
+  var builder   = this.get_command_builder();
+
+  return this.__wrap_to_get_table( function( table ) {
+    return builder.create_sql_command( sql, params );
+  }, 'scalar' );
+}
 
 
 //ActiveRecord.prototype.exists = function( condition, params = array() ) {
