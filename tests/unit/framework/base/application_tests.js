@@ -2,6 +2,7 @@ exports.get_batch = function( application, assert ) {
   var Router            = require( 'router' );
   var Logger            = require( 'logging/logger' );
   var ComponentsManager = require( 'components/components_manager' );
+  var Component         = require( 'components/component' );
   var Autodafe          = require( 'autodafe' );
   var LogRouter         = require( 'logging/log_router' );
   var TestComponent     = require( 'tests/test_component' );
@@ -160,6 +161,44 @@ exports.get_batch = function( application, assert ) {
 
     'log is function' : function( app ) {
       assert.isFunction( app.log );
+    },
+
+    '`register_component` method' : {
+      'simple registering' : function( app ){
+        var component = new Component({
+          name : 'test',
+          app  : app
+        });
+
+        app.register_component( component );
+
+        assert.equal( app.test, component );
+      },
+      'try to register not a component should throw an error' : function( app ){
+        assert.throws( function() {
+          app.register_component( { name : 'name' } );
+        } );
+      },
+      'try to register a component with same name should throw an error' : function( app ){
+        assert.throws( function() {
+          app.register_component(
+            new Component({
+              name : 'test',
+              app  : app
+            })
+          );
+        } );
+      },
+      'component with conflict name which is application property or method name' : function( app ){
+        assert.throws( function() {
+          app.register_component(
+            new Component({
+              name  : 'default_controller',
+              app   : app
+            })
+          );
+        } );
+      }
     }
   }
 }

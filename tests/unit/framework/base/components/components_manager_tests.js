@@ -43,7 +43,7 @@ exports.get_batch = function( application, assert ) {
         'should be instance of `Component`' : function( app ) {
           assert.instanceOf( app.nested_user_component, Component );
         },
-        'param of nested user\'s component should be equal 42' : function( app ) {
+        'param of nested user\'s component should be equal 43' : function( app ) {
           assert.equal( app.nested_user_component.param, 43 );
         }
       },

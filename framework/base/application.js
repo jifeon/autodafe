@@ -3,6 +3,7 @@ var path                  = require('path');
 var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
+var Component             = require('components/component');
 var ModelsProxyHandler    = require('lib/proxy/handlers/models_proxy_handler');
 var AutodafePart          = require('autodafe_part');
 
@@ -86,14 +87,25 @@ Application.prototype._init_components = function () {
 };
 
 
-Application.prototype.register_component = function ( name, component ) {
+Application.prototype.register_component = function ( component ) {
+  var name = component.name;
+
+  if ( this[ name ] )
+    throw new Error(
+      (
+        this[ name ] instanceof Component
+        ? 'Try to register two component with same name: %s'
+        : 'Try to create component with name engaged for property of application: %s '
+      ).format( name )
+    );
+
   Object.defineProperty( this, name, {
     get : function() {
       return component
         ? component.get()
         : this.log(
           'Try to use component "%s" which is not included. \
-           To include component configure it in your config file'.format( name ),
+           To include component configure it in your config file'.format( component.name ),
           'warning'
         )
     },

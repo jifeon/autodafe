@@ -20,19 +20,3 @@ Component.prototype._init = function( params ) {
 Component.prototype.get = function () {
   return this;
 };
-
-
-//Component.prototype._define_getter = function () {
-//  var self = this;
-//
-//  if ( this.app[ this.name ] )
-//    throw new Error(
-//      this.app[ this.name ] instanceof Component
-//        ? 'Try to create two component with same name: ' + this.name
-//        : 'Try to create component with name engaged for property of application ' + this.name
-//    );
-//
-//  this.app.__defineGetter__( this.name, function() {
-//    return self;
-//  } );
-//};
