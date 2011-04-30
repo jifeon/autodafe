@@ -25,6 +25,10 @@ Application.prototype._init = function ( config ) {
     throw new Error( 'Please specify application name in your config file' );
   this._.name     = this._config.name || 'My Autodafe application';
 
+  if ( !this._config.base_dir )
+    throw new Error( 'You must set base_dir in config file!' );
+  this._.base_dir = path.normalize( this._config.base_dir );
+
   this.logger     = new Logger;
   this.router     = null;
   this.components = null;
@@ -34,8 +38,6 @@ Application.prototype._init = function ( config ) {
   this._runned = false;
 
   this._preload_components();
-  if ( !this._check_config() ) return false;
-
   this._init_core();
   this._init_components();
 
@@ -52,34 +54,18 @@ Application.prototype._init = function ( config ) {
 };
 
 
-Application.prototype._check_config = function () {
-  if ( !this._config.base_dir ) {
-    this.log( 'You must set base_dir in config file!', 'error' );
-    return false;
-  }
-
-  this._config.base_dir = path.normalize( this._config.base_dir );
-
-  this.__defineGetter__( 'base_dir', function () {
-    return this._config.base_dir;
-  });
-
-  return true;
-};
-
-
 Application.prototype._init_core = function () {
   require.paths.unshift( this.base_dir + 'models/' );
 
   var router_cfg = this._config.router || {};
   router_cfg.app = this;
   this.router = new Router( router_cfg );
-  this.log( 'Core is initialized', 'info' );
+  this.log( 'Core initialized', 'info' );
 };
 
 
 Application.prototype._preload_components = function () {
-  this.log( 'Preload components', 'trace' );
+  this.log( 'Preload components' );
 
   this.components = new ComponentsManager( {
     components : this._config.components,
@@ -94,7 +80,7 @@ Application.prototype._preload_components = function () {
 
 
 Application.prototype._init_components = function () {
-  this.log( 'Load components', 'trace' );
+  this.log( 'Load components' );
   this.components.load_components();
   this.log( 'Components are loaded', 'info' );
 };
@@ -107,7 +93,7 @@ Application.prototype.get_param = function ( name ) {
 
 Application.prototype.run = function () {
   if ( this._runned ) return false;
-  this.log( 'Running application', 'trace' );
+  this.log( 'Running application' );
   this.emit( 'run' );
   this._runned = true;
   return true;
