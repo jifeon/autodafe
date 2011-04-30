@@ -1,29 +1,29 @@
-var Proxy = global.Proxy;
+var AutodafePart = require( 'autodafe_part' );
 
-module.exports = AppModule.inherits( process.EventEmitter );
+module.exports = AppModule.inherits( AutodafePart );
 
-function AppModule() {
-  throw new Error( 'AppModule is abstract class. You can not instantiate it' );
+function AppModule( params ) {
+  this._init( params );
 }
 
 
 AppModule.prototype._init = function( params ) {
-  if ( !params || !params.app ) throw new Error(
-    'Link to application is undefined' + ( this.constructor.name
-      ? ' in `%s._init`'.format( this.constructor.name )
+  this.super_._init( params );
+
+  var Application = require( 'application' );
+
+  if ( !params || !Application.is_instantiate( params.app ) ) throw new Error(
+    'Link to application is not defined or has wrong type' + ( this.class_name
+      ? ' in `%s._init`'.format( this.class_name )
       : ' in `_init` method of class inherited from AppModule. Also class inherited from AppModule should be defined as ' +
       '`function Name() {}` instead of `var Name = function() {}` because AppModule uses `this.constructor.name` property for logging'
     )
   );
 
-  var application = params.app;
+  this._.app = params.app;
   delete params.app;
 
-  Object.defineProperty( this, 'app', {
-    value       : application
-  });
-
-  if ( !this.constructor.name ) {
+  if ( !this.class_name ) {
     this.app.log(
       'Class inherited from AppModule should be defined as `function Name() {}` instead of `var Name = function() {}`' +
       ' because AppModule uses `this.constructor.name` property for logging',
@@ -32,22 +32,6 @@ AppModule.prototype._init = function( params ) {
 };
 
 
-AppModule.prototype.log = function ( message, type ) {
-  this.app.logger.log( message, type, this.constructor.name );
+AppModule.prototype.log = function ( message, level ) {
+  this.app.logger.log( message, level, this.class_name );
 };
-
-var handler = Proxy.Handler({});
-handler.get = function(_, name) {
-  return function() {
-    var args = Array.prototype.slice.call( arguments );
-    var f = function( rcvr ) {
-      return rcvr[ name ].apply( rcvr, args );
-    };
-    f.selector  = name;
-    f.args      = args;
-    return f;
-  }
-}
-
-// turns messages into functions
-AppModule.prototype._ = Proxy.create( handler );

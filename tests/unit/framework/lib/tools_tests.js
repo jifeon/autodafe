@@ -137,26 +137,26 @@ exports.get_batch = function( application, assert ) {
       },
       'Object empty' : {
         'object' : function(){
-          assert.isTrue( Object.empty( {} ) );
-          assert.isFalse( Object.empty( { d : 5 } ) );
+          assert.isTrue( Object.isEmpty( {} ) );
+          assert.isFalse( Object.isEmpty( { d : 5 } ) );
         },
         'array' : function(){
-          assert.isTrue( Object.empty( [] ) );
-          assert.isFalse( Object.empty( [ 42 ] ) );
-          assert.isFalse( Object.empty( [ undefined ] ) );
-          assert.isFalse( Object.empty( [ false ] ) );
+          assert.isTrue( Object.isEmpty( [] ) );
+          assert.isFalse( Object.isEmpty( [ 42 ] ) );
+          assert.isFalse( Object.isEmpty( [ undefined ] ) );
+          assert.isFalse( Object.isEmpty( [ false ] ) );
         },
         'string' : function() {
-          assert.isTrue( Object.empty( '' ) );
-          assert.isFalse( Object.empty( 'aa' ) );
-          assert.isFalse( Object.empty( '0' ) );
+          assert.isTrue( Object.isEmpty( '' ) );
+          assert.isFalse( Object.isEmpty( 'aa' ) );
+          assert.isFalse( Object.isEmpty( '0' ) );
         },
         'other' : function() {
-          assert.isTrue( Object.empty( false ) );
-          assert.isTrue( Object.empty( null ) );
-          assert.isTrue( Object.empty( undefined ) );
-          assert.isTrue( Object.empty( 0 ) );
-          assert.isFalse( Object.empty( 1 ) );
+          assert.isTrue( Object.isEmpty( false ) );
+          assert.isTrue( Object.isEmpty( null ) );
+          assert.isTrue( Object.isEmpty( undefined ) );
+          assert.isTrue( Object.isEmpty( 0 ) );
+          assert.isFalse( Object.isEmpty( 1 ) );
         }
       },
       'Object clone' : function( obj ) {

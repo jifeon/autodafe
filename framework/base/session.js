@@ -18,8 +18,7 @@ Session.prototype._init = function( params ) {
   this.super_._init( params );
 
   if ( typeof params.id == 'undefined' ) {
-    this.log( 'Try to create session without id', 'error' );
-    return false;
+    throw new Error( 'Try to create session without id' );
   }
 
   this.id                   = params.id;

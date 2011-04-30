@@ -7,6 +7,5 @@ function Post( params ) {
 }
 
 
-Post.get_table_name = function () {
-  return 'posts';
-};
+Post.table_name       = 'posts';
+Post.attribute_names  = [ 'title' ];

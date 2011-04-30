@@ -3,6 +3,7 @@ var TestsBatch  = require( 'tests/tests_batch' );
 var path        = require( 'path' );
 var fs          = require( 'fs' );
 var assert      = require( 'assert' );
+var FixtureManager          = require( 'tests/db_fixtures_manager' );
 
 module.exports = TestComponent.inherits( Component );
 
@@ -18,6 +19,10 @@ TestComponent.prototype._init = function( params ) {
   this.paths      = params.paths    || [];
   this.exclude    = params.exclude  || [];
   this.suite      = this.vows.describe( 'Autodafe tests' );
+  this.fm         = new FixtureManager({
+    app : this.app
+  });
+
 };
 
 
@@ -41,7 +46,10 @@ TestComponent.prototype.run = function () {
   }, this );
 
   this.log( 'Running tests' );
-  this.suite.run();
+  var self = this;
+  this.fm.on( 'get_fixtures', function(){
+    self.suite.run();
+  });
 };
 
 
@@ -72,7 +80,8 @@ TestComponent.prototype._collect_tests_in_path = function ( test_path ) {
       name  : test_name.replace(/_/g, ' '),
       tests : test.get_batch( this.app, assert ),
       suite : this.suite,
-      app   : this.app
+      app   : this.app,
+      fm    : this.fm
     });
   }
 };

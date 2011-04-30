@@ -1,44 +1,47 @@
-module.exports = DBColumnSchema;
+var AppModule = require('app_module');
 
-function DBColumnSchema() {
-  throw new Error( 'You can\'t instantiate abstract class DBColumnSchema' );
+module.exports = DbColumnSchema.inherits( AppModule );
+
+function DbColumnSchema() {
+  throw new Error( 'You can\'t instantiate abstract class DbColumnSchema' );
 }
 
 
-DBColumnSchema.prototype._init = function( params ) {
-  if ( !params || !params.db_schema ) throw new Error( 'Link to DB schema is undefined in DBColumnSchema.init' );
+DbColumnSchema.prototype._init = function( params ) {
+  this.super_._init( params );
 
-  this.db_schema      = params.db_schema;
-  this.name           = params.name           || null;
-  this.allow_null     = params.allow_null     || null;
-  this.db_type        = params.db_type        || null;
-  this.type           = params.type           || null;
-  this.default_value  = params.default_value  || null;
-  this.size           = params.size           || null;
-  this.precision      = params.precision      || null;
-  this.scale          = params.scale          || null;
-  this.is_primary_key = params.is_primary_key || null;
+  if ( !params || !params.db_schema ) throw new Error( 'Link to Db schema is undefined in DbColumnSchema.init' );
 
-  this.raw_name       = this.name ? this.db_schema.quote_column_name( this.name ) : null;
+  this._.db_schema      = params.db_schema;
+  this._.allow_null     = params.allow_null     || null;
 
-  this._extract_type();
+  this._.db_type        = params.db_type        || null;
+  this._.type           = this._extract_type();
+  this._.default_value  = this._extract_default( params.default_value );
+
+  this.size             = null;
+  this.precision        = null;
+  this.scale            = null;
   this._extract_limit();
 
-  if ( this.default_value != null ) this._extract_default();
+  this._.is_primary_key = params.is_primary_key || false;
+  this._.name           = params.name           || '';
+  this._.raw_name       = this.name ? this.db_schema.quote_column_name( this.name ) : null;
 };
 
 
-DBColumnSchema.prototype._extract_type = function() {
-  if ( !this.db_type ) return this.type = "string";
+DbColumnSchema.prototype._extract_type = function() {
+  if ( !this.db_type ) return "string";
 
-  if ( this.db_type.toLowerCase().indexOf( 'int' ) != -1 )           this.type = 'integer';
-  else if ( this.db_type.toLowerCase().indexOf( 'bool' ) !== false ) this.type = 'boolean';
-  else if ( this.db_type.search( /(real|floa|doub)/i ) != -1 )       this.type = 'double';
-  else                                                               this.type = 'string';
+  if ( this.db_type.toLowerCase().indexOf( 'int' ) != -1 )      return 'integer';
+  if ( this.db_type.toLowerCase().indexOf( 'bool' ) !== false ) return 'boolean';
+  if ( this.db_type.search( /(real|floa|doub)/i ) != -1 )       return 'double';
+
+  return 'string';
 }
 
 
-DBColumnSchema.prototype._extract_limit = function() {
+DbColumnSchema.prototype._extract_limit = function() {
   var matches;
 
   if (
@@ -46,35 +49,35 @@ DBColumnSchema.prototype._extract_limit = function() {
     ( matches = this.db_type.match( /\((.*)\)/ ) )
   ) {
     var values  = matches[1].split( ',' );
-    this.size   = this.precision  = Number( values[0] );
-    if ( values[1] ) this.scale   = Number( values[1] );
+    this._.size = this._.precision = Number( values[0] );
+    if ( values[1] ) this._.scale  = Number( values[1] );
   }
 }
 
 
-DBColumnSchema.prototype._extract_default = function() {
-  this.default_value = this.typecast( this.default_value );
+DbColumnSchema.prototype._extract_default = function( default_value ) {
+  return default_value ? this.typecast( default_value ) : null;
 }
 
 
-DBColumnSchema.prototype.typecast = function( value ) {
+DbColumnSchema.prototype.typecast = function( value ) {
   if ( this.__get_type( value ) == this.type || value == null || value instanceof Error ) return value;
 
-  if ( value === '' ) return this.type == 'string' ? '' : null;
+  if ( !value ) return this.type == 'string' ? '' : null;
 
   switch ( this.type ) {
     case 'string':  return String( value );
     case 'integer':
       value = Number( value );
       return isNaN( value ) ? null : value;
-    case 'boolean': return Boolean( value );
+    case 'boolean': return !!value;
     case 'double':
     default: return value;
   }
 };
 
 
-DBColumnSchema.prototype.__get_type = function ( value ) {
+DbColumnSchema.prototype.__get_type = function ( value ) {
   var t = typeof value;
   if ( t == 'string' || t == 'boolean' ) return t;
   if ( t == 'number' ) return Math.round( t ) == t ? 'integer' : 'double';

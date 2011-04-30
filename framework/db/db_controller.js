@@ -1,14 +1,14 @@
-var Component         = require('components/component');
-var MysqlDBConnection = require('./mysql/mysql_db_connection');
+var Component       = require('components/component');
+var MysqlConnection = require('./mysql/mysql_connection');
 
-module.exports = DBController.inherits( Component );
+module.exports = DbController.inherits( Component );
 
-function DBController( params ) {
+function DbController( params ) {
   this._init( params );
 }
 
 
-DBController.prototype._init = function( params ) {
+DbController.prototype._init = function( params ) {
   this.super_._init( params );
 
   this._db          = null;
@@ -16,18 +16,20 @@ DBController.prototype._init = function( params ) {
 };
 
 
-DBController.prototype.get = function () {
+DbController.prototype.get = function () {
   return this._db ? this._db : this._init_database();
 };
 
 
-DBController.prototype._init_database = function () {
+DbController.prototype._init_database = function () {
   var db_type = this.__db_config.type;
   delete this.__db_config.type;
 
+  this.__db_config.app = this.app;
+
   switch ( db_type ) {
     case 'mysql':
-      this._db = new MysqlDBConnection( this.__db_config );
+      this._db = new MysqlConnection( this.__db_config );
       break;
 
     default :

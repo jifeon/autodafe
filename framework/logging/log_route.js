@@ -75,3 +75,29 @@ LogRoute.prototype._format = function ( message ) {
     message.date.format( 'D M Y h:m:s:x' ),
     this.app.name, message.level, message.module, message.text );
 };
+
+
+LogRoute.prototype.switch_level_on = function ( level ) {
+  var self = this;
+
+  this.on_log( new Message({
+    text    : 'Switching %s level on'.format( level ),
+    level   : this.logger.INFO,
+    module  : self.class_name
+  }) );
+
+  this.levels[ level ] = true;
+};
+
+
+LogRoute.prototype.switch_level_off = function ( level ) {
+  var self = this;
+
+  this.on_log( new Message({
+    text    : 'Switching %s level off'.format( level ),
+    level   : this.logger.INFO,
+    module  : self.class_name
+  }) );
+
+  this.levels[ level ] = false;
+};

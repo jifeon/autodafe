@@ -1,11 +1,11 @@
-module.exports = DBCriteria;
+module.exports = DbCriteria;
 
-function DBCriteria( params ) {
+function DbCriteria( params ) {
   this._init( params );
 }
 
 
-DBCriteria.prototype._init = function( params ) {
+DbCriteria.prototype._init = function( params ) {
   this.select     = '*';
   this.distinct   = false;
   this.condition  = '';
@@ -23,7 +23,25 @@ DBCriteria.prototype._init = function( params ) {
   }
 };
 
-DBCriteria.prototype.merge_with = function( criteria, use_and ) {
+
+DbCriteria.prototype.clone = function () {
+  return new this.constructor({
+    select    : this.select,
+    distinct  : this.distinct,
+    condition : this.condition,
+    params    : this.params,
+    limit     : this.limit,
+    offset    : this.offset,
+    order     : this.order,
+    group     : this.group,
+    join      : this.join,
+    having    : this.having,
+    alias     : this.alias
+  });
+};
+
+
+DbCriteria.prototype.merge_with = function( criteria, use_and ) {
   var and = use_and || use_and == undefined ? 'AND' : 'OR';
 
   if ( criteria instanceof Object ) criteria = new this.constructor( criteria );
@@ -41,7 +59,7 @@ DBCriteria.prototype.merge_with = function( criteria, use_and ) {
     if ( this.condition === '' )
       this.condition = criteria.condition;
     else if ( criteria.condition !== '' )
-      this.condition = "({this.condition}) " + and + " ({criteria.condition})";
+      this.condition = "(" + this.condition + ") " + and + " (" + criteria.condition + ")";
   }
 
   if ( this.params !== criteria.params )

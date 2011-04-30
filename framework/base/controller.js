@@ -29,7 +29,7 @@ Controller.prototype.run_action = function ( action, args ) {
   action = action || this.default_action;
 
   if ( !this._actions[ action ] || !this[ action ] )
-    return this.log( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ), 'warning' );
+    throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
   args = args || [];
   args.unshift( action );

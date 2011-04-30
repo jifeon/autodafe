@@ -1,44 +1,52 @@
-var DBSchema          = require( '../db_schema' );
+var DbSchema          = require( '../db_schema' );
 var MysqlTableSchema  = require( './mysql_table_schema' );
-var MysqlColumnSchema = require( './mysql_column_schema' );
 
-module.exports = MysqlSchema.inherits( DBSchema );
+module.exports = MysqlSchema.inherits( DbSchema );
 
 function MysqlSchema( params ) {
   this._init( params );
 }
 
 
-MysqlSchema.prototype._init = function( params ) {
-  this.super_._init( params );
-};
-
-
-MysqlSchema.prototype.quote_table_name = function( name ) {
-  return '`' + name + '`';
+MysqlSchema.prototype.quote_simple_table_name = function( name ) {
+  return '`' + this.db_connection.escape_sql_str( name ) + '`';
 }
 
 
-MysqlSchema.prototype.quote_column_name = function( name ) {
-  return '`' + name + '`';
+MysqlSchema.prototype.quote_simple_column_name = function( name ) {
+  return '`' + this.db_connection.escape_sql_str( name ) + '`';
 }
 
 
-MysqlSchema.prototype._create_table = function( name ) {
-  return new MysqlTableSchema({
+MysqlSchema.prototype._load_table = function( name, callback ) {
+  var table = this._tables[ name ] = new MysqlTableSchema({
     db_schema : this,
-    name      : name
+    name      : name,
+    app       : this.app
   });
+  
+  table
+    .on( 'initialized', function() {
+      callback( null, table );
+    } )
+    .on( 'error', function( e ) {
+      callback( e, null );
+    } );
 }
 
 
-MysqlSchema.prototype._create_column = function( column ) {
-  return new MysqlColumnSchema({
-    name           : column['Field'],
-    allow_null     : column['Null'] == 'YES',
-    is_primary_key : column['Key'].indexOf( 'PRI' ) != -1,
-    db_type        : column['Type'],
-    default_value  : column['Default'],
-    db_schema      : this
-  });
-}
+MysqlSchema.prototype._find_table_names = function ( schema, callback ) {
+  var from_schema = schema
+    ? ' FROM ' + this.quote_table_name( schema )
+    : '';
+
+  this.connection.create_command( 'SHOW TABLES' + from_schema ).execute( function( e, names ) {
+    if ( e ) return callback( e );
+
+    if ( schema ) names = names.map( function( name ) {
+      return schema + '.' + name
+    } );
+
+    callback( null, names );
+  } );
+};

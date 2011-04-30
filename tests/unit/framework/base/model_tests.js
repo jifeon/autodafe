@@ -3,9 +3,12 @@ exports.get_batch = function( application, assert ){
   var Model     = require( 'model' );
 
   return {
-    topic : new application.model( TestModel ),
+    topic : function() {
+      return new application.models.test_model;
+    },
     'instance test' : function( model ){
       assert.instanceOf( model, Model );
+      assert.instanceOf( model, TestModel );
     }
   }
 }

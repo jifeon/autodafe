@@ -26,12 +26,11 @@ Router.prototype._collect_controllers = function () {
   var controllers_dir = path.join( this.app.base_dir, this._controllers_folder );
   this.log( 'Collecting controllers in path: ' + controllers_dir, 'trace' );
 
-  try {
+  var file;
+  var files = fs.readdirSync( controllers_dir );
+  for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
 
-    var file;
-    var files = fs.readdirSync( controllers_dir );
-    for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
-
+    try {
       file            = files[f];
       var file_path   = path.join( controllers_dir, file );
       var stat        = fs.statSync( file_path );
@@ -52,21 +51,20 @@ Router.prototype._collect_controllers = function () {
       });
     }
 
-  }
-  catch( e ) {
-    switch ( e ) {
-      case 'NOT_CONTROLLER':
-        this.log( '"%s" is not a controller'.format( file ), 'error' );
-        break;
+    catch( e ) {
+      switch ( e ) {
+        case 'NOT_CONTROLLER':
+          this.log( '"%s" is not a controller'.format( file ), 'error' );
+          break;
 
-      case 'NO_NAME':
-        this.log( 'Controller has no property "name" in file "%s"'.format( file ), 'error' );
-        break;
+        case 'NO_NAME':
+          this.log( 'Controller has no property "name" in file "%s"'.format( file ), 'error' );
+          break;
 
-      default:
-        if ( file ) this.log( 'Error while including file "%s"'.format( file ), 'error' );
-        throw e;
-        break;
+        default:
+          if ( file ) this.log( 'Error while including file "%s"'.format( file ), 'error' );
+          break;
+      }
     }
   }
 
@@ -117,7 +115,12 @@ Router.prototype.route = function ( route_path ) {
       'Controller or route rule "%s" is not found'.format( action.controller_name ), 'warning'
     );
 
-    controller.run_action( action.action, args );
+    try {
+      controller.run_action( action.action, args )
+    } catch ( e ) {
+      this.log( e );
+      break;
+    }
   }
 };
 

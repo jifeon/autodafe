@@ -1,85 +1,69 @@
-var DBCommand   = require( './db_command' );
-var AppModule       = require('app_module');
+var AppModule   = require('app_module');
+var DbCommand   = require( './db_command' );
 
-module.exports = DBConnection.inherits( AppModule );
+module.exports = DbConnection.inherits( AppModule );
 
-function DBConnection() {
-  throw new Error( 'DBConnection is abstract class. You can\'t instantiate it!' );
+function DbConnection() {
+  throw new TypeError( 'DbConnection is abstract class. You can\'t instantiate it!' );
 }
 
 
-DBConnection.prototype._init = function( params ) {
+DbConnection.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this.user = params.user || 'root';
-  this.pass = params.pass || '';
-  this.base = params.base || 'test';
-  this.host = params.host || 'localhost';
+  this._.user     = params.user || 'root';
+  this._.pass     = params.pass || '';
+  this._.base     = params.base || 'test';
+  this._.host     = params.host || 'localhost';
 
-//  this.table_prefix = null;
-
-  this._schema = null;
+  this.db_schema  = null;
 };
 
-/**
- * Creates a command for execution.
- * @param string SQL statement associated with the new command.
- * @return DbCommand the DB command
- * @throws Exception if the connection is not active
- */
-DBConnection.prototype.create_command = function( sql ) {
-  return new DBCommand({
-    connection  : this,
-    text        : sql
+
+DbConnection.prototype.create_command = function( sql ) {
+  return new DbCommand({
+    db_connection : this,
+    text          : sql,
+    app           : this.app
   });
 };
 
-DBConnection.prototype.get_schema = function () {
-  return this._schema;
+
+DbConnection.prototype.query = function ( sql, callback ) {
+  throw new Error( 'You should implement method `query` in inherited classes' );
 };
 
 
-DBConnection.prototype.quote_value = function ( x ) {
+DbConnection.prototype.quote_value = function ( x ) {
   switch ( typeof x ) {
     case 'string':
-      return "'" + this.__add_slashes( x ) + "'";
+      return "'" + this.escape_sql_str( x ) + "'";
 
     case 'number':
       return x.toString();
 
     case 'object':
-      if ( x === null ) {
+      if ( x == null ) {
         return 'NULL';
       }
-      else if ( x.constructor === Date ) {
-        return "'"
-          + x.getFullYear()
-          + '-'
-          + ( x.getMonth() + 1 )
-          + '-'
-          + x.getDate()
-          + ' '
-          + x.getHours()
-          + ':'
-          + x.getMinutes()
-          + ':'
-          + x.getSeconds()
-          + "'";
+      else if ( x instanceof Date ) {
+        return x.format( "'Y-M-D h:m:s'" );
       }
       else {
-        throw new Error( 'DBCommand.sqlstr: unsupported type "object"' );
+        this.log( 'Unknown type of `object`. Trying `toString` method', 'warning' );
+        return this.quote_value( x.toString() );
       }
 
     case 'boolean':
-      return x === true ? '1' : '0';
+      return Number( !!x ).toString();
 
     default:
-      throw new Error( 'DBConnection.quote_value: unknown type: ' + typeof x );
+      throw new Error( 'DbConnection.quote_value: unknown type: ' + typeof x );
   }
 };
 
 
-DBConnection.prototype.__add_slashes = function( str ) {
+DbConnection.prototype.escape_sql_str = function( str ) {
   // Backslash-escape single quotes, double quotes and backslash. Morph 0x00 into \0.
   return str.replace( /(['"\\])/g, '\\$1' ).replace( /\x00/g, '\\0' );
 }

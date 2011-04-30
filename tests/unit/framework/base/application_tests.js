@@ -4,7 +4,6 @@ exports.get_batch = function( application, assert ) {
   var ComponentsManager = require( 'components/components_manager' );
   var Autodafe          = require( 'autodafe' );
   var LogRouter         = require( 'logging/log_router' );
-  var AError            = require( 'aerror' );
   var TestComponent     = require( 'tests/test_component' );
   var Model             = require( 'model' );
   var TestModel         = require( 'test_inherited_model' );
@@ -52,36 +51,36 @@ exports.get_batch = function( application, assert ) {
       }
     },
 
-    '`model` method' : {
-        'returned model instance test' : function( app ){
-          var model = new app.model( TestModel );
-          assert.instanceOf( model, TestModel );
-          assert.instanceOf( model, Model );
-        },
-        'two created by `new app.model()` models should be not the same' : function( app ){
-          var model1 = new app.model( TestModel );
-          var model2 = new app.model( TestModel );
-          assert.notEqual( model1, model2, 'Models should be not the same' );
-        },
-        'calling to `model` method must return result of super_.model()' : function( app ){
-          var model1 = app.model( TestModel );
-          var model2 = app.model( TestModel );
-          assert.equal( model1, model2, 'Models should be the same' );
-        },
-        'link to application in created model' : function( app ) {
-          var model = new app.model( TestModel );
-          assert.equal( model.app, app, 'Broken link to application' );
-        },
-        'link to application in getted existing model from super_.model()' : function( app ) {
-          var model = app.model( TestModel );
-          assert.equal( model.app, app, 'Broken link to application' );
-        },
-        'if super_ hash\'t `model` method `app.model()` should return just new model' : function( app ){
-          var model = app.model( SuperModel );
-          assert.instanceOf( model, SuperModel );
-          assert.equal( model.app, app );
-        }
-      },
+//    '`model` method' : {
+//        'returned model instance test' : function( app ){
+//          var model = new app.model( TestModel );
+//          assert.instanceOf( model, TestModel );
+//          assert.instanceOf( model, Model );
+//        },
+//        'two created by `new app.model()` models should be not the same' : function( app ){
+//          var model1 = new app.model( TestModel );
+//          var model2 = new app.model( TestModel );
+//          assert.notEqual( model1, model2, 'Models should be not the same' );
+//        },
+//        'calling to `model` method must return result of super_.model()' : function( app ){
+//          var model1 = app.model( TestModel );
+//          var model2 = app.model( TestModel );
+//          assert.equal( model1, model2, 'Models should be the same' );
+//        },
+//        'link to application in created model' : function( app ) {
+//          var model = new app.model( TestModel );
+//          assert.equal( model.app, app, 'Broken link to application' );
+//        },
+//        'link to application in getted existing model from super_.model()' : function( app ) {
+//          var model = app.model( TestModel );
+//          assert.equal( model.app, app, 'Broken link to application' );
+//        },
+//        'if super_ hash\'t `model` method `app.model()` should return just new model' : function( app ){
+//          var model = app.model( SuperModel );
+//          assert.instanceOf( model, SuperModel );
+//          assert.equal( model.app, app );
+//        }
+//      },
 
     '`_preload_components` method' : function() {
       var preloaded_logger_config   = require( 'config/preloaded_logger_config' );
@@ -114,13 +113,13 @@ exports.get_batch = function( application, assert ) {
       'base_dir is required' : function( config ) {
         assert.throws( function() {
           Autodafe.create_application( config );
-        }, AError );
+        }, Error );
       },
       'name is required' : function( config ) {
         config.base_dir = path.resolve('.');
         assert.throws( function() {
           Autodafe.create_application( config );
-        }, AError );
+        }, Error );
       },
       'only name and base_dir are required' : function( config ) {
         config.name = 'working_app';

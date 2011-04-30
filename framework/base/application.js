@@ -1,70 +1,56 @@
-var path              = require('path');
+var path                  = require('path');
 
-var Router            = require('router');
-var Logger            = require('../logging/logger');
-var ComponentsManager = require('components/components_manager');
-var ProxyHandler      = require('lib/proxy/proxy_handler');
+var Router                = require('router');
+var Logger                = require('../logging/logger');
+var ComponentsManager     = require('components/components_manager');
+var ModelsProxyHandler    = require('lib/proxy/handlers/models_proxy_handler');
+var AutodafePart          = require('autodafe_part');
 
-var Application = module.exports = function( config ) {
+module.exports = Application.inherits( AutodafePart );
+
+function Application( config ) {
   this._init( config );
 }
 
 
 Application.instances = [];
 
-require( 'sys' ).inherits( Application, process.EventEmitter );
-
-
 Application.prototype._init = function ( config ) {
+  this.super_._init();
+
   Application.instances.push( this );
   this._config    = config            || {};
 
-  this.name       = this._config.name || 'My Autodafe application';
+  if ( !this._config.name )
+    throw new Error( 'Please specify application name in your config file' );
+  this._.name     = this._config.name || 'My Autodafe application';
+
+  if ( !this._config.base_dir )
+    throw new Error( 'You must set base_dir in config file!' );
+  this._.base_dir = path.normalize( this._config.base_dir );
+
   this.logger     = new Logger;
   this.router     = null;
   this.components = null;
 
   this.default_controller = this._config.default_controller || 'action';
 
-  this._preload_components();
-  if ( !this._check_config() ) return false;
+  this._runned = false;
 
+  this._preload_components();
   this._init_core();
   this._init_components();
 
-  var self = this;
-  var get_model = function( clazz ) {
-    if ( clazz && clazz.super_ && typeof clazz.super_.model == "function" ) return clazz.super_.model( clazz, self );
-    return create_model( clazz );
-  };
-
-
-  var create_model = function( clazz ) {
-    return new clazz({
-      app : self
-    });
-  };
-
-  this.model = ProxyHandler.wrap_function(
-    get_model,     // on call
-    create_model   // on construct
-  );
-};
-
-
-Application.prototype._check_config = function () {
-  if ( !this._config.base_dir ) {
-    this.log( 'You must set base_dir in config file!', 'error' );
-    return false;
-  }
-
-  this._config.base_dir = path.normalize( this._config.base_dir );
-
-  this.__defineGetter__( 'base_dir', function () {
-    return this._config.base_dir;
+  var models_handler = new ModelsProxyHandler({
+    target : {
+      get_model : function( constructor, params ) {
+        return models_handler.create_model( constructor, params );
+      }
+    },
+    app    : this
   });
 
-  return true;
+  this.models = models_handler.get_proxy();
 };
 
 
@@ -74,12 +60,12 @@ Application.prototype._init_core = function () {
   var router_cfg = this._config.router || {};
   router_cfg.app = this;
   this.router = new Router( router_cfg );
-  this.log( 'Core is initialized', 'info' );
+  this.log( 'Core initialized', 'info' );
 };
 
 
 Application.prototype._preload_components = function () {
-  this.log( 'Preload components', 'trace' );
+  this.log( 'Preload components' );
 
   this.components = new ComponentsManager( {
     components : this._config.components,
@@ -94,7 +80,7 @@ Application.prototype._preload_components = function () {
 
 
 Application.prototype._init_components = function () {
-  this.log( 'Load components', 'trace' );
+  this.log( 'Load components' );
   this.components.load_components();
   this.log( 'Components are loaded', 'info' );
 };
@@ -123,13 +109,16 @@ Application.prototype.register_component = function ( name, component ) {
 
 
 Application.prototype.get_param = function ( name ) {
-  return this._config.params[ name ] || null;
+  return this._config.params[ name ] === undefined ? null : this._config.params[ name ];
 };
 
 
 Application.prototype.run = function () {
-  this.log( 'Running application', 'trace' );
+  if ( this._runned ) return false;
+  this.log( 'Running application' );
   this.emit( 'run' );
+  this._runned = true;
+  return true;
 };
 
 
