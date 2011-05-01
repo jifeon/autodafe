@@ -18,6 +18,7 @@ LogRouter.prototype._init = function( params ) {
     switch ( route_type ) {
       case 'console': route_class = require('./console_route'); break;
       case 'file':    route_class = require('./file_route');    break;
+      case 'mail':    route_class = require('./mail_route');    break;
       default:        route_class = require('./log_route');     break;
     }
 

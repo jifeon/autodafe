@@ -173,6 +173,43 @@ String.prototype.format = function() {
 };
 
 
+Number.frequency_to_period = function( frequency ) {
+  var result = {
+    count   : 1,
+    period  : 0
+  }
+
+  if ( typeof frequency != 'string' ) return result;
+
+  var ar = frequency.split( 'per' );
+  if ( ar.length != 2 ) return result;
+
+  var count   = parseInt( ar[0], 10 );
+  var period  = parseInt( ar[1], 10 );
+
+  if ( isNaN( count ) || isNaN( period ) ) return result;
+
+  var factors = {
+    'sec' : 1000,
+    'min' : 60000,
+    'hou' : 360000,
+    'day' : 8.64e6,
+    'wee' : 5.901e7,
+    'mon' : 2.529e8
+  };
+
+  var factor = ar[1].match( /\W(\w{3})/ );
+  factor = factors[ factor && factor[1] ];
+
+  if ( isNaN( factor ) ) factor = 1;
+
+  result.count  = count;
+  result.period = period * factor;
+
+  return result;
+}
+
+
 Date.prototype.format = function( format ) {
   var self = this;
   return format.replace( /[\w]/g, function( match ) {

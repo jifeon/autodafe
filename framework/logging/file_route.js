@@ -24,7 +24,7 @@ FileRoute.prototype._init = function( params ) {
 };
 
 
-FileRoute.prototype.on_log = function ( message ) {
+FileRoute.prototype.log_message = function ( message ) {
   this._log_cache.push( this._format( message ) );
 };
 
@@ -92,7 +92,7 @@ FileRoute.prototype._rotate_files = function ( f, file_emitter ) {
 
 
 FileRoute.prototype._on_error = function ( e ) {
-  this.logger.log( e.message, 'error', 'FileRoute' );
+  this.logger.log( e, 'error', 'FileRoute' );
 
   clearInterval( this._interval_id );
 

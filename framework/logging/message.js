@@ -6,16 +6,13 @@ function Message( params ) {
 
 
 Message.prototype._init = function( params ) {
-  this._e = null;
-  if ( params.text instanceof Error ) {
-    this._e       = params.text;
-    params.text   = this._e.message;
-    params.level  = 'error';
-  }
+  this.stack = null;
 
-  this.__defineGetter__( 'stack', function() {
-    return this._e && this._e.stack;
-  } );
+  if ( params.text instanceof Error ) {
+    this.stack    = params.text.stack;
+    params.text   = params.text.message;
+    params.level  = params.level || 'error';
+  }
 
   this.text   = params.text   || '(no text)';
   this.level  = params.level  || 'trace';
@@ -25,5 +22,5 @@ Message.prototype._init = function( params ) {
 
 
 Message.prototype.toString = function () {
-  return this.text;
+  return this.stack || this.text;
 };

@@ -45,7 +45,7 @@ Mailer.prototype.send = function ( params, callback ) {
 
   if ( !to || !from ) {
     this.log(
-      'You must specify `%s` parameter in config file or in parametres of `send` function'.format( !to ? 'to' : 'from' ),
+      'You must specify `%s` parameter in config file or in parameters of `send` function'.format( !to ? 'to' : 'from' ),
       'warning'
     );
     return false;
@@ -79,6 +79,7 @@ Mailer.prototype.send = function ( params, callback ) {
   this._server.send( message, function( e, message ){
     if ( e ) self.log( e );
     else self.log( 'Message with id=%s has been sent'.format( message.id ), 'info' );
+
     if ( typeof callback == "function" ) callback( e, message );
   } );
 };

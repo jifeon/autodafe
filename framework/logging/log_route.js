@@ -1,5 +1,5 @@
-var Message = require('./message');
-var AppModule       = require('app_module');
+var Message   = require('./message');
+var AppModule = require('app_module');
 
 module.exports = LogRoute.inherits( AppModule );
 
@@ -11,7 +11,9 @@ function LogRoute( params ) {
 LogRoute.prototype._init = function( params ) {
   this.super_._init( params );
   
-  this.logger = this.app.logger;
+  this.logger         = this.app.logger;
+  this.message_format = 'date [app_name] [level] [module] message';
+  this.date_format    = 'D M Y h:m:s:x';
 
   this.levels = {};
   ( params.levels || [] ).forEach( function( level ){
@@ -30,60 +32,48 @@ LogRoute.prototype._init = function( params ) {
 
 
 LogRoute.prototype._log = function ( message ) {
-  if ( this.levels[ message.level ] ) this.on_log( message );
+  if ( this.levels[ message.level ] ) this.log_message( message );
 
-  if ( message.level == this.logger.ERROR && this.levels[ this.logger.ERROR ] ) {
+  if ( message.level == 'error' && this.levels[ 'error' ] ) {
 
-    if ( !this.levels[ this.logger.TRACE ] ) {
-      this.on_log( new Message({
+    if ( !this.levels[ 'trace' ] ) {
+      this.log_message( new Message({
         text    : 'Application stack:',
-        level   : this.logger.INFO,
+        level   : 'info',
         module  : 'log_route'
       }));
 
-      this.logger.messages.latest_trace.forEach( this.on_log, this );
+      this.logger.messages.latest_trace.forEach( this.log_message, this );
+
+      this.log_message( new Message({
+        text    : '--- End of stack ---',
+        level   : 'info',
+        module  : 'log_route'
+      }));
     }
-
-    this.on_log( new Message({
-      text    : 'JS stack:',
-      level   : this.logger.INFO,
-      module  : 'log_route'
-    }));
-
-    var stack = message.stack;
-    if ( stack ) this.on_log( new Message({
-      text    : stack,
-      level   : this.logger.TRACE,
-      module  : 'log_route'
-    }));
-    else console.trace();
-
-    this.on_log( new Message({
-      text    : '--- End of stack ---',
-      level   : this.logger.INFO,
-      module  : 'log_route'
-    }));
   }
 };
 
 
-LogRoute.prototype.on_log = function ( message ) {};
+LogRoute.prototype.log_message = function ( message ) {};
 
 
 LogRoute.prototype._format = function ( message ) {
-  return '%s [%s] [%s] [%s] %s'.format(
-    message.date.format( 'D M Y h:m:s:x' ),
-    this.app.name, message.level, message.module, message.text );
+  return this.message_format.format({
+    date      : message.date.format( this.date_format ),
+    app_name  : this.app.name,
+    level     : message.level,
+    module    : message.module,
+    message   : message
+  });
 };
 
 
 LogRoute.prototype.switch_level_on = function ( level ) {
-  var self = this;
-
-  this.on_log( new Message({
+  this.log_message( new Message({
     text    : 'Switching %s level on'.format( level ),
-    level   : this.logger.INFO,
-    module  : self.class_name
+    level   : 'info',
+    module  : this.class_name
   }) );
 
   this.levels[ level ] = true;
@@ -91,12 +81,10 @@ LogRoute.prototype.switch_level_on = function ( level ) {
 
 
 LogRoute.prototype.switch_level_off = function ( level ) {
-  var self = this;
-
-  this.on_log( new Message({
+  this.log_message( new Message({
     text    : 'Switching %s level off'.format( level ),
-    level   : this.logger.INFO,
-    module  : self.class_name
+    level   : 'info',
+    module  : this.class_name
   }) );
 
   this.levels[ level ] = false;

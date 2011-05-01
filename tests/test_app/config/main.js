@@ -55,14 +55,37 @@ var config = module.exports = {
         }//,
 //        file : {
 //          levels : [ 'trace', 'info', 'warning', 'error' ]
+//        },
+//        mail : {
+//          levels    : [ 'trace', 'info', 'warning', 'error' ],
+//          to        : 'user@host.ru',
+//          from      : 'Autodafe',
+//          subject   : 'Autodafe messages',
+//          frequency : '1 per 10 sec'
 //        }
       }
     },
 
+//    mail : {
+//      smtp : {
+//        user : 'user_name',
+//        pass : 'password',
+//        host : 'smtp.gmail.com',
+//        port : 25,
+//        ssl  : false,
+//        tls  : true
+//      }//,
+////      default_message : {
+////        to      : 'user@host.com',
+////        from    : 'another_user@host.com',
+////        subject : 'subject'
+////      }
+//    },
+
     tests : {
       paths : [      // base_dir + path
-        '../unit/framework/'
-//        '../unit/framework/base'
+//        '../unit/framework/'
+        '../unit/framework/base'
 //        '../unit/framework/base/autodafe_part'
       ],
       exclude : [    // may be regexp or string which will be searched in path
