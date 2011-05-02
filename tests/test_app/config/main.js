@@ -89,8 +89,7 @@ var config = module.exports = {
 //        '../unit/framework/base/autodafe_part'
       ],
       exclude : [    // may be regexp or string which will be searched in path
-        'active_record_tests.js',
-        '~'
+        'active_record_tests.js'
       ]
     }
   }
