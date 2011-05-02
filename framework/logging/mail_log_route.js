@@ -1,13 +1,13 @@
 var LogRoute = require('./log_route');
 
-module.exports = MailRoute.inherits( LogRoute );
+module.exports = MailLogRoute.inherits( LogRoute );
 
-function MailRoute( params ) {
+function MailLogRoute( params ) {
   this._init( params );
 }
 
 
-MailRoute.prototype._init = function( params ) {
+MailLogRoute.prototype._init = function( params ) {
   this._log_cache     = [];
   this._level2color = {
     trace   : 'black',
@@ -32,14 +32,14 @@ MailRoute.prototype._init = function( params ) {
 };
 
 
-MailRoute.prototype.log_message = function ( message ) {
+MailLogRoute.prototype.log_message = function ( message ) {
   if ( this.app.mail && message.module == this.app.mail.class_name ) return false;
 
   this._log_cache.push( this._format( message ) );
 };
 
 
-MailRoute.prototype._start_process_logs = function () {
+MailLogRoute.prototype._start_process_logs = function () {
   if ( !this._frequency.period )
     this._frequency.period = 8.64e6; // day
 
@@ -53,7 +53,7 @@ MailRoute.prototype._start_process_logs = function () {
 };
 
 
-MailRoute.prototype._send_logs = function () {
+MailLogRoute.prototype._send_logs = function () {
   if ( !this._log_cache.length ) return false;
 
   this.app.mail.send({
@@ -68,7 +68,7 @@ MailRoute.prototype._send_logs = function () {
 };
 
 
-MailRoute.prototype._format = function ( message ) {
+MailLogRoute.prototype._format = function ( message ) {
   var text  = this.super_._format( message );
 
   var color = this._level2color[ message.level ];

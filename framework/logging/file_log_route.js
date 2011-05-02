@@ -2,14 +2,14 @@ var LogRoute  = require('./log_route');
 var path      = require('path');
 var fs        = require('fs');
 
-module.exports = FileRoute.inherits( LogRoute );
+module.exports = FileLogRoute.inherits( LogRoute );
 
-function FileRoute( params) {
+function FileLogRoute( params) {
   this._init( params);
 }
 
 
-FileRoute.prototype._init = function( params ) {
+FileLogRoute.prototype._init = function( params ) {
   this._log_cache     = [];
   this._log_file_path = null;
   this._max_file_size = 1024;  // in KiB
@@ -24,17 +24,17 @@ FileRoute.prototype._init = function( params ) {
 };
 
 
-FileRoute.prototype.log_message = function ( message ) {
+FileLogRoute.prototype.log_message = function ( message ) {
   this._log_cache.push( this._format( message ) );
 };
 
 
-FileRoute.prototype.process_logs = function () {
+FileLogRoute.prototype.process_logs = function () {
   if ( !this._log_cache.length ) return false;
   if ( !this._log_file_path )
     this._log_file_path = path.join( this.app.base_dir, 'runtime/autodafe.log' )
 
-  this.logger.log( 'Process logs', 'trace', 'FileRoute' );
+  this.logger.log( 'Process logs', 'trace', 'FileLogRoute' );
 
   var file_emitter = new process.EventEmitter;
   var self         = this;
@@ -51,7 +51,7 @@ FileRoute.prototype.process_logs = function () {
   });
 
   file_emitter.on( 'ready_to_write', function() {
-    self.logger.log( 'Writes logs to file', 'trace', 'FileRoute' );
+    self.logger.log( 'Writes logs to file', 'trace', 'FileLogRoute' );
 
     fs.open( self._log_file_path, 'a', 0666, function( e, fd ) {
 
@@ -70,8 +70,8 @@ FileRoute.prototype.process_logs = function () {
 };
 
 
-FileRoute.prototype._rotate_files = function ( f, file_emitter ) {
-  if ( f == this._max_log_files ) this.logger.log( 'Rotate files', 'trace', 'FileRoute' );
+FileLogRoute.prototype._rotate_files = function ( f, file_emitter ) {
+  if ( f == this._max_log_files ) this.logger.log( 'Rotate files', 'trace', 'FileLogRoute' );
   if ( f < 0 ) return file_emitter.emit( 'ready_to_write' );
 
   var self        = this;
@@ -91,10 +91,10 @@ FileRoute.prototype._rotate_files = function ( f, file_emitter ) {
 };
 
 
-FileRoute.prototype._on_error = function ( e ) {
-  this.logger.log( e, 'error', 'FileRoute' );
+FileLogRoute.prototype._on_error = function ( e ) {
+  this.logger.log( e, 'error', 'FileLogRoute' );
 
   clearInterval( this._interval_id );
 
-  this.logger.log( 'File route is stopped', 'warning', 'FileRoute' );
+  this.logger.log( 'File route is stopped', 'warning', 'FileLogRoute' );
 };

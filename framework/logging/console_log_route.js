@@ -1,13 +1,13 @@
 var LogRoute = require('./log_route');
 
-module.exports = ConsoleRoute.inherits( LogRoute );
+module.exports = ConsoleLogRoute.inherits( LogRoute );
 
-function ConsoleRoute( params ) {
+function ConsoleLogRoute( params ) {
   this._init( params );
 }
 
 
-ConsoleRoute.prototype._init = function( params ) {
+ConsoleLogRoute.prototype._init = function( params ) {
   require('./color/colors');
 
   this._level2style = {
@@ -20,13 +20,13 @@ ConsoleRoute.prototype._init = function( params ) {
 };
 
 
-ConsoleRoute.prototype.log_message = function ( message ) {
+ConsoleLogRoute.prototype.log_message = function ( message ) {
   console.log( this._format( message ) );
   if ( message.level == 'error' && !message.stack ) console.trace();
 };
 
 
-ConsoleRoute.prototype._format = function ( message ) {
+ConsoleLogRoute.prototype._format = function ( message ) {
   var text  = this.super_._format( message );
   var style = this._level2style[ message.level ];
 

@@ -63,6 +63,9 @@ exports.get_batch = function( application, assert ) {
       delete a_part._.a;
       
       assert.isUndefined( a_part.a );
+    },
+    'class_name' : function( a_part ){
+      assert.equal( a_part.class_name, 'AutodafePart' );
     }
   }
 }

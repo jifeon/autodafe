@@ -14,18 +14,25 @@ LogRouter.prototype._init = function( params ) {
 
   var routes = params.routes || {};
   for ( var route_type in routes ) {
+    var route_class_name = route_type + '_log_route';
     var route_class;
-    switch ( route_type ) {
-      case 'console': route_class = require('./console_route'); break;
-      case 'file':    route_class = require('./file_route');    break;
-      case 'mail':    route_class = require('./mail_route');    break;
-      default:        route_class = require('./log_route');     break;
+
+    try {
+      route_class = require('./' + route_class_name );
+    }
+    catch( e ) {
+      route_class = this.app.components.get_user_component( route_class_name );
+    }
+
+    if ( !route_class ) {
+      this.log( 'Unknown route type: ' + route_type, 'warning' );
+      continue;
     }
 
     var route_params = routes[ route_type ] || {};
     route_params.app = this.app;
 
-    this.routes[ route_type ] = new route_class( routes[ route_type ] );
+    this.routes[ route_type ] = new route_class( route_params );
   }
 };
 

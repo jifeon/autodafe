@@ -49,7 +49,7 @@ ComponentsManager.prototype.load_component = function ( component_name ) {
 
   var component_class = system_components[ component_name ];
 
-  if ( !component_class ) component_class = this._get_user_component( component_name );
+  if ( !component_class ) component_class = this.get_user_component( component_name );
 
   if ( !component_class || !( component_class.prototype instanceof Component ) ) {
     this.log( 'Try to load unknown component: "%s"'.format( component_name ), 'warning' );
@@ -65,7 +65,7 @@ ComponentsManager.prototype.load_component = function ( component_name ) {
 };
 
 
-ComponentsManager.prototype._get_user_component = function ( component_name ) {
+ComponentsManager.prototype.get_user_component = function ( component_name ) {
   if ( !this._user_components ) {
     var components_path = path.join( this.app.base_dir, this._user_components_folder );
 

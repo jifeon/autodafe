@@ -21,7 +21,6 @@ AppModule.prototype._init = function( params ) {
   );
 
   this._.app = params.app;
-  delete params.app;
 
   if ( !this.class_name ) {
     this.app.log(

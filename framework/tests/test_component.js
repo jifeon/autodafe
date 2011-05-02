@@ -23,6 +23,27 @@ TestComponent.prototype._init = function( params ) {
     app : this.app
   });
 
+  this._extend_assert();
+};
+
+
+TestComponent.prototype._extend_assert = function () {
+  assert.isReadOnly = function ( actual, actual_property, message ) {
+    var writable  = true;
+
+    try {
+      actual[ actual_property ] = null;
+    }
+    catch( e ) {
+      writable = false;
+    }
+
+    var removable = delete actual[ actual_property ];
+
+    if ( writable || removable ) {
+        assert.fail( actual_property, 0, message || "expected {actual} to be read only", "isReadOnly", assert.isReadOnly );
+    }
+  };
 };
 
 

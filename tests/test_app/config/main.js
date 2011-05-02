@@ -52,7 +52,7 @@ var config = module.exports = {
       routes : {
         console : {
           levels : [ 'trace', 'info', 'warning', 'error' ]
-        }//,
+        },
 //        file : {
 //          levels : [ 'trace', 'info', 'warning', 'error' ]
 //        },
@@ -63,6 +63,9 @@ var config = module.exports = {
 //          subject   : 'Autodafe messages',
 //          frequency : '1 per 10 sec'
 //        }
+        test : {
+          levels : [ 'trace', 'info', 'warning', 'error' ]
+        }
       }
     },
 
@@ -84,8 +87,8 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
-//        '../unit/framework/'
-        '../unit/framework/base'
+        '../unit/framework/'
+//        '../unit/framework/base/app_module_tests'
 //        '../unit/framework/base/autodafe_part'
       ],
       exclude : [    // may be regexp or string which will be searched in path

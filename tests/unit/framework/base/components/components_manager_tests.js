@@ -1,7 +1,7 @@
 exports.get_batch = function( application, assert ) {
   var Autodafe        = require('autodafe');
   var LogRouter       = require( 'logging/log_router' );
-  var ConsoleRoute    = require( 'logging/console_route' );
+  var ConsoleRoute    = require( 'logging/console_log_route' );
   var UserIdentities  = require( 'users/users_identities' );
   var Component       = require( 'components/component' );
   var UserComponent   = require( 'users/users_identities' );
