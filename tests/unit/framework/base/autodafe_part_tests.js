@@ -17,8 +17,8 @@ exports.get_batch = function( application, assert ) {
     'read value' : function( a_part ){
       assert.equal( a_part.a, 5 );
     },
-    'read value from _' : function( a_part ){
-      assert.equal( a_part._.a, 5 );
+    'read value from _.value' : function( a_part ){
+      assert.equal( a_part._.a.value, 5 );
     },
     'set value' : function( a_part ) {
       assert.throws( function() {
@@ -30,6 +30,17 @@ exports.get_batch = function( application, assert ) {
       assert.equal( a_part.a, 10 );
     },
     'set a getter for property' : function( a_part ){
+      a_part._.a.get = function() {
+        return 100500;
+      }
+
+      assert.equal( a_part.a, 100500 );
+    },
+    'reset value to undefined' : function( a_part ){
+      a_part._.a = undefined;
+      assert.isUndefined( a_part.a );
+    },
+    'set a getter for property which is undefined' : function( a_part ){
       a_part._.a.get = function() {
         return 100500;
       }
@@ -49,20 +60,20 @@ exports.get_batch = function( application, assert ) {
       assert.equal( a_part.a, 100500 );
       assert.equal( test, 42 );
     },
-    'set a delete for property' : function( a_part ){
-
-      a_part._.a['delete'] = function() {
-        throw new TypeError;
-      }
-
-      assert.throws( function() {
-        delete a_part.a;
-      } );
-    },
     'real delete property' : function( a_part ){
       delete a_part._.a;
       
       assert.isUndefined( a_part.a );
+
+      a_part.a = 86;
+      assert.equal( a_part.a, 86 );
+    },
+    'define property by setting getter' : function( a_part ){
+      a_part._.b.get = function() {
+        return 555;
+      };
+
+      assert.equal( a_part.b, 555 );
     },
     'class_name' : function( a_part ){
       assert.equal( a_part.class_name, 'AutodafePart' );
