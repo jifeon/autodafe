@@ -20,7 +20,7 @@ var config = module.exports = {
       ],
       'rule_with_unimplemented_test_action' : [
         'test.test',
-        'test.unexist_test_action',
+        'test.not_existed_test_action',
         'another_test.test'
       ],
       'rule_with_undeclared_test_action' : [
@@ -28,7 +28,7 @@ var config = module.exports = {
         'test.some_implemented_action',
         'another_test.test'
       ],
-      'rule_with_unexist_controller' : [
+      'rule_with_not_existed_controller' : [
         'test.test',
         'bad_controller.test',
         'another_test.test'
@@ -87,8 +87,8 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
-        '../unit/framework/'
-//        '../unit/framework/base/app_module_tests'
+//        '../unit/framework/'
+        '../unit/framework/base'
 //        '../unit/framework/base/autodafe_part_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path

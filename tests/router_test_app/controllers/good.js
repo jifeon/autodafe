@@ -4,13 +4,8 @@ module.exports = GoodController.inherits( Controller );
 
 function GoodController( params ) {
   this._init( params );
+  this.allow_actions( 'test' );
 }
-
-
-GoodController.prototype.name     = 'good';
-GoodController.prototype.actions  = [
-  'test'
-];
 
 
 GoodController.prototype.test = function() {

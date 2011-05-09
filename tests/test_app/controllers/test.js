@@ -4,17 +4,12 @@ module.exports = TestController.inherits( Controller );
 
 function TestController( params ) {
   this._init( params );
+  this.allow_actions( 'test', 'not_existed_test_action' );
+
   // log_routes exists here only if it is preloaded
   process.emit( 'Preloaded logger component', this.app.log_router );
   process.emit( 'Not preloaded tests component', this.app.tests );
 }
-
-
-TestController.prototype.name     = 'test';
-TestController.prototype.actions  = Controller.prototype.actions.concat([
-  'test',
-  'unexist_test_action'
-]);
 
 
 TestController.prototype.index = function () {

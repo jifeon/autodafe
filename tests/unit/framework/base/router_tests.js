@@ -70,7 +70,7 @@ exports.get_batch = function( application, assert ) {
       'multi route from rules'                    : multi_route_test( 'multi_route_rule', true ),
       'second rule route to unimplemented action' : multi_route_test( 'rule_with_unimplemented_test_action', false ),
       'second rule route to undeclared action'    : multi_route_test( 'rule_with_undeclared_test_action', false ),
-      'second rule route to unexist controller'   : multi_route_test( 'rule_with_unexist_controller', false )
+      'second rule route to not existed controller' : multi_route_test( 'rule_with_not_existed_controller', false )
     },
     'bad controllers' : {
       topic : function() {

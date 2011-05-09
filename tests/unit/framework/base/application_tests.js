@@ -143,7 +143,7 @@ exports.get_batch = function( application, assert ) {
       'param is null' : function( app ){
         assert.isNull( app.get_param( 'param4' ) );
       },
-      'unexisted param' : function( app ){
+      'not existed param' : function( app ){
         assert.isNull( app.get_param( 'param5' ) );
       }
     },

@@ -5,7 +5,8 @@ exports.get_batch = function( application, assert ) {
     topic : function() {
       var TestController = require('controllers/test');
       return new TestController({
-        app : application
+        app   : application,
+        name  : 'test'
       });
     },
     'instance test' : function( controller ) {
@@ -13,9 +14,6 @@ exports.get_batch = function( application, assert ) {
     },
     'name of controller must be "test"' : function( controller ) {
       assert.equal( controller.name, 'test' );
-    },
-    'actions is an array' : function( controller ) {
-      assert.isArray( controller.actions );
     },
     'default action is "index"' : function( controller ){
       assert.equal( controller.default_action, 'index' );
@@ -58,7 +56,7 @@ exports.get_batch = function( application, assert ) {
     },
     'tests declared unimplemented action' : function( controller ){
       assert.throws( function() {
-        controller.run_action( 'unexist_test_action' );
+        controller.run_action( 'not_existed_test_action' );
       }, Error );
     },
     'tests implemented undeclared action' : function( controller ){

@@ -6,18 +6,18 @@ function Controller( params ) {
   this._init( params );
 }
 
-Controller.prototype.actions        = [ 'index' ];
-Controller.prototype.default_action = 'index';
-
 
 Controller.prototype._init = function ( params ) {
   this.super_._init( params );
 
+  if ( !params.name )
+    throw new Error( 'Parameter `name` is required for Controller creation' );
+  this.name = params.name;
+
+  this.default_action = 'index';
   this._actions = {};
 
-  for ( var a = 0, a_ln = this.actions.length; a < a_ln; a++ ) {
-    this._actions[ this.actions[a] ] = 1;
-  }
+  this.allow_actions( 'index' );
 };
 
 
@@ -25,10 +25,24 @@ Controller.prototype.before_action = function ( action ) {};
 Controller.prototype.after_action = function ( action ) {};
 
 
+Controller.prototype.allow_actions = function () {
+  Array.prototype.slice.call( arguments ).forEach( function( action ) {
+    this._actions[ action ] = true;
+  }, this );
+};
+
+
+Controller.prototype.deny_actions = function () {
+  Array.prototype.slice.call( arguments ).forEach( function( action ) {
+    this._actions[ action ] = false;
+  }, this );
+};
+
+
 Controller.prototype.run_action = function ( action, args ) {
   action = action || this.default_action;
 
-  if ( !this._actions[ action ] || !this[ action ] )
+  if ( !action || !this._actions[ action ] || !this[ action ] )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
   args = args || [];

@@ -42,12 +42,12 @@ Router.prototype._collect_controllers = function () {
       var controller = require( file_path );
       if ( !( controller.prototype instanceof Controller ) ) throw "NOT_CONTROLLER";
 
-      var name = controller.prototype.name;
-      if ( !name ) throw "NO_NAME";
+      var name = path.basename( file_path, '.js' );
 
       this.log( 'Controller "%s" is added'.format( name ), 'trace' );
       this._controllers[ name ] = new controller({
-        app : this.app
+        app   : this.app,
+        name  : name
       });
     }
 
@@ -55,10 +55,6 @@ Router.prototype._collect_controllers = function () {
       switch ( e ) {
         case 'NOT_CONTROLLER':
           this.log( '"%s" is not a controller'.format( file ), 'error' );
-          break;
-
-        case 'NO_NAME':
-          this.log( 'Controller has no property "name" in file "%s"'.format( file ), 'error' );
           break;
 
         default:
