@@ -29,9 +29,9 @@ ProtectedValuesDescriptor.prototype.set = function( value ) {
 
 
 ProtectedValuesDescriptor.prototype['delete'] = function () {
-  this.reset();
-  this.set = this._default_set;
+  this.reset( true );
   this.value = undefined;
+
   return true;
 };
 
@@ -41,7 +41,7 @@ ProtectedValuesDescriptor.prototype._default_set = function ( value ) {
 };
 
 
-ProtectedValuesDescriptor.prototype.reset = function () {
+ProtectedValuesDescriptor.prototype.reset = function ( default_set ) {
   this.get = this.constructor.prototype.get;
-  this.set = this.constructor.prototype.set;
+  this.set = default_set ? this._default_set : this.constructor.prototype.set;
 };
