@@ -1,4 +1,7 @@
 var AppModule = require('app_module');
+var dust      = require('dust');
+var path      = require('path');
+var fs        = require('fs');
 
 module.exports = Controller.inherits( AppModule );
 
@@ -15,6 +18,8 @@ Controller.prototype._init = function ( params ) {
   this.name = params.name;
 
   this.default_action = 'index';
+  this.views_path     = 'views';
+
   this._actions = {};
 
   this.allow_actions( 'index' );
@@ -63,4 +68,23 @@ Controller.prototype.run_action = function ( action, args ) {
   this[ action ].apply( this, args.slice( 1 ) );
   this.after_action.apply( this, args );
   args.shift();
+};
+
+
+Controller.prototype.render = function ( view, params, callback ) {
+
+  if ( dust.cache[ view ] ) return dust.render( view, params, callback );
+
+  var view_path = path.join( this.app.base_dir, this.views_path, view );
+
+  fs.readFile( view_path, 'UTF8', function( e, template ){
+    if ( e ) return callback( e, null );
+
+    var compiled = dust.compile( template, view );
+
+    dust.loadSource( compiled );
+    dust.render( view, params, callback );
+  } );
+
+
 };

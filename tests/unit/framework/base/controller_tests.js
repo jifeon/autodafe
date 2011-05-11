@@ -114,6 +114,20 @@ exports.get_batch = function( application, assert ) {
 
       controller.run_action( 'test', [ 42 ] );
       assert.isTrue( after_action_has_runned );
+    },
+    'views' : {
+      topic : function( controller ){
+        controller.render( 'test.json', { message : 'ok' }, this.callback );
+      },
+      'json' : function( err, data ) {
+        assert.isNull( err );
+
+        var a;
+        eval( 'a = ' + data );
+        assert.deepEqual( a, {
+          test : 'ok'
+        } );
+      }
     }
   }
 }

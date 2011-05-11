@@ -19,3 +19,6 @@
 [submodule "framework/db/mysql/node-mysql"]
 	path = framework/db/mysql/node-mysql
 	url = git://github.com/Sannis/node-mysql-libmysqlclient.git
+[submodule "framework/base/views/dust"]
+	path = framework/base/views/dust
+	url = git://github.com/akdubya/dustjs.git
