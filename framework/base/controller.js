@@ -85,6 +85,17 @@ Controller.prototype.render = function ( view, params, callback ) {
     dust.loadSource( compiled );
     dust.render( view, params, callback );
   } );
+};
 
 
+Controller.prototype.send_response = function ( view, params, session, callback ) {
+  callback = typeof callback == 'function' ? callback : function( e ) { if ( e ) throw e; };
+
+  this.render( view, params, function( e, data ) {
+    if ( e ) callback( e );
+
+    var client = session.client;
+    client.transport.send_response( client, data );
+    callback( null, data );
+  } );
 };

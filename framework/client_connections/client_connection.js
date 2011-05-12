@@ -9,13 +9,8 @@ function ClientConnection( params ) {
 
 
 ClientConnection.prototype.connect_client = function ( client, session_id ) {
-  var self = this;
-
-  var session = new Session({
-    client  : client,
-    id      : session_id,
-    app     : this.app
-  });
+  var self    = this;
+  var session = this.app.create_session( session_id, client );
 
   client.on( 'request', function( request ) {
     self.receive_request( request, session );
@@ -25,12 +20,12 @@ ClientConnection.prototype.connect_client = function ( client, session_id ) {
     self.disconnect_client( client, session );
   } );
 
-  this.app.emit( 'new_session', session, this );
-  this.app.router.route( this.app.default_controller + '.client_connect', session );
+  this.app.router.route( this.app.default_controller + '.connect_client', session );
 };
 
 
 ClientConnection.prototype.receive_request = function ( request ) {};
+ClientConnection.prototype.send_response = function ( client, data ) {};
 
 
 ClientConnection.prototype.disconnect_client = function ( client, session ) {

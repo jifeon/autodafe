@@ -137,3 +137,16 @@ Application.prototype.run = function () {
 Application.prototype.log = function ( message, level, module ) {
   this.logger.log( message, level, module );
 };
+
+
+Application.prototype.create_session = function ( id, client ) {
+  var session = new Session({
+    id      : id,
+    client  : client,
+    app     : this
+  });
+
+  this.emit( 'new_session', session, this );
+
+  return session;
+};

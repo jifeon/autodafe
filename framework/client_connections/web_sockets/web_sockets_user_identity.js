@@ -24,19 +24,6 @@ WebSocketsUserIdentity.prototype.get_cookie = function ( cookie_name ) {
 };
 
 
-WebSocketsUserIdentity.prototype.send = function ( controller, action, params ) {
-  this.log(
-    'Send message to websockets client ( id=%s ) to %s.%s'.format( this._session_id, controller, action )
-  );
-
-  this._client.send( JSON.stringify( {
-    controller  : controller,
-    action      : action,
-    params      : params
-  } ) );
-};
-
-
 WebSocketsUserIdentity.prototype.broadcast = function ( controller, action, params ) {
   this.enum_similar_identities( function() {
     this.send( controller, action, params );

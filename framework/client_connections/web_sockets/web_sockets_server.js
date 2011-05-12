@@ -51,6 +51,8 @@ WebSocketsServer.prototype.receive_request = function ( message, session ) {
 };
 
 
-WebSocketsServer.prototype.disconnect_client = function ( client ) {
+WebSocketsServer.prototype.send_response = function ( client, data ) {
+  this.log( 'Send message to websockets client ( id=%s )'.format( client.ws_client.sessionId ) );
 
+  client.ws_client.send( data );
 };
