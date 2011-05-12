@@ -2,9 +2,8 @@ exports.get_batch = function( application, assert ) {
   var Autodafe        = require('autodafe');
   var LogRouter       = require( 'logging/log_router' );
   var ConsoleRoute    = require( 'logging/console_log_route' );
-  var UserIdentities  = require( 'users/users_identities' );
+  var UsersManager    = require( 'users/users_manager' );
   var Component       = require( 'components/component' );
-  var UserComponent   = require( 'users/users_identities' );
 
   return {
     topic : application.components,
@@ -23,10 +22,10 @@ exports.get_batch = function( application, assert ) {
           assert.instanceOf( app.log_router.get_route( 'console' ), ConsoleRoute );
         },
         'true' : function( app ){
-          assert.instanceOf( app.user, UserIdentities );
+          assert.instanceOf( app.user, UsersManager );
         },
         'false' : function( app ){
-          assert.isUndefined( app.web_sockets_server, 'WebSocketServer must be not included' );
+          assert.isUndefined( app.web_sockets, 'WebSocketServer must be not included' );
         }
       },
 

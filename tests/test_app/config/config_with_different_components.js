@@ -5,7 +5,7 @@ module.exports = {
   preload_components : [ 'log_router' ],
 
   components      : {
-    web_sockets_server  : false,
+    web_sockets         : false,
     user                : true,
 
     log_router          : {

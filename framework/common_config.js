@@ -21,7 +21,7 @@ var config = module.exports = {
 
   components : {
 
-    web_sockets_server  : true,
+    web_sockets         : true,
     user                : true,
 
     db                  : {

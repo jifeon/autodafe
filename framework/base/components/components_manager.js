@@ -4,8 +4,8 @@ var path      = require('path');
 var fs        = require('fs');
 
 var system_components = {
-  'web_sockets_server' : require( '../../web_sockets/web_sockets_server' ),
-  'user'               : require( '../../users/users_identities' ),
+  'web_sockets'        : require( '../../client_connections/web_sockets/web_sockets_server' ),
+  'user'               : require( '../../users/users_manager' ),
   'db'                 : require( '../../db/db_controller' ),
   'log_router'         : require( '../../logging/log_router' ),
   'tests'              : require( '../../tests/test_component' ),

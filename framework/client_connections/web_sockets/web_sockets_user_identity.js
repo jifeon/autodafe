@@ -1,5 +1,5 @@
-var UserIdentity = require('./user_identity');
-var cookie       = require('../lib/cookie');
+var UserIdentity = require('users/user_identity');
+var cookie       = require('lib/cookie');
 
 module.exports = WebSocketsUserIdentity.inherits( UserIdentity );
 
