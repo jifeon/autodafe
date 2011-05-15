@@ -58,6 +58,33 @@ exports.get_batch = function( application, assert ) {
 
       assert.isNull( message );
       assert.equal( inst.class_name, 'Class' );
+    },
+    '`default_callback` method' : {
+      'should not throw any error if first argument null or undefined' : function( app_module ){
+        assert.doesNotThrow( function() {
+          app_module.default_callback();
+          app_module.default_callback( null );
+          app_module.default_callback( null, 'result' );
+        } );
+      },
+      'should throw a first argument if it is' : {
+        'error' : function( app_module ) {
+          assert.throws( function() {
+            app_module.default_callback( new Error );
+          } );
+        },
+        'not a null or undefined' : function( app_module ) {
+          assert.throws( function() {
+            app_module.default_callback( 42 );
+          } );
+        },
+        'equal false' : function( app_module ) {
+          assert.throws( function() {
+            app_module.default_callback( false );
+          } );
+        }
+      }
+
     }
   }
 }

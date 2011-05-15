@@ -37,5 +37,5 @@ AppModule.prototype.log = function ( message, level ) {
 
 
 AppModule.prototype.default_callback = function ( e ) {
-  if ( e ) throw e;
+  if ( e != null ) throw e;
 };
