@@ -43,18 +43,19 @@ ProtectedValuesProxyHandler.prototype['delete'] = function ( name ) {
 
 ProtectedValuesProxyHandler.prototype._create_handler = function ( name, value ) {
   var descriptor = this.properties[ name ] = this._create_descriptor( name, value );
+  var target     = this.target;
 
   var handler = {
     get           : function() {
-      return descriptor.get();
+      return descriptor.get.call( target, descriptor );
     },
     set           : function( value ) {
-      descriptor.set( value );
+      descriptor.set.call( target, value, descriptor );
     },
     configurable  : false
   };
 
-  Object.defineProperty( this.target, name, handler );
+  Object.defineProperty( target, name, handler );
 };
 
 

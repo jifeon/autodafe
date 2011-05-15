@@ -18,13 +18,13 @@ ProtectedValuesDescriptor.prototype._init = function( params ) {
 };
 
 
-ProtectedValuesDescriptor.prototype.get = function() {
-  return this.value;
+ProtectedValuesDescriptor.prototype.get = function( descriptor ) {
+  return descriptor.value;
 }
 
 
-ProtectedValuesDescriptor.prototype.set = function( value ) {
-  throw new TypeError( 'Property `%s` of `%s` is read only'.format( this.name, this.target.class_name ) );
+ProtectedValuesDescriptor.prototype.set = function( value, descriptor ) {
+  throw new TypeError( 'Property `%s` of `%s` is read only'.format( descriptor.name, this.class_name ) );
 }
 
 
@@ -36,8 +36,8 @@ ProtectedValuesDescriptor.prototype['delete'] = function () {
 };
 
 
-ProtectedValuesDescriptor.prototype._default_set = function ( value ) {
-  this.value = value;
+ProtectedValuesDescriptor.prototype._default_set = function ( value, descriptor ) {
+  descriptor.value = value;
 };
 
 

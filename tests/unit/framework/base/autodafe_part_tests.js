@@ -77,6 +77,34 @@ exports.get_batch = function( application, assert ) {
     },
     'class_name' : function( a_part ){
       assert.equal( a_part.class_name, 'AutodafePart' );
+    },
+    'context in `get`' : function( a_part ){
+      var descriptor;
+
+      a_part._.ctx.get = function( desc ) {
+        descriptor = desc;
+        return this;
+      }
+
+      assert.equal( a_part.ctx, a_part );
+      assert.equal( descriptor, a_part._.ctx );
+    },
+    'context in `set`' : function( a_part ){
+      var ctx;
+      var value;
+      var descriptor;
+
+      a_part._.ctx.set = function( val, desc ) {
+        ctx         = this;
+        value       = val;
+        descriptor  = desc;
+      }
+
+      a_part.ctx = 42;
+      
+      assert.equal( ctx, a_part );
+      assert.equal( value, 42 );
+      assert.equal( descriptor, a_part._.ctx );
     }
   }
 }
