@@ -25,7 +25,7 @@ UsersManager.prototype._init = function( params ) {
 };
 
 
-UsersManager.prototype.get = function ( session ) {
+UsersManager.prototype.get_by_session = function ( session ) {
   return this._users.by_session_id[ session.id ] || null;
 };
 

@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var Post            = require('post');
+  var Post            = require('models/post');
   var DbTableSchema   = require('db/db_table_schema');
   var DbCriteria      = require('db/db_criteria');
   var CommandBuilder  = require('db/command_builder');

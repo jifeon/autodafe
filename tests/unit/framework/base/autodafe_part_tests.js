@@ -75,9 +75,6 @@ exports.get_batch = function( application, assert ) {
 
       assert.equal( a_part.b, 555 );
     },
-    'class_name' : function( a_part ){
-      assert.equal( a_part.class_name, 'AutodafePart' );
-    },
     'context in `get`' : function( a_part ){
       var descriptor;
 
@@ -105,6 +102,10 @@ exports.get_batch = function( application, assert ) {
       assert.equal( ctx, a_part );
       assert.equal( value, 42 );
       assert.equal( descriptor, a_part._.ctx );
+    },
+    'class_name' : function( a_part ){
+      assert.equal( a_part.class_name, 'AutodafePart' );
+      assert.isReadOnly( a_part, 'class_name' );
     }
   }
 }

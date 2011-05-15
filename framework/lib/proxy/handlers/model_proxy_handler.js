@@ -1,4 +1,5 @@
 var FunctionProxyHandler = require('./function_proxy_handler');
+var ProxyHandler         = require('./proxy_handler');
 
 module.exports = ModelProxyHandler.inherits( FunctionProxyHandler );
 
@@ -32,5 +33,5 @@ ModelProxyHandler.prototype.set = function ( receiver, name, value ) {
 
 
 ModelProxyHandler.prototype.get_object_proxy = function () {
-  return FunctionProxyHandler.super_.prototype.get_proxy.call( this );
+  return ProxyHandler.prototype.get_proxy.call( this );
 };

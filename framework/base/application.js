@@ -1,5 +1,6 @@
 var path                  = require('path');
 
+var Session               = require('session');
 var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
@@ -21,10 +22,11 @@ Application.prototype._init = function ( config ) {
 
   Application.instances.push( this );
   this._config    = config            || {};
+  this._runned    = false;
 
-  if ( !this._config.name )
+  if ( typeof this._config.name != 'string' )
     throw new Error( 'Please specify application name in your config file' );
-  this._.name     = this._config.name || 'My Autodafe application';
+  this._.name     = this._config.name;
 
   if ( !this._config.base_dir )
     throw new Error( 'You must set base_dir in config file!' );
@@ -35,8 +37,7 @@ Application.prototype._init = function ( config ) {
   this.components = null;
 
   this.default_controller = this._config.default_controller || 'action';
-
-  this._runned = false;
+  this.models_folder      = 'models';
 
   this._preload_components();
   this._init_core();
@@ -56,8 +57,6 @@ Application.prototype._init = function ( config ) {
 
 
 Application.prototype._init_core = function () {
-  require.paths.unshift( this.base_dir + 'models/' );
-
   var router_cfg = this._config.router || {};
   router_cfg.app = this;
   this.router = new Router( router_cfg );
@@ -88,7 +87,14 @@ Application.prototype._init_components = function () {
 
 
 Application.prototype.register_component = function ( component ) {
-  var name = component.name;
+  var name;
+
+  if ( typeof component == 'string' ) {
+    name      = component;
+    component = null;
+    if ( this[ name ] ) return false;
+  }
+  else name = component.name;
 
   if ( this[ name ] )
     throw new Error(
@@ -105,7 +111,7 @@ Application.prototype.register_component = function ( component ) {
         ? component.get()
         : this.log(
           'Try to use component "%s" which is not included. \
-           To include component configure it in your config file'.format( component.name ),
+           To include component configure it in your config file'.format( name ),
           'warning'
         )
     },
@@ -146,7 +152,7 @@ Application.prototype.create_session = function ( id, client ) {
     app     : this
   });
 
-  this.emit( 'new_session', session, this );
+  this.emit( 'new_session', session );
 
   return session;
 };

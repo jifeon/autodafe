@@ -1,6 +1,7 @@
 var ProxyHandler        = require('./proxy_handler');
 var ModelProxyHandler   = require('./model_proxy_handler');
 var AppModule           = require('app_module');
+var path                = require('path');
 
 module.exports = ModelsProxyHandler.inherits( ProxyHandler );
 
@@ -24,7 +25,7 @@ ModelsProxyHandler.prototype.get = function ( receiver, name ) {
 
   var model;
   try {
-    model = require( name );
+    model = require( path.resolve( this.app.base_dir, this.app.models_folder, name ) );
   }
   catch( e ) {
     throw new Error( 'Can\'t find model `%s`'.format( name ) );
@@ -38,8 +39,8 @@ ModelsProxyHandler.prototype.get = function ( receiver, name ) {
 ModelsProxyHandler.prototype.get_by_class = function ( constructor, params ) {
   var self = this;
 
-  var create_model = function() {
-    return self.create_model( constructor, params );
+  var create_model = function( construct_params ) {
+    return self.create_model( constructor, construct_params );
   }
 
   var model_handler = new ModelProxyHandler({

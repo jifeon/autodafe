@@ -35,6 +35,10 @@ ComponentsManager.prototype.load_components = function () {
   for ( var component_name in this._components ) {
     this.load_component( component_name );
   }
+
+  for ( component_name in system_components ) {
+    this.app.register_component( component_name );
+  }
 };
 
 

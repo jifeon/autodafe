@@ -21,7 +21,12 @@ Model.prototype.set_attribute = function ( name, value ) {
 
 
 Model.prototype.get_attribute = function ( name ) {
-  return this._attributes[ name ] || this[ name ] || null;
+  var attribute = this._attributes[ name ] || this[ name ] || null;
+
+  var self = this;
+  return typeof attribute == 'function' ? function() {
+    return attribute.apply( self, arguments );
+  } : attribute;
 };
 
 

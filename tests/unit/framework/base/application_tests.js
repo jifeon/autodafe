@@ -4,41 +4,70 @@ exports.get_batch = function( application, assert ) {
   var ComponentsManager = require( 'components/components_manager' );
   var Component         = require( 'components/component' );
   var Autodafe          = require( 'autodafe' );
+  var Application       = require( 'application' );
   var LogRouter         = require( 'logging/log_router' );
   var TestComponent     = require( 'tests/test_component' );
-  var Model             = require( 'model' );
-  var TestModel         = require( 'test_inherited_model' );
-  var SuperModel        = require( 'test_super_model' );
+  var TestModel         = require( 'models/test_model' );
+  var Client            = require( 'client_connections/client' );
+  var Session           = require( 'session' );
+  var ClientConnection  = require( 'client_connections/client_connection' );
+
+
   var path              = require( 'path' );
   var config            = require( 'config/main' );
 
   return {
     topic : application,
     'public properties' : {
-      'name test' : function ( app ) {
-        assert.equal( app.name, config.name );
+      'Application.instances' : function( app ){
+        assert.equal( Application.instances[0], app );
       },
-      'logger instance test' : function( app ) {
+      'property `name` should be' : {
+        'equal with `name` in config file' : function ( app ) {
+          assert.equal( app.name, config.name );
+        },
+        'read only' : function( app ){
+          assert.isReadOnly( app, 'name' )
+        },
+        'required' : function(){
+          assert.throws( function() {
+            new Application({
+              base_dir : '.'
+            });
+          } );
+        }
+      },
+      'property `base_dir` should be' : {
+        'normalized `base_dir` path from config file' : function ( app ) {
+          assert.equal( app.base_dir, config.base_dir.substring( 0, config.base_dir.indexOf('config/..') ) );
+        },
+        'read only' : function( app ){
+          assert.isReadOnly( app, 'base_dir' )
+        },
+        'required' : function(){
+          assert.throws( function() {
+            new Application({
+              name : 'app_name'
+            });
+          } );
+        }
+      },
+      '`logger` should be instance of Logger' : function( app ) {
         assert.instanceOf( app.logger, Logger );
       },
-      'router instance test' : function( app ) {
+      '`router` should be instance of Router' : function( app ) {
         assert.instanceOf( app.router, Router );
       },
-      'components instance test' : function( app ) {
+      '`components` should be instance of ComponentsManager' : function( app ) {
         assert.instanceOf( app.components, ComponentsManager );
       },
-      'default controller' : function( app ){
+      'default controller should be read from config' : function( app ){
         assert.equal( app.default_controller, config.default_controller );
       },
-      'required properties must be getters' : function( app ) {
-        assert.throws( function() {
-          app.base_dir = '';
-        }, TypeError, 'base_dir' );
-        assert.throws( function() {
-          app.name = '';
-        }, TypeError, 'name' );
+      'models folder should be set to "models" by default' : function( app ){
+        assert.equal( app.models_folder, 'models' );
       },
-
+      
       'application with minimalistic configurations' : {
         topic : function() {
           var min_config  = require('config/min_config');
@@ -46,50 +75,86 @@ exports.get_batch = function( application, assert ) {
           min_app.run();
           return min_app;
         },
-        'default controller' : function( app ){
+        '`default_controller` should be action by default' : function( app ){
           assert.equal( app.default_controller, 'action' );
         }
       }
     },
 
-//    '`model` method' : {
-//        'returned model instance test' : function( app ){
-//          var model = new app.model( TestModel );
-//          assert.instanceOf( model, TestModel );
-//          assert.instanceOf( model, Model );
-//        },
-//        'two created by `new app.model()` models should be not the same' : function( app ){
-//          var model1 = new app.model( TestModel );
-//          var model2 = new app.model( TestModel );
-//          assert.notEqual( model1, model2, 'Models should be not the same' );
-//        },
-//        'calling to `model` method must return result of super_.model()' : function( app ){
-//          var model1 = app.model( TestModel );
-//          var model2 = app.model( TestModel );
-//          assert.equal( model1, model2, 'Models should be the same' );
-//        },
-//        'link to application in created model' : function( app ) {
-//          var model = new app.model( TestModel );
-//          assert.equal( model.app, app, 'Broken link to application' );
-//        },
-//        'link to application in getted existing model from super_.model()' : function( app ) {
-//          var model = app.model( TestModel );
-//          assert.equal( model.app, app, 'Broken link to application' );
-//        },
-//        'if super_ hash\'t `model` method `app.model()` should return just new model' : function( app ){
-//          var model = app.model( SuperModel );
-//          assert.instanceOf( model, SuperModel );
-//          assert.equal( model.app, app );
-//        }
-//      },
+    '`models` proxy property - ' : {
+      'static model' : {
+        topic : function( app ) {
+          return app.models.test_model;
+        },
+        'should be instance of function' : function( test_model ){
+          assert.instanceOf( test_model, Function );
+        },
+        'should create instance of model' : function( test_model ){
+          assert.instanceOf( test_model.me(), TestModel );
+        },
+        'should invoke methods' : function( test_model ){
+          assert.equal( test_model.test(), 42 );
+        },
+        'should be cached' : function( test_model ){
+          assert.equal( test_model.me(), test_model.app.models.test_model.me() );
+        }
+      },
+      'model created using `new` operator' : {
+        topic : function( app ){
+          return new app.models.test_model;
+        },
+        'should be instance of model\'s class' : function( test_model ){
+          assert.instanceOf( test_model, TestModel );
+        },
+        'should invoke methods' : function( test_model ){
+          assert.equal( test_model.test(), 42 );
+        },
+        'should not be cached' : function( test_model ){
+          var new_model = new test_model.app.models.test_model;
 
-    '`_preload_components` method' : function() {
+          assert.notEqual( new_model,       test_model );
+          assert.notEqual( new_model.me(),  test_model.me() );
+        }
+      },
+      'model created using `new` operator with params' : {
+        topic : function( app ){
+          return new app.models.test_model({
+            param : 54
+          });
+        },
+        'should pass params' : function( test_model ){
+          assert.equal( test_model.test(), 54 );
+        }
+      },
+      'model created using `get_model` method' : {
+        topic : function( app ){
+          return app.models.get_model( TestModel, {
+            param : 48
+          } );
+        },
+        'should be instance of model\'s class' : function( test_model ){
+          assert.instanceOf( test_model, TestModel );
+        },
+        'should invoke methods' : function( test_model ){
+          assert.equal( test_model.test(), 48 );
+        },
+        'should not be cached' : function( test_model ){
+          var new_model = test_model.app.models.get_model( TestModel );
+
+          assert.notEqual( new_model,       test_model );
+          assert.notEqual( new_model.me(),  test_model.me() );
+        }
+      }
+    },
+
+    'preload components' : function() {
       var preloaded_logger_config   = require( 'config/preloaded_logger_config' );
 
       var application_created       = false;
       var log_router_in_controller  = null;
       var tests_in_controller       = null;
 
+      // bellow events are emitted from test controller
       process.once( 'Preloaded logger component', function( log_router ) {
         log_router_in_controller = log_router;
         application_created = true;
@@ -107,27 +172,6 @@ exports.get_batch = function( application, assert ) {
       assert.isUndefined( tests_in_controller, 'tests component must not be preloaded' );
 
       assert.instanceOf( app.tests, TestComponent, 'Test component must be available after loading' );
-    },
-
-    '`_check_config` method' : {
-      topic : require( 'config/wrong_config' ),
-      'base_dir is required' : function( config ) {
-        assert.throws( function() {
-          Autodafe.create_application( config );
-        }, Error );
-      },
-      'name is required' : function( config ) {
-        config.base_dir = path.resolve('.');
-        assert.throws( function() {
-          Autodafe.create_application( config );
-        }, Error );
-      },
-      'only name and base_dir are required' : function( config ) {
-        config.name = 'working_app';
-        assert.doesNotThrow( function() {
-          Autodafe.create_application( config );
-        } );
-      }
     },
 
     'tests params' : {
@@ -148,19 +192,15 @@ exports.get_batch = function( application, assert ) {
       }
     },
 
-    'application must not be runned twice' : function( app ) {
-      var double_runned = false;
+    'application should not be run twice' : function( app ) {
+      var double_run = false;
 
       app.once( 'run', function() {
-        double_runned = true;
-      } )
+        double_run = true;
+      } );
 
       assert.isFalse( app.run() );
-      assert.isFalse( double_runned );
-    },
-
-    'log is function' : function( app ) {
-      assert.isFunction( app.log );
+      assert.isFalse( double_run );
     },
 
     '`register_component` method' : {
@@ -199,6 +239,63 @@ exports.get_batch = function( application, assert ) {
           );
         } );
       }
+    },
+
+    'warnings about trying to' : {
+      topic : function() {
+        var config = require('config/config_with_log_router_only');
+        return Autodafe.create_application( config );
+      },
+      'get not configured system components' : function( app ){
+        var test_log_route = app.log_router.get_route( 'test' );
+        var message        = test_log_route.get_first_message( function() {
+          var users_manager = app.users;
+        } );
+
+        assert.isNotNull( message );
+        assert.equal( message.level, 'warning' );
+      },
+      'set not configured system components' : function( app ){
+        var test_log_route = app.log_router.get_route( 'test' );
+        var message        = test_log_route.get_first_message( function() {
+          app.users = 'fail';
+        } );
+
+        assert.isNotNull( message );
+        assert.equal( message.level, 'warning' );
+      }
+    },
+
+    'log function' : function( app ){
+      var test_log_route = app.log_router.get_route( 'test' );
+      var message        = test_log_route.get_first_message( function() {
+        app.log( 'text', 'info', 'module' );
+      } );
+
+      assert.isNotNull( message );
+      assert.equal( message.text,   'text' );
+      assert.equal( message.level,  'info' );
+      assert.equal( message.module, 'module' );
+    },
+
+    '`create_session` method' : function( app ){
+      var new_session_emitted = false;
+
+      app.once( 'new_session', function() {
+        new_session_emitted = true;
+      } );
+
+      var session = app.create_session( 1, new Client({
+        app       : app,
+        transport : new ClientConnection({
+          app   : app,
+          name  : 'test_cc'
+        })
+      }) );
+
+      assert.isTrue( new_session_emitted );
+      assert.instanceOf( session, Session );
+      assert.equal( session.id, 1 );
     }
   }
 }

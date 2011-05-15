@@ -41,7 +41,7 @@ TestsBatch.prototype._transform_first_topic = function () {
 
 TestsBatch.prototype._add_tests = function () {
   var tests = {};
-  tests[ this.name ] = this.tests;
+  tests[ this.name + ':' ] = this.tests;
 
   this.suite.addBatch( tests );
 };
