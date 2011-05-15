@@ -34,3 +34,8 @@ AppModule.prototype._init = function( params ) {
 AppModule.prototype.log = function ( message, level ) {
   this.app.logger.log( message, level, this.class_name );
 };
+
+
+AppModule.prototype.default_callback = function ( e ) {
+  if ( e ) throw e;
+};

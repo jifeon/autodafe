@@ -32,8 +32,8 @@ WebSocketsServer.prototype.run = function () {
   var self = this;
   this._io.on( 'connection', function( client ) {
     self.connect_client( new WebSocketsClient({
-      client    : client,
-      connector : self
+      ws_client : client,
+      transport : self
     }), client.sessionId );
   } );
 };

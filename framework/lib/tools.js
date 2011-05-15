@@ -47,7 +47,7 @@ Array.prototype.for_each = function ( fun/*, thisp*/ ) {
   {
     if ( i in t ){
       args[0] = t[i];
-      if ( fun.apply( thisp, args ) === false ) break;
+      if ( fun.apply( thisp || t[i], args ) === false ) break;
     }
   }
 };

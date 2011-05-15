@@ -6,7 +6,7 @@ module.exports = {
 
   components      : {
     web_sockets         : false,
-    user                : true,
+    users               : true,
 
     log_router          : {
       routes : {

@@ -22,7 +22,7 @@ var config = module.exports = {
   components : {
 
     web_sockets         : true,
-    user                : true,
+    users               : true,
 
     db                  : {
       type : 'mysql',

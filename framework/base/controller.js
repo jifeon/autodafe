@@ -89,13 +89,13 @@ Controller.prototype.render = function ( view, params, callback ) {
 
 
 Controller.prototype.send_response = function ( view, params, session, callback ) {
-  callback = typeof callback == 'function' ? callback : function( e ) { if ( e ) throw e; };
+  callback = callback || this.default_callback;
 
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
 
     var client = session.client;
-    client.transport.send_response( client, data );
+    client.send( data );
     callback( null, data );
   } );
 };

@@ -6,65 +6,61 @@ function UserIdentity( params ) {
   return this._init( params );
 }
 
-UserIdentity.cache = {};
-UserIdentity.with_same_user = {};
 
 UserIdentity.prototype._init = function( params ) {
   this.super_._init( params );
+  var self = this;
 
-  this._session_id = params.session_id;
-  if ( !this._session_id ) {
-    this.log( 'session_id is undeifned', 'error' );
-    return false;
+  if ( !Session.is_instantiate( params.session ) )
+    throw new Error( '`session` should be instance of Session in UserIdentity._init' );
+
+  this.session    = params.session;
+  this.id         = null;
+  this.users_map  = Object.isObject( params.users_map ) ? params.users_map : {};
+
+  this._.is_guest     = true;
+  this._.is_guest.get = function() {
+    return self.id == null;
   }
 
-  if ( UserIdentity.cache[ this._session_id ] ) return UserIdentity.cache[ this._session_id ];
-  UserIdentity.cache[ this._session_id ] = this;
-
-  this.user        = null;
-
-  this._authorized = false;
-
-  return this;
+  this._.similar_users = [ this ];
+  this._.all_clients   = [ this.session.client ];
 };
 
 
-UserIdentity.prototype.is_guest = function () {
-  return !this._authorized;
-};
+UserIdentity.prototype.authorize = function ( id ) {
+  if ( id == null ) return false;
 
+  this.id       = id;
 
-UserIdentity.prototype.authorize = function ( user ) {
-  if ( !user || user.id == undefined ) return false;
+  var self      = this;
+  var users_map = this.users_map;
 
-  this._authorized  = true;
-  this.user         = user;
+  this._.similar_users.get = function() {
+    return Object.values( users_map[ self.id ] );
+  }
 
-  var similar_identities = UserIdentity.with_same_user;
-  if ( !similar_identities[ user.id ] ) similar_identities[ user.id ] = {};
-  similar_identities[ user.id ][ this._session_id ] = this;
+  this._.all_clients.get = function() {
+    return self.similar_users.map( function( user ) {
+      return user.session.client;
+    } );
+  }
 
   return true;
 };
 
 
-UserIdentity.prototype.get_id = function () {
-  return this.user.id;
+UserIdentity.prototype.send = function ( data ) {
+  this.session.client.send( data );
 };
 
 
-UserIdentity.prototype.enum_similar_identities = function ( callback ) {
-  var similar_identities = UserIdentity.with_same_user;
-
-  var identities = similar_identities[ this.user.id ];
-  for ( var session_id in identities ) {
-    if ( this._session_id == session_id ) continue;
-
-    callback.call( identities[ session_id ] );
-  }
+UserIdentity.prototype.send_to_all_clients = function ( data, filter ) {
+  var users = filter ? this.similar_users.filter( filter ) : this.similar_users;
+  users.for_each( this.send, null, data );
 };
 
 
-UserIdentity.prototype.get_session_id = function () {
-  return this._session_id;
+UserIdentity.prototype.broadcast = function ( data, filter ) {
+  this.app.users.for_each(  );
 };

@@ -11,8 +11,23 @@ Client.prototype._init = function( params ) {
   this.super_._init( params );
 
   var ClientConnection = require( './client_connection' );
-  if ( !ClientConnection.is_instantiate( params.connector ) )
-    throw new Error( '`connector` is not instance of ClientConnection in Client._init' );
+  if ( !ClientConnection.is_instantiate( params.transport ) )
+    throw new Error( '`transport` is not instance of ClientConnection in Client._init' );
 
-  this.connector = params.connector;
+  this.transport = params.transport;
+};
+
+
+Client.prototype.get_cookie = function ( cookie_name ) {
+  return null;
+};
+
+
+Client.prototype.send = function ( data ) {
+  this.transport.send_response( this, data );
+};
+
+
+Client.prototype.broadcast = function () {
+  
 };

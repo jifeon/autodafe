@@ -7,13 +7,6 @@ function Session( params ) {
 }
 
 
-Session.cache = {};
-
-Session.get_by_id = function( id ) {
-  return this.cache[ id ] || null;
-};
-
-
 Session.prototype._init = function( params ) {
   this.super_._init( params );
 
@@ -26,10 +19,11 @@ Session.prototype._init = function( params ) {
 
   this.client               = params.client;
   this.id                   = params.id;
-  Session.cache[ this.id ]  = this;
+  this.is_active            = true;
 };
 
 
 Session.prototype.close = function () {
-  delete Session.cache[ this.id ];
+  this.is_active = false;
+  this.emit( 'close' );
 };
