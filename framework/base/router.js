@@ -111,12 +111,14 @@ Router.prototype.route = function ( route_path ) {
       'Controller or route rule "%s" is not found'.format( action.controller_name ), 'warning'
     );
 
+    args.unshift( action.action );
     try {
-      controller.run_action( action.action, args )
+      controller.run_action.apply( controller, args )
     } catch ( e ) {
       this.log( e );
       break;
     }
+    args.shift();
   }
 };
 

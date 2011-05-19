@@ -15,7 +15,7 @@ Controller.prototype._init = function ( params ) {
 
   if ( !params.name )
     throw new Error( 'Parameter `name` is required for Controller creation' );
-  this.name = params.name;
+  this._.name = params.name;
 
   this.default_action = 'index';
   this.views_path     = 'views';
@@ -44,30 +44,23 @@ Controller.prototype.deny_actions = function () {
 };
 
 
-Controller.prototype.run_action = function ( action, args ) {
+Controller.prototype.run_action = function ( action /*, arg1, arg2, ...*/ ) {
   action = action || this.default_action;
 
   if ( !action || !this._actions[ action ] || !this[ action ] )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
-  args = args || [];
+  var before_action_result = this.before_action.apply( this, arguments );
+  if ( before_action_result === false ) return false;
+
+  var args = before_action_result instanceof Array
+    ? before_action_result
+    : Array.prototype.slice.call( arguments, 1 );
+
+  this[ action ].apply( this, args );
+
   args.unshift( action );
-
-  var before_action_result = this.before_action.apply( this, args );
-  if ( before_action_result === false ) {
-    args.shift();
-    return false;
-  }
-
-  if ( before_action_result instanceof Array ) {
-    args.shift();
-    args = before_action_result;
-    args.unshift( action );
-  }
-
-  this[ action ].apply( this, args.slice( 1 ) );
   this.after_action.apply( this, args );
-  args.shift();
 };
 
 
