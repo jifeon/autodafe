@@ -7,5 +7,5 @@ function Post( params ) {
 }
 
 
-Post.table_name       = 'posts';
-Post.attribute_names  = [ 'title' ];
+Post.table_name           = 'posts';
+Post.safe_attribute_names = [ 'title' ];

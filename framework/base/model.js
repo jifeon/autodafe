@@ -21,7 +21,8 @@ Model.prototype.set_attribute = function ( name, value ) {
 
 
 Model.prototype.get_attribute = function ( name ) {
-  var attribute = this._attributes[ name ] || this[ name ] || null;
+  var attribute = this._attributes[ name ] != undefined ? this._attributes[ name ] : this[ name ];
+  if ( attribute == undefined ) attribute = null;
 
   var self = this;
   return typeof attribute == 'function' ? function() {
@@ -35,32 +36,18 @@ Model.prototype.clean_attributes = function () {
 };
 
 
-Model.prototype.get_attributes = function( table, names ) {
-  var attributes = Object.not_deep_clone( this._attributes );
-
-  table.get_column_names().forEach( function( column_name ) {
-
-    if ( this.hasOwnProperty( column_name ) )
-      attributes[ column_name ] = this[ column_name ];
-
-    if ( attributes[ column_name ] == undefined )
-      attributes[ column_name ] = null;
-
-  }, this );
-
-
+Model.prototype.get_attributes = function( names ) {
   if ( names instanceof Array ) {
 
     var attrs = {};
 
     names.forEach( function( name ){
-      attrs[ name ] = attributes[ name ] != undefined ? attributes[ name ] : null;
-    });
+      attrs[ name ] = this.get_attribute( name );
+    }, this );
 
     return attrs;
   }
-
-  return attributes;
+  else return Object.not_deep_clone( this._attributes );
 };
 
 
@@ -68,18 +55,18 @@ Model.prototype.set_attributes = function ( attributes ) {
   if ( !Object.isObject( attributes ) )
     throw new Error( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ) );
 
-  var attribute_names = this.get_attribute_names();
+  var attribute_names = this.get_safe_attribute_names();
 
   for ( var name in attributes ) {
     if ( attribute_names.indexOf( name ) != -1 ) this.set_attribute( name, attributes[ name ] );
     else {
-      this.log( 'ActiveRecord.set_attributes try to set unsafe parameter "%s"'.format( name ), 'warning' );
+      this.log( '%s.set_attributes try to set unsafe parameter "%s"'.format( this.class_name, name ), 'warning' );
       this.emit( 'set_unsafe_attribute', name, attributes[ name ] );
     }
   }
 };
 
 
-Model.prototype.get_attribute_names = function () {
-  return this.constructor.attribute_names || [];
+Model.prototype.get_safe_attribute_names = function () {
+  return this.constructor.safe_attribute_names || [];
 };

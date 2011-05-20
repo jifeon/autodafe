@@ -29,6 +29,35 @@ ActiveRecord.prototype.get_table = function ( callback ) {
 };
 
 
+ActiveRecord.prototype.get_attributes = function( table, names ) {
+  var attributes = Object.not_deep_clone( this._attributes );
+
+  table.get_column_names().forEach( function( column_name ) {
+
+    if ( this.hasOwnProperty( column_name ) )
+      attributes[ column_name ] = this[ column_name ];
+
+    if ( attributes[ column_name ] == undefined )
+      attributes[ column_name ] = null;
+
+  }, this );
+
+
+  if ( names instanceof Array ) {
+
+    var attrs = {};
+
+    names.forEach( function( name ){
+      attrs[ name ] = attributes[ name ] != undefined ? attributes[ name ] : null;
+    });
+
+    return attrs;
+  }
+
+  return attributes;
+};
+
+
 ActiveRecord.prototype.__wrap_to_get_table = function ( fun, option ) {
   var emitter = new Emitter;
   var self    = this;
