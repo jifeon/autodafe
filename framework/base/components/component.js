@@ -10,9 +10,8 @@ function Component( params ) {
 Component.prototype._init = function( params ) {
   this.super_._init( params );
 
-  if ( !params.name )
+  if ( typeof params.name != 'string' )
     throw new Error( 'Please set `name` for creating component' );
-
   this._.name = params.name;
 };
 

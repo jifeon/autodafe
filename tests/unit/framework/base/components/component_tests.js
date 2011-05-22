@@ -10,16 +10,19 @@ exports.get_batch = function( application, assert ) {
         });
       } );
     },
-    'normal component' : {
+    'normal component -' : {
       topic : function( app ) {
         return new Component({
           name : 'test',
           app  : app
         });
       },
-      'public properties' : {
-        '`name` is "test"' : function( component ){
-           assert.equal( component.name, 'test' );
+      'property `name` should be' : {
+        'equal "test"' : function( component ){
+          assert.equal( component.name, 'test' );
+        },
+        'read only' : function( component ){
+          assert.isReadOnly( component, 'name' );
         }
       },
       '`get` method' : function( component ){
