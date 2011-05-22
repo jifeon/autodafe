@@ -38,6 +38,7 @@ Application.prototype._init = function ( config ) {
 
   this.default_controller = this._config.default_controller || 'action';
   this.models_folder      = 'models';
+  this.controllers_folder = 'controllers';
 
   this._preload_components();
   this._init_core();
@@ -60,7 +61,7 @@ Application.prototype._init_core = function () {
   var router_cfg = this._config.router || {};
   router_cfg.app = this;
   this.router = new Router( router_cfg );
-  this.log( 'Core initialized', 'info' );
+  this.log( 'Core has initialized', 'info' );
 };
 
 

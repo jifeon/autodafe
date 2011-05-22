@@ -16,52 +16,44 @@ Router.prototype._init = function ( params ) {
 
   this._rules               = params.rules || {};
   this._controllers         = {};
-  this._controllers_folder  = 'controllers';
 
   this._collect_controllers();
 };
 
 
 Router.prototype._collect_controllers = function () {
-  var controllers_dir = path.join( this.app.base_dir, this._controllers_folder );
-  this.log( 'Collecting controllers in path: ' + controllers_dir, 'trace' );
+  var controllers_path = path.join( this.app.base_dir, this.app.controllers_folder );
+  this.log( 'Collecting controllers in path: ' + controllers_path, 'trace' );
 
-  var file;
-  var files = fs.readdirSync( controllers_dir );
+  var files = fs.readdirSync( controllers_path );
   for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
 
     try {
-      file            = files[f];
-      var file_path   = path.join( controllers_dir, file );
+      var file        = files[f];
+      var file_path   = path.join( controllers_path, file );
       var stat        = fs.statSync( file_path );
 
-      if ( !stat.isFile() ) {
-        continue;
-      }
+      if ( !stat.isFile() ) continue;
 
-      var controller = require( file_path );
-      if ( !( controller.prototype instanceof Controller ) ) throw "NOT_CONTROLLER";
-
-      var name = path.basename( file_path, '.js' );
-
-      this.log( 'Controller "%s" is added'.format( name ), 'trace' );
-      this._controllers[ name ] = new controller({
-        app   : this.app,
-        name  : name
-      });
+      var controller_class = require( file_path );
     }
-
     catch( e ) {
-      switch ( e ) {
-        case 'NOT_CONTROLLER':
-          this.log( '"%s" is not a controller'.format( file ), 'error' );
-          break;
-
-        default:
-          if ( file ) this.log( 'Error while including file "%s"'.format( file ), 'error' );
-          break;
-      }
+      this.log( e, 'warning' );
+      continue;
     }
+
+    if ( !Controller.is_instantiate( controller_class.prototype ) ) {
+      this.log( 'File in path `%s` is not a controller'.format( file_path ), 'warning' );
+      continue;
+    }
+
+    var name = path.basename( file_path, '.js' );
+
+    this.log( 'Controller "%s" is added'.format( name ), 'trace' );
+    this._controllers[ name ] = new controller_class({
+      app   : this.app,
+      name  : name
+    });
   }
 
   this.log( 'Controllers are included', 'info' );
@@ -69,57 +61,44 @@ Router.prototype._collect_controllers = function () {
 
 
 Router.prototype.route = function ( route_path ) {
-  this.log( 'route to ' + route_path, 'trace' );
+  this.log( 'Route to `%s`'.format( route_path ), 'trace' );
+
   var args = Array.prototype.splice.call( arguments, 1 );
-
-  var actions = [];
-
-  if ( route_path ) {
-    if ( this._rules ) {
-      route_path = this._rules[ route_path ] || route_path;
-    }
-
-    if ( !( route_path instanceof Array ) ) route_path = [ route_path ];
-    for ( var r = 0, r_ln = route_path.length; r < r_ln; r++ ) {
-      var route_rule = route_path[ r ].split('.');
-
-      if ( !route_rule.length )
-        return this.log(
-          'Incorrect route path: "%s". Route path must be formated as controller.action \
-           or specified in router.rules section of config.'.format( route_path ), 'error'
-        );
-
-      actions.push({
-        controller_name : route_rule[0],
-        action          : route_rule[1]
-      });
-    }
-  }
-  else {
-
-    actions.push({
-      controller_name : this.app.default_controller,
-      action          : null
-    });
-  }
-
-  for ( var a = 0, a_ln = actions.length; a < a_ln; a++ ) {
-    var action = actions[ a ];
-
-    var controller    = this._controllers[ action.controller_name ];
-    if ( !controller ) return this.log(
-      'Controller or route rule "%s" is not found'.format( action.controller_name ), 'warning'
+  this._get_actions( route_path ).for_each( function( action ){
+    var controller = this._controllers[ action.controller_name ];
+    if ( !controller ) throw new Error(
+      'Controller "%s" is not found'.format( action.controller_name )
     );
 
     args.unshift( action.action );
-    try {
-      controller.run_action.apply( controller, args )
-    } catch ( e ) {
-      this.log( e );
-      break;
-    }
+    controller.run_action.apply( controller, args )
     args.shift();
-  }
+  }, this );
+};
+
+
+Router.prototype._get_actions = function ( route_path ) {
+  if ( !route_path ) return [{
+    controller_name : this.app.default_controller,
+    action          : null
+  }];
+
+  if ( this._rules )                  route_path = this._rules[ route_path ] || route_path;
+  if ( !Array.isArray( route_path ) ) route_path = [ route_path ];
+
+  return route_path.map( function( path ){
+    var route_rule = path.split('.');
+
+    if ( !route_rule.length ) throw new Error(
+      'Incorrect route path: "%s". Route path should be formatted as controller.action \
+       or specified in router.rules section of configuration file.'.format( route_path )
+    );
+
+    return {
+      controller_name : route_rule[0],
+      action          : route_rule[1] || null
+    };
+  }, this );
 };
 
 
@@ -129,5 +108,5 @@ Router.prototype.get_controller = function ( name ) {
 
 
 Router.prototype.get_controllers = function () {
-  return this._controllers;
+  return Object.not_deep_clone( this._controllers );
 };

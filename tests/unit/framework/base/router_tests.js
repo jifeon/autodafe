@@ -42,7 +42,10 @@ exports.get_batch = function( application, assert ) {
       } );
 
       args_to_route.unshift( route );
-      router.route.apply( router, args_to_route );
+      if ( last_action_must_be_fired ) router.route.apply( router, args_to_route );
+      else assert.throws( function() {
+        router.route.apply( router, args_to_route );
+      } );
       args_to_route.shift();
 
       assert.equal( fired_actions_count, last_action_must_be_fired ? 2 : 1 );
@@ -56,13 +59,8 @@ exports.get_batch = function( application, assert ) {
     'instance test' : function( router ) {
       assert.instanceOf( router, Router );
     },
-    '`get_controller` method' : {
-      topic : function( router ) {
-        return router.get_controller('test');
-      },
-      'instance test' : function( test_controller ){
-        assert.instanceOf( test_controller, TestController );
-      }
+    '`get_controller` method' : function( router ){
+      assert.instanceOf( router.get_controller( 'test' ), TestController );
     },
     '`route` method' : {
       'sample single route'                       : single_route_test( 'test.test' ),
@@ -80,14 +78,14 @@ exports.get_batch = function( application, assert ) {
         return app;
       },
       'tests good controller in folder with bad controllers' : function( app ) {
-        var runned_action_in_good_controller = false;
+        var action_in_good_controller_has_run = false;
 
         app.on( 'good.test', function() {
-          runned_action_in_good_controller = true;
+          action_in_good_controller_has_run = true;
         } );
         app.router.route( 'good.test' );
 
-        assert.isTrue( runned_action_in_good_controller );
+        assert.isTrue( action_in_good_controller_has_run );
       },
       'only one controller must be included' : function( app ) {
         assert.equal( Object.keys( app.router.get_controllers() ).length, 1 );
