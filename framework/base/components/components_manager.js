@@ -3,15 +3,6 @@ var Component = require('components/component');
 var path      = require('path');
 var fs        = require('fs');
 
-var system_components = {
-  'web_sockets'        : require( '../../client_connections/web_sockets/web_sockets_server' ),
-  'users'              : require( '../../users/users_manager' ),
-  'db'                 : require( '../../db/db_controller' ),
-  'log_router'         : require( '../../logging/log_router' ),
-  'tests'              : require( '../../tests/test_component' ),
-  'mail'               : require( '../../mailing/mailer' )
-};
-
 module.exports = ComponentsManager.inherits( AppModule );
 
 
@@ -20,13 +11,22 @@ function ComponentsManager( params ) {
 }
 
 
+ComponentsManager.system_components = {
+  'web_sockets'        : require( '../../client_connections/web_sockets/web_sockets_server' ),
+  'users'              : require( '../../users/users_manager' ),
+  'db'                 : require( '../../db/db_controller' ),
+  'log_router'         : require( '../../logging/log_router' ),
+  'tests'              : require( '../../tests/test_component' ),
+  'mail'               : require( '../../mailing/mailer' )
+};
+
+
 ComponentsManager.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this._components              = params.components;
+  this._components              = params.components || {};
   this._loaded_components       = {};
   this._user_components         = null;
-  this._user_components_folder  = 'components';
 };
 
 
@@ -36,30 +36,30 @@ ComponentsManager.prototype.load_components = function () {
     this.load_component( component_name );
   }
 
-  for ( component_name in system_components ) {
+  for ( component_name in ComponentsManager.system_components ) {
     this.app.register_component( component_name );
   }
 };
 
 
-ComponentsManager.prototype.load_component = function ( component_name ) {
+ComponentsManager.prototype.load_component = function ( component_name, params ) {
   if ( this._loaded_components[ component_name ] ) return false;
 
   this.log( 'Load component "%s"'.format( component_name ), 'trace' );
-  var component_params = this._components[ component_name ];
-  if ( !component_params ) return false;
-
-  if ( typeof component_params != 'object' ) component_params = {};
-
-  var component_class = system_components[ component_name ];
-
-  if ( !component_class ) component_class = this.get_user_component( component_name );
-
-  if ( !component_class || !( component_class.prototype instanceof Component ) ) {
-    this.log( 'Try to load unknown component: "%s"'.format( component_name ), 'warning' );
+  var component_params = this._components[ component_name ] || params;
+  if ( !component_params ) {
+    this.log( 'Component `%s` has not loaded because it\'s not configured', 'warning' );
     return false;
   }
 
+  if ( typeof component_params != 'object' ) component_params = {};
+
+  var component_class = ComponentsManager.system_components[ component_name ];
+  if ( !component_class ) component_class = this.get_user_component( component_name );
+  if ( !component_class || !Component.is_instantiate( component_class.prototype ) ) throw new Error(
+    'Try to load unknown component: "%s"'.format( component_name )
+  );
+  
   component_params.name = component_name;
   component_params.app  = this.app;
 
@@ -71,7 +71,7 @@ ComponentsManager.prototype.load_component = function ( component_name ) {
 
 ComponentsManager.prototype.get_user_component = function ( component_name ) {
   if ( !this._user_components ) {
-    var components_path = path.join( this.app.base_dir, this._user_components_folder );
+    var components_path = path.join( this.app.base_dir, this.app.components_folder );
 
     this._user_components = {};
     if ( path.existsSync( components_path ) ) {

@@ -11,7 +11,7 @@ module.exports = {
     log_router          : {
       routes : {
         console : {
-          levels : [ 'warning', 'error' ]
+          levels : [ 'warning', 'error', 'info', 'trace' ]
         }
       }
     },
@@ -23,10 +23,6 @@ module.exports = {
 
     nested_user_component : {
       param : 43
-    },
-
-    hidden_component : {
-      param : 44
     }
   }
 }

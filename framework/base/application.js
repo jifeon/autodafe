@@ -39,6 +39,7 @@ Application.prototype._init = function ( config ) {
   this.default_controller = this._config.default_controller || 'action';
   this.models_folder      = 'models';
   this.controllers_folder = 'controllers';
+  this.components_folder  = 'components';
 
   this._preload_components();
   this._init_core();
@@ -106,24 +107,24 @@ Application.prototype.register_component = function ( component ) {
       ).format( name )
     );
 
-  Object.defineProperty( this, name, {
-    get : function() {
-      return component
-        ? component.get()
-        : this.log(
-          'Try to use component "%s" which is not included. \
-           To include component configure it in your config file'.format( name ),
-          'warning'
-        )
-    },
-    set : function( v ) {
-      this.log(
-        'Property "%s" in Application engaged for native autodafe\'s component. \
-         You can\'t set it to "%s"'.format( name, v ),
+  this._[ name ] = component;
+  this._[ name ].get= function() {
+    return component
+      ? component.get()
+      : this.log(
+        'Try to use component "%s" which is not included. \
+         To include component configure it in your config file'.format( name ),
         'warning'
-      );
-    }
-  } )
+      )
+  };
+
+  this._[ name ].set = function( v ) {
+    this.log(
+      'Property "%s" in Application engaged for native autodafe\'s component. \
+       You can\'t set it to "%s"'.format( name, v ),
+      'warning'
+    );
+  }
 };
 
 
