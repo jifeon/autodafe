@@ -1,0 +1,22 @@
+{
+  "name"          : "autodafe",
+  "description"   : "mvc framework for node with mysql orm, web sockets support and a lot of tasty buns",
+  "keywords"      : [ "mvc", "framework", "mysql", "orm", "websockets" ],
+  "version"       : "0.0.1",
+  "author"        : "Andrey Balakirev <balakirev.andrey@gmail.com>",
+  "contributors"  : [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
+  "main"          : "./framework/autodafe",
+  "repository"    : {
+    "type" : "git",
+    "url"  : "http://github.com/jifeon/node.autodafe.js.git"
+  },
+  "dependencies"  : {
+    "socket.io"             : ">=0.5.2",
+    "node-proxy"            : ">=0.4.0",
+    "colors"                : ">=0.3.0",
+    "vows"                  : ">=0.5.8",
+    "emailjs"               : ">=0.1.8",
+    "mysql-libmysqlclient"  : ">=1.2.3"
+  },
+  "engines"       : { "node": ">=0.3.0" }
+}
