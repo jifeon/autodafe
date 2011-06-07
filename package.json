@@ -16,7 +16,8 @@
     "colors"                : ">=0.3.0",
     "vows"                  : ">=0.5.8",
     "emailjs"               : ">=0.1.8",
-    "mysql-libmysqlclient"  : ">=1.2.3"
+    "mysql-libmysqlclient"  : ">=1.2.3",
+    "dust"                  : ">=0.3.0"
   },
   "engines"       : { "node": ">=0.3.0" }
 }
