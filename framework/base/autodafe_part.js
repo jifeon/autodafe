@@ -1,4 +1,4 @@
-var ProtectedValuesProxyHandler = require( 'lib/proxy_handlers/handlers/protected_values_proxy_handler' );
+var ProtectedValuesProxyHandler = require( 'lib/proxy_handlers/protected_values_proxy_handler' );
 
 module.exports = AutodafePart.inherits( process.EventEmitter );
 
