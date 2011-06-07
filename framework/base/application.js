@@ -5,7 +5,7 @@ var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
 var Component             = require('components/component');
-var ModelsProxyHandler    = require('lib/proxy/handlers/models_proxy_handler');
+var ModelsProxyHandler    = require('lib/proxy_handlers/handlers/models_proxy_handler');
 var AutodafePart          = require('autodafe_part');
 
 module.exports = Application.inherits( AutodafePart );
