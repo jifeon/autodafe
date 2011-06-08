@@ -14,7 +14,7 @@ Client.prototype._init = function( params ) {
   if ( !ClientConnection.is_instantiate( params.transport ) )
     throw new Error( '`transport` is not instance of ClientConnection in Client._init' );
 
-  this.transport = params.transport;
+  this._.transport = params.transport;
 };
 
 

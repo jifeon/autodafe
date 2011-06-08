@@ -94,13 +94,16 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
-        '../unit/framework/'
-//        '../unit/framework/base/'
+//        '../unit/framework/'
+        '../unit/framework/base',
+        '../unit/framework/client_connections'
 //        '../unit/framework/base/app_module_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
         'active_record_tests.js'
       ]
-    }
+    },
+
+    test_transport : 1
   }
 };
