@@ -17,7 +17,7 @@ MysqlConnection.prototype._init = function(params) {
     app           : this.app
   });
 
-  var mysql_client    = require('./node-mysql/mysql-libmysqlclient');
+  var mysql_client    = require('mysql-libmysqlclient');
   this._._connection  = mysql_client.createConnectionSync();
 
   var self = this;

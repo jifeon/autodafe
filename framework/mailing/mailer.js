@@ -1,5 +1,5 @@
 var Component = require('components/component');
-var email     = require('./emailjs.git/email');
+var email     = require('emailjs');
 var os        = require('os');
 
 module.exports = Mailer.inherits( Component );

@@ -131,7 +131,7 @@ Object.not_deep_clone = function( obj ) {
 }
 
 
-var InheritingProxyHandler = require( './proxy/handlers/inheriting_proxy_handler' );
+var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
 
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );

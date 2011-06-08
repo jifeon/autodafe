@@ -1,4 +1,4 @@
-var Proxy         = require( '../node-proxy/lib/node-proxy' );
+var Proxy         = require( 'node-proxy' );
 var ProxyHandler  = require('./proxy_handler');
 
 module.exports = FunctionProxyHandler.inherits( ProxyHandler );

@@ -1,3 +1,10 @@
+try {
+  var db = require('./db').db;
+}
+catch ( e ) {
+  throw new Error( 'Please copy file `' + __dirname + '/common_db.js` to `' + __dirname + '/db.js` and edit it for your current mysql connection' );
+}
+
 var config = module.exports = {
   base_dir    : __dirname + '/../',
   name        : 'TestApp',
@@ -45,7 +52,7 @@ var config = module.exports = {
 
 //    web_sockets         : true,
 //    users               : true,
-    db                  : require('./db').db,
+    db                  : db,
 
     log_router          : {
 
@@ -87,8 +94,8 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
-//        '../unit/framework/'
-        '../unit/framework/base/'
+        '../unit/framework/'
+//        '../unit/framework/base/'
 //        '../unit/framework/base/app_module_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path

@@ -1,4 +1,4 @@
-var io                = require('./Socket.IO');
+var io                = require('socket.io');
 var http              = require('http');
 var ClientConnection  = require('../client_connection');
 var WebSocketsClient  = require('./web_sockets_client');

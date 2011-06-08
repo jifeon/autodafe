@@ -8,7 +8,7 @@ function ConsoleLogRoute( params ) {
 
 
 ConsoleLogRoute.prototype._init = function( params ) {
-  require('./color/colors');
+  require('colors');
 
   this._level2style = {
     info    : 'blue',

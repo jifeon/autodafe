@@ -15,7 +15,7 @@ function TestComponent( params ) {
 TestComponent.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this.vows       = require('./vows/lib/vows');
+  this.vows       = require('vows');
   this.paths      = params.paths    || [];
   this.exclude    = params.exclude  || [];
   this.suite      = this.vows.describe( 'Autodafe tests' );
