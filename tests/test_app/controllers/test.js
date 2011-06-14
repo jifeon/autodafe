@@ -4,7 +4,7 @@ module.exports = TestController.inherits( Controller );
 
 function TestController( params ) {
   this._init( params );
-  this.allow_actions( 'test', 'not_existed_test_action', 'connect_client' );
+  this.allow_actions( 'test', 'ws_test', 'not_existed_test_action', 'connect_client' );
 
   // log_routes exists here only if it is preloaded
   process.emit( 'Preloaded logger component', this.app.log_router );
@@ -20,6 +20,11 @@ TestController.prototype.index = function () {
 TestController.prototype.test = function () {
   this.emit( 'test action', arguments );
   this.app.emit( 'test.test', arguments );
+};
+
+
+TestController.prototype.ws_test = function () {
+  this.emit( 'ws_test', arguments );
 };
 
 

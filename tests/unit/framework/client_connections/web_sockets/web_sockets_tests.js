@@ -38,12 +38,12 @@ exports.get_batch = function( application, assert ) {
       topic : function( ws ){
         var emitter = new process.EventEmitter;
 
-        test_controller.on( 'test action', function( args ) {
+        test_controller.on( 'ws_test', function( args ) {
           emitter.emit('success', args );
         } );
 
         ws_client.send({
-          action : "test.test",
+          action : "test.ws_test",
           params : params
         });
 
