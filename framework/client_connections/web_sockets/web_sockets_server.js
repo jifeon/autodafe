@@ -16,6 +16,8 @@ WebSocketsServer.prototype._init = function ( params ) {
   this._io      = null;
   this._server  = null;
 
+  this._.port   = params.port || 8080;
+
   var self = this;
   this.app.on( 'run', function() {
     self.run();
@@ -25,13 +27,14 @@ WebSocketsServer.prototype._init = function ( params ) {
 
 WebSocketsServer.prototype.run = function () {
   this._server = http.createServer();
-  this._server.listen( 8080 );
+  this._server.listen( this.port );
   
   this._io = io.listen( this._server );
 
   var self = this;
   this._io.on( 'connection', function( client ) {
     self.connect_client( new WebSocketsClient({
+      app       : self.app,
       ws_client : client,
       transport : self
     }), client.sessionId );
@@ -40,9 +43,10 @@ WebSocketsServer.prototype.run = function () {
 
 
 WebSocketsServer.prototype.receive_request = function ( message, session ) {
-  var data = JSON.parse( message );
-
-  if ( !data ) {
+  try {
+    var data = JSON.parse( message );
+  }
+  catch ( e ) {
     return this.log( 'Message: "%s" is not a JSON'.format( message ), 'warning' );
   }
 

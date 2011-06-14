@@ -26,8 +26,3 @@ Client.prototype.get_cookie = function ( cookie_name ) {
 Client.prototype.send = function ( data ) {
   this.transport.send_response( this, data );
 };
-
-
-Client.prototype.broadcast = function () {
-  
-};

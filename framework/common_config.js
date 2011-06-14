@@ -21,7 +21,9 @@ var config = module.exports = {
 
   components : {
 
-    web_sockets         : true,
+    web_sockets         : {
+      port : 8080
+    },
     users               : true,
 
     db                  : {
