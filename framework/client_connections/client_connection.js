@@ -8,6 +8,20 @@ function ClientConnection( params ) {
 }
 
 
+ClientConnection.prototype._init = function ( params ) {
+  this.super_._init( params );
+
+  var self = this;
+  this.app.on( 'run', function() {
+    self.run();
+  } );
+
+  this.app.on( 'close', function() {
+    self.close();
+  } );
+};
+
+
 ClientConnection.prototype.connect_client = function ( client, session_id ) {
   var self    = this;
   var session = this.app.create_session( session_id, client );
@@ -26,6 +40,8 @@ ClientConnection.prototype.connect_client = function ( client, session_id ) {
 
 ClientConnection.prototype.receive_request = function ( request ) {};
 ClientConnection.prototype.send_response = function ( client, data ) {};
+ClientConnection.prototype.run = function () {};
+ClientConnection.prototype.close = function () {};
 
 
 ClientConnection.prototype.disconnect_client = function ( client, session ) {

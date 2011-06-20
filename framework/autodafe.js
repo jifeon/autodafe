@@ -14,9 +14,10 @@ var Autodafe = global.autodafe = module.exports = new function() {
 
   process.on( 'exit', function() {
     var shown_some_log = false;
+    var instance, i, i_ln;
 
-    for ( var i = 0, i_ln = Application.instances.length; i < i_ln; i++ ) {
-      var instance = Application.instances[i];
+    for ( i = 0, i_ln = Application.instances.length; i < i_ln; i++ ) {
+      instance = Application.instances[i];
       if ( instance.log_router && instance.log_router.get_route('console') ) {
         shown_some_log = true;
         break;
@@ -32,5 +33,9 @@ var Autodafe = global.autodafe = module.exports = new function() {
       Application.instance.logger.messages.forEach( function( message ) {
         console.log( '%s: "%s" in module "%s"', message.level, message.text, message.module );
       } );
+
+    Application.instances.forEach( function( app ) {
+      app.close();
+    } );
   } );
 };

@@ -158,3 +158,8 @@ Application.prototype.create_session = function ( id, client ) {
 
   return session;
 };
+
+
+Application.prototype.close = function () {
+  this.emit( 'close' );
+};

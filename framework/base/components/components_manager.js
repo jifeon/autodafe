@@ -17,7 +17,8 @@ ComponentsManager.system_components = {
   'db'                 : require( '../../db/db_controller' ),
   'log_router'         : require( '../../logging/log_router' ),
   'tests'              : require( '../../tests/test_component' ),
-  'mail'               : require( '../../mailing/mailer' )
+  'mail'               : require( '../../mailing/mailer' ),
+  'http'               : require( '../../client_connections/http/http_server' )
 };
 
 

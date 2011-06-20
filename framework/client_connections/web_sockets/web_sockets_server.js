@@ -15,11 +15,6 @@ WebSocketsServer.prototype._init = function ( params ) {
 
   this._io      = null;
   this._server  = null;
-
-  var self = this;
-  this.app.on( 'run', function() {
-    self.run();
-  } );
 };
 
 
@@ -36,6 +31,11 @@ WebSocketsServer.prototype.run = function () {
       transport : self
     }), client.sessionId );
   } );
+};
+
+
+WebSocketsServer.prototype.close = function () {
+  if ( this._server ) this._server.close();
 };
 
 
