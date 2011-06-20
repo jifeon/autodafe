@@ -13,17 +13,18 @@ Logger.prototype._init = function( params ) {
   this.super_._init();
   
   this.default_module_name  = 'Application';
+  this.max_messages         = 1024;
+  this.splice_count         = 100;
+  this.latest_trace_count   = 20;
+
   this._.messages           = [];
 
-  this._max_messages        = 1024;
-  this._splice_count        = 100;
-  this._latest_trace_count  = 20;
   this._new_message_count   = 0;
 
   var self = this;
   this.messages.__defineGetter__( 'latest_trace', function() {
     var messages = [];
-    for ( var m = this.length - 1; m >= 0 && messages.length < self._latest_trace_count; m-- ) {
+    for ( var m = this.length - 1; m >= 0 && messages.length < self.latest_trace_count; m-- ) {
       var message = this[ m ];
       if ( message.level != 'error' ) {
         message = new Message( message );
@@ -48,14 +49,14 @@ Logger.prototype.log = function ( text, level, module ) {
   this.emit( 'log', message );
 
   this._new_message_count++;
-  if ( messages_count >= this._max_messages ) this.flush();
+  if ( messages_count >= this.max_messages ) this.flush();
 };
 
 
 Logger.prototype.flush = function () {
-  if ( this._new_message_count >= this._max_messages ) {
+  if ( this._new_message_count >= this.max_messages ) {
     this.emit( 'flush', this.messages );
     this._new_message_count = 0;
   }
-  this.messages.splice( 0, this._splice_count );
+  this.messages.splice( 0, this.splice_count );
 };

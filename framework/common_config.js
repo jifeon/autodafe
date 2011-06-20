@@ -62,10 +62,11 @@ var config = module.exports = {
     },
 
     tests : {
-      directory : false,
-      files : [
-        'unit/framework/base/application_tests'
-        //...
+      paths : [      // base_dir + path
+        '../unit/framework/'
+      ],
+      exclude : [    // may be regexp or string which will be searched in path
+        'active_record_tests.js'
       ]
     },
 
