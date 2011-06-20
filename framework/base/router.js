@@ -61,7 +61,7 @@ Router.prototype._collect_controllers = function () {
 
 
 Router.prototype.route = function ( route_path ) {
-  this.log( 'Route to `%s`'.format( route_path ), 'trace' );
+  this.log( 'Route to `%s`'.format( route_path ? route_path : 'default controller with default action' ), 'trace' );
 
   var args = Array.prototype.splice.call( arguments, 1 );
   this._get_actions( route_path ).for_each( function( action ){

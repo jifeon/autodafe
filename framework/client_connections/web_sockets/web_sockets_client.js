@@ -27,10 +27,3 @@ WebSocketsClient.prototype._init = function( params ) {
 WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
   return cookie.read( this.ws_client.request.headers.cookie, cookie_name );
 };
-
-
-//WebSocketsUserIdentity.prototype.broadcast = function ( controller, action, params ) {
-//  this.enum_similar_identities( function() {
-//    this.send( controller, action, params );
-//  } );
-//};

@@ -14,7 +14,7 @@ Client.prototype._init = function( params ) {
   if ( !ClientConnection.is_instantiate( params.transport ) )
     throw new Error( '`transport` is not instance of ClientConnection in Client._init' );
 
-  this.transport = params.transport;
+  this._.transport = params.transport;
 };
 
 
@@ -25,9 +25,4 @@ Client.prototype.get_cookie = function ( cookie_name ) {
 
 Client.prototype.send = function ( data ) {
   this.transport.send_response( this, data );
-};
-
-
-Client.prototype.broadcast = function () {
-  
 };
