@@ -27,7 +27,9 @@ HTTPServer.prototype.run = function () {
       response  : response
     });
 
-    console.log( request.headers );
+    if ( !client.session_id ) client.session_id = String.unique();
+
+    self.connect_client();
   } );
 
   this._server.listen( this.port );
@@ -37,3 +39,5 @@ HTTPServer.prototype.run = function () {
 HTTPServer.prototype.close = function () {
   if ( this._server ) this._server.close();
 };
+
+

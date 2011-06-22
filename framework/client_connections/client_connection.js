@@ -34,7 +34,7 @@ ClientConnection.prototype.connect_client = function ( client, session_id ) {
     self.disconnect_client( client, session );
   } );
 
-  this.app.router.route( this.app.default_controller + '.connect_client', session );
+  this.app.router.route( this.app.default_controller + '.connect_client', client, session );
 };
 
 
