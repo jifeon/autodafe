@@ -41,3 +41,8 @@ HTTPServer.prototype.close = function () {
 };
 
 
+HTTPServer.prototype.send_response = function ( client, data ) {
+  this.log( 'Send message to http client ( id=%s )'.format( client.session_id ) );
+
+  client.response.end( data, 'utf8' );
+};

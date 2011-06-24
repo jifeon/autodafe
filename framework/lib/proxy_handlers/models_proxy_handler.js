@@ -32,6 +32,7 @@ ModelsProxyHandler.prototype.get = function ( receiver, name ) {
   }
 
   this.target[ name ] = this.get_by_class( model );
+  
   return this.target[ name ];
 };
 

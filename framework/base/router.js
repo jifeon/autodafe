@@ -69,7 +69,6 @@ Router.prototype.route = function ( route_path ) {
     if ( !controller ) throw new Error(
       'Controller or rule "%s" is not found'.format( action.controller_name )
     );
-
     args.unshift( action.action );
     controller.run_action.apply( controller, args )
     args.shift();
