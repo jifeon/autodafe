@@ -11,6 +11,7 @@ UserIdentity.prototype._init = function( params ) {
   this.super_._init( params );
   var self = this;
 
+  var Session = require('session');
   if ( !Session.is_instantiate( params.session ) )
     throw new Error( '`session` should be instance of Session in UserIdentity._init' );
 
