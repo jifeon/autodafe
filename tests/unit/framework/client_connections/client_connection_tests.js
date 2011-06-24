@@ -15,8 +15,8 @@ exports.get_batch = function( application, assert ) {
 
       var event_session = null;
 
-      application.router.get_controller( 'test' ).on( 'connect_client', function( client_session ) {
-        event_session = client_session;
+      application.router.get_controller( 'test' ).on( 'connect_client', function( client, session ) {
+        event_session = session;
       } );
 
       transport.connect_client( client, session_id );

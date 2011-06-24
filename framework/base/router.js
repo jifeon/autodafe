@@ -67,7 +67,7 @@ Router.prototype.route = function ( route_path ) {
   this._get_actions( route_path ).for_each( function( action ){
     var controller = this._controllers[ action.controller_name ];
     if ( !controller ) throw new Error(
-      'Controller "%s" is not found'.format( action.controller_name )
+      'Controller or rule "%s" is not found'.format( action.controller_name )
     );
     args.unshift( action.action );
     controller.run_action.apply( controller, args )
