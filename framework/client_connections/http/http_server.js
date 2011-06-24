@@ -29,7 +29,7 @@ HTTPServer.prototype.run = function () {
 
     if ( !client.session_id ) client.session_id = String.unique();
 
-    self.connect_client();
+    self.connect_client( client, client.session_id );
   } );
 
   this._server.listen( this.port );
@@ -41,3 +41,8 @@ HTTPServer.prototype.close = function () {
 };
 
 
+HTTPServer.prototype.send_response = function ( client, data ) {
+  this.log( 'Send message to http client ( id=%s )'.format( client.session_id ) );
+
+  client.response.end( data, 'utf8' );
+};
