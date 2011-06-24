@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var Autodafe          = require( 'autodafe' );
+  var Autodafe          = global.autodafe;
   var LogRouter         = require( 'logging/log_router' );
   var ConsoleRoute      = require( 'logging/console_log_route' );
   var UsersManager      = require( 'users/users_manager' );

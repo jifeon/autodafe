@@ -29,7 +29,7 @@ HTTPServer.prototype.run = function () {
 
     if ( !client.session_id ) client.session_id = String.unique();
 
-    self.connect_client();
+    self.connect_client( client, client.session_id );
   } );
 
   this._server.listen( this.port );
