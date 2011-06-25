@@ -51,7 +51,7 @@ WebSocketsServer.prototype.receive_request = function ( message, session ) {
   }
 
   this.log( 'WebSockets message has been received. session_id = "%s"'.format( session.id ) );
-  this.app.router.route( data.action, session, data.params );
+  this.app.router.route( data.action, data.params, session.client, session );
 };
 
 

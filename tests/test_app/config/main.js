@@ -51,7 +51,7 @@ var config = module.exports = {
   components : {
 
     web_sockets         : {
-      port : 8080
+      port : 3000
     },
 //    users               : true,
     db                  : db,
@@ -104,8 +104,6 @@ var config = module.exports = {
       exclude : [    // may be regexp or string which will be searched in path
         'active_record_tests.js'
       ]
-    },
-
-    test_transport : 1
+    }
   }
 };

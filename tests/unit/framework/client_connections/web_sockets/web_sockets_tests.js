@@ -51,11 +51,11 @@ exports.get_batch = function( application, assert ) {
       },
       'success' : function( err, args ){
         assert.isNull( err );
-        assert.deepEqual( args[1], params );
+        assert.deepEqual( args[0], params );
       },
       'send message to client' : {
         topic : function( args, ws ) {
-          session = args[0];
+          session = args[2];
           var emitter = new process.EventEmitter;
 
           ws_client.on( 'message', function( message ) {

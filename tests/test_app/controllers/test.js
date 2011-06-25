@@ -51,6 +51,6 @@ TestController.prototype.after_action = function () {
 };
 
 
-TestController.prototype.connect_client = function ( session ) {
-  this.emit( 'connect_client', session );
+TestController.prototype.connect_client = function ( client, session ) {
+  this.emit( 'connect_client', client, session );
 };
