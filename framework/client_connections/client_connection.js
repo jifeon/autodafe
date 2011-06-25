@@ -38,7 +38,7 @@ ClientConnection.prototype.connect_client = function ( client, session_id ) {
 };
 
 
-ClientConnection.prototype.receive_request = function ( request ) {};
+ClientConnection.prototype.receive_request = function ( request, session ) {};
 ClientConnection.prototype.send_response = function ( client, data ) {};
 ClientConnection.prototype.run = function () {};
 ClientConnection.prototype.close = function () {};

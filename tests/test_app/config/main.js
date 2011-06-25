@@ -55,7 +55,9 @@ var config = module.exports = {
     },
 //    users               : true,
     db                  : db,
-//    http                : true,
+    http                : {
+      port : 8080
+    },
 
     log_router          : {
 

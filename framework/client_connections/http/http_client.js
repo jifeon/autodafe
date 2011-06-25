@@ -20,15 +20,19 @@ HTTPClient.prototype._init = function( params ) {
     throw new Error( '`response` should be instance of http.ServerResponse in HTTPClient.init' );
   this._.response = params.response;
 
-  this.process_request();
+  var self = this;
+  process.nextTick( function() {
+    self.process_request();
+  } );
 };
 
 
 HTTPClient.prototype.process_request = function() {
   var parsed_url = url.parse( this.request.url );
 
-  var route = parsed_url.pathname.split('/');
+  var action = parsed_url.pathname.substr(1).replace( /\//g, '.' );
   this.emit( 'request', {
-
+    action : action,
+    params : {}
   } );
 };

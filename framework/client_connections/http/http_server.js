@@ -46,3 +46,9 @@ HTTPServer.prototype.send_response = function ( client, data ) {
 
   client.response.end( data, 'utf8' );
 };
+
+
+HTTPServer.prototype.receive_request = function ( data, session ) {
+  this.log( 'HTTP message has been received. session_id = "%s"'.format( session.id ) );
+  this.app.router.route( data.action, data.params, session.client, session );
+};
