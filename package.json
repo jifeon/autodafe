@@ -12,13 +12,13 @@
   },
   "dependencies"  : {
     "socket.io"             : ">=0.5.2",
+    "socket.io-client"      : ">=0.7.2",
     "node-proxy"            : ">=0.4.0",
     "colors"                : ">=0.3.0",
     "vows"                  : ">=0.5.8",
     "emailjs"               : ">=0.1.8",
     "mysql-libmysqlclient"  : ">=1.2.3",
-    "dust"                  : ">=0.3.0",
-    "websocket-client"      : ">=1.0.0"
+    "dust"                  : ">=0.3.0"
   },
   "engines"       : { "node": ">=0.3.0" }
 }

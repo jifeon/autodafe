@@ -102,7 +102,8 @@ var config = module.exports = {
 //        '../unit/framework/base/app_module_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
-        'active_record_tests.js'
+        'active_record_tests',
+        'web_socket'
       ]
     }
   }

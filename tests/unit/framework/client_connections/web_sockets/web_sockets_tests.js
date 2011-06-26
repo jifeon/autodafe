@@ -1,6 +1,6 @@
 exports.get_batch = function( application, assert ) {
   var WebSocketsServer = require('client_connections/web_sockets/web_sockets_server');
-  var SocketIOClient   = require('lib/socket.io_client');
+  var SocketIOClient   = require('socket.io-client');
 
   var ws_client,
       session;
@@ -23,9 +23,7 @@ exports.get_batch = function( application, assert ) {
           emitter.emit('success', true);
         } );
 
-        ws_client = new SocketIOClient({
-          app : application
-        });
+        ws_client = SocketIOClient.connect( 'localhost:' + application.web_sockets.port );
 
         return emitter;
       },

@@ -1,12 +1,16 @@
 exports.get_batch = function( application, assert ) {
-  var Client = require( 'client_connections/client' );
-  var Session = require( 'session' );
+  var Client            = require( 'client_connections/client' );
+  var ClientConnection  = require( 'client_connections/client_connection' );
+  var Session           = require( 'session' );
 
   var session_id = 'client_connection_test_session';
   var client     = null;
 
   return {
-    topic : application.test_transport,
+    topic : new ClientConnection({
+      app   : application,
+      name  : 'test_transport'
+    }),
     'connect client' : function( transport ){
       client = new Client({
         transport : transport,
@@ -15,11 +19,11 @@ exports.get_batch = function( application, assert ) {
 
       var event_session = null;
 
-      application.router.get_controller( 'test' ).on( 'connect_client', function( client, session ) {
+      application.router.get_controller( 'test' ).on( 'connect_client', function( client ) {
         event_session = session;
       } );
 
-      transport.connect_client( client, session_id );
+      transport.connect_client( client );
 
       assert.instanceOf( event_session, Session );
       assert.equal( event_session.id, session_id );
