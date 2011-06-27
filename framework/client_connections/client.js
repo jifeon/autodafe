@@ -37,7 +37,7 @@ Client.prototype.get_cookie = function ( cookie_name ) {
 
 
 Client.prototype.send = function ( data ) {
-  this.log( 'Send message to %s ( session id=%s )'.format( this.class_name, this.session_id ) );
+  this.log( 'Send message to %s ( session id=%s )'.format( this.class_name, this.session.id ) );
 
   this.emit( 'send', data );
 };

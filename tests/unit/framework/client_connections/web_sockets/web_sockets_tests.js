@@ -60,7 +60,7 @@ exports.get_batch = function( application, assert ) {
             emitter.emit( 'success', message );
           } );
 
-          ws.send_response( session.client, params );
+          ws._send_response( session.client, params );
 
           return emitter;
         },

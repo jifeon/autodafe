@@ -1,6 +1,7 @@
 var Client = require('client_connections/client');
 var http   = require('http');
-var url    = require('url');
+var cookie = require('lib/cookie');
+
 
 module.exports = HTTPClient.inherits( Client );
 
@@ -10,9 +11,7 @@ function HTTPClient( params ) {
 
 
 HTTPClient.prototype._init = function( params ) {
-  this.super_._init( params );
-
-  if ( !params.request )
+  if ( !params || !params.request )
     throw new Error( '`request` should be instance of http.ServerRequest in HTTPClient.init' );
   this._.request = params.request;
 
@@ -20,19 +19,51 @@ HTTPClient.prototype._init = function( params ) {
     throw new Error( '`response` should be instance of http.ServerResponse in HTTPClient.init' );
   this._.response = params.response;
 
+  this.super_._init( params );
+};
+
+
+HTTPClient.prototype.init_events = function () {
+  this.super_.init_events();
+
+  var listener = function() {
+    this.emit( 'disconnect' );
+  }
+
+  this.request.once( 'close', listener );
+  this.request.once( 'end',   listener );
+
   var self = this;
   process.nextTick( function() {
-    self.process_request();
+    self.emit( 'request', self.request.url );
   } );
 };
 
 
-HTTPClient.prototype.process_request = function() {
-  var parsed_url = url.parse( this.request.url );
+HTTPClient.prototype.get_session_id = function () {
+  var sid = this.get_cookie( 'autodafe_sid' );
 
-  var action = parsed_url.pathname.substr(1).replace( /\//g, '.' );
-  this.emit( 'request', {
-    action : action,
-    params : {}
-  } );
+  if ( !sid ) {
+    sid = String.unique();
+    this.set_cookie( 'autodafe_sid', sid );
+  }
+
+  return sid;
+};
+
+
+HTTPClient.prototype.get_cookie = function ( name ) {
+  return cookie.read( this.request.headers.cookie, name );
+};
+
+
+HTTPClient.prototype.set_cookie = function ( name, value ) {
+
+};
+
+
+HTTPClient.prototype.send = function ( data ) {
+  this.super_.send( data );
+
+  this.response.end( data, 'utf8' );
 };

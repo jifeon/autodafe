@@ -25,22 +25,22 @@ ClientConnection.prototype.connect_client = function ( client ) {
   var self = this;
 
   client.on( 'request', function( request ) {
-    self.receive_request( request, client );
+    self._receive_request( request, client );
   } );
 
   client.on( 'disconnect', function() {
-    self.disconnect_client( client );
+    self._disconnect_client( client );
   } );
 
   client.on( 'send', function( data ) {
-    self.send_response( data, client );
+    self._send_response( data, client );
   } );
 
   this.app.router.route( this.app.default_controller + '.connect_client', client );
 };
 
 
-ClientConnection.prototype.receive_request = function ( data, client ) {
+ClientConnection.prototype._receive_request = function ( data, client ) {
   this.emit( 'receive_request', data );
 
   this.log( 'Message has been received. session_id = "%s"'.format( client.session.id ) );
@@ -48,12 +48,12 @@ ClientConnection.prototype.receive_request = function ( data, client ) {
 };
 
 
-ClientConnection.prototype.send_response = function ( data, client ) {
+ClientConnection.prototype._send_response = function ( data, client ) {
   this.emit( 'send_response', client, data );
 };
 
 
-ClientConnection.prototype.disconnect_client = function ( client ) {
+ClientConnection.prototype._disconnect_client = function ( client ) {
   this.emit( 'disconnect_client', client );
 };
 

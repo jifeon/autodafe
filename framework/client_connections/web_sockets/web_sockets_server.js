@@ -40,7 +40,7 @@ WebSocketsServer.prototype.close = function () {
 };
 
 
-WebSocketsServer.prototype.receive_request = function ( message, client ) {
+WebSocketsServer.prototype._receive_request = function ( message, client ) {
   try {
     var data = JSON.parse( message );
   }
@@ -48,5 +48,5 @@ WebSocketsServer.prototype.receive_request = function ( message, client ) {
     return this.log( 'Message "%s" is not a JSON'.format( message ), 'warning' );
   }
 
-  this.super_.receive_request( data, client );
+  this.super_._receive_request( data, client );
 };

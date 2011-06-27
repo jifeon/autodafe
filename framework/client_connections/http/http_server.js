@@ -1,6 +1,7 @@
 var ClientConnection = require('client_connections/client_connection');
 var HTTPClient       = require('client_connections/http/http_client');
 var http             = require('http');
+var url              = require('url');
 
 module.exports = HTTPServer.inherits( ClientConnection );
 
@@ -19,17 +20,14 @@ HTTPServer.prototype._init = function( params ) {
 
 HTTPServer.prototype.run = function () {
   var self = this;
-  this._server = http.createServer( function( request, response ) {
-    var client = new HTTPClient({
+  this._server = global.autodafe.get_server( this.port );
+  this._server.on( 'request', function( request, response ) {
+    self.connect_client( new HTTPClient({
       app       : self.app,
       transport : self,
       request   : request,
       response  : response
-    });
-
-    if ( !client.session_id ) client.session_id = String.unique();
-
-    self.connect_client( client, client.session_id );
+    }) );
   } );
 
   this._server.listen( this.port );
@@ -41,14 +39,14 @@ HTTPServer.prototype.close = function () {
 };
 
 
-HTTPServer.prototype.send_response = function ( client, data ) {
-  this.log( 'Send message to http client ( id=%s )'.format( client.session_id ) );
+HTTPServer.prototype._receive_request = function ( url_str, client ) {
+  var parsed_url = url.parse( url_str );
 
-  client.response.end( data, 'utf8' );
-};
+  var action = parsed_url.pathname.substr(1).replace( /\//g, '.' );
+  var data = {
+    action : action,
+    params : {}
+  };
 
-
-HTTPServer.prototype.receive_request = function ( data, session ) {
-  this.log( 'HTTP message has been received. session_id = "%s"'.format( session.id ) );
-  this.app.router.route( data.action, data.params, session.client, session );
+  this.super_._receive_request( data, client );
 };

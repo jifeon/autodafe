@@ -81,7 +81,7 @@ Controller.prototype.render = function ( view, params, callback ) {
 };
 
 
-Controller.prototype.send_response = function ( view, params, session, callback ) {
+Controller.prototype._send_response = function ( view, params, session, callback ) {
   callback = callback || this.default_callback;
 
   this.render( view, params, function( e, data ) {
