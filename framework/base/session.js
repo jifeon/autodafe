@@ -20,7 +20,10 @@ Session.prototype._init = function( params ) {
 
 
 Session.prototype.add_client = function ( client ) {
-  if ( ~this.clients.indexOf( client ) ) return false;
+  if ( ~this.clients.indexOf( client ) ) {
+    this.log( 'Try to add duplicate client', 'warning' );
+    return false;
+  }
 
   var Client = require( 'client_connections/client' );
   if ( !Client.is_instantiate( client ) )

@@ -1,5 +1,4 @@
 var Component         = require( 'components/component' );
-var WebSocketsServer  = require( 'client_connections/web_sockets/web_sockets_server' );
 var UserIdentity      = require( './user_identity' );
 
 module.exports = UsersManager.inherits( Component );
@@ -52,8 +51,10 @@ UsersManager.prototype.for_each = function ( callback ) {
 
 
 UsersManager.prototype._create_user_identity = function ( session ) {
-  if ( !session.is_active )
-    return this.log( 'Can\'t create UserIdentity for closed session', 'warning' );
+  if ( !session.is_active ) {
+    this.log( 'Can\'t create UserIdentity for closed session', 'warning' );
+    return false;
+  }
 
   var users = this._users;
   if ( users.by_session_id[ session.id ] ) {
@@ -88,6 +89,7 @@ UsersManager.prototype._remove_user_identity = function ( user ) {
   var users = this._users;
 
   delete users.by_session_id[ user.session.id ];
+
   if ( user.is_guest ) this._remove_user_from_guest( user );
   else delete users.by_id[ user.id ][ user.session.id ];
 };
