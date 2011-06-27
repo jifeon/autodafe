@@ -24,7 +24,19 @@ var config = module.exports = {
     web_sockets         : {
       port : 8080
     },
-    users               : true,
+
+    users               : {
+      roles : [ 'guest', 'user', 'moderator', 'admin' ],
+      // По умолчанию ниодна роль не имеет права ни на что.
+      // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
+      // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
+      possibilities : {
+        guest     : [],
+        user      : [],
+        moderator : [ 'view' ],
+        admin     : [ 'view', 'create', 'edit', 'remove' ]
+      }
+    },
 
     db                  : {
       type : 'mysql',
