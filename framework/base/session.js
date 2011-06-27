@@ -12,14 +12,41 @@ Session.prototype._init = function( params ) {
 
   if ( typeof params.id == 'undefined' )
     throw new Error( 'Try to create session without id' );
-  this._.id = params.id;
+
+  this._.id         = params.id;
+  this._.clients    = [];
+  this._.is_active  = true;
+};
+
+
+Session.prototype.add_client = function ( client ) {
+  if ( ~this.clients.indexOf( client ) ) {
+    this.log( 'Try to add duplicate client', 'warning' );
+    return false;
+  }
 
   var Client = require( 'client_connections/client' );
-  if ( !Client.is_instantiate( params.client ) )
-    throw new Error( '`client` is not instance of Client in Session._init' );
-  this._.client = params.client;
+  if ( !Client.is_instantiate( client ) )
+    throw new Error( '`client` is not instance of Client in Session.add_client' );
 
-  this._.is_active = true;
+  this.clients.push( client );
+
+  var self = this;
+  client.once( 'disconnect', function(){
+    self.remove_client( client );
+  } );
+
+  return true;
+};
+
+
+Session.prototype.remove_client = function ( client ) {
+  var cid = this.clients.indexOf( client );
+  if ( cid == -1 ) return;
+
+  this.clients.splice( cid, 1 );
+  
+  if ( this.clients.length ) this.close();
 };
 
 

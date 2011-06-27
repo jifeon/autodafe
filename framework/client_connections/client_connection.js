@@ -1,5 +1,4 @@
 var Component = require('components/component');
-var Session   = require('session');
 
 module.exports = ClientConnection.inherits( Component );
 
@@ -15,35 +14,49 @@ ClientConnection.prototype._init = function ( params ) {
   this.app.on( 'run', function() {
     self.run();
   } );
-
+  
   this.app.on( 'close', function() {
     self.close();
   } );
 };
 
 
-ClientConnection.prototype.connect_client = function ( client, session_id ) {
-  var self    = this;
-  var session = this.app.create_session( session_id, client );
+ClientConnection.prototype.connect_client = function ( client ) {
+  var self = this;
 
   client.on( 'request', function( request ) {
-    self.receive_request( request, session );
+    self.receive_request( request, client );
   } );
 
   client.on( 'disconnect', function() {
-    self.disconnect_client( client, session );
+    self.disconnect_client( client );
   } );
 
-  this.app.router.route( this.app.default_controller + '.connect_client', client, session );
+  client.on( 'send', function( data ) {
+    self.send_response( data, client );
+  } );
+
+  this.app.router.route( this.app.default_controller + '.connect_client', client );
 };
 
 
-ClientConnection.prototype.receive_request = function ( request, session ) {};
-ClientConnection.prototype.send_response = function ( client, data ) {};
-ClientConnection.prototype.run = function () {};
-ClientConnection.prototype.close = function () {};
+ClientConnection.prototype.receive_request = function ( data, client ) {
+  this.emit( 'receive_request', data );
 
-
-ClientConnection.prototype.disconnect_client = function ( client, session ) {
-  session.close();
+  this.log( 'Message has been received. session_id = "%s"'.format( client.session.id ) );
+  this.app.router.route( data.action, data.params, client );
 };
+
+
+ClientConnection.prototype.send_response = function ( data, client ) {
+  this.emit( 'send_response', client, data );
+};
+
+
+ClientConnection.prototype.disconnect_client = function ( client ) {
+  this.emit( 'disconnect_client', client );
+};
+
+
+ClientConnection.prototype.run    = function () {};
+ClientConnection.prototype.close  = function () {};

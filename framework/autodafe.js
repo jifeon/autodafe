@@ -5,11 +5,27 @@ require.paths.unshift( __dirname + '/base/' );
 
 var tools                 = require( './lib/tools' );
 var Application           = require( 'application' );
+var http                  = require( 'http' );
 
 var Autodafe = global.autodafe = module.exports = new function() {
 
+  var server_by_port = {};
+
   this.create_application = function( config ) {
     return new Application( config );
+  };
+
+  this.get_server = function( port ) {
+    if ( typeof port != 'number' ) throw new Error(
+      '`port` should be a number in Autodafe.get_server'
+    );
+
+    if ( !server_by_port[ port ] ) {
+      server_by_port[ port ] = http.createServer();
+      server_by_port[ port ].listen( port );
+    }
+
+    return server_by_port[ port ];
   };
 
   var show_log_on_exit = process.argv[ 2 ] == '--show_log_on_exit';

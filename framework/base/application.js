@@ -29,8 +29,10 @@ Application.prototype._init = function ( config ) {
   this._.name     = this._config.name;
 
   if ( !this._config.base_dir )
-    throw new Error( 'You must set base_dir in config file!' );
+    throw new Error( 'Please specify `base_dir` in your config file!' );
   this._.base_dir = path.normalize( this._config.base_dir );
+
+  this._.sessions = {};
 
   this.logger     = new Logger;
   this.router     = null;
@@ -147,12 +149,24 @@ Application.prototype.log = function ( message, level, module ) {
 };
 
 
-Application.prototype.create_session = function ( id, client ) {
-  var session = new Session({
-    id      : id,
-    client  : client,
-    app     : this
-  });
+Application.prototype.get_session = function ( id, client ) {
+  var session = this.sessions[ id ];
+
+  if ( !session ) {
+    session = new Session({
+      id      : id,
+      app     : this
+    });
+
+    this.sessions[ id ] = session;
+
+    var self = this;
+    session.once( 'close', function() {
+      delete self.sessions[ id ];
+    } );
+  }
+
+  session.add_client( client );
 
   this.emit( 'new_session', session );
 
