@@ -46,7 +46,7 @@ exports.get_batch = function( application, assert ) {
     topic : function() {
       var self    = this;
       var tables  = [
-        'comments','post_category','posts',
+        'comments','post_category','posts', 'posts_for_update', 'posts_for_delete',
         'categories','profiles','users',
         'items','orders','types'
       ];

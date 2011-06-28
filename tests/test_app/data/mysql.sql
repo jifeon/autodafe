@@ -36,15 +36,46 @@ CREATE TABLE posts
 	create_time TIMESTAMP NOT NULL,
 	author_id INTEGER NOT NULL,
 	content TEXT,
+	info TEXT,
 	CONSTRAINT FK_post_author FOREIGN KEY (author_id)
 		REFERENCES users (id) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE=INNODB;
 
-INSERT INTO posts (title, create_time, author_id, content) VALUES ('post 1','2000-01-01',1,'content 1');
-INSERT INTO posts (title, create_time, author_id, content) VALUES ('post 2','2000-01-02',2,'content 2');
-INSERT INTO posts (title, create_time, author_id, content) VALUES ('post 3','2000-01-03',2,'content 3');
-INSERT INTO posts (title, create_time, author_id, content) VALUES ('post 4','2000-01-04',2,'content 4');
-INSERT INTO posts (title, create_time, author_id, content) VALUES ('post 5','2000-01-05',3,'content 5');
+INSERT INTO posts (title, create_time, author_id, content, info) VALUES ('post 1','2000-01-01',1,'content 1','info 1');
+INSERT INTO posts (title, create_time, author_id, content, info) VALUES ('post 2','2000-01-02',2,'content 2','info 2');
+INSERT INTO posts (title, create_time, author_id, content, info) VALUES ('post 3','2000-01-03',2,'content 3','info 3');
+INSERT INTO posts (title, create_time, author_id, content, info) VALUES ('post 4','2000-01-04',2,'content 4','info 4');
+INSERT INTO posts (title, create_time, author_id, content, info) VALUES ('post 5','2000-01-05',3,'content 5','info 4');
+
+CREATE TABLE posts_for_update
+(
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(128) NOT NULL,
+	create_time TIMESTAMP NOT NULL,
+	author_id INTEGER NOT NULL,
+	content TEXT
+) ENGINE=INNODB;
+
+INSERT INTO posts_for_update (title, create_time, author_id, content) VALUES ('post 1','2000-01-01',1,'content 1');
+INSERT INTO posts_for_update (title, create_time, author_id, content) VALUES ('post 2','2000-01-02',2,'content 2');
+INSERT INTO posts_for_update (title, create_time, author_id, content) VALUES ('post 3','2000-01-03',2,'content 3');
+INSERT INTO posts_for_update (title, create_time, author_id, content) VALUES ('post 4','2000-01-04',2,'content 4');
+INSERT INTO posts_for_update (title, create_time, author_id, content) VALUES ('post 5','2000-01-05',3,'content 5');
+
+CREATE TABLE posts_for_delete
+(
+	id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(128) NOT NULL,
+	create_time TIMESTAMP NOT NULL,
+	author_id INTEGER NOT NULL,
+	content TEXT
+) ENGINE=INNODB;
+
+INSERT INTO posts_for_delete (title, create_time, author_id, content) VALUES ('post 1','2000-01-01',1,'content 1');
+INSERT INTO posts_for_delete (title, create_time, author_id, content) VALUES ('post 2','2000-01-02',2,'content 2');
+INSERT INTO posts_for_delete (title, create_time, author_id, content) VALUES ('post 3','2000-01-03',2,'content 3');
+INSERT INTO posts_for_delete (title, create_time, author_id, content) VALUES ('post 4','2000-01-04',2,'content 4');
+INSERT INTO posts_for_delete (title, create_time, author_id, content) VALUES ('post 5','2000-01-05',3,'content 5');
 
 CREATE TABLE comments
 (
