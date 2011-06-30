@@ -20,7 +20,7 @@ HTTPServer.prototype._init = function( params ) {
 
 HTTPServer.prototype.run = function () {
   var self = this;
-  this._server = global.autodafe.get_server( this.port );
+  this._server = global.autodafe.get_server( this.port, this.app );
   this._server.on( 'request', function( request, response ) {
     self.connect_client( new HTTPClient({
       app       : self.app,
@@ -29,8 +29,6 @@ HTTPServer.prototype.run = function () {
       response  : response
     }) );
   } );
-
-  this._server.listen( this.port );
 };
 
 

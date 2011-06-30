@@ -53,10 +53,30 @@ var config = module.exports = {
     web_sockets         : {
       port : 3000
     },
-//    users               : true,
+
+    users               : {
+      model : 'test_model',
+      roles : {
+        user      : 'user.id != null',
+        moderator : 'user.status == "moderator"',
+        admin     : function( user, app ) {
+          return ~app.get_param( 'admin_ids' ).indexOf( user.id );
+        }
+      },
+      // По умолчанию ниодна роль не имеет права ни на что.
+      // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
+      // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
+      possibilities : {
+        guest     : [],
+        user      : [],
+        moderator : [ 'view' ],
+        admin     : [ 'view', 'create', 'edit', 'remove' ]
+      }
+    },
+
     db                  : db,
     http                : {
-      port : 8080
+      port : 3000
     },
 
     log_router          : {

@@ -21,7 +21,7 @@ WebSocketsServer.prototype._init = function ( params ) {
 
 
 WebSocketsServer.prototype.run = function () {
-  this._server  = global.autodafe.get_server( this.port );
+  this._server  = global.autodafe.get_server( this.port, this.app );
   this._io      = io.listen( this._server );
 
   var self = this;
