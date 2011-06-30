@@ -316,8 +316,6 @@ exports.get_batch = function( application, assert ) {
       'count' : {
         'without params' : {
           topic : function( post ) {
-            debugger;
-            
             return post.count();
           },
           'should return 5' : function( e, count ){
@@ -700,7 +698,6 @@ exports.get_batch = function( application, assert ) {
     'public attributes' : {
       'in blank' : {
         topic : function() {
-          debugger;
           var post = new application.models.post_ext;
           var self = this;
           post.get_table( function( e, table ) {
