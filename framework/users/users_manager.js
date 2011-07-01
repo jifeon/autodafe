@@ -58,27 +58,33 @@ UsersManager.prototype._init_roles = function ( params ) {
         break;
 
       case 'string':
-        this.roles[ role ] = function( model, app ) {
-          var context = {
-            app : app
-          };
-
-          context[ self.model_name ] = model;
-
-          var result;
-          with ( context ) {
-            eval( 'result = ' + role_determinant );
-          }
-
-          return result;
-        };
+        try {
+          this.roles[ role ] = new Function(
+            this.model_name, 'app', 'model', 'attribute',
+            'return ' + role_determinant
+          );
+        }
+        catch ( e ) {
+          throw new Error(
+            'You have syntax error in users.role definition. Check your config file ( components.users.roles.%s )'.format( role )
+          );
+        }
         break;
 
       default : throw new Error(
-        'Values of `components.users.roles` hash in your config file should be Strings or Functions'
+        'Value of `components.users.roles.%s` hash in your config file should be Strings or Functions'.format( role )
       );
     }
   }
+};
+
+
+UsersManager.prototype.get_roles = function ( user_identity, target_model, target_attribute ) {
+  var roles = [];
+
+  for ( var role in this.roles )
+    if ( this.roles[ role ]( user_identity.model, this.app, target_model, target_attribute ) )
+      roles.push( role );
 };
 
 

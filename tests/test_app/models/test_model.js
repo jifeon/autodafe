@@ -14,7 +14,12 @@ function TestModel( params ) {
 TestModel.user_rights = {
   user    : [ 'view', 'create' ],
   admin   : [ 'view', 'create', 'edit' ],
-  author  : [ 'view', 'create', 'edit', 'remove' ]
+  author  : [ 'view', 'create', 'edit', 'remove' ],
+  attributes : {
+    param : {
+      admin : [ 'view', 'create' ]
+    }
+  }
 }
 
 TestModel.prototype.test = function () {

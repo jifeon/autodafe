@@ -30,7 +30,7 @@ var config = module.exports = {
       roles : {
         user      : 'user.id != null',
         moderator : 'user.status == "moderator"',
-        admin     : function( user, app ) {
+        admin     : function( user, app, target_model, target_attribute ) {
           return ~app.get_param( 'admin_ids' ).indexOf( user.id );
         }
       },

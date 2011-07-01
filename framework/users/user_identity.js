@@ -60,3 +60,8 @@ UserIdentity.prototype.manage = function ( model ) {
 
   return handler.get_proxy();
 };
+
+
+UserIdentity.prototype.get_roles = function ( model, attribute ) {
+  return this.users_manager.get_roles( this, model, attribute );
+};
