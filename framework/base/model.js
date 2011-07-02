@@ -11,6 +11,8 @@ Model.prototype._init = function ( params ) {
   this.super_._init( params );
 
   this._attributes = {};
+
+  this._.is_new = params.is_new == undefined ? true : params.is_new;
 };
 
 
@@ -64,6 +66,16 @@ Model.prototype.set_attributes = function ( attributes ) {
       this.emit( 'set_unsafe_attribute', name, attributes[ name ] );
     }
   }
+};
+
+
+Model.prototype.save = function ( attributes ) {
+  return true;
+};
+
+
+Model.prototype.remove = function () {
+  return true;
 };
 
 

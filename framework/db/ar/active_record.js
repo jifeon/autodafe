@@ -20,7 +20,6 @@ ActiveRecord.prototype._init = function( params ) {
     throw new Error( 'You should specify `table_name` property for ' + this.class_name );
 
   this._.db_connection  = this.app.db;
-  this.is_new           = params.is_new == undefined ? true : params.is_new;
 };
 
 
@@ -153,7 +152,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
         }
       } );
 
-      self.is_new       = false;
+      self._.is_new = false;
 
       emitter.emit( 'success', result );
     });

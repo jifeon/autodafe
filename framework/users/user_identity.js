@@ -1,5 +1,6 @@
 var AppModule                 = require('app_module');
 var UserIdentityModelHandler  = require('./user_identity_model_handler');
+var UserIdentityARHandler     = require('./user_identity_active_record_handler');
 
 module.exports = UserIdentity.inherits( AppModule );
 
@@ -53,7 +54,9 @@ UserIdentity.prototype.set_model = function ( model ) {
 
 
 UserIdentity.prototype.manage = function ( model ) {
-  var handler = new UserIdentityModelHandler({
+  var Handler = model.class_name == 'ActiveRecord' ? UserIdentityARHandler : UserIdentityModelHandler;
+
+  var handler = new Handler({
     target        : model,
     user_identity : this
   });

@@ -17,7 +17,7 @@ TestModel.user_rights = {
   author  : [ 'view', 'create', 'edit', 'remove' ],
   attributes : {
     param : {
-      admin : [ 'view', 'create' ]
+      admin : [ 'view' ]
     }
   }
 }
