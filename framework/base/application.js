@@ -121,21 +121,18 @@ Application.prototype.register_component = function ( component ) {
     );
 
   this._[ name ] = component;
-  this._[ name ].get= function() {
-    return component
-      ? component.get()
-      : this.log(
-        'Try to use component "%s" which is not included. \
-         To include component configure it in your config file'.format( name ),
-        'warning'
-      )
+  this._[ name ].get = function() {
+    if ( !component ) throw new Error(
+      'Try to use component "%s" which is not included. To include component configure it in your config file'.format( name )
+    );
+
+    return component.get();
   };
 
   this._[ name ].set = function( v ) {
-    this.log(
+    throw new Error(
       'Property "%s" in Application engaged for native autodafe\'s component. \
-       You can\'t set it to "%s"'.format( name, v ),
-      'warning'
+       You can\'t set it to "%s"'.format( name, v )
     );
   }
 };
@@ -150,7 +147,7 @@ Application.prototype.run = function () {
   if ( this.is_running ) return false;
   this.log( 'Running application' );
   this.emit( 'run' );
-  this.is_running = true;
+  this._.is_running = true;
   return true;
 };
 
