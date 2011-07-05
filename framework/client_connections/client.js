@@ -27,7 +27,7 @@ Client.prototype.init_events = function () {
 
 
 Client.prototype.get_session_id = function () {
-  return String.unique();
+  return this.session ? this.session.id : String.unique();
 };
 
 
@@ -40,4 +40,11 @@ Client.prototype.send = function ( data ) {
   this.log( 'Send message to %s ( session id=%s )'.format( this.class_name, this.session.id ) );
 
   this.emit( 'send', data );
+};
+
+
+Client.prototype.disconnect = function () {
+  this.log( 'Disconnect %s ( session id=%s )'.format( this.class_name, this.session.id ) );
+
+  this.emit( 'disconnect' );
 };

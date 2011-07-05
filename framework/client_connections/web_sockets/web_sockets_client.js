@@ -27,7 +27,7 @@ WebSocketsClient.prototype.init_events = function () {
   } );
 
   this.ws_client.on( 'disconnect', function() {
-    self.emit( 'disconnect' );
+    self.disconnect();
   } );
 };
 

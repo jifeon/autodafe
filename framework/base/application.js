@@ -122,17 +122,20 @@ Application.prototype.register_component = function ( component ) {
 
   this._[ name ] = component;
   this._[ name ].get = function() {
-    if ( !component ) throw new Error(
-      'Try to use component "%s" which is not included. To include component configure it in your config file'.format( name )
-    );
-
-    return component.get();
+    return component
+      ? component.get()
+      : this.log(
+        'Try to use component "%s" which is not included. \
+         To include component configure it in your config file'.format( name ),
+        'warning'
+      )
   };
 
   this._[ name ].set = function( v ) {
-    throw new Error(
+    this.log(
       'Property "%s" in Application engaged for native autodafe\'s component. \
-       You can\'t set it to "%s"'.format( name, v )
+       You can\'t set it to "%s"'.format( name, v ),
+      'warning'
     );
   }
 };
@@ -172,11 +175,11 @@ Application.prototype.get_session = function ( id, client ) {
     session.once( 'close', function() {
       delete self.sessions[ id ];
     } );
+
+    session.add_client( client );
+    this.emit( 'new_session', session );
   }
-
-  session.add_client( client );
-
-  this.emit( 'new_session', session );
+  else session.add_client( client );
 
   return session;
 };

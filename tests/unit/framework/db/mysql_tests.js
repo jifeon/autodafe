@@ -119,7 +119,7 @@ exports.get_batch = function( application, assert ) {
           assert.isTrue( table.in_sequence );
         },
         'columns count is 5' : function( e, table ){
-          assert.equal( table.get_column_names().length, 5 );
+          assert.equal( table.get_column_names().length, 6 );
         },
         'get existed column' : function( e, table ){
           assert.instanceOf( table.get_column( 'id' ), DbColumnSchema );
@@ -128,18 +128,18 @@ exports.get_batch = function( application, assert ) {
           assert.isNull( table.get_column( 'foo' ) );
         },
         'column names' : function( e, table ){
-          assert.deepEqual( table.get_column_names(), ['id','title','create_time','author_id','content'] );
+          assert.deepEqual( table.get_column_names(), ['id','title','create_time','author_id','content','info'] );
         },
         'columns should contain follow properties' : check_columns({
-          'name'          : [ 'id',       'title',        'create_time',    'author_id',    'content'   ],
-          'raw_name'      : [ '`id`',     '`title`',      '`create_time`',  '`author_id`',  '`content`' ],
-          'default_value' : [ null,       null,           null,             null,           null        ],
-          'size'          : [ 11,         128,            null,             11,             null        ],
-          'precision'     : [ 11,         128,            null,             11,             null        ],
-          'scale'         : [ null,       null,           null,             null,           null        ],
-          'db_type'       : [ 'int(11)',  'varchar(128)', 'timestamp',      'int(11)',      'text'      ],
-          'type'          : [ 'integer',  'string',       'string',         'integer',      'string'    ],
-          'is_primary_key': [ true,       false,          false,            false,          false       ]
+          'name'          : [ 'id',       'title',        'create_time',    'author_id',    'content',    'info'   ],
+          'raw_name'      : [ '`id`',     '`title`',      '`create_time`',  '`author_id`',  '`content`',  '`info`' ],
+          'default_value' : [ null,       null,           null,             null,           null,         null     ],
+          'size'          : [ 11,         128,            null,             11,             null,         null     ],
+          'precision'     : [ 11,         128,            null,             11,             null,         null     ],
+          'scale'         : [ null,       null,           null,             null,           null,         null     ],
+          'db_type'       : [ 'int(11)',  'varchar(128)', 'timestamp',      'int(11)',      'text',       'text'   ],
+          'type'          : [ 'integer',  'string',       'string',         'integer',      'string',     'string' ],
+          'is_primary_key': [ true,       false,          false,            false,          false,        false    ]
         }),
 
         'command builder' : {
