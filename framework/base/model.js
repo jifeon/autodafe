@@ -1,4 +1,5 @@
 var AppModule = require('app_module');
+var Validator = require('validator');
 
 module.exports = Model.inherits( AppModule );
 
@@ -11,6 +12,7 @@ Model.prototype._init = function ( params ) {
   this.super_._init( params );
 
   this._attributes = {};
+  this.validator = new Validator( params );
 };
 
 
@@ -70,3 +72,24 @@ Model.prototype.set_attributes = function ( attributes ) {
 Model.prototype.get_safe_attribute_names = function () {
   return this.constructor.safe_attribute_names || [];
 };
+
+Model.prototype.validate = function ( model ){
+  var rules = this.constructor.validate_rules;
+  var res;
+  for( var i in rules ){
+    this.validator.fields[ i ] = model[ i ];
+    if( !Object.isObject( rules[ i ] ) ){
+      this.validator[ rules[ i ] ].call( this.validator, model[ i ] );
+    } else {
+      var rule = rules[ i ];
+      for( var j in rule ){
+        rule[ j ].unshift( model[ i ] );
+        this.validator[ j ].apply( this.validator, rule[ j ] );
+      }
+    }
+  }
+}
+
+Model.prototype.has_errors = function () {
+  return ( this.validator.errors.length != 0 );
+}
