@@ -161,7 +161,7 @@ Application.prototype.log = function ( message, level, module ) {
 
 
 Application.prototype.get_session = function ( id, client ) {
-  var session = this.sessions[ id ];
+  var session = this._sessions[ id ];
 
   if ( !session ) {
     session = new Session({
@@ -169,11 +169,11 @@ Application.prototype.get_session = function ( id, client ) {
       app     : this
     });
 
-    this.sessions[ id ] = session;
+    this._sessions[ id ] = session;
 
     var self = this;
     session.once( 'close', function() {
-      delete self.sessions[ id ];
+      delete self._sessions[ id ];
     } );
 
     session.add_client( client );
