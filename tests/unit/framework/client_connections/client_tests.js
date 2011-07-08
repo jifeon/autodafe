@@ -16,7 +16,10 @@ exports.get_batch = function( application, assert ) {
       topic : function( app ) {
         return new Client({
           app       : app,
-          transport : app.test_transport
+          transport : new ClientConnection({
+            app   : application,
+            name  : 'test_transport'
+          })
         });
       },
       'be instance of `Client`' : function( client ){

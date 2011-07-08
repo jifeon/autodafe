@@ -29,12 +29,15 @@ Application.prototype._init = function ( config ) {
   this._.name     = this._config.name;
 
   if ( !this._config.base_dir )
-    throw new Error( 'You must set base_dir in config file!' );
+    throw new Error( 'Please specify `base_dir` in your config file!' );
   this._.base_dir = path.normalize( this._config.base_dir );
+
+  this._.sessions = {};
 
   this.logger     = new Logger;
   this.router     = null;
   this.components = null;
+  this.models     = null;
 
   this.default_controller = this._config.default_controller || 'action';
   this.models_folder      = 'models';
@@ -44,24 +47,35 @@ Application.prototype._init = function ( config ) {
   this._preload_components();
   this._init_core();
   this._init_components();
+};
 
+
+Application.prototype._init_core = function () {
   var models_handler = new ModelsProxyHandler({
     target : {
       get_model : function( constructor, params ) {
         return models_handler.create_model( constructor, params );
+      },
+      is_model_exist : function ( model_name ) {
+        try {
+          models_handler.get( null, model_name );
+        }
+        catch( e ) {
+          return false;
+        }
+
+        return true;
       }
     },
     app    : this
   });
 
-  this.models = models_handler.get_proxy();
-};
+  this._.models = models_handler.get_proxy();
 
-
-Application.prototype._init_core = function () {
   var router_cfg = this._config.router || {};
   router_cfg.app = this;
   this.router = new Router( router_cfg );
+
   this.log( 'Core has initialized', 'info' );
 };
 
@@ -147,12 +161,24 @@ Application.prototype.log = function ( message, level, module ) {
 };
 
 
-Application.prototype.create_session = function ( id, client ) {
-  var session = new Session({
-    id      : id,
-    client  : client,
-    app     : this
-  });
+Application.prototype.get_session = function ( id, client ) {
+  var session = this.sessions[ id ];
+
+  if ( !session ) {
+    session = new Session({
+      id      : id,
+      app     : this
+    });
+
+    this.sessions[ id ] = session;
+
+    var self = this;
+    session.once( 'close', function() {
+      delete self.sessions[ id ];
+    } );
+  }
+
+  session.add_client( client );
 
   this.emit( 'new_session', session );
 

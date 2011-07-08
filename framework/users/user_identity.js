@@ -1,4 +1,6 @@
-var AppModule = require('app_module');
+var AppModule                 = require('app_module');
+var UserIdentityModelHandler  = require('./user_identity_model_handler');
+var UserIdentityARHandler     = require('./user_identity_active_record_handler');
 
 module.exports = UserIdentity.inherits( AppModule );
 
@@ -9,59 +11,60 @@ function UserIdentity( params ) {
 
 UserIdentity.prototype._init = function( params ) {
   this.super_._init( params );
+
+  var UsersManager = require('./users_manager');
+  if ( !UsersManager.is_instantiate( params.users_manager ) ) throw new Error(
+    '`users_manager` should be instance of UsersManager in UserIdentity.init'
+  );
+
+  this._.users_manager  = params.users_manager;
+  this._.sessions       = [];
+  this._.model          = null;
+};
+
+
+UserIdentity.prototype.register_session = function ( session ) {
+  if ( ~this.sessions.indexOf( session ) ) {
+    this.log( 'Try to register same session', 'warning' );
+    return false;
+  }
+
+  this.sessions.push( session );
   var self = this;
+  session.once( 'close', function() {
+    self.remove_session( session );
+  } );
+};
 
-  var Session = require('session');
-  if ( !Session.is_instantiate( params.session ) )
-    throw new Error( '`session` should be instance of Session in UserIdentity._init' );
 
-  this.session    = params.session;
-  this.id         = null;
-  this.users_map  = Object.isObject( params.users_map ) ? params.users_map : {};
+UserIdentity.prototype.remove_session = function ( session ) {
+  var cid = this.sessions.indexOf( session );
+  if ( cid != -1 ) this.sessions.splice( cid, 1 );
+};
 
-  this._.is_guest     = true;
-  this._.is_guest.get = function() {
-    return self.id == null;
+
+UserIdentity.prototype.set_model = function ( model ) {
+  if ( this == this.users_manager.guests ) {
+    this.log( 'Try to set model for guests\' UserIdentity', 'error' );
+    return false;
   }
 
-  this._.similar_users = [ this ];
-  this._.all_clients   = [ this.session.client ];
+  this._.model = model;
 };
 
 
-UserIdentity.prototype.authorize = function ( id ) {
-  if ( id == null ) return false;
+UserIdentity.prototype.manage = function ( model ) {
+  var Handler = model.class_name == 'ActiveRecord' ? UserIdentityARHandler : UserIdentityModelHandler;
 
-  this.id       = id;
+  var handler = new Handler({
+    target        : model,
+    user_identity : this
+  });
 
-  var self      = this;
-  var users_map = this.users_map;
-
-  this._.similar_users.get = function() {
-    return Object.values( users_map[ self.id ] );
-  }
-
-  this._.all_clients.get = function() {
-    return self.similar_users.map( function( user ) {
-      return user.session.client;
-    } );
-  }
-
-  return true;
+  return handler.get_proxy();
 };
 
 
-UserIdentity.prototype.send = function ( data ) {
-  this.session.client.send( data );
-};
-
-
-UserIdentity.prototype.send_to_all_clients = function ( data, filter ) {
-  var users = filter ? this.similar_users.filter( filter ) : this.similar_users;
-  users.for_each( this.send, null, data );
-};
-
-
-UserIdentity.prototype.broadcast = function ( data, filter ) {
-  this.app.users.for_each(  );
+UserIdentity.prototype.get_roles = function ( model, attribute ) {
+  return this.users_manager.get_roles( this, model, attribute );
 };

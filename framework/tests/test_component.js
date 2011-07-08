@@ -4,7 +4,6 @@ var path        = require( 'path' );
 var fs          = require( 'fs' );
 var assert      = require( 'assert' );
 var FixtureManager = require( 'tests/db_fixtures_manager' );
-var TestTransport  = require( 'tests/test_transport' );
 
 module.exports = TestComponent.inherits( Component );
 
@@ -53,12 +52,6 @@ TestComponent.prototype.run = function () {
 
   // add test_app folder to paths
   require.paths.unshift( path.resolve( '.' ) );
-
-  // register test transport
-  this.app.register_component( new TestTransport({
-    name : 'test_transport',
-    app  : this.app
-  }) );
 
   this.paths.forEach( function( test_path ) {
     test_path = path.join( this.app.base_dir, test_path );

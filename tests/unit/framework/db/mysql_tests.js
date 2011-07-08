@@ -46,7 +46,7 @@ exports.get_batch = function( application, assert ) {
     topic : function() {
       var self    = this;
       var tables  = [
-        'comments','post_category','posts',
+        'comments','post_category','posts', 'posts_for_update', 'posts_for_delete',
         'categories','profiles','users',
         'items','orders','types'
       ];
@@ -57,6 +57,7 @@ exports.get_batch = function( application, assert ) {
         if ( e ) throw e;
 
         application.log( 'Executing mysql.sql', 'trace', 'mysql_tests' );
+        console.log(5555555555555555555555555555555555555);
         application.log_router.get_route( 'console' ).switch_level_off( 'trace' );
 
         var fs        = require('fs');
