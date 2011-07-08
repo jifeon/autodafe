@@ -24,12 +24,12 @@ exports.get_batch = function( application, assert ) {
       assert.isTrue( logger.messages.length < logger.max_messages );
     },
     'latest trace' : function( logger ){
-      application.log_router.get_route( 'console' ).switch_level_off( 'trace' );
-
-      for ( var i = 0; i < i_ln; i++ )
-        logger.log( 'test message' );
-
-      application.log_router.get_route( 'console' ).switch_level_on( 'trace' );
+//      application.log_router.get_route( 'console' ).switch_level_off( 'trace' );
+//
+//      for ( var i = 0; i < i_ln; i++ )
+//        logger.log( 'test message' );
+//
+//      application.log_router.get_route( 'console' ).switch_level_on( 'trace' );
 
     }
   }

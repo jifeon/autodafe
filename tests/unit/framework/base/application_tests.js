@@ -16,6 +16,23 @@ exports.get_batch = function( application, assert ) {
   var path              = require( 'path' );
   var config            = require( 'config/main' );
 
+  var test_vars         = {
+    client : new Client({
+      app       : application,
+      transport : new ClientConnection({
+        app   : application,
+        name  : 'test_cc'
+      })
+    }),
+    client2 : new Client({
+      app       : application,
+      transport : new ClientConnection({
+        app   : application,
+        name  : 'test_cc'
+      })
+    })
+  };
+
   return {
     topic : application,
     'public properties' : {
@@ -249,7 +266,7 @@ exports.get_batch = function( application, assert ) {
       'get not configured system components' : function( app ){
         var test_log_route = app.log_router.get_route( 'test' );
         var message        = test_log_route.get_first_message( function() {
-          var users_manager = app.users;
+          var users_manager = app.tests;
         } );
 
         assert.isNotNull( message );
@@ -258,7 +275,7 @@ exports.get_batch = function( application, assert ) {
       'set not configured system components' : function( app ){
         var test_log_route = app.log_router.get_route( 'test' );
         var message        = test_log_route.get_first_message( function() {
-          app.users = 'fail';
+          app.tests = 'fail';
         } );
 
         assert.isNotNull( message );
@@ -278,24 +295,43 @@ exports.get_batch = function( application, assert ) {
       assert.equal( message.module, 'module' );
     },
 
-    '`create_session` method' : function( app ){
-      var new_session_emitted = false;
+    '`get_session` method' : {
+      '`new_session` event' : function( app ) {
+        var new_session_emitted = false;
 
-      app.once( 'new_session', function() {
-        new_session_emitted = true;
-      } );
+        app.once( 'new_session', function() {
+          new_session_emitted = true;
+        } );
 
-      var session = app.create_session( 1, new Client({
-        app       : app,
-        transport : new ClientConnection({
-          app   : app,
-          name  : 'test_cc'
-        })
-      }) );
+        test_vars.session = app.get_session( 1, test_vars.client );
 
-      assert.isTrue( new_session_emitted );
-      assert.instanceOf( session, Session );
-      assert.equal( session.id, 1 );
+        assert.isTrue( new_session_emitted );
+        assert.instanceOf( test_vars.session, Session );
+        assert.equal( test_vars.session.id, 1 );
+        assert.length( test_vars.session.clients, 1 );
+
+      },
+      'get session with same id' : function( app ) {
+        var new_session_emitted = false;
+
+        app.once( 'new_session', function() {
+          new_session_emitted = true;
+        } );
+
+        test_vars.session2 = app.get_session( 1, test_vars.client2 );
+
+        assert.isFalse( new_session_emitted );
+        assert.equal( test_vars.session, test_vars.session2 );
+        assert.equal( test_vars.session.id, 1 );
+        assert.length( test_vars.session.clients, 2 );
+      },
+      'close session' : function( app ){
+        test_vars.session.close();
+        var session
+        assert.notEqual( test_vars.session, session = app.get_session( 1, test_vars.client ) );
+
+        assert.length( session.clients, 1 );
+      }
     }
   }
 }

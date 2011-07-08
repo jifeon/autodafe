@@ -1,5 +1,4 @@
 var path                  = require('path');
-
 var Session               = require('session');
 var Router                = require('router');
 var Logger                = require('../logging/logger');
@@ -22,7 +21,7 @@ Application.prototype._init = function ( config ) {
 
   Application.instances.push( this );
   this._config    = config            || {};
-  this._runned    = false;
+  this._sessions  = {};
 
   if ( typeof this._config.name != 'string' )
     throw new Error( 'Please specify application name in your config file' );
@@ -32,12 +31,12 @@ Application.prototype._init = function ( config ) {
     throw new Error( 'Please specify `base_dir` in your config file!' );
   this._.base_dir = path.normalize( this._config.base_dir );
 
-  this._.sessions = {};
-
-  this.logger     = new Logger;
-  this.router     = null;
-  this.components = null;
-  this.models     = null;
+  this._.is_running       = false;
+  
+  this.logger             = new Logger;
+  this.router             = null;
+  this.components         = null;
+  this.models             = null;
 
   this.default_controller = this._config.default_controller || 'action';
   this.models_folder      = 'models';
@@ -122,7 +121,7 @@ Application.prototype.register_component = function ( component ) {
     );
 
   this._[ name ] = component;
-  this._[ name ].get= function() {
+  this._[ name ].get = function() {
     return component
       ? component.get()
       : this.log(
@@ -148,10 +147,10 @@ Application.prototype.get_param = function ( name ) {
 
 
 Application.prototype.run = function () {
-  if ( this._runned ) return false;
+  if ( this.is_running ) return false;
   this.log( 'Running application' );
   this.emit( 'run' );
-  this._runned = true;
+  this._.is_running = true;
   return true;
 };
 
@@ -162,7 +161,7 @@ Application.prototype.log = function ( message, level, module ) {
 
 
 Application.prototype.get_session = function ( id, client ) {
-  var session = this.sessions[ id ];
+  var session = this._sessions[ id ];
 
   if ( !session ) {
     session = new Session({
@@ -170,17 +169,17 @@ Application.prototype.get_session = function ( id, client ) {
       app     : this
     });
 
-    this.sessions[ id ] = session;
+    this._sessions[ id ] = session;
 
     var self = this;
     session.once( 'close', function() {
-      delete self.sessions[ id ];
+      delete self._sessions[ id ];
     } );
+
+    session.add_client( client );
+    this.emit( 'new_session', session );
   }
-
-  session.add_client( client );
-
-  this.emit( 'new_session', session );
+  else session.add_client( client );
 
   return session;
 };

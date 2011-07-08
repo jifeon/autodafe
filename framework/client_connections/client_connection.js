@@ -41,7 +41,7 @@ ClientConnection.prototype.connect_client = function ( client ) {
 
 
 ClientConnection.prototype._receive_request = function ( data, client ) {
-  this.emit( 'receive_request', data );
+  this.emit( 'receive_request', data, client );
 
   this.log( 'Message has been received. session_id = "%s"'.format( client.session.id ) );
   this.app.router.route( data.action, data.params, client );
@@ -49,7 +49,7 @@ ClientConnection.prototype._receive_request = function ( data, client ) {
 
 
 ClientConnection.prototype._send_response = function ( data, client ) {
-  this.emit( 'send_response', client, data );
+  this.emit( 'send_response', data, client );
 };
 
 

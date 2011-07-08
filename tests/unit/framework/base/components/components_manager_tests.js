@@ -25,7 +25,8 @@ exports.get_batch = function( application, assert ) {
           assert.instanceOf( app.log_router.get_route( 'console' ), ConsoleRoute );
         },
         'true' : function( app ){
-          assert.instanceOf( app.users, UsersManager );
+          var Tests = require( 'tests/test_component' );
+          assert.instanceOf( app.tests, Tests );
         },
         'false' : function( app ){
           assert.isUndefined( app.web_sockets, 'WebSocketServer must be not included' );

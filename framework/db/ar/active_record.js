@@ -76,8 +76,7 @@ ActiveRecord.prototype.__wrap_to_get_table = function ( fun, option ) {
 
 ActiveRecord.prototype.__execute_command = function ( command, emitter, option ) {
   command[ option == 'scalar' ? 'query_scalar' : 'execute' ]( function( e, result ) {
-    if ( option == 'exists' ) console.log( result );
-    emitter.emit( e ? 'error' : 'success', e || option == 'exists' ? result : result );
+    emitter.emit( e ? 'error' : 'success', e || result );
   } );
 };
 
@@ -404,14 +403,20 @@ ActiveRecord.prototype.count_by_attributes = function ( attributes, condition, p
 ActiveRecord.prototype.exists = function( condition, params ) {
   this.log( 'exists' );
 
-  var builder   = this.get_command_builder();
-  var criteria  = builder.create_criteria( condition, params );
+  var criteria    = this.get_command_builder().create_criteria( condition, params );
+  criteria.select = '*';
+  criteria.limit  = 1;
 
-  return this.__wrap_to_get_table( function( table ) {
-    criteria.select = '*';
-    criteria.limit = 1;
-    return builder.create_find_command( table, criteria );
-  }, 'exists' );
+  return this.__wrap_to_get_table( function( table, emitter ) {
+    var command = this.get_command_builder().create_find_command( table, criteria );
+    var self    = this;
+
+    command.execute( function( e, result ) {
+      if ( e ) return emitter.emit( 'error', e );
+
+      emitter.emit( 'success', !!result.get_num_rows() );
+    } );
+  } );
 }
 
 
