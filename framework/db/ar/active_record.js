@@ -198,7 +198,7 @@ ActiveRecord.prototype.refresh = function() {
       .on( 'success', function( record ) {
         if ( !record ) return emitter.emit( 'error', new Error( 'Can\'t find reflection of record in data base' ) );
 
-        self.clean_attributes();
+        self._clean_attributes();
         table.get_column_names().forEach( function( name ) {
           self.set_attribute( name, record[ name ] );
         } );

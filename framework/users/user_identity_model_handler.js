@@ -14,18 +14,41 @@ UserIdentityModelHandler.prototype._init = function( params ) {
   this.user_rights   = this.target.constructor.user_rights || {};
   if ( !this.user_rights.attributes ) this.user_rights.attributes = {};
 
-  this.methods = [ 'get_attribute', 'set_attribute', 'save', 'remove' ];
+  this.methods = [
+    'get_attribute',
+    'set_attribute',
+    'get_attributes',
+    'set_attributes',
+    'save',
+    'remove'
+  ];
 };
 
 
 UserIdentityModelHandler.prototype.get = function ( receiver, name ) {
   var self = this;
 
-  if ( name in this.methods ) return function() {
+  if ( ~this.methods.indexOf( name ) ) return function() {
     return self[ name ].apply( self, arguments );
   }
 
+  if ( this._has_attribute( name ) )
+    return this.get_attribute( name );
+
   return this.super_.get( receiver, name );
+};
+
+
+UserIdentityModelHandler.prototype.set = function ( receiver, name, value ) {
+  if ( this._has_attribute( name ) )
+    return this.set_attribute( name, value );
+
+  return this.super_.set( receiver, name, value );
+};
+
+
+UserIdentityModelHandler.prototype._has_attribute = function ( name ) {
+  return this.target.get_attributes()[ name ];
 };
 
 
@@ -33,9 +56,11 @@ UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
   var roles = this.user_identity.get_roles( this.target, name );
   var self  = this;
 
-  if ( roles.some( function( role ) {
-    return self._has_right( 'view', name, role );
-  } ) )
+  var has_view_right = function( role ) {
+    return this._has_right( 'view', name, role );
+  }
+
+  if ( this.user_identity.get_roles( this.target, name ).some( has_view_right, this ) )
     return this.target.get_attribute( name );
 
   this.user_identity.app.log(
@@ -46,18 +71,50 @@ UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
 
 
 UserIdentityModelHandler.prototype.set_attribute = function ( name, value ) {
-  var roles = this.user_identity.get_roles( this.target, name );
-  var self  = this;
+  var has_edit_right = function( role ) {
+    return this._has_right( 'edit', name, role );
+  }
 
-  if ( roles.some( function( role ) {
-    return self._has_right( 'edit', name, role );
-  } ) )
+  if ( this.user_identity.get_roles( this.target, name ).some( has_edit_right, this ) )
     return this.target.set_attribute( name, value );
 
   this.user_identity.app.log(
     'Access denied to edit attribute `%s` in model `%s`'.format( name, this.target.class_name ), 'warning'
   );
+
   return null;
+};
+
+
+UserIdentityModelHandler.prototype.get_attributes = function ( names ) {
+  var attributes = this.target.get_attributes( names );
+
+  var name;
+  var has_view_right = function( role ) {
+    return this._has_right( 'view', name, role );
+  }
+
+  for ( name in attributes )
+    if ( !this.user_identity.get_roles( this.target, name ).some( has_view_right, this ) )
+      attributes[ name ] = null;
+
+  return attributes;
+};
+
+
+UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
+  var attrs = {};
+  var name;
+
+  var has_edit_right = function( role ) {
+    return this._has_right( 'edit', name, role );
+  }
+
+  for ( name in attributes )
+    if ( this.user_identity.get_roles( this.target, name ).some( has_edit_right, this ) )
+      attrs[ name ] = attributes[ name ];
+
+  this.target.set_attributes( attrs );
 };
 
 
@@ -77,8 +134,6 @@ UserIdentityModelHandler.prototype.save = function ( attributes ) {
 
 
 UserIdentityModelHandler.prototype.remove = function () {
-  if ( this.target.is_new ) return this.target.remove();
-
   var roles = this.user_identity.get_roles( this.target );
   var self  = this;
 
@@ -92,7 +147,7 @@ UserIdentityModelHandler.prototype.remove = function () {
 
 
 UserIdentityModelHandler.prototype._has_right = function ( right, attribute_name, role ) {
-  var rights_map = right != 'create' && right != 'delete' &&
+  var rights_map = right != 'create' && right != 'remove' &&
                    this.user_rights.attributes[ attribute_name ] &&
                    this.user_rights.attributes[ attribute_name ][ role ] ||
                    this.user_rights[ role ] ||

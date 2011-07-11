@@ -83,8 +83,12 @@ UsersManager.prototype.get_roles = function ( user_identity, target_model, targe
   var roles = [];
 
   for ( var role in this.roles )
-    if ( this.roles[ role ]( user_identity.model, this.app, target_model, target_attribute ) )
-      roles.push( role );
+    try { // user_identity.model can be null
+      if ( this.roles[ role ]( user_identity.model, this.app, target_model, target_attribute ) )
+        roles.push( role );
+    } catch(e) {}
+
+  return roles;
 };
 
 

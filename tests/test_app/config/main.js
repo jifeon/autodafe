@@ -55,12 +55,13 @@ var config = module.exports = {
     },
 
     users               : {
-      model : 'test_model',
+      model : 'user',
       roles : {
-        user      : 'user.id != null',
-        moderator : 'user.status == "moderator"',
-        admin     : function( user, app ) {
-          return ~app.get_param( 'admin_ids' ).indexOf( user.id );
+        role0     : 'user.role == "role0"',
+        role1     : 'user.role == "role1"',
+        role2     : 'user.role == "role2"',
+        role3     : function( user, app, model, attribute ) {
+          return user.role == 'role3';
         }
       },
       // По умолчанию ниодна роль не имеет права ни на что.
@@ -68,9 +69,10 @@ var config = module.exports = {
       // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
       possibilities : {
         guest     : [],
-        user      : [],
-        moderator : [ 'view' ],
-        admin     : [ 'view', 'create', 'edit', 'remove' ]
+        role0     : [ 'view' ],
+        role1     : [ 'create' ],
+        role2     : [ 'edit' ],
+        role3     : [ 'remove' ]
       }
     },
 

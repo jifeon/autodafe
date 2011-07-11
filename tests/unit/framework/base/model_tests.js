@@ -86,11 +86,6 @@ exports.get_batch = function( application, assert ){
         assert.equal( model.param1, 68 );
         assert.isFalse( model.get_attribute( 'param2') );
         assert.isFalse( model.get_attribute( 'param3') );
-      },
-      'clean attributes' : function( model ){
-        model.clean_attributes();
-        assert.isEmpty( model.get_attributes() );
-        assert.equal( model.param1, 68 );
       }
     }
   }

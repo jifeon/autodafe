@@ -44,6 +44,10 @@ TestComponent.prototype._extend_assert = function () {
         assert.fail( actual_property, 0, message || "expected {actual} to be read only", "isReadOnly", assert.isReadOnly );
     }
   };
+
+  assert.isError = function ( actual, message ) {
+    assert.instanceOf( actual, Error, message );
+  };
 };
 
 

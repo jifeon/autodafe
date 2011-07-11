@@ -11,17 +11,6 @@ function TestModel( params ) {
   this.param1 = 33;
 }
 
-TestModel.user_rights = {
-  user    : [ 'view', 'create' ],
-  admin   : [ 'view', 'create', 'edit' ],
-  author  : [ 'view', 'create', 'edit', 'remove' ],
-  attributes : {
-    param : {
-      admin : [ 'view' ]
-    }
-  }
-}
-
 TestModel.prototype.test = function () {
   return this.param;
 };

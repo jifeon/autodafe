@@ -34,7 +34,7 @@ Model.prototype.get_attribute = function ( name ) {
 };
 
 
-Model.prototype.clean_attributes = function () {
+Model.prototype._clean_attributes = function () {
   this._attributes = {};
 };
 

@@ -50,6 +50,7 @@ function ProxyHandler( params ) {
 
 ProxyHandler.prototype._init = function ( params ) {
   this.target = params.target
+  this._proxy = null;
 };
 
 
@@ -191,10 +192,8 @@ ProxyHandler.prototype.keys = function() {
 
 
 ProxyHandler.prototype.get_proxy = function () {
-  return Proxy.create( this, Object.getPrototypeOf( this.target ) );
+  if ( !this._proxy )
+    this._proxy = Proxy.create( this, Object.getPrototypeOf( this.target ) );
+
+  return this._proxy;
 };
-
-
-//var some_obj = { prop : 42 };
-//var proxy = ( new ProxyHandler( { target : some_obj } ) ).get_proxy();
-//console.log( proxy.prop );
