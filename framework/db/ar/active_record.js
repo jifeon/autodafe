@@ -1,14 +1,24 @@
-var Model           = require('model');
-var DbCriteria      = require('db/db_criteria');
-var DbCommand       = require('db/db_command');
-var AppModule       = require('app_module');
-var Emitter         = process.EventEmitter;
+var Model             = require('model');
+var DbCommand         = require('db/db_command');
+var Emitter           = process.EventEmitter;
+var ActiveFinder      = require('./active_finder');
+var tools             = require( 'lib/tools' );
+var active_relations  = {
+  belongs_to  : require('./relations/belongs_to_relation'),
+  stat        : require('./relations/stat_relation'),
+  has_one     : require('./relations/has_one_relation'),
+  has_many    : require('./relations/has_many_relation'),
+  many_many   : require('./relations/many_many_relation')
+};
 
 module.exports = ActiveRecord.inherits( Model );
 
 function ActiveRecord() {
   throw new Error( 'ActiveRecord is abstract class. You can\'t instantiate it!' );
 }
+
+
+ActiveRecord._relations = null;
 
 
 ActiveRecord.prototype._init = function( params ) {
@@ -20,6 +30,151 @@ ActiveRecord.prototype._init = function( params ) {
     throw new Error( 'You should specify `table_name` property for ' + this.class_name );
 
   this._.db_connection  = this.app.db;
+
+  this._related         = {};
+  this._alias           = 't';
+
+  this._init_relations();
+};
+
+
+ActiveRecord.prototype._init_relations = function () {
+  if ( this.get_relations() ) return;
+
+  this.constructor._relations = {};
+  var relations = this.relations();
+
+  for ( var relation_name in relations ) {
+    var params        = relations[ relation_name ];
+    var relation_type = params.type;
+
+    delete params.type;
+
+    params.name  = relation_name;
+    params.model = this;
+    params.app   = this.app;
+
+    this.constructor._relations[ relation_name ] = new active_relations[ relation_type ]( params );
+  }
+
+};
+
+
+ActiveRecord.prototype.get_attribute = function ( name ) {
+  return this._related[ name ] || this.super_.get_attribute( name );
+};
+
+
+ActiveRecord.prototype.relations = function () {
+  return {};
+};
+
+
+ActiveRecord.prototype.get_relations = function () {
+  return this.constructor._relations;
+};
+
+
+ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
+  refresh = refresh || false;
+  params  = params  || {};
+
+  var relations = this.get_relations();
+
+  if ( !relations[ name ] ) throw new Error(
+    '%s does not have relation `%s`'.format( this.class_name, name )
+  );
+
+  if ( this._related[ name ] && !refresh && Object.isEmpty( params ) )
+    return tools.next_tick( this._related[ name ] );
+
+  this.log( 'Load relation `%s`'.format( name ), 'trace' );
+
+  var relation        = relations[ name ];
+  if ( this.is_new && ( relation.class_name == 'HasOneRelation' || relation.class_name == 'HasManyRelation' ) )
+    return relation.class_name == 'HasOneRelation' ? null : [];
+
+  var saved_relation  = null;
+  var With = {};
+  if ( !Object.isEmpty( params ) ) {
+    saved_relation = this._related[ name ] || null;
+    With = name;
+  }
+  else With[ name ] = params;
+
+  delete this._related[ name ];
+
+  var finder = new ActiveFinder({
+    app   : this.app,
+    model : this,
+    With  : With
+  });
+  finder.lazy_find( this );
+
+
+//  $finder->lazyFind($this);
+//
+//		if(!isset($this->_related[$name]))
+//		{
+//			if($relation instanceof CHasManyRelation)
+//				$this->_related[$name]=array();
+//			else if($relation instanceof CStatRelation)
+//				$this->_related[$name]=$relation->defaultValue;
+//			else
+//				$this->_related[$name]=null;
+//		}
+//
+//		if($params!==array())
+//		{
+//			$results=$this->_related[$name];
+//			if($exists)
+//				$this->_related[$name]=$save;
+//			else
+//				unset($this->_related[$name]);
+//			return $results;
+//		}
+//		else
+//			return $this->_related[$name];
+};
+
+
+ActiveRecord.prototype._create_relation = function ( type ) {
+  var self = this;
+
+  return {
+    by : function( foreign_key, options ) {
+      return {
+        type        : type,
+        foreign_key : foreign_key,
+        options     : options || {}
+      };
+    }
+  }
+};
+
+
+ActiveRecord.prototype.belongs_to = function () {
+  return this._create_relation( 'belongs_to' );
+};
+
+
+ActiveRecord.prototype.has_one = function () {
+  return this._create_relation( 'has_one' );
+};
+
+
+ActiveRecord.prototype.has_many = function () {
+  return this._create_relation( 'has_many' );
+};
+
+
+ActiveRecord.prototype.many_many = function () {
+  return this._create_relation( 'many_many' );
+};
+
+
+ActiveRecord.prototype.stat = function () {
+  return this._create_relation( 'stat' );
 };
 
 
@@ -97,9 +252,14 @@ ActiveRecord.prototype.get_command_builder = function () {
 };
 
 
-ActiveRecord.prototype.get_table_alias = function() {
-  return this.db_connection.db_schema.quote_table_name( 't' );
+ActiveRecord.prototype.get_table_alias = function( quote ) {
+  return quote ? this.db_connection.db_schema.quote_table_name( this._alias ) : this._alias;
 }
+
+
+ActiveRecord.prototype.set_table_alias = function ( alias ) {
+  this._alias = alias;
+};
 
 
 ActiveRecord.prototype.get_primary_key = function ( table_schema ) {

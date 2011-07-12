@@ -5,7 +5,7 @@ exports.get_batch = function( application, assert ) {
   var ui_roles = [];
 
   for ( var i = 0; i < 4; i++ ) {
-    var user = new application.models.user({
+    var user = new application.models.ui_user({
       role : 'role' + i
     });
 

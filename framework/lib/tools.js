@@ -249,3 +249,14 @@ Date.prototype.format = function( format ) {
 function two_pos( i ) {
   return i < 10 ? '0' + i : i;
 }
+
+
+exports.next_tick = function( result, error, emitter ){
+  if ( !emitter ) emitter = new process.EventEmitter;
+
+  process.nextTick( function() {
+    emitter.emit( error || null, result );
+  } );
+
+  return emitter;
+};
