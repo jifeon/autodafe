@@ -93,8 +93,7 @@ Model.prototype.validate = function ( rules ){
         this.validator[ rule ].call( this.validator, i, this._attributes[ i ] );
       } else {
         for( var j in rule ){
-          rule[ j ].unshift( i, this._attributes[ i ] );
-          this.validator[ j ].apply( this.validator, rule[ j ] );
+          this.validator[ j ].call( this.validator, i, this._attributes[ i ], rule[ j ] );
         }
       }
     }
