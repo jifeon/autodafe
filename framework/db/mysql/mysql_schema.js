@@ -18,19 +18,19 @@ MysqlSchema.prototype.quote_simple_column_name = function( name ) {
 }
 
 
-MysqlSchema.prototype._load_table = function( name, callback ) {
+MysqlSchema.prototype._load_table = function( name, callback, context ) {
   var table = this._tables[ name ] = new MysqlTableSchema({
     db_schema : this,
     name      : name,
     app       : this.app
   });
-  
+
   table
     .on( 'initialized', function() {
-      callback( null, table );
+      callback.call( context || null, null, table );
     } )
     .on( 'error', function( e ) {
-      callback( e, null );
+      callback.call( context || null, e, null );
     } );
 }
 

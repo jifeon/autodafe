@@ -35,20 +35,20 @@ DbSchema.prototype._init = function( params ) {
 };
 
 
-DbSchema.prototype.get_table = function( name, callback ) {
+DbSchema.prototype.get_table = function( name, callback, context ) {
   var table = this._tables[ name ];
 
-  if ( !table ) return this._load_table( name, callback );
+  if ( !table ) return this._load_table( name, callback, context );
 
   table.setMaxListeners( 100 );
 
-  if ( table.is_inited ) callback( null, table );
+  if ( table.is_inited ) callback.call( context || null, null, table );
   else table
     .on( 'initialized', function() {
-      callback( null, table );
+      callback.call( context || null, null, table );
     } )
     .on( 'error', function( e ) {
-      callback( e );
+      callback.call( context || null, e );
     } );
 };
 
@@ -203,5 +203,5 @@ DbSchema.prototype._find_table_names = function ( schema, callback ) {
 
 
 DbSchema.prototype._load_table = function ( name, callback ) {
-  throw new Error( 'You must implement `_create_table` method in `%s`'.format( this.class_name ) );
+  throw new Error( 'You must implement `_load_table` method in `%s`'.format( this.class_name ) );
 };

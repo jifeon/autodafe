@@ -1,4 +1,5 @@
 var AppModule = require('app_module');
+var JoinQuery = require('./join_query');
 
 module.exports = JoinElement.inherits( AppModule );
 
@@ -20,7 +21,7 @@ JoinElement.prototype._init = function( params ) {
   this.relation         = params.relation || null;
   this.model            = params.model    || this.relation.model;
   this.records          = {};
-  this.children         = [];
+  this.children         = {};
   this.stats            = [];
   this.table_alias      = this.relation ? this.relation.alias || this.relation.name : this.model.get_table_alias();
 
@@ -34,7 +35,7 @@ JoinElement.prototype._init = function( params ) {
 
 
 JoinElement.prototype.get_table = function ( callback ) {
-  this.model.get_table( callback );
+  this.model.get_table( callback, this );
 };
 
 
@@ -133,11 +134,12 @@ JoinElement.prototype.get_pk_alias = function ( table ) {
 
 
 JoinElement.prototype.lazy_find = function( base_record, callback ) {
-  var self = this;
+  this.get_table( function( err, table ) {
+    if ( err ) return callback( err );
 
-  this.get_table( function( table ) {
-    if( typeof table.primary_key )
+    if( typeof table.primary_key == 'string' )
       this.records[ base_record[ table.primary_key ] ] = base_record;
+
     else {
       var pk = {};
       table.each_primary_key( function( name ) {
@@ -148,63 +150,68 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
 
     this.stats.forEach( function( stat ){
       stat.query();
-    } )
+    } );
+
+    var child = Object.reset( this.children );
+    if ( !child ) return callback();
+
+    var query = new JoinQuery({
+      join_element : child,
+      app          : this.app
+    });
+    query.selects     = [ child.get_column_select( child.relation.select ) ];
+    query.conditions  = [
+      child.relation.condition,
+      child.relation.on
+    ];
+    query.groups.push ( child.relation.group  );
+    query.joins.push  ( child.relation.join   );
+    query.havings.push( child.relation.having );
+    query.orders.push ( child.relation.order  );
+
+    if( Object.isObject( child.relation.params ))
+      query.params = child.relation.params;
+
+    query.elements[ child.id ] = true;
+    if(child.relation.class_name == 'HasManyRelation' ) {
+      query.limit   = child.relation.limit;
+      query.offset  = child.relation.offset;
+    }
+
+    child.before_find();
+    child.apply_lazy_condition( query, base_record );
+
+    this._joined  = true;
+    child._joined = true;
+
+    this._finder.base_limited = false;
+    child.build_query( query );
+    child.run_query( query );
+    child.children.forEach( function( child ) {
+      child.find();
+    } );
+
+    if( Object.isEmpty( child.records )) return callback();
+
+    if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
+      base_record.add_related_record( child.relation.name, child.records[0], false );
+
+    else {  // has_many and many_many
+
+      for ( var name in child.records ) {
+        var record = child.records[ name ];
+        var index = child.relation.index
+          ? record[ child.relation.index ]
+          : true;
+        
+        base_record.add_related_record( child.relation.name, record, index );
+      }
+    }
 
   } );
 
 }
 
-//  if(empty(this.children))
-//    return;
-//
-//  child=reset(this.children);
-//  query=new cjoin_query(child);
-//  query.selects=array();
-//  query.selects[]=child.get_column_select(child.relation.select);
-//  query.conditions=array();
-//  query.conditions[]=child.relation.condition;
-//  query.conditions[]=child.relation.on;
-//  query.groups[]=child.relation.group;
-//  query.joins[]=child.relation.join;
-//  query.havings[]=child.relation.having;
-//  query.orders[]=child.relation.order;
-//  if(is_array(child.relation.params))
-//    query.params=child.relation.params;
-//  query.elements[child.id]=true;
-//  if(child.relation instanceof chas_many_relation)
-//  {
-//    query.limit=child.relation.limit;
-//    query.offset=child.relation.offset;
-//  }
-//
-//  child.before_find();
-//  child.apply_lazy_condition(query,base_record);
-//
-//  this._joined=true;
-//  child._joined=true;
-//
-//  this._finder.base_limited=false;
-//  child.build_query(query);
-//  child.run_query(query);
-//  foreach(child.children as c)
-//    c.find();
-//
-//  if(empty(child.records))
-//    return;
-//  if(child.relation instanceof chas_one_relation || child.relation instanceof cbelongs_to_relation)
-//    base_record.add_related_record(child.relation.name,reset(child.records),false);
-//  else // has_many and many_many
-//  {
-//    foreach(child.records as record)
-//    {
-//      if(child.relation.index!==null)
-//        index=record.{child.relation.index};
-//      else
-//        index=true;
-//      base_record.add_related_record(child.relation.name,record,index);
-//    }
-//  }
-//}
 
 //  /**
 //   * apply lazy condition

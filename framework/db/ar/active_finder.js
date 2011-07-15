@@ -144,16 +144,21 @@ ActiveFinder.prototype._init = function( params ) {
 //    return n;
 //  }
 
-  ActiveFinder.prototype.lazy_find = function( base_record ) {
-    this._join_tree.lazy_find( base_record );
+  ActiveFinder.prototype.lazy_find = function( base_record, callback ) {
+    var self = this;
 
+    this._join_tree.lazy_find( base_record, function( err ) {
+      if ( err ) return callback( err );
 
-//    if(!empty(this._join_tree.children))
-//    {
-//      child=reset(this._join_tree.children);
-//      child.after_find();
-//    }
+      var child = Object.reset( self._join_tree.children );
+      if( child ) {
+        child.after_find();
+      }
+
 //    this.destroy_join_tree();
+
+      callback();
+    } );
   }
 
 //  ActiveFinder.prototype._destroy_join_tree = function()

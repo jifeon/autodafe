@@ -92,7 +92,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
 
   var relation        = relations[ name ];
   if ( this.is_new && ( relation.class_name == 'HasOneRelation' || relation.class_name == 'HasManyRelation' ) )
-    return relation.class_name == 'HasOneRelation' ? null : [];
+    return tools.next_tick( relation.class_name == 'HasOneRelation' ? null : [] );
 
   var saved_relation  = null;
   var With = {};
@@ -109,32 +109,30 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     model : this,
     With  : With
   });
-  finder.lazy_find( this );
 
+  var emitter = new Emitter;
+  var self    = this;
 
-//  $finder->lazyFind($this);
-//
-//		if(!isset($this->_related[$name]))
-//		{
-//			if($relation instanceof CHasManyRelation)
-//				$this->_related[$name]=array();
-//			else if($relation instanceof CStatRelation)
-//				$this->_related[$name]=$relation->defaultValue;
-//			else
-//				$this->_related[$name]=null;
-//		}
-//
-//		if($params!==array())
-//		{
-//			$results=$this->_related[$name];
-//			if($exists)
-//				$this->_related[$name]=$save;
-//			else
-//				unset($this->_related[$name]);
-//			return $results;
-//		}
-//		else
-//			return $this->_related[$name];
+  finder.lazy_find( this, function( err ){
+    if ( err ) return tools.next_tick( null, err, emitter );
+
+    if( !self._related[ name ] )
+      self._related[ name ] = relation.class_name == 'HasManyRelation'
+        ? []
+        : relation.class_name == 'StatRelation'
+          ? relation.defaultValue
+          : null;
+
+    var results = self._related[ name ];
+
+    if ( !Object.isEmpty( params ) )
+      if( saved_relation ) self._related[ name ] = saved_relation;
+      else          delete self._related[ name ];
+
+    tools.next_tick( results, null, emitter );
+  } );
+
+  return emitter;
 };
 
 
@@ -178,8 +176,8 @@ ActiveRecord.prototype.stat = function () {
 };
 
 
-ActiveRecord.prototype.get_table = function ( callback ) {
-  this.db_connection.db_schema.get_table( this.table_name, callback );
+ActiveRecord.prototype.get_table = function ( callback, context ) {
+  this.db_connection.db_schema.get_table( this.table_name, callback, context );
 };
 
 

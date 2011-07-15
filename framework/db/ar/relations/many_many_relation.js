@@ -1,14 +1,7 @@
-var ActiveRelation = require( './active_relation' );
+var HasManyRelation = require( './has_many_relation' );
 
-module.exports = ManyManyRelation.inherits( ActiveRelation );
+module.exports = ManyManyRelation.inherits( HasManyRelation );
 
 function ManyManyRelation( params ) {
   this._init( params );
 }
-
-
-ManyManyRelation.prototype._init = function( params ) {
-  this.super_._init( params );
-
-
-};
