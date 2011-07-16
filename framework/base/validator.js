@@ -12,11 +12,11 @@ Validator.prototype._init = function ( params ) {
 }
 
 Validator.prototype.greater = function ( field_name, value, length ){
-  if( value.length < length[ 0 ]  ) this.errors.push( field_name + " should be greater then " + length[ 0 ] + " symbols: " + value );
+  if( value.length < length  ) this.errors.push( field_name + " should be greater then " + length + " symbols: " + value );
 }
 
 Validator.prototype.lesser = function ( field_name, value, length ){
-  if( value.length > length[ 0 ] ) this.errors.push( field_name + " should be lesser then " + length[ 0 ] + " symbols:" + value );
+  if( value.length > length ) this.errors.push( field_name + " should be lesser then " + length + " symbols:" + value );
 }
 
 Validator.prototype.correct_email = function ( field_name, value ){
@@ -31,7 +31,7 @@ Validator.prototype.letters_only = function ( field_name, value ){
 }
 
 Validator.prototype.md5 = function( field_name, value ){
-  if( value.search(/^[a-f0-9]{32}$/) != 0 )
+  if ( !/^[a-f0-9]{32}$/.test( value ) )
     this.errors.push( field_name + ' not md5: ' + value );
 }
 
@@ -41,9 +41,8 @@ Validator.prototype.required = function( field_name, value ){
 }
 
 Validator.prototype.in_array = function( field_name, value, array ){
-  for( var i = 0, ln = array.length; i < ln; i++ ){
-    if( value == array[ i ] ) return true;
-  }
+  if ( ~array.indexOf( value ) ) return true;
+
   this.errors.push( field_name + ' not valid' );
 }
 
@@ -53,6 +52,6 @@ Validator.prototype.is_number = function( field_name, value ){
 }
 
 Validator.prototype.is_array = function( field_name, value ){
-  if( !( value instanceof Array ) )
+  if( !Array.isArray( value ) )
     this.errors.push( field_name + ' should be array of room modules' );
 }

@@ -176,10 +176,10 @@ Application.prototype.get_session = function ( id, client ) {
       delete self._sessions[ id ];
     } );
 
-    session.add_client( client );
+    if ( client ) session.add_client( client );
     this.emit( 'new_session', session );
   }
-  else session.add_client( client );
+  else if ( client ) session.add_client( client );
 
   return session;
 };

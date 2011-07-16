@@ -131,6 +131,14 @@ Object.not_deep_clone = function( obj ) {
 }
 
 
+Object.reset = function( obj ) {
+  if ( this.isEmpty( obj ) ) return null;
+  if ( Array.isArray( obj ) ) return obj[0];
+  if ( this.isObject( obj ) ) return obj[ this.keys( obj )[0] ];
+  return null;
+}
+
+
 var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
 
 Function.prototype.inherits = function( super_class ) {
@@ -249,3 +257,14 @@ Date.prototype.format = function( format ) {
 function two_pos( i ) {
   return i < 10 ? '0' + i : i;
 }
+
+
+exports.next_tick = function( result, error, emitter, action ){
+  emitter = emitter || new process.EventEmitter;
+
+  process.nextTick( function() {
+    emitter.emit( action || ( error ? 'error' : 'success' ), error || result );
+  } );
+
+  return emitter;
+};

@@ -14,8 +14,8 @@ UserIdentityARHandler.prototype._init = function ( params ) {
 };
 
 
-UserIdentityARHandler.prototype.save = function ( attributes ) {
-  var res = this.super_.save( attributes );
+UserIdentityARHandler.prototype.save = function ( attributes, scenario ) {
+  var res = this.super_.save( attributes, scenario );
   if ( res instanceof Error ) {
     var emitter = new process.EventEmitter;
     process.nextTick( function() {
