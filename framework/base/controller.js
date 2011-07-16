@@ -81,13 +81,12 @@ Controller.prototype.render = function ( view, params, callback ) {
 };
 
 
-Controller.prototype._send_response = function ( view, params, session, callback ) {
+Controller.prototype.send_response = function ( view, params, client, callback ) {
+
   callback = callback || this.default_callback;
 
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
-
-    var client = session.client;
     client.send( data );
     callback( null, data );
   } );
