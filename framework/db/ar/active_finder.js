@@ -178,7 +178,7 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
 
   if( typeof With == "string" ) {
 
-    var pos = With.indexOf( '.' );
+    var pos = With.lastIndexOf( '.' );
     if( ~pos ) {
       parent = this._build_join_tree( parent, With.substr( 0, pos ) );
       With   = With.substr( pos + 1 );

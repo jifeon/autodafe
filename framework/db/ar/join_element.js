@@ -119,7 +119,7 @@ JoinElement.prototype.get_pk_alias = function ( table ) {
 //
 
 
-//ActiveRecord.prototype.__wrap_to_get_table = function ( fun ) {
+//ActiveRecord.prototype._wrap_to_get_table = function ( fun ) {
 //  var emitter = new Emitter;
 //  var self    = this;
 //
@@ -157,9 +157,10 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
 
     var query = new JoinQuery({
       join_element : child,
-      app          : this.app
+      app          : this.app,
+      table        : table
     });
-    query.selects     = [ child.get_column_select( child.relation.select ) ];
+    query.selects     = [ child.get_column_select( table, child.relation.select ) ];
     query.conditions  = [
       child.relation.condition,
       child.relation.on
@@ -173,176 +174,185 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
       query.params = child.relation.params;
 
     query.elements[ child.id ] = true;
-    if(child.relation.class_name == 'HasManyRelation' ) {
+    if( child.relation.class_name == 'HasManyRelation' ) {
       query.limit   = child.relation.limit;
       query.offset  = child.relation.offset;
     }
 
-    child.before_find();
-    child.apply_lazy_condition( query, base_record );
+//    child.before_find();
+    child._apply_lazy_condition( query, base_record, table, function( err ) {
+      if ( err ) return callback( err );
 
-    this._joined  = true;
-    child._joined = true;
+      self._joined  = true;
+      child._joined = true;
 
-    this._finder.base_limited = false;
-    child.build_query( query );
-    child.run_query( query );
-    child.children.forEach( function( child ) {
-      child.find();
-    } );
+      self._finder.base_limited = false;
+      child.build_query( query );
+      child.run_query( query );
+      child.children.forEach( function( child ) {
+        child.find();
+      } );
 
-    if( Object.isEmpty( child.records )) return callback();
+      if( Object.isEmpty( child.records )) return callback();
 
-    if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
-      base_record.add_related_record( child.relation.name, child.records[0], false );
+      if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
+        base_record.add_related_record( child.relation.name, child.records[0], false );
 
-    else {  // has_many and many_many
+      else {  // has_many and many_many
 
-      for ( var name in child.records ) {
-        var record = child.records[ name ];
-        var index = child.relation.index
-          ? record[ child.relation.index ]
-          : true;
-        
-        base_record.add_related_record( child.relation.name, record, index );
+        for ( var name in child.records ) {
+          var record = child.records[ name ];
+          var index = child.relation.index
+            ? record[ child.relation.index ]
+            : true;
+
+          base_record.add_related_record( child.relation.name, record, index );
+        }
       }
-    }
-
+    } );
   } );
 
 }
 
 
-//  /**
-//   * apply lazy condition
-//   * @param cjoin_query query represents a join sql statements
-//   * @param cactive_record record the active record whose related object is to be fetched.
-//   */
-//  JoinElement.prototype._apply_lazy_condition = function(query,record)
-//  {
-//    schema=this._builder.get_schema();
-//    parent=this._parent;
-//    if(this.relation instanceof cmany_many_relation)
-//    {
-//      if(!preg_match('/^\s*(.*?)\((.*)\)\s*/',this.relation.foreign_key,matches))
-//        throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an invalid foreign key. the format of the foreign key must be "join_table(fk1,fk2,...)".',
-//          array('{class}'=>get_class(parent.model),'{relation}'=>this.relation.name)));
-//
-//      if((join_table=schema.get_table(matches[1]))===null)
-//        throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is not specified correctly: the join table "{join_table}" given in the foreign key cannot be found in the database.',
-//          array('{class}'=>get_class(parent.model), '{relation}'=>this.relation.name, '{join_table}'=>matches[1])));
-//      fks=preg_split('/\s*,\s*/',matches[2],-1,preg_split_no_empty);
-//
-//
-//      join_alias=schema.quote_table_name(this.relation.name.'_'.this.table_alias);
-//      parent_condition=array();
-//      child_condition=array();
-//      count=0;
-//      params=array();
-//
-//      fk_defined=true;
-//      foreach(fks as i=>fk)
-//      {
-//        if(isset(join_table.foreign_keys[fk]))  // fk defined
-//        {
-//          list(table_name,pk)=join_table.foreign_keys[fk];
-//          if(!isset(parent_condition[pk]) && schema.compare_table_names(parent.get_table(!!1).raw_name,table_name))
-//          {
-//            parent_condition[pk]=join_alias.'.'.schema.quote_column_name(fk).'=:ypl'.count;
-//            params[':ypl'.count]=record.pk;
-//            count++;
-//          }
-//          else if(!isset(child_condition[pk]) && schema.compare_table_names(this.get_table(!!1).raw_name,table_name))
-//            child_condition[pk]=this.get_column_prefix().schema.quote_column_name(pk).'='.join_alias.'.'.schema.quote_column_name(fk);
-//          else
-//          {
-//            fk_defined=false;
-//            break;
-//          }
-//        }
-//        else
-//        {
-//          fk_defined=false;
-//          break;
-//        }
-//      }
-//
-//      if(!fk_defined)
-//      {
-//        parent_condition=array();
-//        child_condition=array();
-//        count=0;
-//        params=array();
-//        foreach(fks as i=>fk)
-//        {
-//          if(i<count(parent.get_table(!!1).primary_key))
-//          {
-//            pk=is_array(parent.get_table(!!1).primary_key) ? parent.get_table(!!1).primary_key[i] : parent.get_table(!!1).primary_key;
-//            parent_condition[pk]=join_alias.'.'.schema.quote_column_name(fk).'=:ypl'.count;
-//            params[':ypl'.count]=record.pk;
-//            count++;
-//          }
-//          else
-//          {
-//            j=i-count(parent.get_table(!!1).primary_key);
-//            pk=is_array(this.get_table(!!1).primary_key) ? this.get_table(!!1).primary_key[j] : this.get_table(!!1).primary_key;
-//            child_condition[pk]=this.get_column_prefix().schema.quote_column_name(pk).'='.join_alias.'.'.schema.quote_column_name(fk);
-//          }
-//        }
-//      }
-//
-//      if(parent_condition!==array() && child_condition!==array())
-//      {
-//        join='inner join '.join_table.raw_name.' '.join_alias.' on ';
-//        join.='('.implode(') and (',parent_condition).') and ('.implode(') and (',child_condition).')';
-//        if(!empty(this.relation.on))
-//          join.=' and ('.this.relation.on.')';
-//        query.joins[]=join;
-//        foreach(params as name=>value)
-//          query.params[name]=value;
-//      }
-//      else
-//        throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an incomplete foreign key. the foreign key must consist of columns referencing both joining tables.',
-//          array('{class}'=>get_class(parent.model), '{relation}'=>this.relation.name)));
-//    }
-//    else
-//    {
-//      fks=preg_split('/\s*,\s*/',this.relation.foreign_key,-1,preg_split_no_empty);
-//      params=array();
-//      foreach(fks as i=>fk)
-//      {
-//        if(this.relation instanceof cbelongs_to_relation)
-//        {
-//          if(isset(parent.get_table(!!1).foreign_keys[fk]))  // fk defined
-//            pk=parent.get_table(!!1).foreign_keys[fk][1];
-//          else if(is_array(this.get_table(!!1).primary_key)) // composite pk
-//            pk=this.get_table(!!1).primary_key[i];
-//          else
-//            pk=this.get_table(!!1).primary_key;
-//          params[pk]=record.fk;
-//        }
-//        else
-//        {
-//          if(isset(this.get_table(!!1).foreign_keys[fk]))  // fk defined
-//            pk=this.get_table(!!1).foreign_keys[fk][1];
-//          else if(is_array(parent.get_table(!!1).primary_key)) // composite pk
-//            pk=parent.get_table(!!1).primary_key[i];
-//          else
-//            pk=parent.get_table(!!1).primary_key;
-//          params[fk]=record.pk;
-//        }
-//      }
-//      prefix=this.get_column_prefix();
-//      count=0;
-//      foreach(params as name=>value)
-//      {
-//        query.conditions[]=prefix.schema.quote_column_name(name).'=:ypl'.count;
-//        query.params[':ypl'.count]=value;
-//        count++;
-//      }
-//    }
-//  }
-//
+JoinElement.prototype._apply_lazy_condition = function( query, record, parent_table, callback ) {
+  var schema = this._builder.db_schema;
+  var parent = this._parent;
+
+  this.get_table( function( table ){
+    if ( this.relation.class_name == 'ManyManyRelation' ) {
+
+      var matches = this.relation.foreign_key.match( /^\s*(.*?)\((.*)\)\s*/ );
+      if( !matches ) throw new Error(
+        'The relation `%s` in active record class `%s` is specified with an invalid foreign key. \
+         The format of the foreign key must be "join_table(fk1,fk2,...)".'.format( this.relation.name, parent.model.class_name )
+      );
+
+      schema.get_table( matches[1], function( err, join_table ) {
+  //      if ( err ) return callback( err );
+
+        if( !join_table ) throw new Error(
+          'The relation `%s` in active record class `%s` is not specified correctly: \
+           the join table `%s` given in the foreign key cannot be found in the database.'
+           .format( this.relation.name, parent.model.class_name, matches[1] )
+        );
+
+        var fks               = matches[2].split( /\s*,\s*/ );
+        var join_alias        = schema.quote_table_name( this.relation.name + '_' + this.table_alias);
+        var parent_condition  = {};
+        var child_condition   = {};
+        var count             = 0;
+        var params            = {};
+        var fk_defined        = true;
+
+        for( var i = 0, i_ln = fks.length; i < i_ln; i++ ) {
+          var fk = fks[i];
+
+  //        if( join_table.foreign_keys[fk] ) {  // fk defined
+  //
+  //          list(table_name,pk)=join_table.foreign_keys[fk];
+  //          if(!isset(parent_condition[pk]) && schema.compare_table_names(parent.get_table(!!1).raw_name,table_name))
+  //          {
+  //            parent_condition[pk]=join_alias.'.'.schema.quote_column_name(fk).'=:ypl'.count;
+  //            params[':ypl'.count]=record.pk;
+  //            count++;
+  //          }
+  //          else if(!isset(child_condition[pk]) && schema.compare_table_names(this.get_table(!!1).raw_name,table_name))
+  //            child_condition[pk]=this.get_column_prefix().schema.quote_column_name(pk).'='.join_alias.'.'.schema.quote_column_name(fk);
+  //          else
+  //          {
+  //            fk_defined=false;
+  //            break;
+  //          }
+  //        }
+  //        else
+  //        {
+            fk_defined = false;
+            break;
+  //        }
+        }
+
+        if( !fk_defined ) {
+          parent_condition  = {};
+          child_condition   = {};
+          count             = 0;
+          params            = {};
+
+          fks.forEach( function( fk, i ) {
+            var length = Array.isArray( parent_table.primary_key ) ? parent_table.primary_key.length : 1;
+            var pk;
+
+            if( i < length ) {
+              pk = Array.isArray( parent_table.primary_key) ? parent_table.primary_key[ i ] : parent_table.primary_key;
+              parent_condition[ pk ] = join_alias + '.' + schema.quote_column_name(fk) + '=:ypl' + count;
+              params[ ':ypl' + count ] = record[ pk ];
+              count++;
+            }
+            else {
+              var j = i - length;
+              pk = Array.isArray( table.primary_key ) ? table.primary_key[ j ] : table.primary_key;
+              child_condition[ pk ] = this.get_column_prefix( table ) + schema.quote_column_name( pk ) +
+                '=' + join_alias + '.' + schema.quote_column_name( fk );
+            }
+          }, this );
+        }
+
+        if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition ) ) {
+          var join = 'INNER JOIN ' + join_table.raw_name + ' ' + join_alias + ' on ';
+          join += '(' + Object.values( parent_condition ).join( ') and (' ) + ') and (' + implode(') and (',child_condition).')';
+          if(!empty(this.relation.on))
+            join.=' and ('.this.relation.on.')';
+          query.joins[]=join;
+          foreach(params as name=>value)
+            query.params[name]=value;
+        }
+        else
+          throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an incomplete foreign key. the foreign key must consist of columns referencing both joining tables.',
+            array('{class}'=>get_class(parent.model), '{relation}'=>this.relation.name)));
+
+      }, this );
+
+
+    }
+    else
+    {
+      fks=preg_split('/\s*,\s*/',this.relation.foreign_key,-1,preg_split_no_empty);
+      params=array();
+      foreach(fks as i=>fk)
+      {
+        if(this.relation instanceof cbelongs_to_relation)
+        {
+          if(isset(parent.get_table(!!1).foreign_keys[fk]))  // fk defined
+            pk=parent.get_table(!!1).foreign_keys[fk][1];
+          else if(is_array(this.get_table(!!1).primary_key)) // composite pk
+            pk=this.get_table(!!1).primary_key[i];
+          else
+            pk=this.get_table(!!1).primary_key;
+          params[pk]=record.fk;
+        }
+        else
+        {
+          if(isset(this.get_table(!!1).foreign_keys[fk]))  // fk defined
+            pk=this.get_table(!!1).foreign_keys[fk][1];
+          else if(is_array(parent.get_table(!!1).primary_key)) // composite pk
+            pk=parent.get_table(!!1).primary_key[i];
+          else
+            pk=parent.get_table(!!1).primary_key;
+          params[fk]=record.pk;
+        }
+      }
+      prefix=this.get_column_prefix();
+      count=0;
+      foreach(params as name=>value)
+      {
+        query.conditions[]=prefix.schema.quote_column_name(name).'=:ypl'.count;
+        query.params[':ypl'.count]=value;
+        count++;
+      }
+    }
+  });
+}
+
 //  /**
 //   * performs the eager loading with the base records ready.
 //   * @param mixed base_records the available base record(s).
@@ -503,7 +513,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
 //    else
 //    {
 //      attributes=array();
-//      aliases=array_flip(this.__column_aliases);
+//      aliases=array_flip(this._column_aliases);
 //      foreach(row as alias=>value)
 //      {
 //        if(isset(aliases[alias]))
@@ -544,134 +554,146 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
 //
 //    return record;
 //  }
-//
-//  /**
-//   * @return string the table name and the table alias (if any). this can be used directly in sql query without escaping.
-//   */
-//  JoinElement.prototype.get_table_name_with_alias = function()
-//  {
-//    if(this.table_alias!==null)
-//      return this.get_table(!!1).raw_name . ' ' . this.raw_table_alias;
-//    else
-//      return this.get_table(!!1).raw_name;
-//  }
-//
-//  /**
-//   * generates the list of columns to be selected.
-//   * columns will be properly aliased and primary keys will be added to selection if they are not specified.
-//   * @param mixed select columns to be selected. defaults to '*', indicating all columns.
-//   * @return string the column selection
-//   */
-//  JoinElement.prototype.get_column_select = function(select='*')
-//  {
-//    schema=this._builder.get_schema();
-//    prefix=this.get_column_prefix();
-//    columns=array();
-//    if(select==='*')
-//    {
-//      foreach(this.get_table(!!1).get_column_names() as name)
-//        columns[]=prefix.schema.quote_column_name(name).' as '.schema.quote_column_name(this.__column_aliases[name]);
-//    }
-//    else
-//    {
-//      if(is_string(select))
-//        select=explode(',',select);
-//      selected=array();
-//      foreach(select as name)
-//      {
-//        name=trim(name);
-//        matches=array();
-//        if((pos=strrpos(name,'.'))!==false)
-//          key=substr(name,pos+1);
-//        else
-//          key=name;
-//        key=trim(key,'\'"`');
-//
-//        if(key==='*')
-//        {
-//          foreach(this.get_table(!!1).get_column_names() as name)
-//            columns[]=prefix.schema.quote_column_name(name).' as '.schema.quote_column_name(this.__column_aliases[name]);
-//          continue;
-//        }
-//
-//        if(isset(this.__column_aliases[key]))  // simple column names
-//        {
-//          columns[]=prefix.schema.quote_column_name(key).' as '.schema.quote_column_name(this.__column_aliases[key]);
-//          selected[this.__column_aliases[key]]=1;
-//        }
-//        else if(preg_match('/^(.*?)\s+as\s+(\w+)/im',name,matches)) // if the column is already aliased
-//        {
-//          alias=matches[2];
-//          if(!isset(this.__column_aliases[alias]) || this.__column_aliases[alias]!==alias)
-//          {
-//            this.__column_aliases[alias]=alias;
-//            columns[]=name;
-//            selected[alias]=1;
-//          }
-//        }
-//        else
-//          throw new cdb_exception(yii::t('yii','active record "{class}" is trying to select an invalid column "{column}". note, the column must exist in the table or be an expression with alias.',
-//            array('{class}'=>get_class(this.model), '{column}'=>name)));
-//      }
-//      // add primary key selection if they are not selected
-//      if(is_string(this._pk_alias) && !isset(selected[this._pk_alias]))
-//        columns[]=prefix.schema.quote_column_name(this.get_table(!!1).primary_key).' as '.schema.quote_column_name(this._pk_alias);
-//      else if(is_array(this._pk_alias))
-//      {
-//        foreach(this.get_table(!!1).primary_key as name)
-//          if(!isset(selected[name]))
-//            columns[]=prefix.schema.quote_column_name(name).' as '.schema.quote_column_name(this._pk_alias[name]);
-//      }
-//    }
-//
-//    return implode(', ',columns);
-//  }
-//
-//  /**
-//   * @return string the primary key selection
-//   */
-//  JoinElement.prototype.get_primary_key_select = function()
-//  {
-//    schema=this._builder.get_schema();
-//    prefix=this.get_column_prefix();
-//    columns=array();
-//    if(is_string(this._pk_alias))
-//      columns[]=prefix.schema.quote_column_name(this.get_table(!!1).primary_key).' as '.schema.quote_column_name(this._pk_alias);
-//    else if(is_array(this._pk_alias))
-//    {
-//      foreach(this._pk_alias as name=>alias)
-//        columns[]=prefix.schema.quote_column_name(name).' as '.schema.quote_column_name(alias);
-//    }
-//    return implode(', ',columns);
-//  }
-//
-//  /**
-//   * @return string the condition that specifies only the rows with the selected primary key values.
-//   */
-//  JoinElement.prototype.get_primary_key_range = function()
-//  {
-//    if(empty(this.records))
-//      return '';
-//    values=array_keys(this.records);
-//    if(is_array(this.get_table(!!1).primary_key))
-//    {
-//      foreach(values as &value)
-//        value=unserialize(value);
-//    }
-//    return this._builder.create_in_condition(this.get_table(!!1),this.get_table(!!1).primary_key,values,this.get_column_prefix());
-//  }
-//
-//  /**
-//   * @return string the column prefix for column reference disambiguation
-//   */
-//  JoinElement.prototype.get_column_prefix = function()
-//  {
-//    if(this.table_alias!==null)
-//      return this.raw_table_alias.'.';
-//    else
-//      return this.get_table(!!1).raw_name.'.';
-//  }
-//
+
+JoinElement.prototype.get_table_name_with_alias = function( table ) {
+  if( this.table_alias ) return table.raw_name + ' ' + this.raw_table_alias;
+
+  return table.raw_name;
+}
+
+
+JoinElement.prototype.get_column_select = function( table, select ) {
+  select = select || '*';
+  
+  var schema          = this._builder.db_schema;
+  var prefix          = this.get_column_prefix( table );
+  var columns         = [];
+  var column_aliases  = this.get_column_aliases( table );
+  var column_names    = table.get_column_names();
+  var pk_alias        = this.get_pk_alias( table );
+
+  if ( select == '*' ) column_names.forEach( function( name ) {
+    columns.push( 
+      prefix + 
+      schema.quote_column_name( name ) + ' AS ' +
+      schema.quote_column_name( column_aliases[ name ] )
+    );
+  }, this ); 
+
+  else {
+    var selected = {};
+
+    if( typeof select == 'string' ) select = select.split( /\s*,\s*/ );
+
+    select.forEach( function( name ){
+      
+      var key;
+      var dot_pos = name.lastIndexOf( '.' );
+
+      if( ~dot_pos ) key = name.substr( dot_pos + 1 );
+      else key = name;
+
+      key = key.replace(/^['"`]*|['"`]*$/g, '');
+
+      if( key == '*' ) return column_names.forEach( function( name ) {
+        columns.push(
+          prefix +
+          schema.quote_column_name( name ) + ' AS ' +
+          schema.quote_column_name( column_aliases[ name ] )
+        );
+      }, this );
+
+      var matches
+      if ( column_aliases[ key ] ) {  // simple column names
+        columns.push(
+          prefix +
+          schema.quote_column_name( key ) + ' AS ' +
+          schema.quote_column_name( column_aliases[key] )
+        );
+        selected[ column_aliases[ key ] ] = 1;
+      }
+
+      else if( matches = name.match( /^(.*?)\s+AS\s+(\w+)/im ) ) { // if the column is already aliased
+        var alias = matches[2];
+        if( !column_aliases[ alias ] || column_aliases[ alias ] != alias ) {
+          column_aliases[ alias ] = alias;
+          columns.push( name );
+          selected[ alias ] = 1;
+        }
+      }
+
+      else throw new Error(
+        'Active record %s is trying to select an invalid column %s.\
+         Note, the column must exist in the table or be an expression with alias.'.format( this.model.class_name, name )
+      );
+    }, this );
+
+
+    // add primary key selection if they are not selected
+    if( typeof pk_alias == 'string' && !selected[ pk_alias ] )
+      columns.push(
+        prefix +
+        schema.quote_column_name( table.primary_key ) + ' AS ' +
+        schema.quote_column_name( pk_alias )
+      );
+
+    else if( Object.isObject( pk_alias )) table.each_primary_key( function( name ) {
+        if ( !selected[name] )
+          columns.push(
+            prefix +
+            schema.quote_column_name( name ) + ' AS ' +
+            schema.quote_column_name( pk_alias[ name ] )
+          );
+    }, this );
+  }
+
+  return columns.join(', ');
+}
+
+
+JoinElement.prototype.get_primary_key_select = function( table ) {
+  var schema    = this._builder.db_schema;
+  var prefix    = this.get_column_prefix( table );
+  var columns   = [];
+  var pk_alias  = this.get_pk_alias( table );
+
+  if( typeof pk_alias == 'string' )
+    columns.push(
+      prefix +
+      schema.quote_column_name( table.primary_key) + ' AS ' +
+      schema.quote_column_name( pk_alias )
+    );
+
+  else if ( Object.isObject( pk_alias ))
+    for ( var name in pk_alias )
+      columns.push(
+        prefix +
+        schema.quote_column_name( name ) + ' AS ' +
+        schema.quote_column_name( pk_alias[ name ] )
+      );
+
+  return columns.join(', ');
+}
+
+
+JoinElement.prototype.get_primary_key_range = function( table ) {
+  if( Object.isEmpty( this.records )) return '';
+
+  var values = Object.keys( this.records );
+  if( Array.isArray( table.primary_key )) values = values.map( function( value ){
+    return JSON.parse( value );
+  });
+
+  return this._builder.create_in_condition( table, table.primary_key, values, this.get_column_prefix( table ) );
+}
+
+
+JoinElement.prototype.get_column_prefix = function( table ) {
+  if( this.table_alias ) return this.raw_table_alias + '.';
+
+  return table.raw_name + '.';
+}
+
 //  /**
 //   * @return string the join statement (this node joins with its parent)
 //   */
