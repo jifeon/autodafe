@@ -118,8 +118,8 @@ UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
 };
 
 
-UserIdentityModelHandler.prototype.save = function ( attributes ) {
-  if ( !this.target.is_new ) return this.target.save( attributes );
+UserIdentityModelHandler.prototype.save = function ( attributes, scenario ) {
+  if ( !this.target.is_new ) return this.target.save( attributes, scenario );
 
   var roles = this.user_identity.get_roles( this.target );
   var self  = this;
@@ -127,7 +127,7 @@ UserIdentityModelHandler.prototype.save = function ( attributes ) {
   if ( roles.some( function( role ) {
     return self._has_right( 'create', null, role );
   } ) )
-    return this.target.save( attributes );
+    return this.target.save( attributes, scenario );
 
   return new Error( 'Access denied to create model `%s`'.format( this.target.class_name ) );
 };

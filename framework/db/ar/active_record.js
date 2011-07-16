@@ -1,7 +1,7 @@
 var Model           = require('model');
-var DbCriteria      = require('db/db_criteria');
 var DbCommand       = require('db/db_command');
 var AppModule       = require('app_module');
+var tools           = require('lib/tools');
 var Emitter         = process.EventEmitter;
 
 module.exports = ActiveRecord.inherits( Model );
@@ -124,7 +124,10 @@ ActiveRecord.prototype.set_primary_key = function( table_schema, primary_key ) {
 }
 
 
-ActiveRecord.prototype.save = function( attributes ) {
+ActiveRecord.prototype.save = function( attributes, scenario ) {
+  if ( !this.super_.save( attributes, scenario ) )
+    return tools.next_tick( this.get_errors(), null, null, 'validation_error' );
+
   return this.is_new ? this.insert( attributes ) : this.update( attributes );
 }
 
