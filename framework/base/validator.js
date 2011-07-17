@@ -12,11 +12,12 @@ Validator.prototype._init = function ( params ) {
 }
 
 Validator.prototype.greater = function ( field_name, value, length ){
-  if( value.length < length  ) this.errors.push( field_name + " should be greater then " + length + " symbols: " + value );
+  if( value && value.length < length  ) this.errors.push( field_name + " should be greater then " + length + " symbols: " + value );
 }
 
 Validator.prototype.lesser = function ( field_name, value, length ){
-  if( value.length > length ) this.errors.push( field_name + " should be lesser then " + length + " symbols:" + value );
+  //console.log(field_name+' '+ value + ' '+length);
+  if( value && value.length > length ) this.errors.push( field_name + " should be lesser then " + length + " symbols:" + value );
 }
 
 Validator.prototype.correct_email = function ( field_name, value ){
@@ -36,6 +37,7 @@ Validator.prototype.md5 = function( field_name, value ){
 }
 
 Validator.prototype.required = function( field_name, value ){
+  //console.log(field_name+' '+ value);
   if( Object.isEmpty( value ) )
     this.errors.push( field_name + ' required' );
 }
