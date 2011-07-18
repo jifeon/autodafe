@@ -15,7 +15,7 @@ MysqlTableSchema.prototype._init = function( params ) {
 
   this._resolve_table_name( params.name );
   this._find_columns();
-
+  
   this.on( 'initialized', function() {
     this.is_inited = true;
     this.log( 'Table "%s" has initialized'.format( this.name ) );
@@ -69,9 +69,35 @@ MysqlTableSchema.prototype._find_columns = function() {
       }
     });
 
-    self.emit( 'initialized' );
+    self._find_constrains();
   } );
 }
+
+
+MysqlTableSchema.prototype._find_constrains = function () {
+  var self = this;
+  var sql  = 'SHOW CREATE TABLE ' + this.raw_name;
+  
+  this.db_schema.db_connection.create_command( sql ).execute( function( e, result ){
+    if ( e ) return self.emit( 'error', e );
+
+    result.fetch_obj( function( obj ) {
+      var create_table_sql  = obj[ 'Create Table' ];
+      var re                = /FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mgi;
+      var matches;
+      while (( matches = re.exec( create_table_sql )) != null ) {
+        var keys = matches[ 1 ].replace( /`/g, '' ).split(',');
+        var fks  = matches[ 3 ].replace( /`/g, '' ).split(',');
+
+        keys.forEach( function( key, i ) {
+          self.foreign_keys[ key ] = [ matches[ 3 ].replace( /`/g, '' ), fks[i] ];
+        } );
+      }
+    } )
+
+    self.emit( 'initialized' );
+  } );
+};
 
 
 MysqlTableSchema.prototype._create_column = function( column ) {

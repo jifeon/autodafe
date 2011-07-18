@@ -180,6 +180,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     }
 
 //    child.before_find();
+    var self = this;
     child._apply_lazy_condition( query, base_record, table, function( err ) {
       if ( err ) return callback( err );
 
@@ -189,7 +190,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
       self._finder.base_limited = false;
       child.build_query( query );
       child.run_query( query );
-      child.children.forEach( function( child ) {
+      Object.values( child.children ).forEach( function( child ) {
         child.find();
       } );
 
@@ -209,6 +210,8 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
           base_record.add_related_record( child.relation.name, record, index );
         }
       }
+
+      callback();
     } );
   } );
 
@@ -219,7 +222,9 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
   var schema = this._builder.db_schema;
   var parent = this._parent;
 
-  this.get_table( function( table ){
+  this.get_table( function( err, table ){
+    if ( err ) return callback( err );
+
     if ( this.relation.class_name == 'ManyManyRelation' ) {
 
       var matches = this.relation.foreign_key.match( /^\s*(.*?)\((.*)\)\s*/ );
@@ -229,7 +234,7 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
       );
 
       schema.get_table( matches[1], function( err, join_table ) {
-  //      if ( err ) return callback( err );
+        if ( err ) return callback( err );
 
         if( !join_table ) throw new Error(
           'The relation `%s` in active record class `%s` is not specified correctly: \
@@ -298,57 +303,72 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
         }
 
         if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition ) ) {
-          var join = 'INNER JOIN ' + join_table.raw_name + ' ' + join_alias + ' on ';
-          join += '(' + Object.values( parent_condition ).join( ') and (' ) + ') and (' + implode(') and (',child_condition).')';
-          if(!empty(this.relation.on))
-            join.=' and ('.this.relation.on.')';
-          query.joins[]=join;
-          foreach(params as name=>value)
-            query.params[name]=value;
+          var join = 'INNER JOIN ' + join_table.raw_name + ' ' + join_alias + ' ON ';
+          join +=
+            '(' + Object.values( parent_condition ).join( ') and (' ) +
+            ') and (' + Object.values( child_condition ).join( ') and ('  )  + ')';
+
+          if( !this.relation.on ) join += ' AND (' + this.relation.on + ')';
+
+          query.joins.push( join );
+          for( var name in params)
+            query.params[ name ] = params[ name ];
         }
-        else
-          throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an incomplete foreign key. the foreign key must consist of columns referencing both joining tables.',
-            array('{class}'=>get_class(parent.model), '{relation}'=>this.relation.name)));
+        else throw new Error(
+          'The relation `%s` in active record class `%s` is specified with an incomplete foreign key. \
+           The foreign key must consist of columns referencing both joining tables.'.format( this.relation.name, parent.model.class_name )
+        );
+
+        callback();
 
       }, this );
 
-
     }
-    else
-    {
-      fks=preg_split('/\s*,\s*/',this.relation.foreign_key,-1,preg_split_no_empty);
-      params=array();
-      foreach(fks as i=>fk)
-      {
-        if(this.relation instanceof cbelongs_to_relation)
-        {
-          if(isset(parent.get_table(!!1).foreign_keys[fk]))  // fk defined
-            pk=parent.get_table(!!1).foreign_keys[fk][1];
-          else if(is_array(this.get_table(!!1).primary_key)) // composite pk
-            pk=this.get_table(!!1).primary_key[i];
+    else {
+      var fks     = this.relation.foreign_key.split( /\s*,\s*/ );
+      var params  = {};
+      fks.forEach( function( fk, i ) {
+
+        var pk;
+
+        if( this.relation.class_name == 'BelongsToRelation' ) {
+
+          if( parent_table.foreign_keys[ fk ] )  // fk defined
+            pk = parent_table.foreign_keys[ fk ][ 1 ];
+
+          else if( Array.isArray( table.primary_key ) ) // composite pk
+            pk = table.primary_key[ i ];
+
           else
-            pk=this.get_table(!!1).primary_key;
-          params[pk]=record.fk;
+            pk = table.primary_key;
+
+          params[ pk ] = record[ fk ];
         }
-        else
-        {
-          if(isset(this.get_table(!!1).foreign_keys[fk]))  // fk defined
-            pk=this.get_table(!!1).foreign_keys[fk][1];
-          else if(is_array(parent.get_table(!!1).primary_key)) // composite pk
-            pk=parent.get_table(!!1).primary_key[i];
+        else {
+
+          if ( table.foreign_keys[ fk ] )  // fk defined
+            pk = table.foreign_keys[ fk ][ 1 ];
+
+          else if( Array.isArray( parent_table.primary_key ) ) // composite pk
+            pk = parent_table.primary_key[ i ];
+
           else
-            pk=parent.get_table(!!1).primary_key;
-          params[fk]=record.pk;
+            pk = parent_table.primary_key;
+
+          params[ fk ] = record[ pk ];
         }
-      }
-      prefix=this.get_column_prefix();
-      count=0;
-      foreach(params as name=>value)
-      {
-        query.conditions[]=prefix.schema.quote_column_name(name).'=:ypl'.count;
-        query.params[':ypl'.count]=value;
+      }, this );
+
+      var prefix  = this.get_column_prefix( table );
+      var count   = 0;
+
+      for( var name in params ) {
+        query.conditions.push( prefix + schema.quote_column_name( name ) + '=:ypl' + count );
+        query.params[ ':ypl' + count ] = params[ name ];
         count++;
       }
+
+      callback();
     }
   });
 }
@@ -364,7 +384,7 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
 //    if(is_string(this.get_table(!!1).primary_key))
 //    {
 //      foreach(base_records as base_record)
-//        this.records[base_record.{this.get_table(!!1).primary_key}]=base_record;
+//       this this.records[base_record.{this.get_table(!!1).primary_key}]=base_record;
 //    }
 //    else
 //    {
@@ -448,36 +468,33 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
 //
 //    this.children = null;
 //  }
-//
-//  /**
-//   * builds the join query with all descendant has_one and belongs_to nodes.
-//   * @param cjoin_query query the query being built up
-//   */
-//  JoinElement.prototype.build_query = function(query)
-//  {
-//    foreach(this.children as child)
-//    {
-//      if(child.relation instanceof chas_one_relation || child.relation instanceof cbelongs_to_relation
-//        || this._finder.join_all || child.relation.together || (!this._finder.base_limited && child.relation.together===null))
-//      {
-//        child._joined=true;
-//        query.join(child);
-//        child.build_query(query);
-//      }
-//    }
-//  }
-//
-//  /**
-//   * executes the join query and populates the query results.
-//   * @param cjoin_query query the query to be executed.
-//   */
-//  JoinElement.prototype.run_query = function(query)
-//  {
-//    command=query.create_command(this._builder);
-//    foreach(command.query_all() as row)
-//      this.populate_record(query,row);
-//  }
-//
+
+JoinElement.prototype.build_query = function( query ) {
+  var self = this;
+
+  Object.values( this.children ).forEach( function( child ) {
+    if( child.relation.class_name == 'HasOneRelation' ||
+        child.relation.class_name == 'BelongsToRelation' ||
+        self._finder.join_all ||
+        child.relation.together ||
+        ( !self._finder.base_limited && child.relation.together == null )
+    ) {
+      child._joined = true;
+      query.join( child );
+      child.build_query( query );
+    }
+  } );
+}
+
+JoinElement.prototype.run_query = function( query ) {
+  var command = query.create_command( this._builder );
+//  foreach( command.query_all() as row )
+//    this.populate_record(query,row);
+  command.execute( function( err, result ) {
+    console.log( result );
+  } )
+}
+
 //  /**
 //   * populates the active records with the query data.
 //   * @param cjoin_query query the query executed

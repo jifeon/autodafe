@@ -20,6 +20,7 @@ DbTableSchema.prototype._init = function( params ) {
   this.primary_key    = null;
   this.in_sequence    = false;
   this.is_inited      = false;
+  this.foreign_keys   = {};
 
   this._._columns     = {};
 };
