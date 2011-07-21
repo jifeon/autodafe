@@ -29,6 +29,8 @@ HTTPServer.prototype.run = function () {
       response  : response
     }) );
   } );
+
+  this.log( 'HTTP server started at port ' + this.port, 'info' );
 };
 
 

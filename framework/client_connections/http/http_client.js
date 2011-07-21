@@ -79,6 +79,23 @@ HTTPClient.prototype.send = function ( data ) {
   this.response.end( data, 'utf8' );
 };
 
+
+HTTPClient.prototype.send_error = function ( e ) {
+  switch ( e.number ) {
+    case 404:
+      this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
+      this.response.statusCode = 404;
+      this.response.end();
+      return true;
+
+    case 403:
+      break;
+  }
+
+  return false;
+};
+
+
 HTTPClient.prototype.set_url = function ( url ) {
   this.set_cookies();
   this.response.cookie = [];

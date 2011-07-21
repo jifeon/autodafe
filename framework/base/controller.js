@@ -1,7 +1,12 @@
 var AppModule = require('app_module');
-var dust      = require('dust');
 var path      = require('path');
 var fs        = require('fs');
+var dust      = require('dust');
+
+// disable whitespace compression
+dust.optimizers.format = function( ctx, node ) {
+  return node
+};
 
 module.exports = Controller.inherits( AppModule );
 
@@ -19,6 +24,7 @@ Controller.prototype._init = function ( params ) {
 
   this.default_action = 'index';
   this.views_path     = 'views';
+  this.dust           = dust;
 
   this._actions = {};
 
@@ -64,26 +70,33 @@ Controller.prototype.run_action = function ( action /*, arg1, arg2, ...*/ ) {
 };
 
 
+Controller.prototype.get_view_path = function ( view ) {
+  return path.join( this.app.base_dir, this.views_path, view );
+};
+
+
 Controller.prototype.render = function ( view, params, callback ) {
 
-  if ( dust.cache[ view ] ) return dust.render( view, params, callback );
+  if ( this.dust.cache[ view ] ) return this.dust.render( view, params, callback );
 
-  var view_path = path.join( this.app.base_dir, this.views_path, view );
+  var view_path = this.get_view_path( view )
 
+  var self = this;
   fs.readFile( view_path, 'UTF8', function( e, template ){
     if ( e ) return callback( e, null );
 
-    var compiled = dust.compile( template, view );
+    var compiled = self.dust.compile( template, view );
 
-    dust.loadSource( compiled );
-    dust.render( view, params, callback );
+    self.dust.loadSource( compiled );
+    self.dust.render( view, params, callback );
   } );
 };
 
 
-Controller.prototype.send_response = function ( view, params, client, callback ) {
+Controller.prototype.send_response = function ( view, client, params, callback ) {
 
   callback = callback || this.default_callback;
+  params   = params   || {};
 
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
