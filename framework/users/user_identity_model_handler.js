@@ -64,7 +64,7 @@ UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
     return this.target.get_attribute( name );
 
   this.user_identity.app.log(
-    'Access denied to view attribute `%s` in model `%s`'.format( name, this.target.class_name ), 'warning'
+    'Permission denied to view attribute `%s` in model `%s`'.format( name, this.target.class_name ), 'warning'
   );
   return null;
 };
@@ -78,8 +78,8 @@ UserIdentityModelHandler.prototype.set_attribute = function ( name, value ) {
   if ( this.user_identity.get_roles( this.target, name ).some( has_edit_right, this ) )
     return this.target.set_attribute( name, value );
 
-  this.user_identity.app.log(
-    'Access denied to edit attribute `%s` in model `%s`'.format( name, this.target.class_name ), 'warning'
+  this.target.validator.errors.push(
+    'Permission denied to change `%s`'.format( name )
   );
 
   return null;
@@ -113,6 +113,7 @@ UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
   for ( name in attributes )
     if ( this.user_identity.get_roles( this.target, name ).some( has_edit_right, this ) )
       attrs[ name ] = attributes[ name ];
+    else this.target.validator.errors.push( 'Permission denied to change `%s`'.format( name ) );
 
   this.target.set_attributes( attrs );
 };
@@ -124,12 +125,12 @@ UserIdentityModelHandler.prototype.save = function ( attributes, scenario ) {
   var roles = this.user_identity.get_roles( this.target );
   var self  = this;
 
-  if ( roles.some( function( role ) {
+  if ( !roles.some( function( role ) {
     return self._has_right( 'create', null, role );
   } ) )
-    return this.target.save( attributes, scenario );
+    this.target.validator.errors.push( 'Permission denied to create model `%s`'.format( this.target.class_name ) );
 
-  return new Error( 'Access denied to create model `%s`'.format( this.target.class_name ) );
+  return this.target.save( attributes, scenario );
 };
 
 
@@ -142,7 +143,7 @@ UserIdentityModelHandler.prototype.remove = function () {
   } ) )
     return this.target.remove();
 
-  return new Error( 'Access denied to remove model `%s`'.format( this.target.class_name ) );
+  return new Error( 'Permission denied to remove model `%s`'.format( this.target.class_name ) );
 };
 
 
@@ -154,5 +155,5 @@ UserIdentityModelHandler.prototype._has_right = function ( right, attribute_name
                    this.user_identity.users_manager.default_possibilities[ role ] ||
                    [];
 
-  return ~rights_map.indexOf( right );
+  return !!~rights_map.indexOf( right );
 };

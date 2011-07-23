@@ -43,8 +43,13 @@ UserIdentity.prototype.remove_session = function ( session ) {
 };
 
 
+UserIdentity.prototype.is_guest = function () {
+  return this == this.users_manager.guests;
+};
+
+
 UserIdentity.prototype.set_model = function ( model ) {
-  if ( this == this.users_manager.guests ) {
+  if ( this.is_guest() ) {
     this.log( 'Try to set model for guests\' UserIdentity', 'error' );
     return false;
   }

@@ -37,7 +37,6 @@ Validator.prototype.md5 = function( field_name, value ){
 }
 
 Validator.prototype.required = function( field_name, value ){
-  //console.log(field_name+' '+ value);
   if( Object.isEmpty( value ) )
     this.errors.push( field_name + ' required' );
 }

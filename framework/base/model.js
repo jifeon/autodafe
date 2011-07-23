@@ -86,6 +86,12 @@ Model.prototype.get_safe_attribute_names = function () {
   return this.constructor.safe_attribute_names || [];
 };
 
+
+Model.prototype.equals = function ( model ) {
+  return this == model;
+};
+
+
 Model.prototype.validate = function ( rules, scenario ){
   rules = rules || this.constructor.attributes || {};
 

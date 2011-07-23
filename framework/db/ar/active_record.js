@@ -57,6 +57,21 @@ ActiveRecord.prototype.get_attributes = function( table, names ) {
 };
 
 
+ActiveRecord.prototype.equals = function ( model ) {
+  var result = model instanceof ActiveRecord && this.table_name == model.table_name;
+  if ( !result ) return false;
+
+  var table = this.db_connection.db_schema.get_inited_table( this.table_name );
+  if ( !table || !table.primary_key ) return false;
+
+  var self  = this;
+  var pks   = Array.isArray( table.primary_key ) ? table.primary_key : [ table.primary_key ];
+  return pks.every( function( pk ) {
+    return self.get_attribute( pk ) == model[ pk ];
+  } );
+};
+
+
 ActiveRecord.prototype.__wrap_to_get_table = function ( fun, option ) {
   var emitter = new Emitter;
   var self    = this;

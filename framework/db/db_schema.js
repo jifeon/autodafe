@@ -53,6 +53,11 @@ DbSchema.prototype.get_table = function( name, callback ) {
 };
 
 
+DbSchema.prototype.get_inited_table = function ( name ) {
+  return this._tables[ name ] || null;
+};
+
+
 DbSchema.prototype.get_tables = function ( schema, callback ) {
   this.get_table_names( schema, function( e, names ) {
     if ( e ) return callback( e );
