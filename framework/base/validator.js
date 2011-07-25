@@ -11,6 +11,10 @@ Validator.prototype._init = function ( params ) {
   this.errors = [];
 }
 
+Validator.prototype.splice_errors = function () {
+  return this.errors.splice(0);
+};
+
 Validator.prototype.greater = function ( field_name, value, length ){
   if( value && value.length < length  ) this.errors.push( field_name + " should be greater then " + length + " symbols: " + value );
 }

@@ -120,8 +120,6 @@ Model.prototype.has_errors = function () {
 }
 
 
-Model.prototype.get_errors = function( error_number ){
-  if( this.has_errors() )
-    if( isNaN(error_number) ) return this.validator.errors;
-      else return this.validator.errors[ error_number ];
+Model.prototype.get_errors = function(){
+  return this.validator.splice_errors();
 }
