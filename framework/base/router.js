@@ -66,9 +66,13 @@ Router.prototype.route = function ( route_path ) {
   var args = Array.prototype.splice.call( arguments, 1 );
   this._get_actions( route_path ).for_each( function( action ){
     var controller = this._controllers[ action.controller_name ];
-    if ( !controller ) throw new Error(
-      'Controller or rule "%s" is not found'.format( action.controller_name )
-    );
+    if ( !controller ) {
+      var error =  new Error(
+        'Controller or rule "%s" is not found'.format( action.controller_name )
+      );
+      error.number = 404;
+      throw error;
+    }
     args.unshift( action.action );
     controller.run_action.apply( controller, args )
     args.shift();

@@ -12,8 +12,8 @@ Model.prototype._init = function ( params ) {
   this.super_._init( params );
 
   this._attributes = {};
-  this.validator = new Validator( params );
-  this._.is_new = params.is_new == undefined ? true : params.is_new;
+  this._.validator = new Validator( params );
+  this._.is_new    = params.is_new == undefined ? true : params.is_new;
 };
 
 
@@ -70,8 +70,10 @@ Model.prototype.set_attributes = function ( attributes ) {
 };
 
 
-Model.prototype.save = function ( attributes ) {
-  return true;
+Model.prototype.save = function ( attributes, scenario ) {
+  scenario = scenario || this.is_new ? 'create' : 'update';
+
+  return this.validate( this.constructor.attributes || {}, scenario );
 };
 
 
@@ -84,29 +86,40 @@ Model.prototype.get_safe_attribute_names = function () {
   return this.constructor.safe_attribute_names || [];
 };
 
-Model.prototype.validate = function ( rules ){
-  var rule;
-  for( var i in rules ){
-    for( var k = 0, ln = rules[ i ].length; k < ln; k++){
-      rule = rules[ i ][ k ];
-      if( !Object.isObject( rule ) ){
-        this.validator[ rule ].call( this.validator, i, this._attributes[ i ] );
-      } else {
-        for( var j in rule ){
-          rule[ j ].unshift( i, this._attributes[ i ] );
-          this.validator[ j ].apply( this.validator, rule[ j ] );
-        }
+
+Model.prototype.equals = function ( model ) {
+  return this == model;
+};
+
+
+Model.prototype.validate = function ( rules, scenario ){
+  rules = rules || this.constructor.attributes || {};
+
+  for( var attribute in rules ){
+
+    rules[ attribute ].forEach( function( rule ) {
+
+      if ( !Object.isObject( rule ) )
+        return this.validator[ rule ]( attribute, this.get_attribute( attribute ) );
+
+      if ( rule.on && rule.on != scenario ) return;
+
+      for( var rule_name in rule ){
+        if ( rule_name == 'on' ) continue;
+        this.validator[ rule_name ]( attribute, this.get_attribute( attribute ), rule[ rule_name ] );
       }
-    }
+    }, this );
   }
+
+  return !this.has_errors();
 }
+
 
 Model.prototype.has_errors = function () {
   return ( this.validator.errors.length == 0 ) ? false : this.validator.errors.length;
 }
 
-Model.prototype.get_errors = function( error_number ){
-  if( this.has_errors() )
-    if( isNaN(error_number) ) return this.validator.errors;
-      else return this.validator.errors[ error_number ];
+
+Model.prototype.get_errors = function(){
+  return this.validator.splice_errors();
 }

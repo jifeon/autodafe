@@ -44,7 +44,15 @@ ClientConnection.prototype._receive_request = function ( data, client ) {
   this.emit( 'receive_request', data, client );
 
   this.log( 'Message has been received. session_id = "%s"'.format( client.session.id ) );
-  this.app.router.route( data.action, data.params, client );
+
+  var params = Object.isObject( data.params ) ? data.params : {};
+
+  try {
+    this.app.router.route( data.action, params, client );
+  }
+  catch ( e ) {
+    if ( !client.send_error( e ) ) throw e;
+  }
 };
 
 

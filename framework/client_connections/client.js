@@ -43,6 +43,11 @@ Client.prototype.send = function ( data ) {
 };
 
 
+Client.prototype.send_error = function ( e ) {
+  return false;
+};
+
+
 Client.prototype.disconnect = function () {
   this.log( 'Disconnect %s ( session id=%s )'.format( this.class_name, this.session.id ) );
 

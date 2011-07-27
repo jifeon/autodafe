@@ -11,12 +11,17 @@ Validator.prototype._init = function ( params ) {
   this.errors = [];
 }
 
+Validator.prototype.splice_errors = function () {
+  return this.errors.splice(0);
+};
+
 Validator.prototype.greater = function ( field_name, value, length ){
-  if( value.length < length  ) this.errors.push( field_name + " should be greater then " + length + " symbols: " + value );
+  if( value && value.length < length  ) this.errors.push( field_name + " should be greater then " + length + " symbols: " + value );
 }
 
 Validator.prototype.lesser = function ( field_name, value, length ){
-  if( value.length > length ) this.errors.push( field_name + " should be lesser then " + length + " symbols:" + value );
+  //console.log(field_name+' '+ value + ' '+length);
+  if( value && value.length > length ) this.errors.push( field_name + " should be lesser then " + length + " symbols:" + value );
 }
 
 Validator.prototype.correct_email = function ( field_name, value ){
@@ -31,11 +36,27 @@ Validator.prototype.letters_only = function ( field_name, value ){
 }
 
 Validator.prototype.md5 = function( field_name, value ){
-  if( value.search(/^[a-f0-9]{32}$/) != 0 )
+  if ( !/^[a-f0-9]{32}$/.test( value ) )
     this.errors.push( field_name + ' not md5: ' + value );
 }
 
 Validator.prototype.required = function( field_name, value ){
   if( Object.isEmpty( value ) )
     this.errors.push( field_name + ' required' );
+}
+
+Validator.prototype.in_array = function( field_name, value, array ){
+  if ( ~array.indexOf( value ) ) return true;
+
+  this.errors.push( field_name + ' not valid' );
+}
+
+Validator.prototype.is_number = function( field_name, value ){
+  if( isNaN( value ) )
+    this.errors.push( field_name + ' should be number' );
+}
+
+Validator.prototype.is_array = function( field_name, value ){
+  if( !Array.isArray( value ) )
+    this.errors.push( field_name + ' should be array of room modules' );
 }

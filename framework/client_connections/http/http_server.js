@@ -29,6 +29,8 @@ HTTPServer.prototype.run = function () {
       response  : response
     }) );
   } );
+
+  this.log( 'HTTP server started at port ' + this.port, 'info' );
 };
 
 
@@ -41,9 +43,10 @@ HTTPServer.prototype._receive_request = function ( url_str, client ) {
   var parsed_url = url.parse( url_str );
 
   var action = parsed_url.pathname.substr(1).replace( /\//g, '.' );
+  var params = require('querystring').parse( parsed_url.query );
   var data = {
     action : action,
-    params : {}
+    params : params
   };
 
   this.super_._receive_request( data, client );

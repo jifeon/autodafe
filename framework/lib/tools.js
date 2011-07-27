@@ -259,11 +259,11 @@ function two_pos( i ) {
 }
 
 
-exports.next_tick = function( result, error, emitter ){
+exports.next_tick = function( result, error, emitter, action ){
   emitter = emitter || new process.EventEmitter;
 
   process.nextTick( function() {
-    emitter.emit( error ? 'error' : 'success', error || result );
+    emitter.emit( action || ( error ? 'error' : 'success' ), error || result );
   } );
 
   return emitter;

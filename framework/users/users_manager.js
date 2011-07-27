@@ -41,12 +41,14 @@ UsersManager.prototype._init = function( params ) {
 UsersManager.prototype._init_roles = function ( params ) {
   var self = this;
 
-  this.roles.guest = function( model ) {
-    return !model;
+  this.roles.guest = function( user_model ) {
+    return !user_model;
   };
 
-  this.roles.author = function() {
-    return false;
+  this.roles.author = function( user_model, app, model, attribute ) {
+    if ( attribute == 'login' ) debugger;
+    
+    return user_model.equals( model );
   };
 
   for ( var role in params.roles ) {
@@ -148,6 +150,25 @@ UsersManager.prototype.authorize_session = function ( session, model ) {
   var self = this;
   // if user did not was in guests we should add handler on session close
   if ( !guests_ui ) session.once( 'close', function() {
+    delete self._users.by_session_id[ session.id ];
+  } );
+};
+
+
+UsersManager.prototype.logout_session = function ( session ) {
+  var ui = this.get_by_session( session );
+  if ( ui == this.guests ) {
+    this.log( 'Try to log out by guest. Session id = %s'.format( session.id ), 'warning' );
+    return false;
+  }
+
+  if ( ui ) ui.remove_session( session );
+
+  this.guests.register_session( session );
+  this._users.by_session_id[ session.id ] = this.guests;
+
+  var self = this;
+  if ( !ui ) session.once( 'close', function() {
     delete self._users.by_session_id[ session.id ];
   } );
 };
