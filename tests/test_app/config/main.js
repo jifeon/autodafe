@@ -50,9 +50,9 @@ var config = module.exports = {
 
   components : {
 
-    web_sockets         : {
-      port : 3000
-    },
+//    web_sockets         : {
+//      port : 3000
+//    },
 
 //    users               : {
 //      model : 'user',
@@ -77,9 +77,9 @@ var config = module.exports = {
 //    },
 
     db                  : db,
-    http                : {
-      port : 3000
-    },
+//    http                : {
+//      port : 3000
+//    },
 
     log_router          : {
 

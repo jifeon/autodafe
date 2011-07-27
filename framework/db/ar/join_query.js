@@ -82,48 +82,35 @@ JoinQuery.prototype._init = function( params ) {
 //    }
 //    this.elements[element.id]=true;
 //  }
-//
-//  /**
-//   * creates the sql statement.
-//   * @param cdb_command_builder builder the command builder
-//   * @return string the sql statement
-//   */
-//  JoinQuery.prototype.create_command = function(builder)
-//  {
-//    sql=(this.distinct ? 'select distinct ':'select ') . implode(', ',this.selects);
-//    sql.=' from ' . implode(' ',this.joins);
-//
-//    conditions=[];
-//    foreach(this.conditions as condition)
-//      if(condition!=='')
-//        conditions[]=condition;
-//    if(conditions!==[])
-//      sql.=' where (' . implode(') and (',conditions).')';
-//
-//    groups=[];
-//    foreach(this.groups as group)
-//      if(group!=='')
-//        groups[]=group;
-//    if(groups!==[])
-//      sql.=' group by ' . implode(', ',groups);
-//
-//    havings=[];
-//    foreach(this.havings as having)
-//      if(having!=='')
-//        havings[]=having;
-//    if(havings!==[])
-//      sql.=' having (' . implode(') and (',havings).')';
-//
-//    orders=[];
-//    foreach(this.orders as order)
-//      if(order!=='')
-//        orders[]=order;
-//    if(orders!==[])
-//      sql.=' order by ' . implode(', ',orders);
-//
-//    sql=builder.apply_limit(sql,this.limit,this.offset);
-//    command=builder.get_db_connection().create_command(sql);
-//    builder.bind_values(command,this.params);
-//    return command;
-//  }
-//}
+
+JoinQuery.prototype.create_command = function( builder ){
+  var sql = ( this.distinct ? 'SELECT DISTINCT ' : 'SELECT ' ) + this.selects.join(', ') +
+            ' FROM ' + this.joins.join(' ');
+
+  var conditions = this.conditions.filter( function( condition ) {
+    return !!condition;
+  } );
+
+  if ( conditions.length ) sql += ' WHERE (' + conditions.join( ') AND (' ) + ')';
+
+  var groups = this.groups.filter( function( group ){
+    return !!group;
+  } );
+
+  if ( groups.length ) sql += ' GROUP BY ' + groups.join(', ');
+
+  var havings = this.havings.filter( function( having ){
+    return !!having;
+  } );
+
+  if( havings.length ) sql += ' HAVING (' + havings.join( ') and (' ) + ')';
+
+  var orders = this.orders.filter( function( order ){
+    return !!order;
+  } );
+
+  if ( orders.length ) sql += ' ORDER BY ' + orders.join(', ');
+
+  sql = builder.apply_limit( sql, this.limit, this.offset );
+  return builder.db_connection.create_command( sql ).bind_values( this.params );
+}

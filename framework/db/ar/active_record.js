@@ -51,7 +51,7 @@ ActiveRecord.prototype._init_relations = function () {
     delete params.type;
 
     params.name  = relation_name;
-    params.model = this;
+    params.model = new this.app.models[ params.model ];
     params.app   = this.app;
 
     this.constructor._relations[ relation_name ] = new active_relations[ relation_type ]( params );
@@ -75,6 +75,20 @@ ActiveRecord.prototype.get_relations = function () {
 };
 
 
+ActiveRecord.prototype.add_related_record = function ( name, record, index ) {
+  var related = this._related;
+
+  if ( !index ) related[ name ] = related[ name ] || record;
+  else {
+    related[ name ] = related[ name ] || [];
+    if ( record instanceof ActiveRecord ) {
+      if ( index === true ) related[ name ].push( record );
+      else related[ index ] = record;
+    }
+  }
+};
+
+
 ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   refresh = refresh || false;
   params  = params  || {};
@@ -89,7 +103,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     return tools.next_tick( this._related[ name ] );
 
   this.log( 'Load relation `%s`'.format( name ), 'trace' );
-
+  
   var relation        = relations[ name ];
   if ( this.is_new && ( relation.class_name == 'HasOneRelation' || relation.class_name == 'HasManyRelation' ) )
     return tools.next_tick( relation.class_name == 'HasOneRelation' ? null : [] );
@@ -123,20 +137,20 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
           ? relation.defaultValue
           : null;
 
-    var results = self._related[ name ];
+    var result = self._related[ name ];
 
     if ( !Object.isEmpty( params ) )
       if( saved_relation ) self._related[ name ] = saved_relation;
       else          delete self._related[ name ];
 
-    tools.next_tick( results, null, emitter );
+    tools.next_tick( result, null, emitter );
   } );
 
   return emitter;
 };
 
 
-ActiveRecord.prototype._create_relation = function ( type ) {
+ActiveRecord.prototype._create_relation = function ( type, model ) {
   var self = this;
 
   return {
@@ -144,35 +158,36 @@ ActiveRecord.prototype._create_relation = function ( type ) {
       return {
         type        : type,
         foreign_key : foreign_key,
-        options     : options || {}
+        options     : options || {},
+        model       : model
       };
     }
   }
 };
 
 
-ActiveRecord.prototype.belongs_to = function () {
-  return this._create_relation( 'belongs_to' );
+ActiveRecord.prototype.belongs_to = function ( model ) {
+  return this._create_relation( 'belongs_to', model );
 };
 
 
-ActiveRecord.prototype.has_one = function () {
-  return this._create_relation( 'has_one' );
+ActiveRecord.prototype.has_one = function ( model ) {
+  return this._create_relation( 'has_one', model );
 };
 
 
-ActiveRecord.prototype.has_many = function () {
-  return this._create_relation( 'has_many' );
+ActiveRecord.prototype.has_many = function ( model ) {
+  return this._create_relation( 'has_many', model );
 };
 
 
-ActiveRecord.prototype.many_many = function () {
-  return this._create_relation( 'many_many' );
+ActiveRecord.prototype.many_many = function ( model ) {
+  return this._create_relation( 'many_many', model );
 };
 
 
-ActiveRecord.prototype.stat = function () {
-  return this._create_relation( 'stat' );
+ActiveRecord.prototype.stat = function ( model ) {
+  return this._create_relation( 'stat', model );
 };
 
 
@@ -183,6 +198,11 @@ ActiveRecord.prototype.get_table = function ( callback, context ) {
 
 ActiveRecord.prototype.get_attributes = function( table, names ) {
   var attributes = Object.not_deep_clone( this._attributes );
+
+  if ( !table ) table = this.db_connection.db_schema.get_inited_table( this.table_name );
+  if ( !table ) throw new Error(
+    'You should specify table in %s.get_attributes'.format( this.class_name )
+  );
 
   table.get_column_names().forEach( function( column_name ) {
 
