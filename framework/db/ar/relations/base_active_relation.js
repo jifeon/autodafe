@@ -37,8 +37,6 @@ BaseActiveRelation.prototype._init = function( params ) {
 
   for ( var name in params.options )
     this[ name ] = params.options[ name ];
-
-  this.init_options = params.options;
 };
 
 

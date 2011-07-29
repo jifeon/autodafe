@@ -7,3 +7,10 @@ function Order( params ) {
 }
 
 Order.table_name = 'testbase_ar.orders';
+
+Order.prototype.relations = function(){
+  return {
+    items       : this.has_many( 'item' ).by( 'col1, col2' ),
+    item_count  : this.stat( 'item' ).by( 'col1, col2' )
+  }
+}

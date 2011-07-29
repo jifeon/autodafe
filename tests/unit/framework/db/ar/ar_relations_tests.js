@@ -1,6 +1,8 @@
 exports.get_batch = function( application, assert ) {
-  var User    = require( 'models/user' );
-  var Comment = require( 'models/comment' );
+  var User      = require( 'models/user' );
+  var Comment   = require( 'models/comment' );
+  var Category  = require( 'models/category' );
+  var Order     = require( 'models/order' );
 
   return {
     'lazy relation' : {
@@ -132,6 +134,158 @@ exports.get_batch = function( application, assert ) {
           assert.isNull( err );
           assert.length( categories, 0 );
         }
+      },
+      'self join 1' : {
+        topic : function() {
+          return application.models.category.find_by_pk( 5 );
+        },
+        'category posts' : {
+          topic : function( category ) {
+            return category.get_related( 'posts' );
+          },
+          'check' : function( err, posts ){
+            assert.isNull( err );
+            assert.length( posts, 0 );
+          }
+        },
+        'category children' : {
+          topic : function( category ) {
+            return category.get_related( 'children' );
+          },
+          'check length' : function( err, children ){
+            assert.isNull( err );
+            assert.length( children, 2 );
+          },
+          'check attrs' : function( err, children ){
+            assert.deepEqual( children[0].get_attributes(), {
+              id        : 6,
+              name      : 'cat 6',
+              parent_id : 5
+            } );
+            assert.deepEqual( children[1].get_attributes(), {
+              id        : 7,
+              name      : 'cat 7',
+              parent_id : 5
+            } );
+          }
+        },
+        'category parent' : {
+          topic : function( category ) {
+            return category.get_related( 'parent' );
+          },
+          'check' : function( err, parent ){
+            assert.isNull( err );
+            assert.instanceOf( parent, Category );
+            assert.deepEqual( parent.get_attributes(), {
+              id        : 1,
+              name      : 'cat 1',
+              parent_id : null
+            } );
+          }
+        }
+      },
+      'self join 2' : {
+        topic : function() {
+          return application.models.category.find_by_pk( 2 );
+        },
+        'category posts' : {
+          topic : function( category ) {
+            return category.get_related( 'posts' );
+          },
+          'check' : function( err, posts ){
+            assert.isNull( err );
+            assert.length( posts, 1 );
+          }
+        },
+        'category children' : {
+          topic : function( category ) {
+            return category.get_related( 'children' );
+          },
+          'check length' : function( err, children ){
+            assert.isNull( err );
+            assert.length( children, 0 );
+          }
+        },
+        'category parent' : {
+          topic : function( category ) {
+            return category.get_related( 'parent' );
+          },
+          'check' : function( err, parent ){
+            assert.isNull( err );
+            assert.isNull( parent );
+          }
+        }
+      },
+      'composite key order 1,2' : {
+        topic : function(){
+          var self = this;
+
+          application.models.order.find_by_pk( {
+            key1 : 1,
+            key2 : 2
+          } )
+            .on( 'success', function( order ){
+              order.get_related( 'items' )
+                .on( 'success', function( items ){
+                  self.callback( null, items );
+                } )
+                .on( 'error', function( err ){
+                  self.callback( err );
+                } );
+            } )
+        },
+        'check count of items' : function( err, items ){
+          assert.isNull( err );
+          assert.length( items, 2 );
+        }
+      },
+      'composite key order 2,1' : {
+        topic : function(){
+          var self = this;
+
+          application.models.order.find_by_pk( {
+            key1 : 2,
+            key2 : 1
+          } )
+            .on( 'success', function( order ){
+              order.get_related( 'items' )
+                .on( 'success', function( items ){
+                  self.callback( null, items );
+                } )
+                .on( 'error', function( err ){
+                  self.callback( err );
+                } );
+            } )
+        },
+        'check count of items' : function( err, items ){
+          assert.isNull( err );
+          assert.length( items, 0 );
+        }
+      },
+      'composite key item 4' : {
+        topic : function(){
+          var self = this;
+
+          application.models.item.find_by_pk( 4 )
+            .on( 'success', function( item ){
+              item.get_related( 'order' )
+                .on( 'success', function( order ){
+                  self.callback( null, order );
+                } )
+                .on( 'error', function( err ){
+                  self.callback( err );
+                } );
+            } )
+        },
+        'check order' : function( err, order ){
+          assert.isNull( err );
+          assert.instanceOf( order, Order );
+          assert.deepEqual( order.get_attributes(), {
+            key1 : 2,
+            key2 : 2,
+            name : 'order 22'
+          } )
+        }
       }
     }
   }
@@ -140,47 +294,7 @@ exports.get_batch = function( application, assert ) {
 
 
 
-//public function testLazyRelation()
-//  {
 
-//
-//
-//    // test self join
-//    $category=Category::model()->findByPk(5);
-//    $this->assertEquals(array(),$category->posts);
-//    $this->assertEquals(2,count($category->children));
-//    $this->assertEquals(array(
-//      'id'=>6,
-//      'name'=>'cat 6',
-//      'parent_id'=>5),$category->children[0]->attributes);
-//    $this->assertEquals(array(
-//      'id'=>7,
-//      'name'=>'cat 7',
-//      'parent_id'=>5),$category->children[1]->attributes);
-//    $this->assertTrue($category->parent instanceof Category);
-//    $this->assertEquals(array(
-//      'id'=>1,
-//      'name'=>'cat 1',
-//      'parent_id'=>null),$category->parent->attributes);
-//
-//    $category=Category::model()->findByPk(2);
-//    $this->assertEquals(1,count($category->posts));
-//    $this->assertEquals(array(),$category->children);
-//    $this->assertNull($category->parent);
-//
-//    // test composite key
-//    $order=Order::model()->findByPk(array('key1'=>1,'key2'=>2));
-//    $this->assertEquals(2,count($order->items));
-//    $order=Order::model()->findByPk(array('key1'=>2,'key2'=>1));
-//    $this->assertEquals(0,count($order->items));
-//    $item=Item::model()->findByPk(4);
-//    $this->assertTrue($item->order instanceof Order);
-//    $this->assertEquals(array(
-//      'key1'=>2,
-//      'key2'=>2,
-//      'name'=>'order 22'),$item->order->attributes);
-//  }
-//
 //  public function testEagerRelation2()
 //  {
 //    $post=Post::model()->with('author','firstComment','comments','categories')->findByPk(2);

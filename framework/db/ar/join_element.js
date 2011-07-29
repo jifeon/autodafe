@@ -357,7 +357,7 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
 
     }
     else {
-      var fks     = this.relation.foreign_key.split( /\s*,\s*/ );
+      var fks     = this.relation.foreign_key.trim().split( /\s*,\s*/ );
       var params  = {};
       fks.forEach( function( fk, i ) {
 

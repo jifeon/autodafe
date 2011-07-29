@@ -86,8 +86,8 @@ MysqlTableSchema.prototype._find_constrains = function () {
       var re                = /FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)/mgi;
       var matches;
       while (( matches = re.exec( create_table_sql )) != null ) {
-        var keys = matches[ 1 ].replace( /`/g, '' ).split(',');
-        var fks  = matches[ 3 ].replace( /`/g, '' ).split(',');
+        var keys = matches[ 1 ].replace( /`|\s/g, '' ).split(',');
+        var fks  = matches[ 3 ].replace( /`|\s/g, '' ).split(',');
 
         keys.forEach( function( key, i ) {
           self.foreign_keys[ key ] = [ matches[ 3 ].replace( /`/g, '' ), fks[i] ];
