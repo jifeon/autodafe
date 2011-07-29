@@ -18,6 +18,19 @@ ActiveRelation.prototype._init = function( params ) {
 };
 
 
+ActiveRelation.prototype.get_options = function () {
+  var options = this.super_.get_options();
+
+  options.join_type = this.join_type;
+  options.on        = this.on;
+  options.alias     = this.alias;
+  options.With      = this.With;
+  options.together  = this.together;
+
+  return options;
+};
+
+
 ActiveRelation.prototype.merge_with = function ( criteria/*, from_scope*/ ) {
   
 //  if(fromScope)

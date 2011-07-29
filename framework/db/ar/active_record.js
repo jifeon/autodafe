@@ -105,8 +105,8 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   this.log( 'Load relation `%s`'.format( name ), 'trace' );
   
   var relation        = relations[ name ];
-  if ( this.is_new && ( relation.class_name == 'HasOneRelation' || relation.class_name == 'HasManyRelation' ) )
-    return tools.next_tick( relation.class_name == 'HasOneRelation' ? null : [] );
+  if ( this.is_new && ( relation instanceof active_relations[ 'has_one' ] || relation instanceof active_relations[ 'has_many' ] ) )
+    return tools.next_tick( relation instanceof active_relations[ 'has_one' ] ? null : [] );
 
   var saved_relation  = null;
   var With = {};
@@ -131,9 +131,9 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     if ( err ) return tools.next_tick( null, err, emitter );
 
     if( !self._related[ name ] )
-      self._related[ name ] = relation.class_name == 'HasManyRelation'
+      self._related[ name ] = relation instanceof active_relations[ 'has_many' ]
         ? []
-        : relation.class_name == 'StatRelation'
+        : relation instanceof active_relations[ 'stat' ]
           ? relation.defaultValue
           : null;
 

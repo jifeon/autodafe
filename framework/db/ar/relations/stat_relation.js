@@ -20,3 +20,13 @@ StatRelation.prototype.merge_with = function ( criteria/*, from_scope*/ ) {
 
   this.default_value = criteria.default_value || this.default_value;
 };
+
+
+StatRelation.prototype.get_options = function () {
+  var options = this.super_.get_options();
+
+  options.select        = this.select;
+  options.default_value = this.default_value;
+
+  return options;
+};

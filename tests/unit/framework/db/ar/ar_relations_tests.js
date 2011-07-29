@@ -1,23 +1,137 @@
 exports.get_batch = function( application, assert ) {
-  var User = require( 'models/user' );
+  var User    = require( 'models/user' );
+  var Comment = require( 'models/comment' );
 
   return {
-    topic : function() {
-      return application.models.post.find_by_pk( 2 );
-    },
-    'load part' : {
-      topic : function( post ) {
-        return post.get_related( 'author' );
+    'lazy relation' : {
+      topic : function() {
+        return application.models.post.find_by_pk( 2 );
       },
-      'test author' : function( err, author ){
-        assert.isNull( err );
-        assert.instanceOf( author, User );
-        assert.deepEqual( author.get_attributes(), {
-          id       : 2,
-          username : 'user2',
-          password : 'pass2',
-          email    : 'email2'
-        } );
+      'belongs_to' : {
+        topic : function( post ) {
+          return post.get_related( 'author' );
+        },
+        'author' : function( err, author ){
+          assert.isNull( err );
+          assert.instanceOf( author, User );
+          assert.deepEqual( author.get_attributes(), {
+            id       : 2,
+            username : 'user2',
+            password : 'pass2',
+            email    : 'email2'
+          } );
+        }
+      },
+      'has_one exist' : {
+        topic : function( post ){
+          return post.get_related( 'first_comment' );
+        },
+        'first_comment' : function( err, comment ){
+          assert.isNull( err );
+          assert.instanceOf( comment, Comment );
+          assert.deepEqual( comment.get_attributes(), {
+            id        : 4,
+            content   : 'comment 4',
+            post_id   : 2,
+            author_id : 2
+          } );
+        }
+      },
+      'has_one not exist' : {
+        topic : function(){
+          var self = this;
+          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+            post.get_related( 'first_comment' )
+              .on( 'success', function( comment ){
+                self.callback( null, comment );
+              } )
+              .on( 'error', function( err ){
+                self.callback( err );
+              } );
+          } );
+        },
+        'first_comment' : function( err, comment ){
+          assert.isNull( err );
+          assert.isNull( comment );
+        }
+      },
+      'has_many exist' : {
+        topic : function( post ){
+          return post.get_related( 'comments' );
+        },
+        'comments' : function( err, comments ){
+          assert.isNull( err );
+          assert.length( comments, 2 );
+          assert.deepEqual( comments[0].get_attributes(), {
+            id        : 5,
+            content   : 'comment 5',
+            post_id   : 2,
+            author_id : 2
+          } );
+          assert.deepEqual( comments[1].get_attributes(), {
+            id        : 4,
+            content   : 'comment 4',
+            post_id   : 2,
+            author_id : 2
+          } );
+        }
+      },
+      'has_many not exist' : {
+        topic : function( post ){
+          var self = this;
+
+          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+            post.get_related( 'comments' )
+              .on( 'success', function( comments ){
+                self.callback( null, comments );
+              } )
+              .on( 'error', function( err ){
+                self.callback( err );
+              } );
+          } );
+        },
+        'comments' : function( err, comments ){
+          assert.isNull( err );
+          assert.length( comments, 0 );
+        }
+      },
+      'many_many exist' : {
+        topic : function( post ){
+          return post.get_related( 'categories' );
+        },
+        'categories' : function( err, categories ){
+          assert.isNull( err );
+          assert.length( categories, 2 );
+          assert.deepEqual( categories[0].get_attributes(), {
+            id        : 1,
+            name      : 'cat 1',
+            parent_id : null
+          } );
+          assert.deepEqual( categories[1].get_attributes(), {
+            id        : 4,
+            name      : 'cat 4',
+            parent_id : 1
+          } );
+        }
+      },
+      'many_many not exist' : {
+        topic : function(){
+          var self = this;
+
+          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+            post.get_related( 'categories' )
+              .on( 'success', function( categories ){
+                self.callback( null, categories );
+              } )
+              .on( 'error', function( err ){
+                self.callback( err );
+              } );
+          } );
+        },
+        'categories' : function( err, categories ){
+          assert.isNull( err );
+          assert.length( categories, 0 );
+        }
       }
     }
   }
@@ -28,55 +142,8 @@ exports.get_batch = function( application, assert ) {
 
 //public function testLazyRelation()
 //  {
-//    // test belongsTo
-//    $post=Post::model()->findByPk(2);
-//    $this->assertTrue($post->author instanceof User);
-//    $this->assertEquals(array(
-//      'id'=>2,
-//      'username'=>'user2',
-//      'password'=>'pass2',
-//      'email'=>'email2'),$post->author->attributes);
+
 //
-//    // test hasOne
-//    $post=Post::model()->findByPk(2);
-//    $this->assertTrue($post->firstComment instanceof Comment);
-//    $this->assertEquals(array(
-//      'id'=>4,
-//      'content'=>'comment 4',
-//      'post_id'=>2,
-//      'author_id'=>2),$post->firstComment->attributes);
-//    $post=Post::model()->findByPk(4);
-//    $this->assertNull($post->firstComment);
-//
-//    // test hasMany
-//    $post=Post::model()->findByPk(2);2
-//    $this->assertEquals(2,count($post->comments));
-//    $this->assertEquals(array(
-//      'id'=>5,
-//      'content'=>'comment 5',
-//      'post_id'=>2,
-//      'author_id'=>2),$post->comments[0]->attributes);
-//    $this->assertEquals(array(
-//      'id'=>4,
-//      'content'=>'comment 4',
-//      'post_id'=>2,
-//      'author_id'=>2),$post->comments[1]->attributes);
-//    $post=Post::model()->findByPk(4);
-//    $this->assertEquals(array(),$post->comments);
-//
-//    // test manyMany
-//    $post=Post::model()->findByPk(2);
-//    $this->assertEquals(2,count($post->categories));
-//    $this->assertEquals(array(
-//      'id'=>1,
-//      'name'=>'cat 1',
-//      'parent_id'=>null),$post->categories[0]->attributes);
-//    $this->assertEquals(array(
-//      'id'=>4,
-//      'name'=>'cat 4',
-//      'parent_id'=>1),$post->categories[1]->attributes);
-//    $post=Post::model()->findByPk(4);
-//    $this->assertEquals(array(),$post->categories);
 //
 //    // test self join
 //    $category=Category::model()->findByPk(5);

@@ -20,7 +20,6 @@ JoinElement.prototype._init = function( params ) {
   this.id               = params.id       || 0;
   this.relation         = params.relation || null;
   this.model            = params.model    || this.relation.model;
-  this.records          = {};
   this.children         = {};
   this.stats            = [];
   this.table_alias      = this.relation ? this.relation.alias || this.relation.name : this.model.get_table_alias();
@@ -29,6 +28,8 @@ JoinElement.prototype._init = function( params ) {
   this._builder         = this._parent ? this._parent._builder : this.model.get_command_builder();
   this._joined          = false;
   this._related         = {};     // pk, relation name, related pk => true
+  this._records         = {};
+  this._records_pks     = [];
 
   this.raw_table_alias  = this._builder.db_schema.quote_table_name( this.table_alias );
 };
@@ -138,14 +139,15 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     if ( err ) return callback( err );
 
     if( typeof table.primary_key == 'string' )
-      this.records[ base_record.get_attribute( table.primary_key ) ] = base_record;
+      this.add_record( base_record.get_attribute( table.primary_key ), base_record );
 
     else {
       var pk = {};
       table.each_primary_key( function( name ) {
         pk[name] = base_record.get_attribute( name );
       } )
-      this.records[ JSON.stringify( pk ) ] = base_record;
+
+      this.add_record( JSON.stringify( pk ), base_record )
     }
 
     this.stats.forEach( function( stat ){
@@ -199,29 +201,53 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
             child.find();
           } );
 
-          if( Object.isEmpty( child.records )) return callback();
+          if( !child.has_records() ) return callback();
 
           if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
-            base_record.add_related_record( child.relation.name, Object.reset( child.records ), false );
+            base_record.add_related_record( child.relation.name, child.get_record( 0, true ), false );
 
           else {  // has_many and many_many
 
-            for ( var name in child.records ) {
-              var record = child.records[ name ];
+            child.enum_records( function( record ) {
               var index = child.relation.index
                 ? record[ child.relation.index ]
                 : true;
 
               base_record.add_related_record( child.relation.name, record, index );
-            }
+            }, this );
           }
 
           callback();
         } );
       } );
     } );
-    } );
+  } );
 }
+
+
+JoinElement.prototype.add_record = function ( pk, record ) {
+  this._records[ pk ] = record;
+  this._records_pks.push( pk );
+};
+
+
+JoinElement.prototype.get_record = function ( pk, by_number ) {
+  return by_number
+          ? this._records[ this._records_pks[ pk ] ] || null
+          : this._records[ pk ] || null;
+};
+
+
+JoinElement.prototype.enum_records = function ( callback, context ) {
+  this._records_pks.forEach( function( pk ){
+    callback.call( context, this.get_record( pk ) );
+  }, this );
+};
+
+
+JoinElement.prototype.has_records = function () {
+  return this._records_pks.length;
+};
 
 
 JoinElement.prototype._apply_lazy_condition = function( query, record, parent_table, callback ) {
@@ -248,7 +274,7 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
            .format( this.relation.name, parent.model.class_name, matches[1] )
         );
 
-        var fks               = matches[2].split( /\s*,\s*/ );
+        var fks               = matches[2].trim().split( /\s*,\s*/ );
         var join_alias        = schema.quote_table_name( this.relation.name + '_' + this.table_alias);
         var parent_condition  = {};
         var child_condition   = {};
@@ -311,10 +337,10 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, parent_ta
         if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition ) ) {
           var join = 'INNER JOIN ' + join_table.raw_name + ' ' + join_alias + ' ON ';
           join +=
-            '(' + Object.values( parent_condition ).join( ') and (' ) +
-            ') and (' + Object.values( child_condition ).join( ') and ('  )  + ')';
+            '(' + Object.values( parent_condition ).join( ') AND (' ) +
+            ') AND (' + Object.values( child_condition ).join( ') AND ('  )  + ')';
 
-          if( !this.relation.on ) join += ' AND (' + this.relation.on + ')';
+          if( this.relation.on ) join += ' AND (' + this.relation.on + ')';
 
           query.joins.push( join );
           for( var name in params)
@@ -492,7 +518,7 @@ JoinElement.prototype.run_query = function( query, table, callback ) {
   var self = this;
 
   query.create_command( this._builder ).execute( function( err, result ) {
-    if ( err ) callback( err );
+    if ( err ) return callback( err );
 
     result.fetch_obj( function( row ){
       self._populate_record( query, row, table );
@@ -527,7 +553,7 @@ JoinElement.prototype._populate_record = function( query, row, table ) {
   }
 
   // retrieve or populate the record according to the primary key value
-  var record = this.records[pk];
+  var record = this.get_record(pk);
   if( !record ) {
     var attributes      = {};
     var column_aliases  = this.get_column_aliases( table );
@@ -544,7 +570,7 @@ JoinElement.prototype._populate_record = function( query, row, table ) {
       record.add_related_record( child.relation.name, null, child.relation.class_name == 'HasManyRelation' );
     } );
 
-    this.records[ pk ] = record;
+    this.add_record( pk, record );
   }
 
 
@@ -703,9 +729,9 @@ JoinElement.prototype.get_primary_key_select = function( table ) {
 
 
 JoinElement.prototype.get_primary_key_range = function( table ) {
-  if( Object.isEmpty( this.records )) return '';
+  if( !this.has_records() ) return '';
 
-  var values = Object.keys( this.records );
+  var values = this._records_pks;
   if( Array.isArray( table.primary_key )) values = values.map( function( value ){
     return JSON.parse( value );
   });
