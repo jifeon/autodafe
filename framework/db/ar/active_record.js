@@ -407,25 +407,43 @@ ActiveRecord.prototype.refresh = function() {
 
 ActiveRecord.prototype.query = function ( criteria, all ) {
   all = all || false;
-  if( !all ) criteria.limit = 1;
 
   return this.__wrap_to_get_table( function( table, emitter ) {
-    var command = this.get_command_builder().create_find_command( table, criteria );
-    var self    = this;
 
-    command.execute( function( e, result ) {
-      if ( e ) return emitter.emit( 'error', e );
+    if ( Object.isEmpty( criteria.With ) ) {
+      if( !all ) criteria.limit = 1;
 
-      var res = [];
+      var command = this.get_command_builder().create_find_command( table, criteria );
+      var self    = this;
 
-      result.fetch_obj( function( obj ) {
-        res.push( self.populate_record( obj ) );
+      command.execute( function( e, result ) {
+        if ( e ) return emitter.emit( 'error', e );
 
-        if ( !all ) return false;
+        var res = [];
+
+        result.fetch_obj( function( obj ) {
+          res.push( self.populate_record( obj ) );
+
+          if ( !all ) return false;
+        } );
+
+        emitter.emit( 'success', all ? res : res[0] || null );
       } );
+    }
 
-      emitter.emit( 'success', all ? res : res[0] || null );
-    } );
+    else {
+
+      var finder = new ActiveFinder({
+        app   : this.app,
+        model : this,
+        With  : criteria.With
+      });
+
+      finder.query( criteria, all, function( err, result ) {
+        if ( err ) emitter.emit( 'error', err );
+        else emitter.emit( 'success', result );
+      } );
+    }
   } );
 };
 
