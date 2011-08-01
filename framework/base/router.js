@@ -63,6 +63,9 @@ Router.prototype._collect_controllers = function () {
 Router.prototype.route = function ( route_path ) {
   this.log( 'Route to `%s`'.format( route_path ? route_path : 'default controller with default action' ), 'trace' );
 
+  var emitter         = new process.EventEmitter;
+  var emitted_actions = 0;
+
   var args = Array.prototype.splice.call( arguments, 1 );
   this._get_actions( route_path ).for_each( function( action ){
     var controller = this._controllers[ action.controller_name ];
@@ -74,9 +77,26 @@ Router.prototype.route = function ( route_path ) {
       throw error;
     }
     args.unshift( action.action );
-    controller.run_action.apply( controller, args )
+    var res = controller.run_action.apply( controller, args )
     args.shift();
+
+    if ( res instanceof process.EventEmitter ) {
+      emitted_actions++;
+      res
+        .on( 'success', function() {
+          if ( !--emitted_actions ) emitter.emit( 'success' );
+        } )
+        .on( 'error', function() {
+          emitter.emit( 'error' );
+        } );
+    }
   }, this );
+
+  if ( !emitted_actions ) process.nextTick( function() {
+    emitter.emit( 'success' );
+  } );
+
+  return emitter;
 };
 
 

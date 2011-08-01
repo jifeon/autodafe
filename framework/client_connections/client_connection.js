@@ -36,7 +36,10 @@ ClientConnection.prototype.connect_client = function ( client ) {
     self._send_response( data, client );
   } );
 
-  this.app.router.route( this.app.default_controller + '.connect_client', client );
+  this.app.router.route( this.app.default_controller + '.connect_client', client )
+    .on( 'success', function() {
+      client.connect();
+    } );
 };
 
 

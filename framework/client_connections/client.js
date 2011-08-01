@@ -21,8 +21,9 @@ Client.prototype._init = function( params ) {
 };
 
 
-Client.prototype.init_events = function () {
-  
+Client.prototype.init_events  = function () {};
+Client.prototype.connect      = function () {
+  this.emit( 'connect' );
 };
 
 
