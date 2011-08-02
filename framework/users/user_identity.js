@@ -59,6 +59,10 @@ UserIdentity.prototype.set_model = function ( model ) {
 
 
 UserIdentity.prototype.manage = function ( model ) {
+  if ( Array.isArray( model ) ) return model.map( function( model ) {
+    return this.manage( model );
+  }, this );
+
   var Handler = model.class_name == 'ActiveRecord' ? UserIdentityARHandler : UserIdentityModelHandler;
 
   var handler = new Handler({

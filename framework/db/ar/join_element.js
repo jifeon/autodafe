@@ -170,6 +170,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
         child.relation.condition,
         child.relation.on
       ];
+
       query.groups.push ( child.relation.group  );
       query.joins.push  ( child.relation.join   );
       query.havings.push( child.relation.having );
@@ -179,7 +180,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
         query.params = child.relation.params;
 
       query.elements[ child.id ] = true;
-      if( child.relation.class_name == 'HasManyRelation' ) {
+      if( child.relation instanceof require('db/ar/relations/has_many_relation') ) {
         query.limit   = child.relation.limit;
         query.offset  = child.relation.offset;
       }

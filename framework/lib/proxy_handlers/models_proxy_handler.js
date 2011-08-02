@@ -28,6 +28,7 @@ ModelsProxyHandler.prototype.get = function ( receiver, name ) {
     model = require( path.resolve( this.app.base_dir, this.app.models_folder, name ) );
   }
   catch( e ) {
+    this.app.log(e);
     throw new Error( 'Can\'t find model `%s`'.format( name ) );
   }
 
