@@ -51,7 +51,16 @@ ActiveRecord.prototype._init_relations = function () {
     delete params.type;
 
     params.name  = relation_name;
-    params.model = new this.app.models[ params.model ];
+    try {
+      params.model = new this.app.models[ params.model ];
+    }
+    catch ( e ) {
+      this.log(
+        'Error while loading model `%s` as relation `%s` to %s'.format( params.model, relation_name, this.class_name ),
+        'error'
+      );
+      throw e;
+    }
     params.app   = this.app;
 
     this.constructor._relations[ relation_name ] = new active_relations[ relation_type ]( params );
