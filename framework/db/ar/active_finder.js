@@ -39,48 +39,41 @@ ActiveFinder.prototype._init = function( params ) {
 };
 
 
-  /**
-   * performs the relational query based on the given db criteria.
-   * do not call this method. this method is used internally.
-   * @param cdb_criteria criteria the db criteria
-   * @param boolean all whether to bring back all records
-   * @return mixed the query result
-   */
-//  ActiveFinder.prototype.query = function(criteria,all=false)
+ActiveFinder.prototype.query = function( criteria, all ) {
+  all = all || false;
+
+  this.join_all = !!criteria.together;
+//  this._join_tree.before_find(false);
+
+  if( criteria.alias ) {
+    this._join_tree.table_alias     = criteria.alias;
+    this._join_tree.raw_table_alias = this._builder.db_schema.quote_table_name( criteria.alias );
+  }
+
+  this._join_tree.find( criteria );
+  this._join_tree.after_find();
+
+//  if(all)
 //  {
-//    this.join_all=criteria.together===true;
-//    this._join_tree.before_find(false);
-//
-//    if(criteria.alias!='')
+//    result = array_values(this._join_tree.records);
+//    if (criteria.index!==null)
 //    {
-//      this._join_tree.table_alias=criteria.alias;
-//      this._join_tree.raw_table_alias=this._builder.get_schema().quote_table_name(criteria.alias);
+//      index=criteria.index;
+//      array=array();
+//      foreach(result as object)
+//        array[object.index]=object;
+//      result=array;
 //    }
-//
-//    this._join_tree.find(criteria);
-//    this._join_tree.after_find();
-//
-//    if(all)
-//    {
-//      result = array_values(this._join_tree.records);
-//      if (criteria.index!==null)
-//      {
-//        index=criteria.index;
-//        array=array();
-//        foreach(result as object)
-//          array[object.index]=object;
-//        result=array;
-//      }
-//    }
-//    else if(count(this._join_tree.records))
-//      result = reset(this._join_tree.records);
-//    else
-//      result = null;
-//
-//    this.destroy_join_tree();
-//    return result;
 //  }
+//  else if(count(this._join_tree.records))
+//    result = reset(this._join_tree.records);
+//  else
+//    result = null;
 //
+//  this.destroy_join_tree();
+//  return result;
+}
+
 //  /**
 //   * this method is internally called.
 //   * @param string sql the sql statement
@@ -249,8 +242,10 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
     return element;
   }
 
-  // With is an object, keys are relation name, values are relation spec
-  for ( var key in With ) {
+  if ( Array.isArray( With ) ) With.forEach( function( With ){
+    this._build_join_tree( parent, With );
+  }, this );
+  else for ( var key in With ) {
     var value = With[ key ];
 
     if( typeof value == 'string' )  // the value is a relation name

@@ -1,5 +1,6 @@
-var AppModule = require('app_module');
-var JoinQuery = require('./join_query');
+var AppModule         = require('app_module');
+var JoinQuery         = require('./join_query');
+var ManyManyRelation  = require('./relations/many_many_relation');
 
 module.exports = JoinElement.inherits( AppModule );
 
@@ -87,37 +88,56 @@ JoinElement.prototype.get_pk_alias = function ( table ) {
 //    }
 //    unset(this._finder, this._parent, this.model, this.relation, this.records, this.children, this.stats);
 //  }
-//
-//  /**
-//   * performs the recursive finding with the criteria.
-//   * @param cdb_criteria criteria the query criteria
-//   */
-//  JoinElement.prototype.find = function(criteria=null)
-//  {
-//    if(this._parent===null) // root element
-//    {
-//      query=new cjoin_query(this,criteria);
-//      this._finder.base_limited=(criteria.offset>=0 || criteria.limit>=0);
-//      this.build_query(query);
-//      this._finder.base_limited=false;
-//      this.run_query(query);
-//    }
-//    else if(!this._joined && !empty(this._parent.records)) // not joined before
-//    {
-//      query=new cjoin_query(this._parent);
-//      this._joined=true;
-//      query.join(this);
-//      this.build_query(query);
-//      this._parent.run_query(query);
-//    }
-//
+
+
+JoinElement.prototype.find = function( criteria, callback ) {
+  var query;
+  var self = this;
+
+  // root element
+  if( !this._parent ) this.get_table( function( err, table ) {
+    if ( err ) return callback( err );
+
+    query = new JoinQuery({
+      app          : this.app,
+      join_element : this,
+      criteria     : criteria,
+      table        : table
+    });
+
+    this._finder.base_limited = ( criteria.offset >= 0 || criteria.limit >= 0 );
+    this.build_query( query );
+    this._finder.base_limited = false;
+
+    this.run_query( query, table, after_query );
+  } );
+
+  // not joined before
+  else if( !this._joined && this._parent.has_records() ) this._parent.get_table( function( err, table ) {
+    if ( err ) return callback( err );
+
+    query = new JoinQuery({
+      app           : self.app,
+      join_element  : self._parent,
+      table         : table
+    });
+
+    self._joined = true;
+    query.join( self );
+    self.build_query( query );
+    self._parent.run_query( query, table, after_query );
+  });
+
+  function after_query() {
 //    foreach(this.children as child) // find recursively
 //      child.find();
 //
 //    foreach(this.stats as stat)
 //      stat.query();
-//  }
-//
+    callback();
+  }
+}
+
 
 
 //ActiveRecord.prototype._wrap_to_get_table = function ( fun ) {
@@ -655,7 +675,7 @@ JoinElement.prototype.get_column_select = function( table, select ) {
         );
       }, this );
 
-      var matches
+      var matches;
       if ( column_aliases[ key ] ) {  // simple column names
         columns.push(
           prefix +
@@ -746,44 +766,46 @@ JoinElement.prototype.get_column_prefix = function( table ) {
   return table.raw_name + '.';
 }
 
-//  /**
-//   * @return string the join statement (this node joins with its parent)
-//   */
-//  JoinElement.prototype.get_join_condition = function()
-//  {
-//    parent=this._parent;
-//    relation=this.relation;
-//    if(this.relation instanceof cmany_many_relation)
-//    {
-//      if(!preg_match('/^\s*(.*?)\((.*)\)\s*/',this.relation.foreign_key,matches))
-//        throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an invalid foreign key. the format of the foreign key must be "join_table(fk1,fk2,...)".',
-//          array('{class}'=>get_class(parent.model),'{relation}'=>this.relation.name)));
-//
-//      schema=this._builder.get_schema();
-//      if((join_table=schema.get_table(matches[1]))===null)
-//        throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is not specified correctly: the join table "{join_table}" given in the foreign key cannot be found in the database.',
-//          array('{class}'=>get_class(parent.model), '{relation}'=>this.relation.name, '{join_table}'=>matches[1])));
-//      fks=preg_split('/\s*,\s*/',matches[2],-1,preg_split_no_empty);
-//
-//      return this.join_many_many(join_table,fks,parent);
-//    }
-//    else
-//    {
-//      fks=preg_split('/\s*,\s*/',relation.foreign_key,-1,preg_split_no_empty);
-//      if(this.relation instanceof cbelongs_to_relation)
-//      {
-//        pke=this;
-//        fke=parent;
-//      }
-//      else
-//      {
-//        pke=parent;
-//        fke=this;
-//      }
-//      return this.join_one_many(fke,fks,pke,parent);
-//    }
-//  }
-//
+
+JoinElement.prototype.get_join_condition = function() {
+  var parent    = this._parent;
+  var relation  = this.relation;
+
+  if( this.relation instanceof ManyManyRelation ) {
+    var matches = /^\s*(.*?)\((.*)\)\s*/.exec( this.relation.foreign_key );
+
+    if( !matches ) throw new Error(
+      'The relation `%s` in active record class `%s` is specified with an invalid foreign key. \
+       The format of the foreign key must be "join_table(fk1,fk2,...)".'.format( this.relation.name, parent.model.class_name )
+    );
+
+    var table_name = matches[1];
+    this._builder.db_schema.get_table( table_name, function( err, join_table ) {
+      if((join_table=schema.get_table(matches[1]))===null)
+      throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is not specified correctly: the join table "{join_table}" given in the foreign key cannot be found in the database.',
+        array('{class}'=>get_class(parent.model), '{relation}'=>this.relation.name, '{join_table}'=>matches[1])));
+      fks=preg_split('/\s*,\s*/',matches[2],-1,preg_split_no_empty);
+
+      return this.join_many_many(join_table,fks,parent);
+    }, this );
+  }
+  else
+  {
+    fks=preg_split('/\s*,\s*/',relation.foreign_key,-1,preg_split_no_empty);
+    if(this.relation instanceof cbelongs_to_relation)
+    {
+      pke=this;
+      fke=parent;
+    }
+    else
+    {
+      pke=parent;
+      fke=this;
+    }
+    return this.join_one_many(fke,fks,pke,parent);
+  }
+}
+
 //  /**
 //   * generates the join statement for one-many relationship.
 //   * this works for has_one, has_many and belongs_to.

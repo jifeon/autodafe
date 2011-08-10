@@ -17,6 +17,9 @@ DbCriteria.prototype._init = function( params ) {
   this.join       = '';
   this.having     = '';
   this.alias      = '';
+  this.With       = null;
+  this.together   = null;
+  this.index      = null;
 
   for ( var param in params ) {
     this[ param ] = params[ param ];
@@ -104,4 +107,11 @@ DbCriteria.prototype.merge_with = function( criteria, use_and ) {
 
   if ( criteria.distinct > 0 )
     this.distinct = criteria.distinct;
+
+  if ( criteria.together != null ) this.together = criteria.together;
+
+  if ( criteria.index != null )    this.index = criteria.index;
+
+  if ( !this.With )         this.With = criteria.With;
+  else if ( criteria.With ) this.With = Object.recursive_merge( this.With, criteria.With );
 }

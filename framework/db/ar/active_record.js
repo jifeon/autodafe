@@ -1,5 +1,6 @@
 var Model             = require('model');
 var DbCommand         = require('db/db_command');
+var DbCriteria        = require('db/db_criteria');
 var Emitter           = process.EventEmitter;
 var ActiveFinder      = require('./active_finder');
 var tools             = require( 'lib/tools' );
@@ -33,6 +34,7 @@ ActiveRecord.prototype._init = function( params ) {
 
   this._related         = {};
   this._alias           = 't';
+  this._criteria        = null;
 
   this._init_relations();
 };
@@ -196,6 +198,15 @@ ActiveRecord.prototype.get_table = function ( callback, context ) {
 };
 
 
+ActiveRecord.prototype.get_db_criteria = function ( create_if_null ) {
+  if ( create_if_null == undefined ) create_if_null = true;
+
+  if ( !this._criteria && create_if_null ) this._criteria = new DbCriteria;
+
+  return this._criteria;
+};
+
+
 ActiveRecord.prototype.get_attributes = function( table, names ) {
   var attributes = Object.not_deep_clone( this._attributes );
 
@@ -242,6 +253,17 @@ ActiveRecord.prototype.equals = function ( model ) {
   return pks.every( function( pk ) {
     return self.get_attribute( pk ) == model[ pk ];
   } );
+};
+
+
+ActiveRecord.prototype.With = function () {
+  var With = Array.prototype.slice.call( arguments, 0 );
+  if ( Array.isArray( With[0] ) ) With = With[0];
+  if ( With.length ) this.get_db_criteria().merge_with( {
+    With : With
+  } );
+
+  return this;
 };
 
 
@@ -405,10 +427,24 @@ ActiveRecord.prototype.refresh = function() {
 }
 
 
+ActiveRecord.prototype.apply_scopes = function ( criteria ) {
+  var c = this.get_db_criteria( false );
+  if ( c ) {
+    c.merge_with( criteria );
+    criteria = c;
+    this._criteria = null;
+  }
+
+  return criteria;
+};
+
+
 ActiveRecord.prototype.query = function ( criteria, all ) {
   all = all || false;
 
   return this.__wrap_to_get_table( function( table, emitter ) {
+
+    criteria = this.apply_scopes( criteria );
 
     if ( Object.isEmpty( criteria.With ) ) {
       if( !all ) criteria.limit = 1;

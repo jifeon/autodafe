@@ -34,54 +34,51 @@ JoinQuery.prototype._init = function( params ) {
   this.params     = {};
   this.elements   = [];
   
-//  if( params.criteria ) {
-//    this.selects.push( this.join_element.get_column_select( params.criteria.select ) );
-//    this.joins[]=join_element.get_table_name_with_alias();
-//    this.joins[]=criteria.join;
-//    this.conditions[]=criteria.condition;
-//    this.orders[]=criteria.order;
-//    this.groups[]=criteria.group;
-//    this.havings[]=criteria.having;
-//    this.limit=criteria.limit;
-//    this.offset=criteria.offset;
-//    this.params=criteria.params;
-//    if(!this.distinct && criteria.distinct)
-//      this.distinct=true;
-//  }
-//  else
-//  {
+  if( params.criteria ) {
+    this.selects    .push( this.join_element.get_column_select( this.table, params.criteria.select ) );
+    this.joins      .push( this.join_element.get_table_name_with_alias( this.table ) );
+    this.joins      .push( params.criteria.join       );
+    this.conditions .push( params.criteria.condition  );
+    this.orders     .push( params.criteria.order      );
+    this.groups     .push( params.criteria.group      );
+    this.havings    .push( params.criteria.having     );
+
+    this.limit  = params.criteria.limit;
+    this.offset = params.criteria.offset;
+    this.params = params.criteria.params;
+
+    if ( !this.distinct && params.criteria.distinct )
+      this.distinct = true;
+  }
+
+  else {
     this.selects.push   ( this.join_element.get_primary_key_select( this.table )    );
     this.joins.push     ( this.join_element.get_table_name_with_alias( this.table ) );
     this.conditions.push( this.join_element.get_primary_key_range( this.table )     );
-//  }
+  }
 
   this.elements[ this.join_element.id ] = true;
 };
-//
-//
-//  /**
-//   * joins with another join element
-//   * @param cjoin_element element the element to be joined
-//   */
-//  JoinQuery.prototype.join = function(element)
-//  {
-//    this.selects[]=element.get_column_select(element.relation.select);
-//    this.conditions[]=element.relation.condition;
-//    this.orders[]=element.relation.order;
-//    this.joins[]=element.get_join_condition();
-//    this.joins[]=element.relation.join;
-//    this.groups[]=element.relation.group;
-//    this.havings[]=element.relation.having;
-//
-//    if(is_array(element.relation.params))
-//    {
-//      if(is_array(this.params))
-//        this.params=array_merge(this.params,element.relation.params);
-//      else
-//        this.params=element.relation.params;
-//    }
-//    this.elements[element.id]=true;
-//  }
+
+
+JoinQuery.prototype.join = function( element ) {
+  this.selects    .push( element.get_column_select( element.relation.select ) );
+  this.conditions .push( element.relation.condition   );
+  this.orders     .push( element.relation.order       );
+  this.joins      .push( element.get_join_condition() );
+  this.joins      .push( element.relation.join        );
+  this.groups     .push( element.relation.group       );
+  this.havings    .push( element.relation.having      );
+
+  if(is_array(element.relation.params))
+  {
+    if(is_array(this.params))
+      this.params=array_merge(this.params,element.relation.params);
+    else
+      this.params=element.relation.params;
+  }
+  this.elements[element.id]=true;
+}
 
 JoinQuery.prototype.create_command = function( builder ){
   var sql = ( this.distinct ? 'SELECT DISTINCT ' : 'SELECT ' ) + this.selects.join(', ') +
@@ -103,7 +100,7 @@ JoinQuery.prototype.create_command = function( builder ){
     return !!having;
   } );
 
-  if( havings.length ) sql += ' HAVING (' + havings.join( ') and (' ) + ')';
+  if( havings.length ) sql += ' HAVING (' + havings.join( ') AND (' ) + ')';
 
   var orders = this.orders.filter( function( order ){
     return !!order;

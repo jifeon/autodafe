@@ -3,6 +3,7 @@ exports.get_batch = function( application, assert ) {
   var Comment   = require( 'models/comment' );
   var Category  = require( 'models/category' );
   var Order     = require( 'models/order' );
+  var Post      = require( 'models/post' );
 
   return {
 //    'lazy relation' : {
@@ -290,7 +291,7 @@ exports.get_batch = function( application, assert ) {
 //    },
     'eager relation' : {
       topic : function() {
-        return application.models.post.With( 'author','firstComment','comments','categories' ).find_by_pk(2);
+        return application.models.post.With( 'author','first_comment','comments','categories' ).find_by_pk(2);
       },
       'loaded model' : function( err, post ){
         assert.isNull( err );
