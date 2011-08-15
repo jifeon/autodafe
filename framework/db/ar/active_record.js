@@ -453,7 +453,7 @@ ActiveRecord.prototype.populate_record = function( attributes ) {
 
 
 ActiveRecord.prototype.instantiate = function () {
-  return new this.app.models.get_model( this.constructor, {
+  return new this.app.models.implement_model( this.constructor, {
     is_new : false
   } );
 };

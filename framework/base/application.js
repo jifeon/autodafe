@@ -3,6 +3,7 @@ var Session               = require('session');
 var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
+var ModelsManager         = require('models/models_manager');
 var Component             = require('components/component');
 var ModelsProxyHandler    = require('lib/proxy_handlers/models_proxy_handler');
 var AutodafePart          = require('autodafe_part');
@@ -32,6 +33,7 @@ Application.prototype._init = function ( config ) {
   this._.base_dir = path.normalize( this._config.base_dir );
 
   this._.is_running       = false;
+  this._.is_initialized   = false;
   
   this.logger             = new Logger;
   this.router             = null;
@@ -50,32 +52,28 @@ Application.prototype._init = function ( config ) {
 
 
 Application.prototype._init_core = function () {
-  var models_handler = new ModelsProxyHandler({
-    target : {
-      get_model : function( constructor, params ) {
-        return models_handler.create_model( constructor, params );
-      },
-      is_model_exist : function ( model_name ) {
-        try {
-          models_handler.get( null, model_name );
-        }
-        catch( e ) {
-          return false;
-        }
 
-        return true;
-      }
-    },
+
+
+  var router_cfg  = this._config.router || {};
+  router_cfg.app  = this;
+  this.router     = new Router( router_cfg );
+
+  this.log( 'Core has initialized', 'info' );
+};
+
+
+Application.prototype._init_models = function(){
+  var models_manager = new ModelsManager({
+    app : app
+  });
+
+  var models_handler = new ModelsProxyHandler({
+    target : models_manager,
     app    : this
   });
 
-  this._.models = models_handler.get_proxy();
-
-  var router_cfg = this._config.router || {};
-  router_cfg.app = this;
-  this.router = new Router( router_cfg );
-
-  this.log( 'Core has initialized', 'info' );
+  this._.models   = models_handler.get_proxy();
 };
 
 
