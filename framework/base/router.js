@@ -110,8 +110,14 @@ Router.prototype._get_actions = function ( route_path, method ) {
 
   method = ( method.toLowerCase() == 'post' ) ? 'POST' : 'ANY';
   var is_post_action = this._rules[ 'POST' ][ route_path ] || false;
-  if( method != 'POST' && is_post_action ) route_path = 'user.index';
-    else route_path = this._rules[ method ][ route_path ] || route_path;
+  if( method != 'POST' && is_post_action ){
+    var error =  new Error( '"POST" method expected' );
+    error.number = 403;
+    throw error;
+    }
+    else {
+      route_path = this._rules[ method ][ route_path ] || this._rules[ 'ANY' ][ route_path ] || route_path;
+    }
 
   if ( !Array.isArray( route_path ) ) route_path = [ route_path ];
 

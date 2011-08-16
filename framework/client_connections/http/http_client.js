@@ -87,7 +87,10 @@ HTTPClient.prototype.send_error = function ( e ) {
       return true;
 
     case 403:
-      break;
+      this.log( 'Error 403 by address `%s`'.format( this.request.url ), 'warning' );
+      this.response.statusCode = 403;
+      this.response.end();
+      return true;
   }
 
   return false;
