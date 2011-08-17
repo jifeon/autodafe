@@ -44,7 +44,8 @@ var config = module.exports = {
   },
 
   preload_components : [
-    'log_router'//,
+    'log_router',
+    'db'//,
 //    'files'
   ],
 

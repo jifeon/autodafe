@@ -24,17 +24,33 @@ ActiveRecord._relations = null;
 ActiveRecord.prototype._init = function( params ) {
   this.super_._init( params );
 
+  this._.is_inited  = false;
   this._.table_name = this.constructor.table_name;
 
   if ( !this.table_name )
     throw new Error( 'You should specify `table_name` property for ' + this.class_name );
 
   this._.db_connection  = this.app.db;
+  if ( !this.db_connection )
+    throw new Error(
+      'Looks like you don\'t preload or config `db` component, but it\'s required for use ActiveRecord class `%s`'.format( this.class_name )
+    );
+
+  this._.table          = null;
 
   this._related         = {};
   this._alias           = 't';
 
-  this._init_relations();
+  var self = this;
+
+  this.db_connection.db_schema.get_table( self.table_name, function() {
+    this._.is_inited = true;
+    this.emit( 'initialized' );
+  }, this );
+
+  this.app.on( 'models_loaded', function() {
+    self._init_relations();
+  } );
 };
 
 
@@ -197,11 +213,6 @@ ActiveRecord.prototype.many_many = function ( model ) {
 
 ActiveRecord.prototype.stat = function ( model ) {
   return this._create_relation( 'stat', model );
-};
-
-
-ActiveRecord.prototype.get_table = function ( callback, context ) {
-  this.db_connection.db_schema.get_table( this.table_name, callback, context );
 };
 
 
