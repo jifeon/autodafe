@@ -68,6 +68,7 @@ Router.prototype.route = function ( route_path, method, params, client ) {
 
   var args = Array.prototype.splice.call( arguments, 2 );
   this._get_actions( route_path, method ).for_each( function( action ){
+
     var controller = this._controllers[ action.controller_name ];
     if ( !controller ) {
       var error =  new Error(
@@ -76,6 +77,7 @@ Router.prototype.route = function ( route_path, method, params, client ) {
       error.number = 404;
       throw error;
     }
+
     args.unshift( action.action );
     var res = controller.run_action.apply( controller, args )
     args.shift();

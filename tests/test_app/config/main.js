@@ -44,7 +44,8 @@ var config = module.exports = {
   },
 
   preload_components : [
-    'log_router'//,
+    'log_router',
+    'db'//,
 //    'files'
   ],
 
@@ -122,12 +123,14 @@ var config = module.exports = {
     tests : {
       paths : [      // base_dir + path
         '../unit/framework'
-//        '../unit/framework/base',
+//        '../unit/framework/base/components/components_manager_tests'
 //        '../unit/framework/db/ar/ar_relations_tests'
 //        '../unit/framework/base/app_module_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
-        'web_socket'
+        'web_socket',
+        'router',
+        'components_manager'
       ]
     }
   }

@@ -14,6 +14,7 @@ Model.prototype._init = function ( params ) {
   this._attributes = {};
   this._.validator = new Validator( params );
   this._.is_new    = params.is_new == undefined ? true : params.is_new;
+  this._.is_inited = true;
 };
 
 

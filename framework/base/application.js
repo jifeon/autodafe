@@ -3,9 +3,11 @@ var Session               = require('session');
 var Router                = require('router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
+var ModelsManager         = require('models/models_manager');
 var Component             = require('components/component');
-var ModelsProxyHandler    = require('lib/proxy_handlers/models_proxy_handler');
+var ModelsProxyHandler    = require('./models/models_proxy_handler');
 var AutodafePart          = require('autodafe_part');
+var AppModule             = require('app_module');
 
 module.exports = Application.inherits( AutodafePart );
 
@@ -17,6 +19,8 @@ function Application( config ) {
 Application.instances = [];
 
 Application.prototype._init = function ( config ) {
+  this.setMaxListeners( 1000 );
+
   this.super_._init();
 
   Application.instances.push( this );
@@ -32,6 +36,7 @@ Application.prototype._init = function ( config ) {
   this._.base_dir = path.normalize( this._config.base_dir );
 
   this._.is_running       = false;
+  this._.is_initialized   = false;
   
   this.logger             = new Logger;
   this.router             = null;
@@ -44,38 +49,48 @@ Application.prototype._init = function ( config ) {
   this.components_folder  = 'components';
 
   this._preload_components();
-  this._init_core();
-  this._init_components();
+  this._init_core( /*before*/ this._init_components );
 };
 
 
-Application.prototype._init_core = function () {
-  var models_handler = new ModelsProxyHandler({
-    target : {
-      get_model : function( constructor, params ) {
-        return models_handler.create_model( constructor, params );
-      },
-      is_model_exist : function ( model_name ) {
-        try {
-          models_handler.get( null, model_name );
-        }
-        catch( e ) {
-          return false;
-        }
+Application.prototype._init_core = function ( callback ) {
+  this._init_models( /*before*/ this._init_router );
 
-        return true;
-      }
-    },
+  this.on( 'core_initialized', callback );
+
+  this.on( 'initialized', function() {
+    this.run = this.__run;
+  } );
+};
+
+
+Application.prototype._init_models = function( callback ){
+  var models_manager = new ModelsManager({
+    app : this
+  });
+
+  var models_handler = new ModelsProxyHandler({
+    target : models_manager,
     app    : this
   });
 
   this._.models = models_handler.get_proxy();
 
-  var router_cfg = this._config.router || {};
-  router_cfg.app = this;
-  this.router = new Router( router_cfg );
+  var self = this;
+  models_manager.load_models( function() {
+    self.emit( 'models_loaded' );
+    callback.call( self );
+  } );
+};
 
-  this.log( 'Core has initialized', 'info' );
+
+Application.prototype._init_router = function () {
+  var router_cfg  = this._config.router || {};
+  router_cfg.app  = this;
+  this.router     = new Router( router_cfg );
+
+  this.log( 'Router has initialized', 'info' );
+  this.emit( 'core_initialized' );
 };
 
 
@@ -98,6 +113,7 @@ Application.prototype._init_components = function () {
   this.log( 'Load components' );
   this.components.load_components();
   this.log( 'Components are loaded', 'info' );
+  this.emit( 'initialized' );
 };
 
 
@@ -146,11 +162,26 @@ Application.prototype.get_param = function ( name ) {
 };
 
 
-Application.prototype.run = function () {
+Application.prototype.run = function ( callback ) {
+  if ( !Object.isEmpty( this.listeners[ 'initialized' ] ) ) return false; // double run before init
+
+  this.on( 'initialized', function(){
+    this.__run( callback );
+  } );
+  return true;
+};
+
+
+Application.prototype.__run = function ( callback ) {
+  callback = callback || AppModule.prototype.default_callback;
+
   if ( this.is_running ) return false;
   this.log( 'Running application' );
   this.emit( 'run' );
   this._.is_running = true;
+
+  callback();
+
   return true;
 };
 
