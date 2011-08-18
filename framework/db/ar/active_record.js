@@ -632,10 +632,9 @@ ActiveRecord.prototype.update_all_by_sql = function( sql, params ) {
   this.log( 'update_all_by_sql' );
 
   var builder = this.get_command_builder();
+  var command = builder.create_sql_command( sql, params );
 
-  return this.__wrap_to_get_table( function( table ) {
-    return builder.create_sql_command( sql, params );
-  }, '' );
+  return this.__execute_command( command );
 }
 
 
