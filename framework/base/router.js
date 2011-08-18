@@ -60,11 +60,15 @@ Router.prototype._collect_controllers = function () {
 };
 
 
-Router.prototype.route = function ( route_path ) {
+Router.prototype.route = function ( route_path, method, params, client ) {
   this.log( 'Route to `%s`'.format( route_path ? route_path : 'default controller with default action' ), 'trace' );
 
-  var args = Array.prototype.splice.call( arguments, 1 );
-  this._get_actions( route_path ).for_each( function( action ){
+  var emitter         = new process.EventEmitter;
+  var emitted_actions = 0;
+
+  var args = Array.prototype.splice.call( arguments, 2 );
+  this._get_actions( route_path, method ).for_each( function( action ){
+
     var controller = this._controllers[ action.controller_name ];
     if ( !controller ) {
       var error =  new Error(
@@ -73,20 +77,50 @@ Router.prototype.route = function ( route_path ) {
       error.number = 404;
       throw error;
     }
+
     args.unshift( action.action );
-    controller.run_action.apply( controller, args )
+    var res = controller.run_action.apply( controller, args )
     args.shift();
+
+    if ( res instanceof process.EventEmitter ) {
+      emitted_actions++;
+      res
+        .on( 'success', function() {
+          if ( !--emitted_actions ) emitter.emit( 'success' );
+        } )
+        .on( 'error', function() {
+          emitter.emit( 'error' );
+        } );
+    }
   }, this );
+
+  if ( !emitted_actions ) process.nextTick( function() {
+    emitter.emit( 'success' );
+  } );
+
+  return emitter;
 };
 
 
-Router.prototype._get_actions = function ( route_path ) {
+Router.prototype._get_actions = function ( route_path, method ) {
   if ( !route_path ) return [{
     controller_name : this.app.default_controller,
     action          : null
   }];
 
-  if ( this._rules )                  route_path = this._rules[ route_path ] || route_path;
+//  if ( this._rules )                  route_path = this._rules[ route_path ] || route_path;
+
+  method = ( method.toLowerCase() == 'post' ) ? 'POST' : 'ANY';
+  var is_post_action = this._rules[ 'POST' ][ route_path ] || false;
+  if( method != 'POST' && is_post_action ){
+    var error =  new Error( '"POST" method expected' );
+    error.number = 403;
+    throw error;
+    }
+    else {
+      route_path = this._rules[ method ][ route_path ] || this._rules[ 'ANY' ][ route_path ] || route_path;
+    }
+
   if ( !Array.isArray( route_path ) ) route_path = [ route_path ];
 
   return route_path.map( function( path ){

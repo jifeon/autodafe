@@ -148,7 +148,13 @@ ProxyHandler.prototype.hasOwn = function( name ) {
 
 // proxy[name] -> any
 ProxyHandler.prototype.get = function( receiver, name ) {
-  return this.target[ name ];
+  var self = this;
+
+  return typeof this.target[ name ] != 'function'
+    ? this.target[ name ]
+    : function() {
+      return self.target[ name ].apply( self.target, arguments );
+    };
 }
 
 

@@ -13,12 +13,10 @@ function HTTPClient( params ) {
 HTTPClient.prototype._init = function( params ) {
   if ( !params || !params.request )
     throw new Error( '`request` should be instance of http.ServerRequest in HTTPClient.init' );
-//  this._.request = params.request;
   this.request = params.request;
 
   if ( !params.response )
     throw new Error( '`response` should be instance of http.ServerResponse in HTTPClient.init' );
-//  this._.response = params.response;
   this.response = params.response;
   this.response.cookie = [];
 
@@ -37,7 +35,7 @@ HTTPClient.prototype.init_events = function () {
   this.request.once( 'end',   listener );
 
   var self = this;
-  process.nextTick( function() {
+  this.on( 'connect', function() {
     self.emit( 'request', self.request.url );
   } );
 };
@@ -61,8 +59,8 @@ HTTPClient.prototype.get_cookie = function ( name ) {
 };
 
 
-HTTPClient.prototype.set_cookie = function ( name, value ) {
-  this.response.cookie.push( name + '=' + value + ';path=/' );
+HTTPClient.prototype.set_cookie = function ( name, value, days ) {
+  this.response.cookie.push( cookie.make( name, value, days ) );
 };
 
 HTTPClient.prototype.set_cookies = function () {
@@ -89,7 +87,10 @@ HTTPClient.prototype.send_error = function ( e ) {
       return true;
 
     case 403:
-      break;
+      this.log( 'Error 403 by address `%s`'.format( this.request.url ), 'warning' );
+      this.response.statusCode = 403;
+      this.response.end();
+      return true;
   }
 
   return false;

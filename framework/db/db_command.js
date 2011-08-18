@@ -108,7 +108,7 @@ DbCommand.prototype._apply_params = function () {
 
   for ( var name in this._params ) {
     var true_name = name[0] == ':' ? name : ':' + name;
-    this._text = this._text.replace( true_name, this.db_connection.quote_value( this._params[ name ] ) );
+    this._text = this._text.replace( new RegExp( true_name + '(?=[^\\w\\d_]|$)', 'g' ), this.db_connection.quote_value( this._params[ name ] ) );
   }
 
   this._params_applied = true;

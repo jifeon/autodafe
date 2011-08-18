@@ -36,7 +36,10 @@ ClientConnection.prototype.connect_client = function ( client ) {
     self._send_response( data, client );
   } );
 
-  this.app.router.route( this.app.default_controller + '.connect_client', client );
+  this.app.router.route( this.app.default_controller + '.connect_client', 'ANY', client )
+    .on( 'success', function() {
+      client.connect();
+    } );
 };
 
 
@@ -48,7 +51,7 @@ ClientConnection.prototype._receive_request = function ( data, client ) {
   var params = Object.isObject( data.params ) ? data.params : {};
 
   try {
-    this.app.router.route( data.action, params, client );
+    this.app.router.route( data.action, client.request.method, params, client );
   }
   catch ( e ) {
     if ( !client.send_error( e ) ) throw e;

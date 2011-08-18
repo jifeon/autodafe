@@ -13,35 +13,37 @@ exports.get_batch = function( application, assert ) {
       topic : function() {
         var config = require('config/config_with_different_components');
 
-        var app = Autodafe.create_application( config );
-        app.run();
-        return app;
+        var self  = this;
+        var app   = Autodafe.create_application( config );
+        app.run( function(){
+          self.callback( null, app );
+        } );
       },
       'compare with config, value in config for component is' : {
-        'object' : function( app ){
+        'object' : function( e, app ){
           assert.instanceOf( app.log_router, LogRouter );
         },
-        'object with params which should be sent to component' : function( app ){
+        'object with params which should be sent to component' : function( e, app ){
           assert.instanceOf( app.log_router.get_route( 'console' ), ConsoleRoute );
         },
-        'true' : function( app ){
+        'true' : function( e, app ){
           var Tests = require( 'tests/test_component' );
           assert.instanceOf( app.tests, Tests );
         },
-        'false' : function( app ){
+        'false' : function( e, app ){
           assert.isUndefined( app.web_sockets, 'WebSocketServer must be not included' );
         }
       },
 
       'load on the fly' : {
-        'system component without params' : function( app ){
+        'system component without params' : function( e, app ){
           assert.doesNotThrow( function() {
             app.components.load_component( 'web_sockets', true );
           })
 
           assert.instanceOf( app.web_sockets, WebSocketsServer );
         },
-        'with params' : function( app ){
+        'with params' : function( e, app ){
           assert.doesNotThrow( function() {
             app.components.load_component( 'another_nested_component', {
               param : 5
@@ -53,24 +55,24 @@ exports.get_batch = function( application, assert ) {
       },
 
       'user component' : {
-        'should be instance of `Component`' : function( app ) {
+        'should be instance of `Component`' : function( e, app ) {
           assert.instanceOf( app.user_component, Component );
         },
-        'param of user\'s component should be equal 42' : function( app ) {
+        'param of user\'s component should be equal 42' : function( e, app ) {
           assert.equal( app.user_component.param, 42 );
         }
       },
 
       'nested user component' : {
-        'should be instance of `Component`' : function( app ) {
+        'should be instance of `Component`' : function( e, app ) {
           assert.instanceOf( app.nested_user_component, Component );
         },
-        'param of nested user\'s component should be equal 43' : function( app ) {
+        'param of nested user\'s component should be equal 43' : function( e, app ) {
           assert.equal( app.nested_user_component.param, 43 );
         }
       },
 
-      'hidden component in `lib` folder should not be loaded' : function( app ) {
+      'hidden component in `lib` folder should not be loaded' : function( e, app ) {
         assert.throws( function() {
           app.components.load_component( 'hidden_component', true );
         } );

@@ -15,7 +15,6 @@ WebSocketsClient.prototype._init = function( params ) {
   this.ws_client = params.ws_client;
 
   this.super_._init( params );
-//  this._.ws_client = params.ws_client;
 };
 
 
@@ -24,12 +23,31 @@ WebSocketsClient.prototype.init_events = function () {
 
   var self = this;
   this.ws_client.on( 'message', function( message ) {
-    self.emit( 'request', message );
+    self._on_request( message );
   } );
 
   this.ws_client.on( 'disconnect', function() {
     self.disconnect();
   } );
+};
+
+
+WebSocketsClient.prototype.connect = function () {
+  this._on_request = this._on_request_after_connect;
+  this.super_.connect();
+};
+
+
+WebSocketsClient.prototype._on_request = function ( message ) {
+  var self = this;
+  this.on( 'connect', function() {
+    self._on_request_after_connect( message );
+  } );
+};
+
+
+WebSocketsClient.prototype._on_request_after_connect = function ( message ) {
+  this.emit( 'request', message );
 };
 
 

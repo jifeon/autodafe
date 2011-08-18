@@ -53,25 +53,20 @@ ActiveFinder.prototype.query = function( criteria, all ) {
   this._join_tree.find( criteria );
   this._join_tree.after_find();
 
-//  if(all)
-//  {
-//    result = array_values(this._join_tree.records);
-//    if (criteria.index!==null)
-//    {
-//      index=criteria.index;
-//      array=array();
-//      foreach(result as object)
-//        array[object.index]=object;
-//      result=array;
-//    }
-//  }
-//  else if(count(this._join_tree.records))
-//    result = reset(this._join_tree.records);
-//  else
-//    result = null;
-//
-//  this.destroy_join_tree();
-//  return result;
+  var result = [];
+  if( all ) this._join_tree.enum_records( function( record ) {
+    if ( criteria.index ) result[ record.index ] = record;
+    else result.push( record );
+  } )
+
+  else if( this._join_tree.has_records() )
+    result = this._join_tree.get_record( 0, true );
+
+  else
+    result = null;
+
+  this.destroy_join_tree();
+  return result;
 }
 
 //  /**

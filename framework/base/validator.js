@@ -58,5 +58,14 @@ Validator.prototype.is_number = function( field_name, value ){
 
 Validator.prototype.is_array = function( field_name, value ){
   if( !Array.isArray( value ) )
-    this.errors.push( field_name + ' should be array of room modules' );
+    this.errors.push( field_name + ' should be array of room modules! Has: ' + value);
 }
+Validator.prototype.phone_number = function ( field_name, value ) {
+  if ( !/^[0-9#\-+ ]*$/.test( value ) )
+    this.errors.push( field_name + ' should be a phone number' );
+};
+
+Validator.prototype.url = function ( field_name, value ) {
+  if ( value && !/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test( value ) )
+    this.errors.push( field_name + ' should be a valid url' );
+};

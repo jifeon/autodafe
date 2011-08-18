@@ -17,7 +17,7 @@ var config = module.exports = {
     }
   },
 
-  preload_components : [ 'log_router' ],
+  preload_components : [ 'log_router', 'db' ],
 
   components : {
 

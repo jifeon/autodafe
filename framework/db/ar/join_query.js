@@ -16,12 +16,6 @@ JoinQuery.prototype._init = function( params ) {
   );
   this._.join_element = params.join_element;
 
-  var DbTableSchema = require('../db_table_schema');
-  if ( !DbTableSchema.is_instantiate( params.table ) ) throw new Error(
-    '`table` should be instance of DbTableSchema in JoinQuery.init'
-  );
-  this._.table = params.table;
-
   this.selects    = [];
   this.distinct   = false;
   this.joins      = [];
@@ -35,8 +29,8 @@ JoinQuery.prototype._init = function( params ) {
   this.elements   = [];
   
   if( params.criteria ) {
-    this.selects    .push( this.join_element.get_column_select( this.table, params.criteria.select ) );
-    this.joins      .push( this.join_element.get_table_name_with_alias( this.table ) );
+    this.selects    .push( this.join_element.get_column_select( params.criteria.select ) );
+    this.joins      .push( this.join_element.get_table_name_with_alias() );
     this.joins      .push( params.criteria.join       );
     this.conditions .push( params.criteria.condition  );
     this.orders     .push( params.criteria.order      );
@@ -52,9 +46,9 @@ JoinQuery.prototype._init = function( params ) {
   }
 
   else {
-    this.selects.push   ( this.join_element.get_primary_key_select( this.table )    );
-    this.joins.push     ( this.join_element.get_table_name_with_alias( this.table ) );
-    this.conditions.push( this.join_element.get_primary_key_range( this.table )     );
+    this.selects.push   ( this.join_element.get_primary_key_select()    );
+    this.joins.push     ( this.join_element.get_table_name_with_alias() );
+    this.conditions.push( this.join_element.get_primary_key_range()     );
   }
 
   this.elements[ this.join_element.id ] = true;
@@ -77,6 +71,7 @@ JoinQuery.prototype.join = function( element ) {
     else
       this.params=element.relation.params;
   }
+
   this.elements[element.id]=true;
 }
 

@@ -38,13 +38,19 @@ InheritingProxyHandler.prototype.get = function ( receiver, name ) {
             throw new TypeError( name + ' is not a function' );
           }
         }
-    
+
         var method = super_prototype[ name ];
         calling_chain.push( method );
         method.chain = calling_chain;
-        var result = method.apply( self.context, arguments );
+        try {
+          var result = method.apply( self.context, arguments );
+        }
+        catch( e ) {
+          delete method.chain;
+          throw e;
+        }
         delete method.chain;
-      
+
         return result;
       };
 };

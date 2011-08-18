@@ -63,10 +63,12 @@ Controller.prototype.run_action = function ( action /*, arg1, arg2, ...*/ ) {
     ? before_action_result
     : Array.prototype.slice.call( arguments, 1 );
 
-  this[ action ].apply( this, args );
+  var res = this[ action ].apply( this, args );
 
   args.unshift( action );
   this.after_action.apply( this, args );
+
+  return res;
 };
 
 

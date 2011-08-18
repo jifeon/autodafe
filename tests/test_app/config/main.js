@@ -44,42 +44,43 @@ var config = module.exports = {
   },
 
   preload_components : [
-    'log_router'//,
+    'log_router',
+    'db'//,
 //    'files'
   ],
 
   components : {
 
-//    web_sockets         : {
-//      port : 3000
-//    },
+    web_sockets         : {
+      port : 3000
+    },
 
-//    users               : {
-//      model : 'user',
-//      roles : {
-//        role0     : 'user.role == "role0"',
-//        role1     : 'user.role == "role1"',
-//        role2     : 'user.role == "role2"',
-//        role3     : function( user, app, model, attribute ) {
-//          return user.role == 'role3';
-//        }
-//      },
-//      // По умолчанию ниодна роль не имеет права ни на что.
-//      // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
-//      // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
-//      possibilities : {
-//        guest     : [],
-//        role0     : [ 'view' ],
-//        role1     : [ 'create' ],
-//        role2     : [ 'edit' ],
-//        role3     : [ 'remove' ]
-//      }
-//    },
+    users               : {
+      model : 'user',
+      roles : {
+        role0     : 'user.role == "role0"',
+        role1     : 'user.role == "role1"',
+        role2     : 'user.role == "role2"',
+        role3     : function( user, app, model, attribute ) {
+          return user.role == 'role3';
+        }
+      },
+      // По умолчанию ниодна роль не имеет права ни на что.
+      // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
+      // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
+      possibilities : {
+        guest     : [],
+        role0     : [ 'view' ],
+        role1     : [ 'create' ],
+        role2     : [ 'edit' ],
+        role3     : [ 'remove' ]
+      }
+    },
 
     db                  : db,
-//    http                : {
-//      port : 3000
-//    },
+    http                : {
+      port : 3000
+    },
 
     log_router          : {
 
@@ -122,12 +123,14 @@ var config = module.exports = {
     tests : {
       paths : [      // base_dir + path
 //        '../unit/framework'
-//        '../unit/framework/base',
+//        '../unit/framework/base/components/components_manager_tests'
         '../unit/framework/db/ar/ar_relations_tests'
 //        '../unit/framework/base/app_module_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
-        'web_socket'
+        'web_socket',
+        'router',
+        'components_manager'
       ]
     }
   }
