@@ -49,7 +49,7 @@ ComponentsManager.prototype.load_component = function ( component_name, params )
   this.log( 'Load component "%s"'.format( component_name ), 'trace' );
   var component_params = this._components[ component_name ] || params;
   if ( !component_params ) {
-    this.log( 'Component `%s` has not loaded because it\'s not configured', 'warning' );
+    this.log( 'Component `%s` has not loaded because it\'s not configured'.format( component_name ), 'warning' );
     return false;
   }
 

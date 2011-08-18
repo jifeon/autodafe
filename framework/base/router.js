@@ -68,6 +68,7 @@ Router.prototype.route = function ( route_path, method, params, client ) {
 
   var args = Array.prototype.splice.call( arguments, 2 );
   this._get_actions( route_path, method ).for_each( function( action ){
+
     var controller = this._controllers[ action.controller_name ];
     if ( !controller ) {
       var error =  new Error(
@@ -76,6 +77,7 @@ Router.prototype.route = function ( route_path, method, params, client ) {
       error.number = 404;
       throw error;
     }
+
     args.unshift( action.action );
     var res = controller.run_action.apply( controller, args )
     args.shift();
@@ -109,9 +111,9 @@ Router.prototype._get_actions = function ( route_path, method ) {
 //  if ( this._rules )                  route_path = this._rules[ route_path ] || route_path;
 
   method = ( method.toLowerCase() == 'post' ) ? 'POST' : 'ANY';
-  var is_post_action = this._rules[ 'POST' ][ route_path ] || false;
+  var is_post_action = ( this._rules[ 'POST' ] || {} )[ route_path ] || false;
   if( method != 'POST' && is_post_action ) route_path = 'user.index';
-    else route_path = this._rules[ method ][ route_path ] || route_path;
+  else route_path = ( this._rules[ method ] || {} )[ route_path ] || route_path;
 
   if ( !Array.isArray( route_path ) ) route_path = [ route_path ];
 

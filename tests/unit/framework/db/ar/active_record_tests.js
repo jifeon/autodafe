@@ -64,21 +64,20 @@ exports.get_batch = function( application, assert ) {
       },
       'table schema' : {
         topic : function( post ) {
-          post.get_table( this.callback );
+          return post.table;
         },
-        'instance test' : function( e, table ){
-          assert.isNull(e);
+        'instance test' : function( table ){
           assert.instanceOf( table, DbTableSchema );
         },
-        'primary key' : function( e, table ){
+        'primary key' : function( table ){
           assert.equal( table.primary_key, 'id' );
         },
-        'in sequence' : function( e, table ){
+        'in sequence' : function( table ){
           assert.isTrue( table.in_sequence );
         },
         'attributes' : {
           topic : function( table, post ){
-            return post.get_attributes( table );
+            return post.get_attributes();
           },
           'test' : function( attrs ) {
             assert.deepEqual( attrs, {
@@ -346,61 +345,47 @@ exports.get_batch = function( application, assert ) {
     },
 
     'insert' : {
-      topic : function() {
-        application.models.post_update.get_table( this.callback );
+      topic : new application.models.post_update,
+      'check attributes' : function( post ) {
+        assert.deepEqual( post.get_attributes(), {
+          id          : null,
+          title       : null,
+          create_time : null,
+          author_id   : null,
+          content     : null
+        } );
       },
-      'into table' : {
-        topic : function( table ) {
-          return {
-            table : table,
-            post  : new application.models.post_update
-          }
-        },
-        'check attributes' : function( topic ) {
-          assert.deepEqual( topic.post.get_attributes( topic.table ), {
-            id          : null,
-            title       : null,
-            create_time : null,
-            author_id   : null,
-            content     : null
-          } );
-        },
-        'set attributes one by one' : function( topic ){
-          var post = topic.post;
+      'set attributes one by one' : function( post ){
+        post.title        = 'test post 1';
+        post.create_time  = new Date;
+        post.author_id    = 1;
+        post.content      = 'test post content 1';
+        post.info         = 'test info 1';
 
-          post.title        = 'test post 1';
-          post.create_time  = new Date;
-          post.author_id    = 1;
-          post.content      = 'test post content 1';
-          post.info         = 'test info 1';
-
-          assert.isTrue( post.is_new );
-          assert.isNull( post.id );
+        assert.isTrue( post.is_new );
+        assert.isNull( post.id );
+      },
+      'save' : {
+        topic : function( post ) {
+          return post.save();
         },
-        'save' : {
-          topic : function( topic ) {
-            return topic.post.save();
+        'check success' : function( e, result ) {
+          assert.isNull( e );
+        },
+        'attributes' : {
+          topic : function( result, post ) {
+            return post;
           },
-          'check success' : function( e, result ) {
-            assert.isNull( e );
-          },
-          'attributes' : {
-            topic : function( result, topic ) {
-              return topic;
-            },
-            'should be updated' : function( topic ) {
-              var post = topic.post;
-
-              assert.deepEqual( post.get_attributes( topic.table ), {
-                id          : 6,
-                title       : 'test post 1',
-                create_time : post.create_time,
-                author_id   : 1,
-                content     : 'test post content 1',
-                info        : 'test info 1'
-              } );
-              assert.isFalse( post.is_new );
-            }
+          'should be updated' : function( post ) {
+            assert.deepEqual( post.get_attributes(), {
+              id          : 6,
+              title       : 'test post 1',
+              create_time : post.create_time,
+              author_id   : 1,
+              content     : 'test post content 1',
+              info        : 'test info 1'
+            } );
+            assert.isFalse( post.is_new );
           }
         }
       }
@@ -656,10 +641,9 @@ exports.get_batch = function( application, assert ) {
     'composite key' : {
       topic : function() {
         var order = new application.models.order;
-        order.get_table( this.callback );
+        return order.table;
       },
-      'primary key' : function( e, table ){
-        assert.isNull( e );
+      'primary key' : function( table ){
         assert.deepEqual( table.primary_key, [ 'key1', 'key2' ] );
       },
       'find_by_pk' : {
@@ -700,12 +684,9 @@ exports.get_batch = function( application, assert ) {
         topic : function() {
           var post = new application.models.post_ext;
           var self = this;
-          post.get_table( function( e, table ) {
-            self.callback( e, post.get_attributes( table ) );
-          } );
+          return post.get_attributes();
         },
-        'post' : function( e, attributes ){
-          assert.isNull( e );
+        'post' : function( attributes ){
           assert.deepEqual( attributes, {
             id          : null,
             title       : 'default title',
@@ -720,9 +701,7 @@ exports.get_batch = function( application, assert ) {
           var self = this;
 
           application.models.post_ext.find_by_pk( 1 ).on( 'success', function( post ) {
-            post.get_table( function( e, table ) {
-              self.callback( e, post.get_attributes( table ) );
-            } );
+            self.callback( null, post.get_attributes() );
           } );
         },
         'post' : function( e, attributes ){
@@ -746,9 +725,7 @@ exports.get_batch = function( application, assert ) {
           post.author_id    = 1;
           post.content      = 'test';
           post.save().on( 'success', function() {
-            post.get_table( function( e, table ) {
-              self.callback( e, post.get_attributes( table ) );
-            } );
+            self.callback( null, post.get_attributes() );
           } );
         },
         'post' : function( e, attributes ){
