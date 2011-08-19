@@ -6,371 +6,328 @@ exports.get_batch = function( application, assert ) {
   var Post      = require( 'models/post' );
 
   return {
-    'lazy relation' : {
+//    'lazy relation' : {
+//      topic : function() {
+//        return application.models.post.find_by_pk( 2 );
+//      },
+//      'belongs_to' : {
+//        topic : function( post ) {
+//          return post.get_related( 'author' );
+//        },
+//        'author' : function( err, author ){
+//          assert.isNull( err );
+//          assert.instanceOf( author, User );
+//          assert.deepEqual( author.get_attributes(), {
+//            id       : 2,
+//            username : 'user2',
+//            password : 'pass2',
+//            email    : 'email2'
+//          } );
+//        }
+//      },
+//      'has_one exist' : {
+//        topic : function( post ){
+//          return post.get_related( 'first_comment' );
+//        },
+//        'first_comment' : function( err, comment ){
+//          assert.isNull( err );
+//          assert.instanceOf( comment, Comment );
+//          assert.deepEqual( comment.get_attributes(), {
+//            id        : 4,
+//            content   : 'comment 4',
+//            post_id   : 2,
+//            author_id : 2
+//          } );
+//        }
+//      },
+//      'has_one not exist' : {
+//        topic : function(){
+//          var self = this;
+//          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+//            post.get_related( 'first_comment' )
+//              .on( 'success', function( comment ){
+//                self.callback( null, comment );
+//              } )
+//              .on( 'error', function( err ){
+//                self.callback( err );
+//              } );
+//          } );
+//        },
+//        'first_comment' : function( err, comment ){
+//          assert.isNull( err );
+//          assert.isNull( comment );
+//        }
+//      },
+//      'has_many exist' : {
+//        topic : function( post ){
+//          return post.get_related( 'comments' );
+//        },
+//        'comments' : function( err, comments ){
+//          assert.isNull( err );
+//          assert.length( comments, 2 );
+//          assert.deepEqual( comments[0].get_attributes(), {
+//            id        : 5,
+//            content   : 'comment 5',
+//            post_id   : 2,
+//            author_id : 2
+//          } );
+//          assert.deepEqual( comments[1].get_attributes(), {
+//            id        : 4,
+//            content   : 'comment 4',
+//            post_id   : 2,
+//            author_id : 2
+//          } );
+//        }
+//      },
+//      'has_many not exist' : {
+//        topic : function( post ){
+//          var self = this;
+//
+//          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+//            post.get_related( 'comments' )
+//              .on( 'success', function( comments ){
+//                self.callback( null, comments );
+//              } )
+//              .on( 'error', function( err ){
+//                self.callback( err );
+//              } );
+//          } );
+//        },
+//        'comments' : function( err, comments ){
+//          assert.isNull( err );
+//          assert.length( comments, 0 );
+//        }
+//      },
+//      'many_many exist' : {
+//        topic : function( post ){
+//          return post.get_related( 'categories' );
+//        },
+//        'categories' : function( err, categories ){
+//          assert.isNull( err );
+//          assert.length( categories, 2 );
+//          assert.deepEqual( categories[0].get_attributes(), {
+//            id        : 1,
+//            name      : 'cat 1',
+//            parent_id : null
+//          } );
+//          assert.deepEqual( categories[1].get_attributes(), {
+//            id        : 4,
+//            name      : 'cat 4',
+//            parent_id : 1
+//          } );
+//        }
+//      },
+//      'many_many not exist' : {
+//        topic : function(){
+//          var self = this;
+//
+//          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+//            post.get_related( 'categories' )
+//              .on( 'success', function( categories ){
+//                self.callback( null, categories );
+//              } )
+//              .on( 'error', function( err ){
+//                self.callback( err );
+//              } );
+//          } );
+//        },
+//        'categories' : function( err, categories ){
+//          assert.isNull( err );
+//          assert.length( categories, 0 );
+//        }
+//      },
+//      'self join 1' : {
+//        topic : function() {
+//          return application.models.category.find_by_pk( 5 );
+//        },
+//        'category posts' : {
+//          topic : function( category ) {
+//            return category.get_related( 'posts' );
+//          },
+//          'check' : function( err, posts ){
+//            assert.isNull( err );
+//            assert.length( posts, 0 );
+//          }
+//        },
+//        'category children' : {
+//          topic : function( category ) {
+//            return category.get_related( 'children' );
+//          },
+//          'check length' : function( err, children ){
+//            assert.isNull( err );
+//            assert.length( children, 2 );
+//          },
+//          'check attrs' : function( err, children ){
+//            assert.deepEqual( children[0].get_attributes(), {
+//              id        : 6,
+//              name      : 'cat 6',
+//              parent_id : 5
+//            } );
+//            assert.deepEqual( children[1].get_attributes(), {
+//              id        : 7,
+//              name      : 'cat 7',
+//              parent_id : 5
+//            } );
+//          }
+//        },
+//        'category parent' : {
+//          topic : function( category ) {
+//            return category.get_related( 'parent' );
+//          },
+//          'check' : function( err, parent ){
+//            assert.isNull( err );
+//            assert.instanceOf( parent, Category );
+//            assert.deepEqual( parent.get_attributes(), {
+//              id        : 1,
+//              name      : 'cat 1',
+//              parent_id : null
+//            } );
+//          }
+//        }
+//      },
+//      'self join 2' : {
+//        topic : function() {
+//          return application.models.category.find_by_pk( 2 );
+//        },
+//        'category posts' : {
+//          topic : function( category ) {
+//            return category.get_related( 'posts' );
+//          },
+//          'check' : function( err, posts ){
+//            assert.isNull( err );
+//            assert.length( posts, 1 );
+//          }
+//        },
+//        'category children' : {
+//          topic : function( category ) {
+//            return category.get_related( 'children' );
+//          },
+//          'check length' : function( err, children ){
+//            assert.isNull( err );
+//            assert.length( children, 0 );
+//          }
+//        },
+//        'category parent' : {
+//          topic : function( category ) {
+//            return category.get_related( 'parent' );
+//          },
+//          'check' : function( err, parent ){
+//            assert.isNull( err );
+//            assert.isNull( parent );
+//          }
+//        }
+//      },
+//      'composite key order 1,2' : {
+//        topic : function(){
+//          var self = this;
+//
+//          application.models.order.find_by_pk( {
+//            key1 : 1,
+//            key2 : 2
+//          } )
+//            .on( 'success', function( order ){
+//              order.get_related( 'items' )
+//                .on( 'success', function( items ){
+//                  self.callback( null, items );
+//                } )
+//                .on( 'error', function( err ){
+//                  self.callback( err );
+//                } );
+//            } )
+//        },
+//        'check count of items' : function( err, items ){
+//          assert.isNull( err );
+//          assert.length( items, 2 );
+//        }
+//      },
+//      'composite key order 2,1' : {
+//        topic : function(){
+//          var self = this;
+//
+//          application.models.order.find_by_pk( {
+//            key1 : 2,
+//            key2 : 1
+//          } )
+//            .on( 'success', function( order ){
+//              order.get_related( 'items' )
+//                .on( 'success', function( items ){
+//                  self.callback( null, items );
+//                } )
+//                .on( 'error', function( err ){
+//                  self.callback( err );
+//                } );
+//            } )
+//        },
+//        'check count of items' : function( err, items ){
+//          assert.isNull( err );
+//          assert.length( items, 0 );
+//        }
+//      },
+//      'composite key item 4' : {
+//        topic : function(){
+//          var self = this;
+//
+//          application.models.item.find_by_pk( 4 )
+//            .on( 'success', function( item ){
+//              item.get_related( 'order' )
+//                .on( 'success', function( order ){
+//                  self.callback( null, order );
+//                } )
+//                .on( 'error', function( err ){
+//                  self.callback( err );
+//                } );
+//            } )
+//        },
+//        'check order' : function( err, order ){
+//          assert.isNull( err );
+//          assert.instanceOf( order, Order );
+//          assert.deepEqual( order.get_attributes(), {
+//            key1 : 2,
+//            key2 : 2,
+//            name : 'order 22'
+//          } )
+//        }
+//      }
+//    },
+    'eager relation 1' : test_eager_relation( function() {
+      return application.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(2);
+    } ),
+    'eager relation 2' : test_eager_relation( function() {
+      return application.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(2);
+    } ),
+    'eager relation 3' : test_eager_relation( function() {
+      return application.models.post.find_by_pk( 2, {
+        With : [ 'author', 'first_comment', 'comments', 'categories' ]
+      } );
+    } ),
+    'eager relation 4' : {
       topic : function() {
-        return application.models.post.find_by_pk( 2 );
+        return application.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(4);
       },
-      'belongs_to' : {
-        topic : function( post ) {
-          return post.get_related( 'author' );
-        },
-        'author' : function( err, author ){
-          assert.isNull( err );
-          assert.instanceOf( author, User );
-          assert.deepEqual( author.get_attributes(), {
-            id       : 2,
-            username : 'user2',
-            password : 'pass2',
-            email    : 'email2'
-          } );
-        }
-      },
-      'has_one exist' : {
-        topic : function( post ){
-          return post.get_related( 'first_comment' );
-        },
-        'first_comment' : function( err, comment ){
-          assert.isNull( err );
-          assert.instanceOf( comment, Comment );
-          assert.deepEqual( comment.get_attributes(), {
-            id        : 4,
-            content   : 'comment 4',
-            post_id   : 2,
-            author_id : 2
-          } );
-        }
-      },
-      'has_one not exist' : {
-        topic : function(){
-          var self = this;
-          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
-            post.get_related( 'first_comment' )
-              .on( 'success', function( comment ){
-                self.callback( null, comment );
-              } )
-              .on( 'error', function( err ){
-                self.callback( err );
-              } );
-          } );
-        },
-        'first_comment' : function( err, comment ){
-          assert.isNull( err );
-          assert.isNull( comment );
-        }
-      },
-      'has_many exist' : {
-        topic : function( post ){
-          return post.get_related( 'comments' );
-        },
-        'comments' : function( err, comments ){
-          assert.isNull( err );
-          assert.length( comments, 2 );
-          assert.deepEqual( comments[0].get_attributes(), {
-            id        : 5,
-            content   : 'comment 5',
-            post_id   : 2,
-            author_id : 2
-          } );
-          assert.deepEqual( comments[1].get_attributes(), {
-            id        : 4,
-            content   : 'comment 4',
-            post_id   : 2,
-            author_id : 2
-          } );
-        }
-      },
-      'has_many not exist' : {
-        topic : function( post ){
-          var self = this;
-
-          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
-            post.get_related( 'comments' )
-              .on( 'success', function( comments ){
-                self.callback( null, comments );
-              } )
-              .on( 'error', function( err ){
-                self.callback( err );
-              } );
-          } );
-        },
-        'comments' : function( err, comments ){
-          assert.isNull( err );
-          assert.length( comments, 0 );
-        }
-      },
-      'many_many exist' : {
-        topic : function( post ){
-          return post.get_related( 'categories' );
-        },
-        'categories' : function( err, categories ){
-          assert.isNull( err );
-          assert.length( categories, 2 );
-          assert.deepEqual( categories[0].get_attributes(), {
-            id        : 1,
-            name      : 'cat 1',
-            parent_id : null
-          } );
-          assert.deepEqual( categories[1].get_attributes(), {
-            id        : 4,
-            name      : 'cat 4',
-            parent_id : 1
-          } );
-        }
-      },
-      'many_many not exist' : {
-        topic : function(){
-          var self = this;
-
-          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
-            post.get_related( 'categories' )
-              .on( 'success', function( categories ){
-                self.callback( null, categories );
-              } )
-              .on( 'error', function( err ){
-                self.callback( err );
-              } );
-          } );
-        },
-        'categories' : function( err, categories ){
-          assert.isNull( err );
-          assert.length( categories, 0 );
-        }
-      },
-      'self join 1' : {
-        topic : function() {
-          return application.models.category.find_by_pk( 5 );
-        },
-        'category posts' : {
-          topic : function( category ) {
-            return category.get_related( 'posts' );
-          },
-          'check' : function( err, posts ){
-            assert.isNull( err );
-            assert.length( posts, 0 );
-          }
-        },
-        'category children' : {
-          topic : function( category ) {
-            return category.get_related( 'children' );
-          },
-          'check length' : function( err, children ){
-            assert.isNull( err );
-            assert.length( children, 2 );
-          },
-          'check attrs' : function( err, children ){
-            assert.deepEqual( children[0].get_attributes(), {
-              id        : 6,
-              name      : 'cat 6',
-              parent_id : 5
-            } );
-            assert.deepEqual( children[1].get_attributes(), {
-              id        : 7,
-              name      : 'cat 7',
-              parent_id : 5
-            } );
-          }
-        },
-        'category parent' : {
-          topic : function( category ) {
-            return category.get_related( 'parent' );
-          },
-          'check' : function( err, parent ){
-            assert.isNull( err );
-            assert.instanceOf( parent, Category );
-            assert.deepEqual( parent.get_attributes(), {
-              id        : 1,
-              name      : 'cat 1',
-              parent_id : null
-            } );
-          }
-        }
-      },
-      'self join 2' : {
-        topic : function() {
-          return application.models.category.find_by_pk( 2 );
-        },
-        'category posts' : {
-          topic : function( category ) {
-            return category.get_related( 'posts' );
-          },
-          'check' : function( err, posts ){
-            assert.isNull( err );
-            assert.length( posts, 1 );
-          }
-        },
-        'category children' : {
-          topic : function( category ) {
-            return category.get_related( 'children' );
-          },
-          'check length' : function( err, children ){
-            assert.isNull( err );
-            assert.length( children, 0 );
-          }
-        },
-        'category parent' : {
-          topic : function( category ) {
-            return category.get_related( 'parent' );
-          },
-          'check' : function( err, parent ){
-            assert.isNull( err );
-            assert.isNull( parent );
-          }
-        }
-      },
-      'composite key order 1,2' : {
-        topic : function(){
-          var self = this;
-
-          application.models.order.find_by_pk( {
-            key1 : 1,
-            key2 : 2
-          } )
-            .on( 'success', function( order ){
-              order.get_related( 'items' )
-                .on( 'success', function( items ){
-                  self.callback( null, items );
-                } )
-                .on( 'error', function( err ){
-                  self.callback( err );
-                } );
-            } )
-        },
-        'check count of items' : function( err, items ){
-          assert.isNull( err );
-          assert.length( items, 2 );
-        }
-      },
-      'composite key order 2,1' : {
-        topic : function(){
-          var self = this;
-
-          application.models.order.find_by_pk( {
-            key1 : 2,
-            key2 : 1
-          } )
-            .on( 'success', function( order ){
-              order.get_related( 'items' )
-                .on( 'success', function( items ){
-                  self.callback( null, items );
-                } )
-                .on( 'error', function( err ){
-                  self.callback( err );
-                } );
-            } )
-        },
-        'check count of items' : function( err, items ){
-          assert.isNull( err );
-          assert.length( items, 0 );
-        }
-      },
-      'composite key item 4' : {
-        topic : function(){
-          var self = this;
-
-          application.models.item.find_by_pk( 4 )
-            .on( 'success', function( item ){
-              item.get_related( 'order' )
-                .on( 'success', function( order ){
-                  self.callback( null, order );
-                } )
-                .on( 'error', function( err ){
-                  self.callback( err );
-                } );
-            } )
-        },
-        'check order' : function( err, order ){
-          assert.isNull( err );
-          assert.instanceOf( order, Order );
-          assert.deepEqual( order.get_attributes(), {
-            key1 : 2,
-            key2 : 2,
-            name : 'order 22'
-          } )
-        }
-      }
-    },
-    'eager relation' : {
-      topic : function() {
-        return application.models.post.With( 'author','first_comment','comments','categories' ).find_by_pk(2);
-      },
-      'loaded model' : function( err, post ){
+      'check' : function( err, post ) {
         assert.isNull( err );
         assert.instanceOf( post, Post );
+        assert.instanceOf( post.author, User );
         assert.deepEqual( post.author.get_attributes(), {
           id        : 2,
           username  : 'user2',
           password  : 'pass2',
           email     : 'email2'
         } );
+        assert.isNull( post.first_comment );
+        assert.length( post.comments, 0 );
+        assert.length( post.categories, 0 );
+
       }
     }
+
   }
-}
 
 
 
 
 
-//  public function testEagerRelation2()
-//  {
-//    $post=Post::model()->with('author','firstComment','comments','categories')->findByPk(2);
-//  }
-//
-//  private function checkEagerLoadedModel($post)
-//  {
-//    $this->assertEquals(array(
-//      'id'=>2,
-//      'username'=>'user2',
-//      'password'=>'pass2',
-//      'email'=>'email2'),$post->author->attributes);
-//    $this->assertTrue($post->firstComment instanceof Comment);
-//    $this->assertEquals(array(
-//      'id'=>4,
-//      'content'=>'comment 4',
-//      'post_id'=>2,
-//      'author_id'=>2),$post->firstComment->attributes);
-//    $this->assertEquals(2,count($post->comments));
-//    $this->assertEquals(array(
-//      'id'=>5,
-//      'content'=>'comment 5',
-//      'post_id'=>2,
-//      'author_id'=>2),$post->comments[0]->attributes);
-//    $this->assertEquals(array(
-//      'id'=>4,
-//      'content'=>'comment 4',
-//      'post_id'=>2,
-//      'author_id'=>2),$post->comments[1]->attributes);
-//    $this->assertEquals(2,count($post->categories));
-//    $this->assertEquals(array(
-//      'id'=>4,
-//      'name'=>'cat 4',
-//      'parent_id'=>1),$post->categories[0]->attributes);
-//    $this->assertEquals(array(
-//      'id'=>1,
-//      'name'=>'cat 1',
-//      'parent_id'=>null),$post->categories[1]->attributes);
-//  }
-//
-//  public function testEagerRelation()
-//  {
-//    $post=Post::model()->with('author','firstComment','comments','categories')->findByPk(2);
-//    $this->checkEagerLoadedModel($post);
-//    $post=Post::model()->findByPk(2,array(
-//      'with'=>array('author','firstComment','comments','categories'),
-//    ));
-//    $this->checkEagerLoadedModel($post);
-//
-//    $post=Post::model()->with('author','firstComment','comments','categories')->findByPk(4);
-//    $this->assertEquals(array(
-//      'id'=>2,
-//      'username'=>'user2',
-//      'password'=>'pass2',
-//      'email'=>'email2'),$post->author->attributes);
-//    $this->assertNull($post->firstComment);
-//    $this->assertEquals(array(),$post->comments);
-//    $this->assertEquals(array(),$post->categories);
-//  }
-//
+
 //  public function testLazyRecursiveRelation()
 //  {
 //    $post=PostExt::model()->findByPk(2);
@@ -789,3 +746,75 @@ exports.get_batch = function( application, assert ) {
 //    $this->assertEquals(3,$n);
 //
 //  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function test_eager_relation( topic ) {
+    return {
+      topic : topic,
+      'author' : function( err, post ){
+        assert.isNull( err );
+        assert.instanceOf( post, Post );
+        assert.instanceOf( post.author, User );
+        assert.deepEqual( post.author.get_attributes(), {
+          id        : 2,
+          username  : 'user2',
+          password  : 'pass2',
+          email     : 'email2'
+        } );
+      },
+      'first comment' : function( err, post ){
+        assert.instanceOf( post.first_comment, Comment );
+        assert.deepEqual( post.first_comment.get_attributes(), {
+          id        : 4,
+          content   : 'comment 4',
+          post_id   : 2,
+          author_id : 2
+        } );
+      },
+      'comments' : function( err, post ){
+        assert.length( post.comments, 2 );
+        assert.instanceOf( post.comments[0], Comment );
+        assert.deepEqual( post.comments[0].get_attributes(), {
+          id        : 5,
+          content   : 'comment 5',
+          post_id   : 2,
+          author_id : 2
+        } );
+        assert.deepEqual( post.comments[1].get_attributes(), {
+          id        : 4,
+          content   : 'comment 4',
+          post_id   : 2,
+          author_id : 2
+        } );
+      },
+      'categories' : function( err, post ){
+        assert.length( post.categories, 2 );
+        assert.instanceOf( post.categories[0], Category );
+        assert.deepEqual( post.categories[0].get_attributes(), {
+          id        : 1,
+          name      : 'cat 1',
+          parent_id : null
+        } );
+        assert.deepEqual( post.categories[1].get_attributes(), {
+          id        : 4,
+          name      : 'cat 4',
+          parent_id : 1
+        } );
+      }
+    }
+  }
+}
+

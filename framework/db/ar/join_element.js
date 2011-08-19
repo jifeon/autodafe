@@ -1,6 +1,8 @@
 var AppModule         = require('app_module');
 var JoinQuery         = require('./join_query');
 var ManyManyRelation  = require('./relations/many_many_relation');
+var HasManyRelation   = require('./relations/has_many_relation');
+var HasOneRelation    = require('./relations/has_one_relation');
 var BelongsToRelation = require('./relations/belongs_to_relation');
 
 module.exports = JoinElement.inherits( AppModule );
@@ -562,7 +564,7 @@ JoinElement.prototype._populate_record = function( query, row ) {
 
     record = this.model.populate_record( attributes );
     Object.values( this.children ).forEach( function( child ) {
-      record.add_related_record( child.relation.name, null, child.relation.class_name == 'HasManyRelation' );
+      record.add_related_record( child.relation.name, null, child.relation instanceof HasManyRelation );
     } );
 
     this.add_record( pk, record );
@@ -574,30 +576,38 @@ JoinElement.prototype._populate_record = function( query, row ) {
     if( !query.elements[ child.id ] ) return;
 
     var child_record = child._populate_record( query, row );
-    if ( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
+    if ( child.relation instanceof HasOneRelation || child.relation instanceof BelongsToRelation )
       record.add_related_record( child.relation.name, child_record, false );
 
     else { // has_many and many_many
       var fpk;
 
-//      // need to double check to avoid adding duplicated related objects
-//      if( child_record instanceof require('../active_record') )
-//        fpk = JSON.stringify( child_record.get_primary_key() );
-//
-//      else
-//        fpk=0;
-//
-//      if(!isset(this._related[pk][child.relation.name][fpk]))
-//      {
-//        if(child_record instanceof cactive_record && child.relation.index!==null)
-//          index=child_record.{child.relation.index};
-//        else
-//          index=true;
-//        record.add_related_record(child.relation.name,child_record,index);
-//        this._related[pk][child.relation.name][fpk]=true;
-//      }
+      // need to double check to avoid adding duplicated related objects
+      var ActiveRecord = require('./active_record');
+      if( child_record instanceof ActiveRecord )
+        fpk = JSON.stringify( child_record.get_primary_key() );
+
+      else
+        fpk=0;
+
+      if ( !this._related[ pk ] ) this._related[ pk ] = {};
+      if ( !this._related[ pk ][ child.relation.name ] )
+        this._related[ pk ][ child.relation.name ] = {};
+
+      if( !this._related[ pk ][ child.relation.name ][ fpk ] ) {
+        var index;
+
+        if( child_record instanceof ActiveRecord && child.relation.index != null )
+          index = child_record[ child.relation.index ];
+
+        else
+          index = true;
+
+        record.add_related_record( child.relation.name, child_record, index );
+        this._related[ pk ][ child.relation.name ][ fpk ] = true;
+      }
     }
-  } );
+  }, this );
 
   return record;
 }
