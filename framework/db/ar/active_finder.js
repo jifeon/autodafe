@@ -39,7 +39,7 @@ ActiveFinder.prototype._init = function( params ) {
 };
 
 
-ActiveFinder.prototype.query = function( criteria, all ) {
+ActiveFinder.prototype.query = function( criteria, all, callback ) {
   all = all || false;
 
   this.join_all = !!criteria.together;
@@ -50,23 +50,27 @@ ActiveFinder.prototype.query = function( criteria, all ) {
     this._join_tree.raw_table_alias = this._builder.db_schema.quote_table_name( criteria.alias );
   }
 
-  this._join_tree.find( criteria );
-  this._join_tree.after_find();
+  var self = this;
+  this._join_tree.find( criteria, function( err ) {
+    if ( err ) return callback( err );
 
-  var result = [];
-  if( all ) this._join_tree.enum_records( function( record ) {
-    if ( criteria.index ) result[ record.index ] = record;
-    else result.push( record );
-  } )
+    self._join_tree.after_find();
 
-  else if( this._join_tree.has_records() )
-    result = this._join_tree.get_record( 0, true );
+    var result = [];
+    if( all ) self._join_tree.enum_records( function( record ) {
+      if ( criteria.index ) result[ record.index ] = record;
+      else result.push( record );
+    } )
 
-  else
-    result = null;
+    else if( self._join_tree.has_records() )
+      result = self._join_tree.get_record( 0, true );
 
-  this.destroy_join_tree();
-  return result;
+    else
+      result = null;
+
+    self._destroy_join_tree();
+    callback( null, result );
+  } );
 }
 
 //  /**
@@ -83,11 +87,11 @@ ActiveFinder.prototype.query = function( criteria, all ) {
 //      this._join_tree.before_find(false);
 //      this._join_tree.find_With_base(base_record);
 //      this._join_tree.after_find();
-//      this.destroy_join_tree();
+//      this._destroy_join_tree();
 //      return base_record;
 //    }
 //    else
-//      this.destroy_join_tree();
+//      this._destroy_join_tree();
 //  }
 //
 //  /**
@@ -104,12 +108,12 @@ ActiveFinder.prototype.query = function( criteria, all ) {
 //      this._join_tree.before_find(false);
 //      this._join_tree.find_With_base(base_records);
 //      this._join_tree.after_find();
-//      this.destroy_join_tree();
+//      this._destroy_join_tree();
 //      return base_records;
 //    }
 //    else
 //    {
-//      this.destroy_join_tree();
+//      this._destroy_join_tree();
 //      return array();
 //    }
 //  }
@@ -128,7 +132,7 @@ ActiveFinder.prototype.query = function( criteria, all ) {
 //    this._join_tree.raw_table_alias=this._builder.get_schema().quote_table_name(alias);
 //
 //    n=this._join_tree.count(criteria);
-//    this.destroy_join_tree();
+//    this._destroy_join_tree();
 //    return n;
 //  }
 
@@ -143,19 +147,17 @@ ActiveFinder.prototype.lazy_find = function( base_record, callback ) {
       child.after_find();
     }
 
-//    this.destroy_join_tree();
+//    this._destroy_join_tree();
 
     callback();
   } );
 }
 
-//  ActiveFinder.prototype._destroy_join_tree = function()
-//  {
-//    if(this._join_tree!==null)
-//      this._join_tree.destroy();
-//    this._join_tree=null;
-//  }
-//
+ActiveFinder.prototype._destroy_join_tree = function() {
+  if( this._join_tree ) this._join_tree.destroy();
+  this._join_tree = null;
+}
+
 
 ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
   options = options || null;
@@ -228,7 +230,7 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
       finder      : this,
       relation    : relation,
       parent      : parent,
-      join_count  : ++this._join_count
+      id          : ++this._join_count
     });
 
     if( !Object.isEmpty( relation.With ) )

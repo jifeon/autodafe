@@ -197,6 +197,19 @@ DbSchema.prototype.drop_index = function ( name, table ) {
 };
 
 
+DbSchema.prototype.compare_table_names = function ( name1, name2 ) {
+  name1 = name1.replace( /["'`]/g, '' );
+  name2 = name2.replace( /["'`]/g, '' );
+
+  var pos = name1.lastIndexOf( '.' );
+  if ( ~pos ) name1 = name1.substr( pos + 1 );
+  pos = name2.lastIndexOf( '.' );
+  if ( ~pos ) name2 = name2.substr( pos + 1 );
+
+  return name1 == name2;
+};
+
+
 DbSchema.prototype._find_table_names = function ( schema, callback ) {
   throw new Error( '`%s` does not support fetching all table names.'.format( this.class_name ) );
 };

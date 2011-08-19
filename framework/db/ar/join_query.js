@@ -55,24 +55,31 @@ JoinQuery.prototype._init = function( params ) {
 };
 
 
-JoinQuery.prototype.join = function( element ) {
+JoinQuery.prototype.join = function( element, callback ) {
   this.selects    .push( element.get_column_select( element.relation.select ) );
   this.conditions .push( element.relation.condition   );
   this.orders     .push( element.relation.order       );
-  this.joins      .push( element.get_join_condition() );
-  this.joins      .push( element.relation.join        );
   this.groups     .push( element.relation.group       );
   this.havings    .push( element.relation.having      );
 
-  if(is_array(element.relation.params))
-  {
-    if(is_array(this.params))
-      this.params=array_merge(this.params,element.relation.params);
+  if( element.relation.params ) {
+    if( this.params )
+      this.params = Object.merge( this.params, element.relation.params );
     else
-      this.params=element.relation.params;
+      this.params = element.relation.params;
   }
 
-  this.elements[element.id]=true;
+  this.elements[ element.id ] = true;
+
+  var self = this;
+  element.get_join_condition( function( err, join_condition ){
+    if ( err ) return callback( err );
+
+    self.joins      .push( join_condition );
+    self.joins      .push( element.relation.join );
+
+    callback();
+  } );
 }
 
 JoinQuery.prototype.create_command = function( builder ){

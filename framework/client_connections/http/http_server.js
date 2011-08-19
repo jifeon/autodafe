@@ -58,7 +58,7 @@ HTTPServer.prototype.run = function () {
 
 
 HTTPServer.prototype.close = function () {
-  if ( this._server ) this._server.close();
+//  if ( this._server ) this._server.close();
 };
 
 

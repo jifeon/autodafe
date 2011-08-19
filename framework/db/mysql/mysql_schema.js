@@ -35,6 +35,11 @@ MysqlSchema.prototype._load_table = function( name, callback, context ) {
 }
 
 
+MysqlSchema.prototype.compare_table_names = function ( name1, name2 ) {
+  this.super_.compare_table_names( name1.toLowerCase(), name2.toLowerCase() )
+};
+
+
 MysqlSchema.prototype._find_table_names = function ( schema, callback ) {
   var from_schema = schema
     ? ' FROM ' + this.quote_table_name( schema )

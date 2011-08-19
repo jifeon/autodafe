@@ -36,7 +36,7 @@ WebSocketsServer.prototype.run = function () {
 
 
 WebSocketsServer.prototype.close = function () {
-  if ( this._server ) this._server.close();
+//  if ( this._server ) this._server.close();
 };
 
 
