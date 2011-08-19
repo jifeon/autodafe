@@ -120,11 +120,13 @@ Router.prototype._get_actions = function ( route_path, method ) {
     }
     if( Object.isEmpty( route_path ) ) route_path = _route_path;
 
+    if( _rules[ 'post' ] ){
     var is_post_action = _rules[ 'post' ][ _route_path ] || false;
-    if( method.toLowerCase() != 'post' && is_post_action ){
-      var error =  new Error( '"POST" method expected' );
-      error.number = 403;
-      throw error;
+      if( method.toLowerCase() != 'post' && is_post_action ){
+        var error =  new Error( '"POST" method expected' );
+        error.number = 403;
+        throw error;
+      }
     }
   }
 
