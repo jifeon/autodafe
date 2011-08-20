@@ -15,5 +15,18 @@ PostExt.prototype._init = function ( params ) {
 };
 
 
-PostExt.table_name           = 'testbase_ar.posts_for_delete';
+PostExt.table_name           = 'testbase_ar.posts';
 PostExt.safe_attribute_names = [ 'title' ];
+
+
+PostExt.prototype.relations = function () {
+  return {
+    'comments' : this.has_many( 'comment' ).by( 'post_id', {
+      order : 'comments.content DESC',
+      With  : [
+        { post : { alias : 'post' } },
+        'author'
+      ]
+    } )
+  }
+};

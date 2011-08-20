@@ -119,6 +119,11 @@ ActiveRecord.prototype.add_related_record = function ( name, record, index ) {
 };
 
 
+ActiveRecord.prototype.clean_related_records = function ( name ) {
+  delete this._related[ name ];
+};
+
+
 ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   refresh = refresh || false;
   params  = params  || {};

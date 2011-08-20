@@ -8,11 +8,11 @@ function HasManyRelation( params ) {
 
 
 HasManyRelation.prototype._init = function( params ) {
-  this.super_._init( params );
-
   this.limit  = -1;
   this.offset = -1;
   this.index  = null;
+
+  this.super_._init( params );
 };
 
 

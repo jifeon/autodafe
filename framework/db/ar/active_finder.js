@@ -147,7 +147,7 @@ ActiveFinder.prototype.lazy_find = function( base_record, callback ) {
       child.after_find();
     }
 
-//    this._destroy_join_tree();
+    self._destroy_join_tree();
 
     callback();
   } );

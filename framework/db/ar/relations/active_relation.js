@@ -8,13 +8,13 @@ function ActiveRelation( params ) {
 
 
 ActiveRelation.prototype._init = function( params ) {
-  this.super_._init( params );
-
   this.join_type = 'LEFT OUTER JOIN';
   this.on        = '';
   this.alias     = null;
   this.With      = {};
   this.together  = null;
+
+  this.super_._init( params );
 };
 
 

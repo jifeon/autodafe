@@ -198,6 +198,8 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
 
         else {  // has_many and many_many
 
+          base_record.clean_related_records( child.relation.name );
+
           child.enum_records( function( record ) {
             var index = child.relation.index
               ? record[ child.relation.index ]
