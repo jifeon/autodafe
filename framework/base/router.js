@@ -110,16 +110,25 @@ Router.prototype._get_actions = function ( route_path, method ) {
 
 //  if ( this._rules )                  route_path = this._rules[ route_path ] || route_path;
 
-  method = ( method.toLowerCase() == 'post' ) ? 'POST' : 'ANY';
-  var is_post_action = this._rules[ 'POST' ][ route_path ] || false;
-  if( method != 'POST' && is_post_action ){
-    var error =  new Error( '"POST" method expected' );
-    error.number = 403;
-    throw error;
+  if ( this._rules ){
+    var _rules = {};
+    var _route_path = route_path;
+    for( var m in this._rules ){
+      _rules[ m.toLowerCase() ] = this._rules[ m ];
+      if( Object.isEmpty( route_path ) || route_path == _route_path )
+        route_path = this._rules[ m ][ _route_path ];
     }
-    else {
-      route_path = this._rules[ method ][ route_path ] || this._rules[ 'ANY' ][ route_path ] || route_path;
+    if( Object.isEmpty( route_path ) ) route_path = _route_path;
+
+    if( _rules[ 'post' ] ){
+    var is_post_action = _rules[ 'post' ][ _route_path ] || false;
+      if( method.toLowerCase() != 'post' && is_post_action ){
+        var error =  new Error( '"POST" method expected' );
+        error.number = 403;
+        throw error;
+      }
     }
+  }
 
   if ( !Array.isArray( route_path ) ) route_path = [ route_path ];
 
