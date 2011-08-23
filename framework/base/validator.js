@@ -69,3 +69,8 @@ Validator.prototype.url = function ( field_name, value ) {
   if ( value && !/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test( value ) )
     this.errors.push( field_name + ' should be a valid url' );
 };
+
+Validator.prototype.match = function ( field_name, value, re ) {
+  if ( !value.match( new RegExp(re) ) )
+    this.errors.push( field_name + ' is bad' );
+};
