@@ -90,7 +90,7 @@ MysqlTableSchema.prototype._find_constrains = function () {
         var fks  = matches[ 3 ].replace( /`|\s/g, '' ).split(',');
 
         keys.forEach( function( key, i ) {
-          self.foreign_keys[ key ] = [ matches[ 3 ].replace( /`/g, '' ), fks[i] ];
+          self.foreign_keys[ key ] = [ matches[ 2 ].replace( /`/g, '' ), fks[i] ];
         } );
       }
     } )

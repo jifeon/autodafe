@@ -268,3 +268,41 @@ exports.next_tick = function( result, error, emitter, action ){
 
   return emitter;
 };
+
+
+exports.get_parallel_listener = function ( count, callback, context, params ) {
+  params = params || {};
+
+  var fired = 0;
+  var self  = this;
+
+  if ( !count ) return process.nextTick( function() {
+    callback.call( context || null, params );
+  } );
+
+  return function() {
+    var argument_names = Array.prototype.slice.call( arguments, 0 );
+    var has_errors     = false;
+
+    return function() {
+      if ( has_errors ) return false;
+
+      var can_receive_error = argument_names[0] == 'error';
+
+      if ( can_receive_error && arguments[0] instanceof Error ) {
+        has_errors = true;
+        return callback.call( context || null, arguments[0] );
+      }
+
+      for ( var i = 0, i_ln = argument_names.length; i < i_ln; i++ ) {
+        params[ argument_names[i] ] = arguments[i];
+      }
+
+      if ( ++fired == count ) callback.call(
+        context || null,
+        can_receive_error ? null : params,
+        can_receive_error ? params : undefined
+      );
+    }
+  }
+};

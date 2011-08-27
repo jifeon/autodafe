@@ -47,3 +47,10 @@ DbTableSchema.prototype.each_primary_key = function ( callback, context ) {
 };
 
 
+DbTableSchema.prototype.get_number_of_pks = function () {
+  return Array.isArray( this.primary_key )
+    ? this.primary_key.length
+    : this.primary_key
+      ? 1
+      : 0;
+};

@@ -394,25 +394,25 @@ exports.get_batch = function( application, assert ) {
 //        assert.length( post.categories, 2 );
 //      }
 //    },
+//
+//    'eager recursive relation 2' : {
+//      topic : function() {
+//        return application.models.post_ext.With( 'comments' ).find_all();
+//      },
+//      'check' : function( posts ){
+//        assert.length( posts, 5 );
+//      }
+//    },
+//
+//    'eager relation with condition' : {
+//      topic : function(){
+//        return application.models.post.With( 'comments' ).find_all_by_pk( [2,3,4], {
+//          order : 't.id'
+//        } );
+//      }
+//    },
 
-    'eager recursive relation 2' : {
-      topic : function() {
-        return application.models.post_ext.With( 'comments' ).find_all();
-      },
-      'check' : function( posts ){
-        assert.length( posts, 5 );
-      }
-    },
 
-    'eager relation with condition' : {
-      topic : function(){
-        return application.models.post.With( 'comments' ).find_all_by_pk( [2,3,4], {
-          order : 't.id'
-        } );
-      }
-    }
-
-  }
 
 
 
@@ -567,6 +567,63 @@ exports.get_batch = function( application, assert ) {
 //    $this->assertEquals(0,$count);
 //  }
 //
+
+
+    'eager relation stat' : {
+      topic : function(){
+        return application.models.user.With( 'post_count' ).find_all();
+      },
+      'user with post count' : function( err, users ){
+        assert.isNull( err );
+        assert.length( users, 3 );  // todo: replace to 4 after db fixtures are done
+        assert.equal( users[0].post_count, 1 );
+        assert.equal( users[1].post_count, 3 );
+        assert.equal( users[2].post_count, 1 );
+      }
+    },
+
+//    'lazy relation stat' : {
+//      topic : function(){
+//        return application.models.user.find_all();
+//      },
+//      'user with post count' : function( err, users ){
+//        assert.isNull( err );
+//        assert.length( users, 4 );
+//        assert.equal( users[1].post_count, 3 );
+//        assert.equal( users[2].post_count, 1 );
+//      },
+//      'users[0].' : {
+//        topic : function( users ){
+//          return users[0].get_related( 'post_count' );
+//        },
+//        'post_count' : function( err, post_count ){
+//          assert.isNull( err );
+//          assert.equal( post_count, 1 );
+//        }
+//      },
+//      'users[1].' : {
+//        topic : function( users ){
+//          return users[1].get_related( 'post_count' );
+//        },
+//        'post_count' : function( err, post_count ){
+//          assert.isNull( err );
+//          assert.equal( post_count, 3 );
+//        }
+//      },
+//      'users[2].' : {
+//        topic : function( users ){
+//          return users[2].get_related( 'post_count' );
+//        },
+//        'post_count' : function( err, post_count ){
+//          assert.isNull( err );
+//          assert.equal( post_count, 1 );
+//        }
+//      }
+//    }
+
+
+
+
 //  public function testRelationalStat()
 //  {
 //    $users=User::model()->with('postCount')->findAll();
@@ -814,7 +871,7 @@ exports.get_batch = function( application, assert ) {
 
 
 
-
+  }
 
 
 

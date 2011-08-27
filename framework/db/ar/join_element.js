@@ -4,6 +4,7 @@ var ManyManyRelation  = require('./relations/many_many_relation');
 var HasManyRelation   = require('./relations/has_many_relation');
 var HasOneRelation    = require('./relations/has_one_relation');
 var BelongsToRelation = require('./relations/belongs_to_relation');
+var tools             = require('lib/tools');
 
 module.exports = JoinElement.inherits( AppModule );
 
@@ -121,9 +122,11 @@ JoinElement.prototype.find = function( criteria, callback ) {
 //    foreach(this.children as child) // find recursively
 //      child.find();
 //
-//    foreach(this.stats as stat)
-//      stat.query();
-    callback();
+    var listener = tools.get_parallel_listener( self.stats.length, callback );
+
+    self.stats.forEach( function( stat ){
+      stat.query( listener( 'error' ) );
+    } );
   }
 }
 
@@ -238,6 +241,11 @@ JoinElement.prototype.enum_records = function ( callback, context ) {
 
 JoinElement.prototype.has_records = function () {
   return this._records_pks.length;
+};
+
+
+JoinElement.prototype.get_records_keys = function () {
+  return this._records_pks;
 };
 
 

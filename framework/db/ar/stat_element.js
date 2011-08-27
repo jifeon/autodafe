@@ -10,165 +10,178 @@ function StatElement( params ) {
 StatElement.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this.join_all=false;
-  this.base_limited=false;
+  var ActiveFinder = require( './active_finder' );
+  if ( !ActiveFinder.is_instantiate( params.finder ) ) throw new Error(
+    '`finder` is required and should be instance of ActiveFinder in StatRelation.init'
+  );
+  this._finder          = params.finder;
 
-  this.__join_count=0;
-  this.__join_tree;
-  this.__builder;
+  var JoinElement = require( './join_element' );
+  if ( !JoinElement.is_instantiate( params.parent ) ) throw new Error(
+    '`parent` is required and should be instance of StatRelation in StatElement.init'
+  );
+  this._parent          = params.parent;
+  this._parent.stats.push( this );
+
+  var StatRelation = require( './relations/stat_relation' );
+  if ( !StatRelation.is_instantiate( params.relation ) ) throw new Error(
+    '`relation` is required and should be instance of StatRelation in StatElement.init'
+  );
+  this.relation          = params.relation;
 };
 
-//
-//
-//
-///**
-// * cstat_element represents stat join element for {@link cactive_finder}.
-// *
-// * @author qiang xue <qiang.xue@gmail.com>
-// * @version id: cactive_finder.php 2799 2011-01-01 19:31:13z qiang.xue
-// * @package system.db.ar
-// * @since 1.0.4
-// */
-//class cstat_element
-//{
-//  /**
-//   * @var cactive_relation the relation represented by this tree node
-//   */
-//  this.relation;
-//
-//  this.__finder;
-//  this.__parent;
-//
-//  /**
-//   * constructor.
-//   * @param cactive_finder finder the finder
-//   * @param cstat_relation relation the stat relation
-//   * @param cjoin_element parent the join element owning this stat element
-//   */
-//  StatElement.prototype.__construct = function(finder,relation,parent)
-//  {
-//    this._finder=finder;
-//    this._parent=parent;
-//    this.relation=relation;
-//    parent.stats[]=this;
-//  }
-//
-//  /**
-//   * performs the stat query.
-//   */
-//  StatElement.prototype.query = function()
-//  {
-//    if(preg_match('/^\s*(.*?)\((.*)\)\s*/',this.relation.foreign_key,matches))
-//      this.query_many_many(matches[1],matches[2]);
-//    else
-//      this.query_one_many();
-//  }
-//
-//  StatElement.prototype.__query_one_many = function()
-//  {
-//    relation=this.relation;
-//    model=cactive_record::model(relation.class_name);
-//    builder=model.get_command_builder();
-//    schema=builder.get_schema();
-//    table=model.get_table_schema();
-//    parent=this._parent;
-//    pk_table=parent.model.get_table_schema();
-//
-//    fks=preg_split('/\s*,\s*/',relation.foreign_key,-1,preg_split_no_empty);
-//    if(count(fks)!==count(pk_table.primary_key))
-//      throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an invalid foreign key. the columns in the key must match the primary keys of the table "{table}".',
-//            array('{class}'=>get_class(parent.model), '{relation}'=>relation.name, '{table}'=>pk_table.name)));
-//
-//    // set up mapping between fk and pk columns
-//    map=array();  // pk=>fk
-//    foreach(fks as i=>fk)
+
+StatElement.prototype.query = function( callback ) {
+  var matches = /^\s*(.*?)\((.*)\)\s*/.exec( this.relation.foreign_key );
+
+  try {
+    if( matches )
+      this._query_many_many( matches[1], matches[2] );
+    else
+      this._query_one_many( callback );
+  } catch (e){
+    callback(e);
+  }
+}
+
+
+
+StatElement.prototype._query_one_many = function( callback ) {
+  var relation  = this.relation;
+  var model     = relation.model;
+  var builder   = model.get_command_builder();
+  var schema    = builder.db_schema;
+  var table     = model.table;
+  var parent    = this._parent;
+  var pk_table  = parent.model.table;
+
+  var fks = relation.foreign_key.trim().split( /\s*,\s*/ );
+  if ( fks.length != pk_table.get_number_of_pks() ) throw new Error(
+    'The relation `{relation}` in active record class `{class}` is specified with an invalid foreign key.\
+     The columns in the key must match the primary keys of the table `{table}`.'.format({
+      '{relation}'  : relation.name,
+      '{class}'     : parent.model.class_name,
+      '{table}'     : pk_table.name
+    })
+  );
+
+  // set up mapping between fk and pk columns
+  var map = {};  // { pk : fk, ... }
+  fks.forEach( function( fk, i ){
+    if ( !table.get_column( fk )) throw new Error(
+      'The relation `{relation}` in active record class `{class}` is specified with an invalid foreign key `{key}`.\
+       There is no such column in the table `{table}`.'.format({
+        '{relation}'  : relation.name,
+        '{class}'     : parent.model.class_name,
+        '{table}'     : pk_table.name,
+        '{key}'       : fk
+      })
+    );
+
+    if( table.foreign_keys[fk] ) {
+      var table_name = table.foreign_keys[fk][0];
+      var pk         = table.foreign_keys[fk][1];
+
+      if( schema.compare_table_names( pk_table.raw_name, table_name ) )
+        map[ pk ] = fk;
+      else throw new Error(
+        'The relation `{relation}` in active record class `{class}` is specified with a foreign key `{key}` \
+         that does not point to the parent table `{table}`.'.format({
+          '{relation}'  : relation.name,
+          '{class}'     : parent.model.class_name,
+          '{table}'     : pk_table.name,
+          '{key}'       : fk
+        })
+      );
+    }
+
+    else  // fk constraints undefined
+      if( Array.isArray( pk_table.primary_key )) // composite pk
+        map[ pk_table.primary_key[ i ]] = fk;
+      else
+        map[ pk_table.primary_key ] = fk;
+  });
+
+//  var records = this._parent.records;
+
+  var where   = !relation.condition ? ' WHERE ' : ' WHERE (' + relation.condition + ') AND ';
+  var group   = !relation.group     ? ''        : ', ' + relation.group;
+  var having  = !relation.having    ? ''        : ' HAVING (' + relation.having + ')';
+  var order   = !relation.order     ? ''        : ' ORDER BY ' + relation.order;
+
+  var c = schema.quote_column_name('c');
+  var s = schema.quote_column_name('s');
+
+  var table_alias = model.get_table_alias( true );
+  var condition   = builder.create_in_condition( table, fks[0], this._parent.get_records_keys(), table_alias + '.' );
+
+  // generate and perform query
+  if( fks.length == 1 ) {  // single column fk
+    var col = table.get_column( fks[0] ).raw_name;
+    var sql = [ 'SELECT ', col, ' AS ', c, ', ', relation.select, ' AS ', s, ' FROM ', table.raw_name, ' ', table_alias,
+      where, '(', condition, ') GROUP BY ', col, group, having, order ].join('');
+
+    var command = builder.db_connection.create_command( sql );
+
+    if ( Object.isObject( relation.params ))
+      command.bind_values( relation.params );
+
+    var stats = {};
+    command.execute( function( e, result ){
+      if ( e ) throw e;
+
+      console.log( result.get_all_rows() );
+    } );
+
+//    foreach(command.query_all() as row)
+//      stats[row['c']]=row['s'];
+  }
+  else  // composite fk
+  {
+//    keys=array_keys(records);
+//    foreach(keys as &key)
 //    {
-//      if(!isset(table.columns[fk]))
-//        throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with an invalid foreign key "{key}". there is no such column in the table "{table}".',
-//          array('{class}'=>get_class(parent.model), '{relation}'=>relation.name, '{key}'=>fk, '{table}'=>table.name)));
-//
-//      if(isset(table.foreign_keys[fk]))
-//      {
-//        list(table_name,pk)=table.foreign_keys[fk];
-//        if(schema.compare_table_names(pk_table.raw_name,table_name))
-//          map[pk]=fk;
-//        else
-//          throw new cdb_exception(yii::t('yii','the relation "{relation}" in active record class "{class}" is specified with a foreign key "{key}" that does not point to the parent table "{table}".',
-//            array('{class}'=>get_class(parent.model), '{relation}'=>relation.name, '{key}'=>fk, '{table}'=>pk_table.name)));
-//      }
-//      else  // fk constraints undefined
-//      {
-//        if(is_array(pk_table.primary_key)) // composite pk
-//          map[pk_table.primary_key[i]]=fk;
-//        else
-//          map[pk_table.primary_key]=fk;
-//      }
+//      key2=unserialize(key);
+//      key=array();
+//      foreach(pk_table.primary_key as pk)
+//        key[map[pk]]=key2[pk];
 //    }
-//
-//    records=this._parent.records;
-//
-//    where=empty(relation.condition)?' where ' : ' where ('.relation.condition.') and ';
-//    group=empty(relation.group)?'' : ', '.relation.group;
-//    having=empty(relation.having)?'' : ' having ('.relation.having.')';
-//    order=empty(relation.order)?'' : ' order by '.relation.order;
-//
-//    c=schema.quote_column_name('c');
-//    s=schema.quote_column_name('s');
-//
-//    table_alias=model.get_table_alias(true);
-//
-//    // generate and perform query
-//    if(count(fks)===1)  // single column fk
+//    cols=array();
+//    foreach(pk_table.primary_key as n=>pk)
 //    {
-//      col=table.columns[fks[0]].raw_name;
-//      sql="select col as c, {relation.select} as s from {table.raw_name} ".table_alias
-//        .where.'('.builder.create_in_condition(table,fks[0],array_keys(records),table_alias.'.').')'
-//        ." group by col".group
-//        .having.order;
-//      command=builder.get_db_connection().create_command(sql);
-//      if(is_array(relation.params))
-//        builder.bind_values(command,relation.params);
-//      stats=array();
-//      foreach(command.query_all() as row)
-//        stats[row['c']]=row['s'];
+//      name=table.columns[map[pk]].raw_name;
+//      cols[name]=name.' as '.schema.quote_column_name('c'.n);
 //    }
-//    else  // composite fk
+//    sql='select '.implode(', ',cols).", {relation.select} as s from {table.raw_name} ".table_alias
+//      .where.'('.builder.create_in_condition(table,fks,keys,table_alias.'.').')'
+//      .' group by '.implode(', ',array_keys(cols)).group
+//      .having.order;
+//    command=builder.get_db_connection().create_command(sql);
+//    if(is_array(relation.params))
+//      builder.bind_values(command,relation.params);
+//    stats=array();
+//    foreach(command.query_all() as row)
 //    {
-//      keys=array_keys(records);
-//      foreach(keys as &key)
-//      {
-//        key2=unserialize(key);
-//        key=array();
-//        foreach(pk_table.primary_key as pk)
-//          key[map[pk]]=key2[pk];
-//      }
-//      cols=array();
+//      key=array();
 //      foreach(pk_table.primary_key as n=>pk)
-//      {
-//        name=table.columns[map[pk]].raw_name;
-//        cols[name]=name.' as '.schema.quote_column_name('c'.n);
-//      }
-//      sql='select '.implode(', ',cols).", {relation.select} as s from {table.raw_name} ".table_alias
-//        .where.'('.builder.create_in_condition(table,fks,keys,table_alias.'.').')'
-//        .' group by '.implode(', ',array_keys(cols)).group
-//        .having.order;
-//      command=builder.get_db_connection().create_command(sql);
-//      if(is_array(relation.params))
-//        builder.bind_values(command,relation.params);
-//      stats=array();
-//      foreach(command.query_all() as row)
-//      {
-//        key=array();
-//        foreach(pk_table.primary_key as n=>pk)
-//          key[pk]=row['c'.n];
-//        stats[serialize(key)]=row['s'];
-//      }
+//        key[pk]=row['c'.n];
+//      stats[serialize(key)]=row['s'];
 //    }
-//
-//    // populate the results into existing records
-//    foreach(records as pk=>record)
-//      record.add_related_record(relation.name,isset(stats[pk])?stats[pk]:relation.default_value,false);
-//  }
+  }
+
+  // populate the results into existing records
+//  foreach(records as pk=>record)
+//    record.add_related_record(relation.name,isset(stats[pk])?stats[pk]:relation.default_value,false);
+}
+
+
+
+
+
+
+
+
+
 //
 //  /*
 //   * @param string join_table_name jointablename
