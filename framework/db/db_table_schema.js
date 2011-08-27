@@ -43,7 +43,7 @@ DbTableSchema.prototype.each_primary_key = function ( callback, context ) {
   );
 
   var pks = Array.isArray( this.primary_key ) ? this.primary_key : [ this.primary_key ];
-  pks.for_each( callback, context );
+  pks.forEach( callback, context );
 };
 
 

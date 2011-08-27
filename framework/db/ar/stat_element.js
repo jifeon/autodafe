@@ -54,6 +54,7 @@ StatElement.prototype._query_one_many = function( callback ) {
   var table     = model.table;
   var parent    = this._parent;
   var pk_table  = parent.model.table;
+  var self      = this;
 
   var fks = relation.foreign_key.trim().split( /\s*,\s*/ );
   if ( fks.length != pk_table.get_number_of_pks() ) throw new Error(
@@ -126,52 +127,69 @@ StatElement.prototype._query_one_many = function( callback ) {
     if ( Object.isObject( relation.params ))
       command.bind_values( relation.params );
 
-    var stats = {};
     command.execute( function( e, result ){
-      if ( e ) throw e;
+      var stats = {};
+      if ( e ) return callback( e );
 
-      console.log( result.get_all_rows() );
+      result.fetch_obj( function( row ){
+        stats[ row.c ] = row.s;
+      } );
+
+      // populate the results into existing records
+      self._parent.enum_records( function( record, pk ){
+        record.add_related_record( relation.name, stats[pk] ? stats[pk] : relation.default_value, false );
+      } );
+
+      callback();
     } );
-
-//    foreach(command.query_all() as row)
-//      stats[row['c']]=row['s'];
   }
+
   else  // composite fk
   {
-//    keys=array_keys(records);
-//    foreach(keys as &key)
-//    {
-//      key2=unserialize(key);
-//      key=array();
-//      foreach(pk_table.primary_key as pk)
-//        key[map[pk]]=key2[pk];
-//    }
-//    cols=array();
-//    foreach(pk_table.primary_key as n=>pk)
-//    {
-//      name=table.columns[map[pk]].raw_name;
-//      cols[name]=name.' as '.schema.quote_column_name('c'.n);
-//    }
-//    sql='select '.implode(', ',cols).", {relation.select} as s from {table.raw_name} ".table_alias
-//      .where.'('.builder.create_in_condition(table,fks,keys,table_alias.'.').')'
-//      .' group by '.implode(', ',array_keys(cols)).group
-//      .having.order;
-//    command=builder.get_db_connection().create_command(sql);
-//    if(is_array(relation.params))
-//      builder.bind_values(command,relation.params);
-//    stats=array();
-//    foreach(command.query_all() as row)
-//    {
-//      key=array();
-//      foreach(pk_table.primary_key as n=>pk)
-//        key[pk]=row['c'.n];
-//      stats[serialize(key)]=row['s'];
-//    }
-  }
+    var keys = this._parent.get_records_keys().map( function( key ){
+      var key2 = JSON.parse( key );
+      key = {};
+      pk_table.each_primary_key( function( pk ){
+        key[ map[ pk ] ] = key2[ pk ];
+      } );
+      return key;
+    } );
 
-  // populate the results into existing records
-//  foreach(records as pk=>record)
-//    record.add_related_record(relation.name,isset(stats[pk])?stats[pk]:relation.default_value,false);
+    var cols = {};
+
+    pk_table.each_primary_key( function( pk, i ){
+      var name = table.get_column( map[ pk ] ).raw_name;
+      cols[ name ] = name + ' AS ' + schema.quote_column_name( 'c' + i );
+    } );
+
+    var condition = builder.create_in_condition( table, fks, keys, table_alias + '.' );
+    var sql = [ 'SELECT ', Object.values( cols ).join(', '), ', ', relation.select, ' AS ', s, ' FROM ', table.raw_name, ' ', table_alias,
+      where, '(', condition, ') group by ', Object.keys( cols ).join(', '), group, having, order ].join('');
+
+    var command = builder.db_connection.create_command( sql );
+    if( Object.isObject( relation.params ))
+      command.bind_values( relation.params );
+
+    command.execute( function( e, result ){
+      var stats = {};
+      if ( e ) return callback( e );
+
+      result.fetch_obj( function( row ){
+        var key = {};
+        pk_table.each_primary_key( function( pk, i ){
+          key[ pk ] = row[ 'c'+i ];
+        } );
+        stats[ JSON.stringify( key ) ] = row.s;
+      } );
+
+      // populate the results into existing records
+      self._parent.enum_records( function( record, pk ){
+        record.add_related_record( relation.name, stats[pk] ? stats[pk] : relation.default_value, false );
+      } );
+
+      callback();
+    } );
+  }
 }
 
 

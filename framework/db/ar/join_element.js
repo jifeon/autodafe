@@ -144,78 +144,84 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     this.add_record( JSON.stringify( pk ), base_record )
   }
 
+  var listener = tools.get_parallel_listener( this.stats.length, after_stats, this );
+
   this.stats.forEach( function( stat ){
-    stat.query();
+    stat.query( listener( 'error' ) );
   } );
 
-  var child = Object.reset( this.children );
-  if ( !child ) return callback();
+  function after_stats( e ) {
+    if ( e ) return callback(e);
 
-  var query = new JoinQuery({
-    join_element : child,
-    app          : this.app
-  });
-  query.selects     = [ child.get_column_select( child.relation.select ) ];
-  query.conditions  = [
-    child.relation.condition,
-    child.relation.on
-  ];
+    var child = Object.reset( this.children );
+    if ( !child ) return callback();
 
-  query.groups.push ( child.relation.group  );
-  query.joins.push  ( child.relation.join   );
-  query.havings.push( child.relation.having );
-  query.orders.push ( child.relation.order  );
+    var query = new JoinQuery({
+      join_element : child,
+      app          : this.app
+    });
+    query.selects     = [ child.get_column_select( child.relation.select ) ];
+    query.conditions  = [
+      child.relation.condition,
+      child.relation.on
+    ];
 
-  if( Object.isObject( child.relation.params ))
-    query.params = child.relation.params;
+    query.groups.push ( child.relation.group  );
+    query.joins.push  ( child.relation.join   );
+    query.havings.push( child.relation.having );
+    query.orders.push ( child.relation.order  );
 
-  query.elements[ child.id ] = true;
-  if( child.relation instanceof require('db/ar/relations/has_many_relation') ) {
-    query.limit   = child.relation.limit;
-    query.offset  = child.relation.offset;
-  }
+    if( Object.isObject( child.relation.params ))
+      query.params = child.relation.params;
 
-//    child.before_find();
-  var self = this;
-  child._apply_lazy_condition( query, base_record, function( err ) {
-    if ( err ) return callback( err );
+    query.elements[ child.id ] = true;
+    if( child.relation instanceof require('db/ar/relations/has_many_relation') ) {
+      query.limit   = child.relation.limit;
+      query.offset  = child.relation.offset;
+    }
 
-    self._joined  = true;
-    child._joined = true;
-
-    self._finder.base_limited = false;
-    child.build_query( query, function( err ){
+  //    child.before_find();
+    var self = this;
+    child._apply_lazy_condition( query, base_record, function( err ) {
       if ( err ) return callback( err );
 
-      child.run_query( query, function( err ) {
+      self._joined  = true;
+      child._joined = true;
+
+      self._finder.base_limited = false;
+      child.build_query( query, function( err ){
         if ( err ) return callback( err );
-  
-        Object.values( child.children ).forEach( function( child ) {
-          child.find();
+
+        child.run_query( query, function( err ) {
+          if ( err ) return callback( err );
+
+          Object.values( child.children ).forEach( function( child ) {
+            child.find();
+          } );
+
+          if( !child.has_records() ) return callback();
+
+          if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
+            base_record.add_related_record( child.relation.name, child.get_record( 0, true ), false );
+
+          else {  // has_many and many_many
+
+            base_record.clean_related_records( child.relation.name );
+
+            child.enum_records( function( record ) {
+              var index = child.relation.index
+                ? record[ child.relation.index ]
+                : true;
+
+              base_record.add_related_record( child.relation.name, record, index );
+            }, this );
+          }
+
+          callback();
         } );
-
-        if( !child.has_records() ) return callback();
-
-        if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
-          base_record.add_related_record( child.relation.name, child.get_record( 0, true ), false );
-
-        else {  // has_many and many_many
-
-          base_record.clean_related_records( child.relation.name );
-
-          child.enum_records( function( record ) {
-            var index = child.relation.index
-              ? record[ child.relation.index ]
-              : true;
-
-            base_record.add_related_record( child.relation.name, record, index );
-          }, this );
-        }
-
-        callback();
       } );
     } );
-  } );
+  };
 }
 
 
@@ -234,7 +240,7 @@ JoinElement.prototype.get_record = function ( pk, by_number ) {
 
 JoinElement.prototype.enum_records = function ( callback, context ) {
   this._records_pks.forEach( function( pk ){
-    callback.call( context, this.get_record( pk ) );
+    callback.call( context, this.get_record( pk ), pk );
   }, this );
 };
 
@@ -245,7 +251,7 @@ JoinElement.prototype.has_records = function () {
 
 
 JoinElement.prototype.get_records_keys = function () {
-  return this._records_pks;
+  return this._records_pks.slice();
 };
 
 
