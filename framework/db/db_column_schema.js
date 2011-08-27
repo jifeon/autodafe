@@ -61,7 +61,8 @@ DbColumnSchema.prototype._extract_default = function( default_value ) {
 
 
 DbColumnSchema.prototype.typecast = function( value ) {
-  if ( this.__get_type( value ) == this.type || value == null || value instanceof Error ) return value;
+  if ( this.__get_type( value ) == this.type || value == null || value instanceof Error || value instanceof Date )
+    return value;
 
   if ( !value ) return this.type == 'string' ? '' : null;
 

@@ -254,6 +254,12 @@ Date.prototype.format = function( format ) {
   } );
 }
 
+
+require('dust').filters.n = function( value ){
+  return isFinite( value ) ? Number( value ) : 0;
+}
+
+
 function two_pos( i ) {
   return i < 10 ? '0' + i : i;
 }
