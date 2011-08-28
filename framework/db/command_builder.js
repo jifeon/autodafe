@@ -70,15 +70,14 @@ CommandBuilder.prototype.create_delete_command = function( table, criteria ) {
   return this.create_sql_command( sql, criteria.params );
 }
 
-
-CommandBuilder.prototype.create_insert_command = function( table, data ) {
+CommandBuilder.prototype.create_insert_command = function( table, data ){
 
   var fields        = [];
   var values        = {};
   var placeholders  = [];
 
   var i = 0;
-
+  var subplaceholders = [];
   for ( var column_name in data ) {
     var value   = data[ column_name ];
     var column  = table.get_column( column_name );
@@ -109,10 +108,21 @@ CommandBuilder.prototype.create_insert_command = function( table, data ) {
       }
     }
     else {
-      placeholders.push( this.PARAM_PREFIX + i );
-      values[ this.PARAM_PREFIX + i ] = column.typecast( value );
-      i++;
+      if( !Array.isArray( value ) ) value = [ value ];
+      for( var v = 0, ln = value.length; v < ln; v++ ){
+        if( !subplaceholders[ v ] ) subplaceholders[ v ] = [];
+        subplaceholders[ v ].push( this.PARAM_PREFIX + i );
+        values[ this.PARAM_PREFIX + i ] = column.typecast( value[ v ] );
+        i++;
+      }
     }
+  }
+
+  for( var v = 0, ln = subplaceholders.length; v < ln; v++ ){
+    placeholders.push( '(subplaceholder)'.format( {
+      subplaceholder : subplaceholders[ v ].join( ', ' )
+      })
+    );
   }
 
   if ( !fields.length ) {
@@ -123,7 +133,7 @@ CommandBuilder.prototype.create_insert_command = function( table, data ) {
     } );
   }
 
-  var sql = "INSERT INTO table (fields) VALUES (placeholders)".format({
+  var sql = "INSERT INTO table (fields) VALUES placeholders".format({
     table         : table.raw_name,
     fields        : fields.join(', '),
     placeholders  : placeholders.join(', ')
