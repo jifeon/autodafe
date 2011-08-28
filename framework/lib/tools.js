@@ -277,8 +277,6 @@ exports.next_tick = function( result, error, emitter, action ){
 
 
 exports.get_parallel_listener = function ( count, callback, context, params ) {
-  params = params || {};
-
   var fired = 0;
   var self  = this;
 
@@ -301,6 +299,7 @@ exports.get_parallel_listener = function ( count, callback, context, params ) {
       }
 
       for ( var i = 0, i_ln = argument_names.length; i < i_ln; i++ ) {
+        params = params || {};
         params[ argument_names[i] ] = arguments[i];
       }
 

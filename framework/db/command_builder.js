@@ -341,7 +341,6 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
 
   var column;
   var value;
-
   if ( typeof column_name == "string" ) {      // single key
 
     column = this.__get_exist_column( table, column_name );
@@ -356,9 +355,9 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
       return prefix + column.raw_name + ' IN (' + values.join(', ') + ')';
   }
 
-  else if ( column_name instanceof Array ) {// composite key: values=array(array('pk1'=>'v1','pk2'=>'v2'),array(...))
+  else if ( column_name instanceof Object ) {// composite key: values=array(array('pk1'=>'v1','pk2'=>'v2'),array(...))
 
-    column_name.forEach( function( name ) {
+    Object.values( column_name ).forEach( function( name ) {
       column = this.__get_exist_column( table, name );
 
       values.forEach( function( value ) {
@@ -384,7 +383,9 @@ CommandBuilder.prototype.create_in_condition = function( table, column_name, val
   }
 
   else
-    throw new Error( 'Column name must be either a string or an array ( now: %s ).'.format( column_name ) );
+    throw new Error( 'Column name must be either a string or an array ( now: {column_name} ).'.format( {
+      '{column_name}' : column_name
+    } ) );
 }
 
 
