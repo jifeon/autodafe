@@ -147,10 +147,9 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   var With = {};
   if ( !Object.isEmpty( params ) ) {
     saved_relation = this._related[ name ] == null ? null : this._related[ name ];
-    With = name;
+    With[ name ] = params;
   }
-  else With[ name ] = params;
-
+  else With = name;
   delete this._related[ name ];
 
   var finder = new ActiveFinder({

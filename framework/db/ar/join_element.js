@@ -118,12 +118,16 @@ JoinElement.prototype.find = function( criteria, callback ) {
     } );
   }
 
-  function after_query() {
+  function after_query( e ) {
+    if ( e ) return callback(e);
+
+//    var children = Object.values( this.children );
+    var listener = tools.get_parallel_listener( self.stats.length/* + children.length*/, callback );
+    
+
 //    foreach(this.children as child) // find recursively
 //      child.find();
 //
-    var listener = tools.get_parallel_listener( self.stats.length, callback );
-
     self.stats.forEach( function( stat ){
       stat.query( listener( 'error' ) );
     } );
