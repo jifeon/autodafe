@@ -5,6 +5,34 @@ exports.get_batch = function( application, assert ) {
   var Order     = require( 'models/order' );
   var Post      = require( 'models/post' );
 
+  function lazy_relation_stat_test( model, count, related, related_counts ){
+    var tests = {
+      topic : function(){
+        return application.models[ model ].find_all();
+      },
+      'check count' : function( err, records ){
+        assert.isNull( err );
+        assert.length( records, count );
+      }
+    }
+
+    related_counts.forEach( function( related_count, i ){
+      var test_name = model + 's[' + i + '].';
+      tests[ test_name ] = {
+        topic : function( records ){
+          return records[ i ].get_related( related );
+        }
+      }
+
+      tests[ test_name ][ related ] = function( err, count ){
+        assert.isNull( err );
+        assert.equal( count, related_count );
+      }
+    } );
+
+    return tests;
+  }
+
   return {
     'lazy relation' : {
       topic : function() {
@@ -364,47 +392,59 @@ exports.get_batch = function( application, assert ) {
           }
         }
       }
-    }
+    },
 
-  }
+    'lazy recursive relation - self join' : {
+      topic : function() {
+        return application.models.category.find_by_pk(1);
+      },
+      'category.' : {
+        topic : function( category ){
+          return category.get_related( 'nodes' );
+        },
+        'nodes' : function( err, nodes ){
+          assert.isNull( err );
+          assert.length( nodes, 2 );
+          assert.instanceOf( nodes[0].parent, Category );
+          assert.instanceOf( nodes[1].parent, Category );
+          assert.length( nodes[0].children, 0 );
+          assert.length( nodes[1].children, 2 );
+        }
+      }
+    },
+
+    'eager recursive relation' : {
+      topic : function() {
+        return application.models.post.With( 'comments.author', 'categories' ).find_by_pk(2);
+      },
+      'check' : function( post ){
+        assert.length( post.comments, 2 );
+        assert.length( post.categories, 2 );
+      }
+    },
+
+    'eager recursive relation 2' : {
+      topic : function() {
+        return application.models.post_ext.With( 'comments' ).find_all();
+      },
+      'check' : function( posts ){
+        assert.length( posts, 5 );
+      }
+    },
+
+    'eager relation with condition' : {
+      topic : function(){
+        return application.models.post.With( 'comments' ).find_all_by_pk( [2,3,4], {
+          order : 't.id'
+        } );
+      }
+    },
 
 
 
 
 
 
-//  public function testLazyRecursiveRelation()
-//  {
-//    $post=PostExt::model()->findByPk(2);
-//    $this->assertEquals(2,count($post->comments));
-//    $this->assertTrue($post->comments[0]->post instanceof Post);
-//    $this->assertTrue($post->comments[1]->post instanceof Post);
-//    $this->assertTrue($post->comments[0]->author instanceof User);
-//    $this->assertTrue($post->comments[1]->author instanceof User);
-//    $this->assertEquals(3,count($post->comments[0]->author->posts));
-//    $this->assertEquals(3,count($post->comments[1]->author->posts));
-//    $this->assertTrue($post->comments[0]->author->posts[1]->author instanceof User);
-//
-//    // test self join
-//    $category=Category::model()->findByPk(1);
-//    $this->assertEquals(2,count($category->nodes));
-//    $this->assertTrue($category->nodes[0]->parent instanceof Category);
-//    $this->assertTrue($category->nodes[1]->parent instanceof Category);
-//    $this->assertEquals(0,count($category->nodes[0]->children));
-//    $this->assertEquals(2,count($category->nodes[1]->children));
-//  }
-//
-//  public function testEagerRecursiveRelation()
-//  {
-//    //$post=Post::model()->with(array('comments'=>'author','categories'))->findByPk(2);
-//    $post=Post::model()->with('comments.author','categories')->findByPk(2);
-//    $this->assertEquals(2,count($post->comments));
-//    $this->assertEquals(2,count($post->categories));
-//
-//    $posts=PostExt::model()->with('comments')->findAll();
-//    $this->assertEquals(5,count($posts));
-//  }
-//
 //  public function testRelationWithCondition()
 //  {
 //    $posts=Post::model()->with('comments')->findAllByPk(array(2,3,4),array('order'=>'t.id'));
@@ -555,53 +595,63 @@ exports.get_batch = function( application, assert ) {
 //    $this->assertEquals(0,$count);
 //  }
 //
+//
+//
+    'eager relation stat' : {
+      topic : function(){
+        return application.models.user.With( 'post_count' ).find_all();
+      },
+      'user with post count' : function( err, users ){
+        assert.isNull( err );
+        assert.length( users, 3 );  // todo: replace to 4 after db fixtures are done
+        assert.equal( users[0].post_count, 1 );
+        assert.equal( users[1].post_count, 3 );
+        assert.equal( users[2].post_count, 1 );
+      }
+    },
+
+    // todo: replace 3 to 4 after db fixtures are done
+    'lazy relation stat' : lazy_relation_stat_test( 'user', 3, 'post_count', [ 1,3,1 ] ),
+
+    'eager relation stat 2' : {
+      topic : function(){
+        return application.models.order.With( 'item_count' ).find_all();
+      },
+      'order with items count' : function( err, orders ){
+        assert.isNull( err );
+        assert.length( orders, 4 );
+        assert.equal( orders[0].item_count, 2 );
+        assert.equal( orders[1].item_count, 1 );
+        assert.equal( orders[2].item_count, 0 );
+        assert.equal( orders[3].item_count, 2 );
+      }
+    },
+
+    'lazy relation stat 2' : lazy_relation_stat_test( 'order', 4, 'item_count', [2,1,0,2] ),
+
+    'eager relation stat 3' : {
+      topic : function(){
+        return application.models.category.With( 'post_count' ).find_all();
+      },
+      'order with items count' : function( err, categories ){
+        assert.isNull( err );
+        assert.length( categories, 7 );
+        assert.equal( categories[0].post_count, 3 );
+        assert.equal( categories[1].post_count, 1 );
+        assert.equal( categories[2].post_count, 1 );
+        assert.equal( categories[3].post_count, 1 );
+        assert.equal( categories[4].post_count, 0 );
+        assert.equal( categories[5].post_count, 0 );
+        assert.equal( categories[6].post_count, 0 );
+      }
+    },
+
+    'lazy relation stat 3' : lazy_relation_stat_test( 'category', 7, 'post_count', [3,1,1,1,0,0,0] )
+
+
 //  public function testRelationalStat()
 //  {
-//    $users=User::model()->with('postCount')->findAll();
-//    $this->assertEquals(4,count($users));
-//    $this->assertEquals(1,$users[0]->postCount);
-//    $this->assertEquals(3,$users[1]->postCount);
-//    $this->assertEquals(1,$users[2]->postCount);
-//
-//    $users=User::model()->findAll();
-//    $this->assertEquals(4,count($users));
-//    $this->assertEquals(1,$users[0]->postCount);
-//    $this->assertEquals(3,$users[1]->postCount);
-//    $this->assertEquals(1,$users[2]->postCount);
-//
-//    $orders=Order::model()->with('itemCount')->findAll();
-//    $this->assertEquals(4,count($orders));
-//    $this->assertEquals(2,$orders[0]->itemCount);
-//    $this->assertEquals(1,$orders[1]->itemCount);
-//    $this->assertEquals(0,$orders[2]->itemCount);
-//    $this->assertEquals(2,$orders[3]->itemCount);
-//
-//    $orders=Order::model()->findAll();
-//    $this->assertEquals(4,count($orders));
-//    $this->assertEquals(2,$orders[0]->itemCount);
-//    $this->assertEquals(1,$orders[1]->itemCount);
-//    $this->assertEquals(0,$orders[2]->itemCount);
-//    $this->assertEquals(2,$orders[3]->itemCount);
-//
-//    $categories=Category::model()->with('postCount')->findAll();
-//    $this->assertEquals(7,count($categories));
-//    $this->assertEquals(3,$categories[0]->postCount);
-//    $this->assertEquals(1,$categories[1]->postCount);
-//    $this->assertEquals(1,$categories[2]->postCount);
-//    $this->assertEquals(1,$categories[3]->postCount);
-//    $this->assertEquals(0,$categories[4]->postCount);
-//    $this->assertEquals(0,$categories[5]->postCount);
-//    $this->assertEquals(0,$categories[6]->postCount);
-//
-//    $categories=Category::model()->findAll();
-//    $this->assertEquals(7,count($categories));
-//    $this->assertEquals(3,$categories[0]->postCount);
-//    $this->assertEquals(1,$categories[1]->postCount);
-//    $this->assertEquals(1,$categories[2]->postCount);
-//    $this->assertEquals(1,$categories[3]->postCount);
-//    $this->assertEquals(0,$categories[4]->postCount);
-//    $this->assertEquals(0,$categories[5]->postCount);
-//    $this->assertEquals(0,$categories[6]->postCount);
+
 //
 //    $users=User::model()->with('postCount','posts.commentCount')->findAll();
 //    $this->assertEquals(4,count($users));
@@ -802,7 +852,7 @@ exports.get_batch = function( application, assert ) {
 
 
 
-
+  }
 
 
 

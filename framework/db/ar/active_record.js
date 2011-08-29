@@ -134,7 +134,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     '%s does not have relation `%s`'.format( this.class_name, name )
   );
 
-  if ( this._related[ name ] && !refresh && Object.isEmpty( params ) )
+  if ( this._related[ name ] != null && !refresh && Object.isEmpty( params ) )
     return tools.next_tick( this._related[ name ] );
 
   this.log( 'Load relation `%s`'.format( name ), 'trace' );
@@ -146,11 +146,10 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   var saved_relation  = null;
   var With = {};
   if ( !Object.isEmpty( params ) ) {
-    saved_relation = this._related[ name ] || null;
-    With = name;
+    saved_relation = this._related[ name ] == null ? null : this._related[ name ];
+    With[ name ] = params;
   }
-  else With[ name ] = params;
-
+  else With = name;
   delete this._related[ name ];
 
   var finder = new ActiveFinder({
@@ -165,7 +164,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   finder.lazy_find( this, function( err ){
     if ( err ) return tools.next_tick( null, err, emitter );
 
-    if( !self._related[ name ] )
+    if( self._related[ name ] == null )
       self._related[ name ] = relation instanceof active_relations[ 'has_many' ]
         ? []
         : relation instanceof active_relations[ 'stat' ]
@@ -175,8 +174,8 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     var result = self._related[ name ];
 
     if ( !Object.isEmpty( params ) )
-      if( saved_relation ) self._related[ name ] = saved_relation;
-      else          delete self._related[ name ];
+      if( saved_relation != null ) self._related[ name ] = saved_relation;
+      else                  delete self._related[ name ];
 
     tools.next_tick( result, null, emitter );
   } );

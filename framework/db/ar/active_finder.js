@@ -220,6 +220,7 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
     if( relation instanceof ActiveRelation ) model.set_table_alias( old_alias );
 
     if( relation instanceof StatRelation ) return new StatElement( {
+      app       : this.app,
       finder    : this,
       relation  : relation,
       parent    : parent

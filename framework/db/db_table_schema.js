@@ -43,7 +43,14 @@ DbTableSchema.prototype.each_primary_key = function ( callback, context ) {
   );
 
   var pks = Array.isArray( this.primary_key ) ? this.primary_key : [ this.primary_key ];
-  pks.for_each( callback, context );
+  pks.forEach( callback, context );
 };
 
 
+DbTableSchema.prototype.get_number_of_pks = function () {
+  return Array.isArray( this.primary_key )
+    ? this.primary_key.length
+    : this.primary_key
+      ? 1
+      : 0;
+};
