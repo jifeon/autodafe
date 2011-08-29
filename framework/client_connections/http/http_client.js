@@ -77,6 +77,13 @@ HTTPClient.prototype.send = function ( data ) {
   this.response.end( data, 'utf8' );
 };
 
+HTTPClient.prototype.send_file = function ( data, type ) {
+
+  this.super_.send( data );
+  this.response.writeHead(200, {"Content-Type": type });
+  this.response.write( data, "binary" );
+  this.response.end();
+};
 
 HTTPClient.prototype.send_error = function ( e ) {
   switch ( e.number ) {
