@@ -96,3 +96,39 @@ exports.get_batch = function( application, assert ) {
     }
   }
 }
+
+
+
+/*
+
+
+,
+
+    'warnings about trying to' : {
+      topic : function() {
+        var config = require('config/config_with_log_router_only');
+        return Autodafe.create_application( config );
+      },
+      'get not configured system components' : function( app ){
+        var test_log_route = app.log_router.get_route( 'test' );
+        var message        = test_log_route.get_first_message( function() {
+          var users_manager = app.tests;
+        } );
+
+        assert.isNotNull( message );
+        assert.equal( message.level, 'warning' );
+      },
+      'set not configured system components' : function( app ){
+        var test_log_route = app.log_router.get_route( 'test' );
+        var message        = test_log_route.get_first_message( function() {
+          app.tests = 'fail';
+        } );
+
+        assert.isNotNull( message );
+        assert.equal( message.level, 'warning' );
+      }
+    }
+
+
+
+*/

@@ -10,6 +10,7 @@ var config = module.exports = {
   name        : 'TestApp',
 
   default_controller  : 'test',
+  
   params              : {
     param1 : 'some param',
     param2 : 0,
