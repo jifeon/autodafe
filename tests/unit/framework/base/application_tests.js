@@ -48,6 +48,10 @@ exports.get_batch = function( application, assert ) {
     return app;
   }
 
+  function base_dir() {
+    return config.base_dir.substring( 0, config.base_dir.indexOf('config/..') );
+  }
+
   return {
     topic : application,
     'Application' : {
@@ -62,7 +66,7 @@ exports.get_batch = function( application, assert ) {
       },
       
       '.base_dir' : function ( app ) {
-        assert.equal( app.base_dir, config.base_dir.substring( 0, config.base_dir.indexOf('config/..') ) );
+        assert.equal( app.base_dir, base_dir() );
         assert.isReadOnly( app, 'base_dir' )
       },
 
@@ -76,17 +80,17 @@ exports.get_batch = function( application, assert ) {
       },
 
       '.models_folder' : function( app ){
-        assert.equal( app.models_folder, config.base_dir.indexOf('config/..') + 'models/' );
+        assert.equal( app.models_folder, base_dir() + 'models/' );
         assert.isReadOnly( app, 'models_folder' )
       },
 
       '.controllers_folder' : function( app ){
-        assert.equal( app.controllers_folder, config.base_dir.indexOf('config/..') + 'controllers/' );
+        assert.equal( app.controllers_folder, base_dir() + 'controllers/' );
         assert.isReadOnly( app, 'controllers_folder' )
       },
 
       '.components_folder' : function( app ){
-        assert.equal( app.components_folder, config.base_dir.indexOf('config/..') + 'components/' );
+        assert.equal( app.components_folder, base_dir() + 'components/' );
         assert.isReadOnly( app, 'components_folder' )
       },
 
