@@ -80,18 +80,18 @@ exports.get_batch = function( application, assert ) {
       },
 
       '.models_folder' : function( app ){
-        assert.equal( app.models_folder, base_dir() + 'models/' );
-        assert.isReadOnly( app, 'models_folder' )
+        assert.equal( app.path_to_models, base_dir() + 'models' );
+        assert.isReadOnly( app, 'path_to_models' )
       },
 
       '.controllers_folder' : function( app ){
-        assert.equal( app.controllers_folder, base_dir() + 'controllers/' );
-        assert.isReadOnly( app, 'controllers_folder' )
+        assert.equal( app.path_to_controllers, base_dir() + 'controllers' );
+        assert.isReadOnly( app, 'path_to_controllers' )
       },
 
       '.components_folder' : function( app ){
-        assert.equal( app.components_folder, base_dir() + 'components/' );
-        assert.isReadOnly( app, 'components_folder' )
+        assert.equal( app.path_to_components, base_dir() + 'components' );
+        assert.isReadOnly( app, 'path_to_components' )
       },
 
       '.logger' : function( app ) {
@@ -153,7 +153,7 @@ exports.get_batch = function( application, assert ) {
         },
         '.get_model()' : {
           topic : function( app ){
-            return app.models.get_model( TestModel, {
+            return app.models.implement_model( TestModel, {
               param : 48
             } );
           },
@@ -164,7 +164,7 @@ exports.get_batch = function( application, assert ) {
             assert.equal( test_model.test(), 48 );
           },
           'should not be cached' : function( test_model ){
-            var new_model = test_model.app.models.get_model( TestModel );
+            var new_model = test_model.app.models.implement_model( TestModel );
 
             assert.notEqual( new_model,       test_model );
             assert.notEqual( new_model.me(),  test_model.me() );
@@ -196,22 +196,34 @@ exports.get_batch = function( application, assert ) {
         assert.isNull( app.get_param( 'param5' ) );
       },
 
-      '.run()' : function( app ) {
-        var run_count = 0;
-
+      '.run() before' : function( app ) {
         var new_app = get_new_app( null, {
           do_not_run : true
         } );
         assert.isFalse( new_app.is_running );
 
-        new_app.on( 'run', function() {
-          run_count++;
-        } );
-
         assert.isTrue( new_app.run() );
-        assert.isTrue( new_app.is_running );
-        assert.isFalse( new_app.run() );
-        assert.equal( run_count, 1 );
+        assert.isFalse( new_app.is_running );  // async run
+        assert.isFalse( new_app.run() );       // try to double run
+      },
+      
+      '.run()' : {
+        topic : function(){
+          get_new_app( null, {
+            do_not_run : true
+          } ).run( this.callback );
+        },
+        'after' : function( err, app ){
+          var double_run = false;
+
+          app.on( 'run', function() {
+            double_run = true;
+          } );
+
+          assert.isFalse( app.run() ); // double run after init
+          assert.isFalse( double_run );
+          assert.isTrue( app.is_running );
+        }
       },
 
       '.log()' : function( app ){
@@ -271,7 +283,7 @@ exports.get_batch = function( application, assert ) {
           } );
 
           assert.doesNotThrow( function(){
-            app.register_component(               // but we still register component with this name
+            app.register_component(               // but we still can register component with this name
               new Component({
                 name  : 'my_component',
                 app   : app
@@ -321,33 +333,6 @@ exports.get_batch = function( application, assert ) {
           assert.length( session.clients, 1 );
         }
       }
-    },
-
-    'preload components' : function() {
-      var preloaded_logger_config   = require( 'config/preloaded_logger_config' );
-
-      var application_created       = false;
-      var log_router_in_controller  = null;
-      var tests_in_controller       = null;
-
-      // bellow events are emitted from test controller
-      process.once( 'Preloaded logger component', function( log_router ) {
-        log_router_in_controller = log_router;
-        application_created = true;
-      } );
-
-      // tests must be not loaded yet
-      process.once( 'Not preloaded tests component', function( tests ) {
-        tests_in_controller = tests;
-      } );
-
-      var app = Autodafe.create_application( preloaded_logger_config );
-      assert.isTrue( application_created, 'Application with preloaded logger is not created' );
-
-      assert.instanceOf( log_router_in_controller, LogRouter, 'log router must be preloaded' );
-      assert.isUndefined( tests_in_controller, 'tests component must not be preloaded' );
-
-      assert.instanceOf( app.tests, TestComponent, 'Test component must be available after loading' );
     }
   }
 }

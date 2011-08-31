@@ -72,7 +72,7 @@ ComponentsManager.prototype.load_component = function ( component_name, params )
 
 ComponentsManager.prototype.get_user_component = function ( component_name ) {
   if ( !this._user_components ) {
-    var components_path = path.join( this.app.base_dir, this.app.components_folder );
+    var components_path = this.app.path_to_components;
 
     this._user_components = {};
     if ( path.existsSync( components_path ) ) {
