@@ -130,7 +130,9 @@ var config = module.exports = {
       exclude : [    // may be regexp or string which will be searched in path
         'web_socket',
         'router',
-        'components_manager'
+        'components_manager',
+        'user_identity',
+        'users_manager'
       ]
     }
   }
