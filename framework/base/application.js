@@ -24,8 +24,9 @@ Application.prototype._init = function ( config ) {
   this.super_._init();
 
   Application.instances.push( this );
-  this._config    = config            || {};
-  this._sessions  = {};
+  this._config      = config            || {};
+  this._sessions    = {};
+  this._run_on_init = false;
 
   if ( typeof this._config.name != 'string' )
     throw new Error( 'Please specify application name in your config file' );
@@ -36,17 +37,16 @@ Application.prototype._init = function ( config ) {
   this._.base_dir = path.normalize( this._config.base_dir );
 
   this._.is_running       = false;
-  this._.is_initialized   = false;
-  
+
   this.logger             = new Logger;
   this.router             = null;
   this.components         = null;
   this.models             = null;
 
-  this.default_controller = this._config.default_controller || 'action';
-  this.models_folder      = 'models';
-  this.controllers_folder = 'controllers';
-  this.components_folder  = 'components';
+  this.default_controller     = this._config.default_controller || 'action';
+  this._.path_to_models       = path.join( this.base_dir, 'models' );
+  this._.path_to_controllers  = path.join( this.base_dir, 'controllers' );
+  this._.path_to_components   = path.join( this.base_dir, 'components' );
 
   this._preload_components();
   this._init_core( /*before*/ this._init_components );
@@ -123,37 +123,59 @@ Application.prototype.register_component = function ( component ) {
   if ( typeof component == 'string' ) {
     name      = component;
     component = null;
-    if ( this[ name ] ) return false;
+    if ( this.is_property_engaged( name ) ) return false;
   }
   else name = component.name;
 
-  if ( this[ name ] )
+  if ( this.is_component_registered( name ) )  // !== undefined && !== null -> it's component
+    throw new Error( 'Try to register two component with same name: %s'.format( name ) );
+
+  if ( this.is_property_engaged( name ) )
     throw new Error(
-      (
-        this[ name ] instanceof Component
-        ? 'Try to register two component with same name: %s'
-        : 'Try to create component with name engaged for property of application: %s '
-      ).format( name )
+      'Try to create component with name engaged for property of application: %s '.format( name )
     );
 
   this._[ name ] = component;
   this._[ name ].get = function() {
-    return component
-      ? component.get()
-      : this.log(
-        'Try to use component "%s" which is not included. \
-         To include component configure it in your config file'.format( name ),
-        'warning'
-      )
+    if ( component ) return component.get();
+    throw new Error(
+      'Try to use component "%s" which is not included. \
+       To include component configure it in your config file'.format( name )
+    );
   };
 
   this._[ name ].set = function( v ) {
-    this.log(
+    throw new Error(
       'Property "%s" in Application engaged for native autodafe\'s component. \
-       You can\'t set it to "%s"'.format( name, v ),
-      'warning'
+       You can\'t set it to "%s"'.format( name, v )
     );
   }
+};
+
+
+Application.prototype.is_component_registered = function ( name ) {
+  try {
+    this[ name ];
+  }
+  catch( e ){ // component name engaged but null instead of component ( uses for system components )
+    return false;
+  }
+
+  return this[ name ] instanceof Component;
+
+//  return this._[ name ].value != null;  // !== undefined && !== null && in _ -> it's component
+};
+
+
+Application.prototype.is_property_engaged = function ( name ) {
+  try {
+    this[ name ];
+  }
+  catch( e ){ // component name engaged but null instead of component ( uses for system components )
+    return false;
+  }
+
+  return typeof this[ name ] != 'undefined';
 };
 
 
@@ -163,9 +185,10 @@ Application.prototype.get_param = function ( name ) {
 
 
 Application.prototype.run = function ( callback ) {
-  if ( !Object.isEmpty( this.listeners[ 'initialized' ] ) ) return false; // double run before init
+  if ( this._run_on_init ) return false; // double run before init
 
-  this.on( 'initialized', function(){
+  this._run_on_init = true;
+  this.once( 'initialized', function(){
     this.__run( callback );
   } );
   return true;
@@ -173,14 +196,15 @@ Application.prototype.run = function ( callback ) {
 
 
 Application.prototype.__run = function ( callback ) {
+  if ( this.is_running ) return false;
+
   callback = callback || AppModule.prototype.default_callback;
 
-  if ( this.is_running ) return false;
   this.log( 'Running application' );
   this.emit( 'run' );
   this._.is_running = true;
 
-  callback();
+  callback( null, this );
 
   return true;
 };

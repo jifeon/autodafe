@@ -22,7 +22,7 @@ Router.prototype._init = function ( params ) {
 
 
 Router.prototype._collect_controllers = function () {
-  var controllers_path = path.join( this.app.base_dir, this.app.controllers_folder );
+  var controllers_path = this.app.path_to_controllers;
   this.log( 'Collecting controllers in path: ' + controllers_path, 'trace' );
 
   var files = fs.readdirSync( controllers_path );

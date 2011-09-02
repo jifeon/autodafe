@@ -24,7 +24,7 @@ ModelsManager.prototype.get_model = function( model_name ){
 
 
 ModelsManager.prototype.load_models = function ( callback ) {
-  var models_path = path.join( this.app.base_dir, this.app.models_folder );
+  var models_path = this.app.path_to_models;
   this.log( 'Loading models from path: ' + models_path, 'trace' );
 
   try {
@@ -61,7 +61,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
 
     var name  = path.basename( file_path, '.js' );
     try {
-      var model = this.get_by_constructor( model_constructor );
+      var model = this._get_by_constructor( model_constructor );
     } catch (e) {
       this.log( e );
       this.log( 'Model "%s" is not loaded'.format( name ), 'warning' );
@@ -77,7 +77,9 @@ ModelsManager.prototype.load_models = function ( callback ) {
     this.log( 'Model "%s" is loaded'.format( name ), 'trace' );
   }
 
-  load_complete( ++async_models );
+  process.nextTick( function(){
+    load_complete( ++async_models );
+  } );
 
   function load_complete() {
     if ( --async_models ) return false;
@@ -88,7 +90,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
 };
 
 
-ModelsManager.prototype.get_by_constructor = function ( constructor, params ) {
+ModelsManager.prototype._get_by_constructor = function ( constructor, params ) {
   var self = this;
 
   var create_model = function( construct_params ) {

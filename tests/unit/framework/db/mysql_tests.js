@@ -57,7 +57,6 @@ exports.get_batch = function( application, assert ) {
         if ( e ) throw e;
 
         application.log( 'Executing mysql.sql', 'trace', 'mysql_tests' );
-        console.log(5555555555555555555555555555555555555);
         application.log_router.get_route( 'console' ).switch_level_off( 'trace' );
 
         var fs        = require('fs');
