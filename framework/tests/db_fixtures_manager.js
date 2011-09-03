@@ -10,76 +10,88 @@ DbFixtureManager.prototype._init = function( params ){
   this.super_._init( params );
 
   this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
-  this.current_fixture_count = 0;
-  this.get_fixtures();
+  this.fixtures_count = 0;
+  this.fixtures = {};
+  var self = this;
+  this.app.db.query( 'SET foreign_key_checks=0', function(){
+    self.get_fixtures();
+  });
+  this.on( 'get_fixture', function( msg ){
+    self.log( msg );
+    if( --self.fixtures_count == 0 ){
+      self.log( 'All fixtures are loaded' );
+      self.emit( 'get_fixtures', true );
+    }
+  })
   return this;
 }
 
 DbFixtureManager.prototype.get_fixtures = function () {
-//  var emitter = new process.EventEmitter;
   var path = require( 'path' );
   var self = this;
-  this.fixtures = {};
   var fs = require('fs');
   var dir = this.fixtures_dir;
   var f_name, fixture;
   path.exists( dir, function( exists ) {
-    if( exists ){
-      fs.readdir( dir, function( err, files ){
-        if( files.length > 0 ){
-          for( var f = 0, f_ln = files.length; f < f_ln; f++ ){
-            f_name = path.basename(files[ f ], '.js' );
-            fixture = require( dir + '/' + f_name );
-            self.fixtures[ f_name ] = fixture;
-            self.fixtures[ f_name ].fixtures_names = [];
-            for( var f in fixture ){
-              self.fixtures[ f_name ].fixtures_names.push( f );
-            }
-          }
-      } else {
-          self.log( 'There is no fixtures files', 'warning' );
-        }
-        //self.load_fixtures();
-          self.emit( 'get_fixtures', Object.keys( self.fixtures ) );
-      });
-    } else {
+    if( !exists ){
       self.log('Fixtures dir does not exist', 'warning');
       self.emit( 'get_fixtures', false );
+      return;
     }
+    fs.readdir( dir, function( err, files ){
+      if( !files.length || files.length == 0 || err ){
+        self.log( 'There are no fixtures files', 'warning' );
+        self.emit( 'get_fixtures', false );
+        return;
+      }
+      for( var f = 0, f_ln = files.length; f < f_ln; f++ ){
+        f_name = path.basename( files[ f ], '.js' );
+        fixture = require( dir + '/' + f_name );
+        self.fixtures[ f_name ] = fixture;
+        self.fixtures_count++;
+        }
+      self.load_fixtures();
+      });
   });
-//  return emitter;
 };
 
-DbFixtureManager.prototype.load_fixtures = function( /*emitter*/ ){
+DbFixtureManager.prototype.get_fixture = function( table_name ){
+  var result = {};
+  var keys = Object.keys( this.fixtures[ table_name ] );
+  var values = Object.values( this.fixtures[ table_name ] );
+  for( var v = 0, ln_v = values[ 0 ].length; v < ln_v; v++ )
+    for( var k = 0, ln_k = keys.length; k < ln_k; k++ ){
+      if( !result[ v ] ) result[ v ] = {};
+      result[ v ][ keys[ k ] ] = values[ k ][ v ];
+    }
+  return result;
+}
+
+DbFixtureManager.prototype.load_fixtures = function(){
   var self = this;
-  for( table_name in this.fixtures ) {
-      this.load_fixture( table_name/*, emitter*/ );
+  for( var table_name in this.fixtures ) {
+      this.load_fixture( table_name, function( msg ){
+        self.emit( 'get_fixture', msg );
+      });
   }
 };
 
-DbFixtureManager.prototype.load_fixture = function( table_name/*, emitter */){
+DbFixtureManager.prototype.load_fixture = function( table_name, callback ){
   var schema  = this.app.db.db_schema;
   var builder = schema.command_builder;
   var self = this;
-  schema.get_table( table_name, function() {
+  callback = ( callback instanceof Function ) ? callback : function( msg ){ self.log( msg ) };
+
+  schema.get_table( table_name, function( err, table ) {
     self.app.db.query( schema.truncate_table( table_name ), function( e, res ){
-      if( res != undefined ){
-        var fixtures = self.fixtures[ table_name ];
-        self.current_fixture_count = fixtures.fixtures_names.length - 1;
-        self.insert( fixtures, builder, table, 0);
+      if( e ) {
+        callback( e );
+        return;
       }
+      var command = builder.create_insert_command( table, self.fixtures[ table_name ] );
+      command.execute( function( e ){
+        callback( e ? e : 'fixture %s is loaded'.format( table_name ) );
+      });
     })
   } );
 };
-
-DbFixtureManager.prototype.insert = function( fixtures, builder, table, counter ){
-  if( counter < this.current_fixture_count ){
-    var command = builder.create_insert_command( table, fixtures[ fixtures.fixtures_names[ counter ] ] );
-    var self = this;
-    command.execute( function(){
-      self.insert( fixtures, builder, table, ++counter )
-    } );
-  } else {
-    this.emit( 'load_fixture' );
-  }
-}
