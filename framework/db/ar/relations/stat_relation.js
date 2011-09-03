@@ -8,10 +8,11 @@ function StatRelation( params ) {
 
 
 StatRelation.prototype._init = function( params ) {
-  this.super_._init( params );
+  params = params || {};
+  if ( !params.select )                             params.select         = 'COUNT(*)';
+  if ( typeof params.default_value == 'undefined' ) params.default_value  = 0;
 
-  this.select         = 'COUNT(*)';
-  this.default_value  = 0;
+  this.super_._init( params );
 };
 
 
