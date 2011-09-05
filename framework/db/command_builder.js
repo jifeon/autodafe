@@ -70,7 +70,7 @@ CommandBuilder.prototype.create_delete_command = function( table, criteria ) {
   return this.create_sql_command( sql, criteria.params );
 }
 
-CommandBuilder.prototype.create_insert_command = function( table, data ){
+CommandBuilder.prototype.create_insert_command = function( table, data, ignore ){
 
   var fields        = [];
   var values        = {};
@@ -133,7 +133,8 @@ CommandBuilder.prototype.create_insert_command = function( table, data ){
     } );
   }
 
-  var sql = "INSERT INTO table (fields) VALUES placeholders".format({
+  var sql = "INSERT {IGNORE} INTO table (fields) VALUES placeholders".format({
+    '{IGNORE}'    : ignore ? 'IGNORE' : '',
     table         : table.raw_name,
     fields        : fields.join(', '),
     placeholders  : placeholders.join(', ')
