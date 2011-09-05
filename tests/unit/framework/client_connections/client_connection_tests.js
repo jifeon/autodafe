@@ -38,7 +38,7 @@ exports.get_batch = function( application, assert ) {
         event_data    = data;
         event_client  = client;
       } );
-
+      client.request = { method : 'ANY' };
       client.emit( 'request', data );
 
       assert.equal( event_client, client );

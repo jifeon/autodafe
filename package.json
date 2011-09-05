@@ -19,7 +19,8 @@
     "emailjs"               : ">=0.1.8",
     "mysql-libmysqlclient"  : ">=1.2.3",
     "dust"                  : ">=0.3.0",
-    "formidable"            : ">=1.0.2"
+    "formidable"            : ">=1.0.2",
+    "imagemagick"           : ">=0.1.2"
   },
   "engines"       : { "node": ">=0.3.0" }
 }
