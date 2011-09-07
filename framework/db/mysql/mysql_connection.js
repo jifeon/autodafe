@@ -24,8 +24,20 @@ MysqlConnection.prototype._init = function(params) {
   this._connection.connect( this.host, this.user, this.pass, this.base, function( e ) {
     if ( e ) throw e;
 
-    self.log( 'Connection success', 'info' );
-    self.emit( 'connect' );
+    self.__query( 'SET NAMES "' + self.encoding + '"', function( e ){
+      if ( e ) throw e;
+
+      self.__query( 'set character_set_connection=' + self.encoding, function( e ){
+        if ( e ) throw e;
+
+        self.__query( 'set names ' + self.encoding, function( e ){
+          if ( e ) throw e;
+
+          self.log( 'Connection success', 'info' );
+          self.emit( 'connect' );
+        } );
+      } );
+    } );
   } );
 
   this.on( 'connect', function() {

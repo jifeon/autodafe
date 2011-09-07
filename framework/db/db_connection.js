@@ -11,10 +11,11 @@ function DbConnection() {
 DbConnection.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this._.user     = params.user || 'root';
-  this._.pass     = params.pass || '';
-  this._.base     = params.base || 'test';
-  this._.host     = params.host || 'localhost';
+  this._.user     = params.user     || 'root';
+  this._.pass     = params.pass     || '';
+  this._.base     = params.base     || 'test';
+  this._.host     = params.host     || 'localhost';
+  this._.encoding = params.encoding || 'utf8';
 
   this.db_schema  = null;
 };
@@ -43,12 +44,12 @@ DbConnection.prototype.quote_value = function ( x ) {
       return x.toString();
 
     case 'object':
-      if ( x == null ) {
+      if ( x == null )
         return 'NULL';
-      }
-      else if ( x instanceof Date ) {
+
+      else if ( x instanceof Date )
         return x.format( "'Y-M-D h:m:s'" );
-      }
+
       else {
         this.log( 'Unknown type of `object`. Trying `toString` method', 'warning' );
         return this.quote_value( x.toString() );
