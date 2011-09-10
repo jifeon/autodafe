@@ -58,6 +58,9 @@ DbConnection.prototype.quote_value = function ( x ) {
     case 'boolean':
       return Number( !!x ).toString();
 
+    case 'undefined':
+      return "''";
+
     default:
       throw new Error( 'DbConnection.quote_value: unknown type: ' + typeof x );
   }

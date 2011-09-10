@@ -4,6 +4,7 @@ var http             = require('http');
 var url              = require('url');
 var formidable       = require('formidable');
 var fs               = require('fs');
+var path             = require('path');
 var content_types    = require('./content-types');
 
 
@@ -17,8 +18,8 @@ function HTTPServer( params ) {
 HTTPServer.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this._.port = params.port || 80;
-  this.uploadTmpDir = params.uploadTmpDir || '/tmp';
+  this._.port         = params.port || 80;
+  this.upload_tmp_dir = path.resolve( this.app.base_dir, params.upload_tmp_dir || '/tmp' );
 
   this._server = null;
 };
@@ -38,7 +39,7 @@ HTTPServer.prototype.run = function () {
       // parse a file upload
 
       var form = new formidable.IncomingForm();
-      form.uploadDir = self.uploadTmpDir;
+      form.uploadDir = self.upload_tmp_dir;
       form.keepExtensions = true;
       form.parse( request, function( err, fields, files ) {
         request.postError = err;
@@ -47,9 +48,8 @@ HTTPServer.prototype.run = function () {
 
         self.connect_client( httpClient );
       });
-      return;
     }
-    self.connect_client( httpClient );
+    else self.connect_client( httpClient );
   } );
 
   this.log( 'HTTP server started at port ' + this.port, 'info' );
