@@ -19,6 +19,7 @@ var config = module.exports = {
   },
 
   router : {
+    url_format : 'path',
 
     rules     : {
       'single_route_rule' : 'test.test',

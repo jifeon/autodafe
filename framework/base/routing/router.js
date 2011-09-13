@@ -1,5 +1,6 @@
-var Controller  = require('./controller');
+var Controller  = require('controller.js');
 var AppModule   = require('app_module');
+var Route       = require('routing/route_path');
 var fs          = require('fs');
 var path        = require('path');
 
@@ -14,10 +15,23 @@ function Router( params ) {
 Router.prototype._init = function ( params ) {
   this.super_._init( params );
 
-  this._rules               = params.rules || {};
-  this._controllers         = {};
+  this._routes         = {};
+  this._controllers    = {};
 
   this._collect_controllers();
+  this._parse_route_paths( params.rules );
+};
+
+
+Router.prototype._parse_route_paths = function ( rules ) {
+  for ( var rule in rules ) {
+    var route = new Route( {
+      path : rules[ rule ],
+      app  : this.app
+    } );
+    
+    this._routes[ route.path ] = route;
+  }
 };
 
 
@@ -60,7 +74,33 @@ Router.prototype._collect_controllers = function () {
 };
 
 
-Router.prototype.route = function ( route_path, method, params, client ) {
+Router.prototype.throw_error = function ( message, number ) {
+  var error =  new Error( message );
+  error.number = number || 404;
+  throw error;
+};
+
+
+Router.prototype.route = function ( route_path, params, client, connection_type ) {
+  var matches = /^((\w+)(\.(\w+))?)?$/.exec( route_path );
+  if ( !matches ) this.throw_error(
+    'Incorrect route path: "%s". Route path should be formatted as controller.action'.format( route_path )
+  );
+
+  var controller_name = matches[2] || this.app.default_controller;
+  var controller      = this._controllers[ controller_name ];
+
+  if ( !controller ) this.throw_error( 'Controller "%s" is not found'.format( controller_name ) );
+
+  var action_name     = matches[4] || controller.default_action;
+  route_path          = controller_name + '.' + action_name;
+  var route           = this._routes[ route_path ];
+
+  if ( !route ) this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_path ) );
+
+
+  route_path = ( matches[2]
+
   this.log( 'Route to `%s`'.format( route_path ? route_path : 'default controller with default action' ), 'trace' );
 
   var emitter         = new process.EventEmitter;
@@ -69,14 +109,6 @@ Router.prototype.route = function ( route_path, method, params, client ) {
   var args = Array.prototype.splice.call( arguments, 2 );
   this._get_actions( route_path, method ).for_each( function( action ){
 
-    var controller = this._controllers[ action.controller_name ];
-    if ( !controller ) {
-      var error =  new Error(
-        'Controller or rule "%s" is not found'.format( action.controller_name )
-      );
-      error.number = 404;
-      throw error;
-    }
 
     args.unshift( action.action );
     var res = controller.run_action.apply( controller, args )

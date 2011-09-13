@@ -1,5 +1,6 @@
 var ClientConnection = require('client_connections/client_connection');
 var HTTPClient       = require('client_connections/http/http_client');
+var UrlManager       = require('url_manager');
 var http             = require('http');
 var url              = require('url');
 var formidable       = require('formidable');

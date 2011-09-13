@@ -14,6 +14,10 @@ var config = module.exports = {
         'controller1.some_action',
         'controller2.another_action'
       ]
+    },
+
+    root_folders : {
+      'css' : 'views/html/css'
     }
   },
 

@@ -1,6 +1,6 @@
 var path                  = require('path');
 var Session               = require('session');
-var Router                = require('router');
+var Router                = require('routing/router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
 var ModelsManager         = require('models/models_manager');
