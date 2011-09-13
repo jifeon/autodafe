@@ -105,7 +105,7 @@ Validator.prototype.url = function ( field_name, value, error ) {
 
 
 Validator.prototype.match = function ( field_name, value, re, error ) {
-  if ( !( new RegExp(re) ).text( value ) )
+  if ( !( new RegExp(re) ).test( value ) )
     this.errors.push( this.t( error || 'Field {field_name} is not valid' ).format({
       '{field_name}'  : this.t( field_name )
     }) );
