@@ -1,4 +1,4 @@
-var content_types = module.exports = {
+module.exports = {
   'bin'     :  'application/octet-stream',
   'exe'     :  'application/octet-stream',
   'ai'      :  'application/postscript',

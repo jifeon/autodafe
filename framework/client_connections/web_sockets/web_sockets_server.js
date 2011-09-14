@@ -21,32 +21,27 @@ WebSocketsServer.prototype._init = function ( params ) {
 
 
 WebSocketsServer.prototype.run = function () {
+
   this._server  = global.autodafe.get_server( this.port, this.app );
-  this._io      = io.listen( this._server );
+  if ( !this._server ) this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
+
+  this._io = io.listen( this._server );
 
   var self = this;
   this._io.on( 'connection', function( client ) {
-    self.connect_client( new WebSocketsClient({
+    new WebSocketsClient({
       app       : self.app,
       ws_client : client,
       transport : self
-    }) );
+    });
   } );
 };
 
 
 WebSocketsServer.prototype.close = function () {
-//  if ( this._server ) this._server.close();
-};
-
-
-WebSocketsServer.prototype._receive_request = function ( message, client ) {
-  try {
-    var data = JSON.parse( message );
+  try{
+    if ( this._server ) this._server.close();
+  } catch( e ) {
+    this.log( e, 'warning' );
   }
-  catch ( e ) {
-    return this.log( 'Message "%s" is not a JSON'.format( message ), 'warning' );
-  }
-
-  this.super_._receive_request( data, client );
 };

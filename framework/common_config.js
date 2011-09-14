@@ -29,6 +29,14 @@ var config = module.exports = {
       port : 8080
     },
 
+    http : {
+      post : 80,
+      root_folders: {
+        css : 'views/html/css'
+      },
+      upload_dir : 'tmo'
+    },
+
     users               : {
       model : 'user',
       roles : {

@@ -27,6 +27,7 @@ var Autodafe = global.autodafe = module.exports = new function() {
       }
       catch( e ) {
         application.log( 'Can not listen server on port %s'.format( port ), 'error' );
+        return null;
       }
     }
 

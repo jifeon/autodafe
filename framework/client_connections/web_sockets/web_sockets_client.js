@@ -9,21 +9,16 @@ function WebSocketsClient( params ) {
 
 
 WebSocketsClient.prototype._init = function( params ) {
-  if ( !params || !params.ws_client )
+  this.super_._init( params );
+
+  if ( !params.ws_client )
     throw new Error( '`ws_client` should be Socket.IO client in WebSocketsClient.init' );
 
   this.ws_client = params.ws_client;
 
-  this.super_._init( params );
-};
-
-
-WebSocketsClient.prototype.init_events = function () {
-  this.super_.init_events();
-
   var self = this;
   this.ws_client.on( 'message', function( message ) {
-    self._on_request( message );
+    self.receive( message );
   } );
 
   this.ws_client.on( 'disconnect', function() {
@@ -32,22 +27,29 @@ WebSocketsClient.prototype.init_events = function () {
 };
 
 
-WebSocketsClient.prototype.connect = function () {
-  this._on_request = this._on_request_after_connect;
-  this.super_.connect();
+WebSocketsClient.prototype._after_connect = function () {
+  this.receive = this.__receive;
+  this.super_._after_connect();
 };
 
 
-WebSocketsClient.prototype._on_request = function ( message ) {
+WebSocketsClient.prototype.receive = function ( message ) {
   var self = this;
-  this.on( 'connect', function() {
-    self._on_request_after_connect( message );
+  this.once( 'connect', function() {
+    self.__receive( message );
   } );
 };
 
 
-WebSocketsClient.prototype._on_request_after_connect = function ( message ) {
-  this.emit( 'request', message );
+WebSocketsClient.prototype.__receive = function ( message ) {
+  try {
+    var data = JSON.parse( message );
+  }
+  catch ( e ) {
+    return this.log( 'Message "%s" is not a JSON'.format( message ), 'warning' );
+  }
+
+  this.super_.receive( data.action, data.params );
 };
 
 
