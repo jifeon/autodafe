@@ -36,9 +36,21 @@ ClientConnection.prototype.connect_client = function ( client ) {
     self._send_response( data, client );
   } );
 
-  this.app.router.route( this.app.default_controller + '.connect_client', 'ANY', client )
-    .on( 'success', function() {
-      client.connect();
+  var controller = this.app.router.get_controller( this.app.default_controller );
+  var emitter;
+  if (
+    !controller ||
+    typeof controller.connect_client != 'function' ||
+    !( ( emitter = controller.connect_client( client ) ) instanceof process.EventEmitter )
+  )
+    return client.connect();
+
+
+  emitter
+    .on( 'success', function() { client.connect(); } )
+    .on( 'error', function( e ){
+      e.number = 404;
+      if ( !client.send_error( e ) ) throw e;
     } );
 };
 
@@ -46,12 +58,10 @@ ClientConnection.prototype.connect_client = function ( client ) {
 ClientConnection.prototype._receive_request = function ( data, client ) {
   this.emit( 'receive_request', data, client );
 
-  this.log( 'Message has been received. session_id = "%s"'.format( client.session.id ) );
-
-  var params = Object.isObject( data.params ) ? data.params : {};
+  this.log( 'Message has been received. Session id - `%s`'.format( client.session.id ) );
 
   try {
-    this.app.router.route( data.action, client.request.method, params, client );
+    this.app.router.route( data.action, data.params, client );
   }
   catch ( e ) {
     if ( !client.send_error( e ) ) throw e;

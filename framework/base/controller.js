@@ -25,43 +25,24 @@ Controller.prototype._init = function ( params ) {
   this.default_action = 'index';
   this.views_path     = 'views';
   this.dust           = dust;
-
-  this._actions = {};
-
-  this.allow_actions( 'index' );
 };
 
 
-Controller.prototype.before_action = function ( action ) {};
-Controller.prototype.after_action = function ( action ) {};
+Controller.prototype.before_action = function ( action, params, client ) {};
+Controller.prototype.after_action = function ( action /*, params, client*/ ) {};
 
 
-Controller.prototype.allow_actions = function () {
-  Array.prototype.slice.call( arguments ).forEach( function( action ) {
-    this._actions[ action ] = true;
-  }, this );
-};
-
-
-Controller.prototype.deny_actions = function () {
-  Array.prototype.slice.call( arguments ).forEach( function( action ) {
-    this._actions[ action ] = false;
-  }, this );
-};
-
-
-Controller.prototype.run_action = function ( action /*, arg1, arg2, ...*/ ) {
-  action = action || this.default_action;
-
-  if ( !action || !this._actions[ action ] || !this[ action ] )
+Controller.prototype.run_action = function ( action, params, client ) {
+  if ( !action || typeof this[ action ] != 'function' )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
-  var before_action_result = this.before_action.apply( this, arguments );
+  params = params || {};
+  var before_action_result = this.before_action( action, params, client );
   if ( before_action_result === false ) return false;
 
   var args = before_action_result instanceof Array
     ? before_action_result
-    : Array.prototype.slice.call( arguments, 1 );
+    : [ params, client ];
 
   var res = this[ action ].apply( this, args );
 

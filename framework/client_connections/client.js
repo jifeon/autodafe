@@ -45,7 +45,7 @@ Client.prototype.send = function ( data ) {
 
 
 Client.prototype.send_error = function ( e ) {
-  return false;
+  this.log( e, 'warning' );
 };
 
 

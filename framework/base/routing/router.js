@@ -1,6 +1,6 @@
 var Controller  = require('controller.js');
 var AppModule   = require('app_module');
-var Route       = require('routing/route_path');
+var Route       = require('routing/route');
 var fs          = require('fs');
 var path        = require('path');
 
@@ -26,8 +26,9 @@ Router.prototype._init = function ( params ) {
 Router.prototype._parse_route_paths = function ( rules ) {
   for ( var rule in rules ) {
     var route = new Route( {
-      path : rules[ rule ],
-      app  : this.app
+      path    : rules[ rule ],
+      app     : this.app,
+      router  : this
     } );
     
     this._routes[ route.path ] = route;
@@ -96,95 +97,24 @@ Router.prototype.route = function ( route_path, params, client, connection_type 
   route_path          = controller_name + '.' + action_name;
   var route           = this._routes[ route_path ];
 
-  if ( !route ) this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_path ) );
+  if ( !route )
+    this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_path ) );
 
+  if ( !route.is_allowed_con_type( connection_type ) )
+    this.throw_error( 'Route `%s` is not allowed for connection type `%s`'.format( route_path, connection_type ), 403 );
 
-  route_path = ( matches[2]
+  this.log( 'Route to `%s`'.format( route_path ), 'trace' );
 
-  this.log( 'Route to `%s`'.format( route_path ? route_path : 'default controller with default action' ), 'trace' );
-
-  var emitter         = new process.EventEmitter;
-  var emitted_actions = 0;
-
-  var args = Array.prototype.splice.call( arguments, 2 );
-  this._get_actions( route_path, method ).for_each( function( action ){
-
-
-    args.unshift( action.action );
-    var res = controller.run_action.apply( controller, args )
-    args.shift();
-
-    if ( res instanceof process.EventEmitter ) {
-      emitted_actions++;
-      res
-        .on( 'success', function() {
-          if ( !--emitted_actions ) emitter.emit( 'success' );
-        } )
-        .on( 'error', function() {
-          emitter.emit( 'error' );
-        } );
-    }
-  }, this );
-
-  if ( !emitted_actions ) process.nextTick( function() {
-    emitter.emit( 'success' );
-  } );
-
-  return emitter;
-};
-
-
-Router.prototype._get_actions = function ( route_path, method ) {
-  if ( !route_path ) return [{
-    controller_name : this.app.default_controller,
-    action          : null
-  }];
-
-//  if ( this._rules )                  route_path = this._rules[ route_path ] || route_path;
-
-  if ( this._rules ){
-    var _rules = {};
-    var _route_path = route_path;
-    for( var m in this._rules ){
-      _rules[ m.toLowerCase() ] = this._rules[ m ];
-      if( Object.isEmpty( route_path ) || route_path == _route_path )
-        route_path = this._rules[ m ][ _route_path ];
-    }
-    if( Object.isEmpty( route_path ) ) route_path = _route_path;
-
-    if( _rules[ 'post' ] ){
-    var is_post_action = _rules[ 'post' ][ _route_path ] || false;
-      if( method.toLowerCase() != 'post' && is_post_action ){
-        var error =  new Error( '"POST" method expected' );
-        error.number = 403;
-        throw error;
-      }
-    }
+  try {
+    return controller.run_action( action_name, params, client );
   }
-
-  if ( !Array.isArray( route_path ) ) route_path = [ route_path ];
-
-  return route_path.map( function( path ){
-    var route_rule = path.split('.');
-
-    if ( !route_rule.length ) throw new Error(
-      'Incorrect route path: "%s". Route path should be formatted as controller.action \
-       or specified in router.rules section of configuration file.'.format( route_path )
-    );
-
-    return {
-      controller_name : route_rule[0],
-      action          : route_rule[1] || null
-    };
-  }, this );
+  catch ( e ) {
+    e.number = 404;
+    throw e;
+  }
 };
 
 
 Router.prototype.get_controller = function ( name ) {
   return this._controllers[ name ] || null;
-};
-
-
-Router.prototype.get_controllers = function () {
-  return Object.not_deep_clone( this._controllers );
 };

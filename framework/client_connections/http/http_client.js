@@ -86,6 +86,8 @@ HTTPClient.prototype.send_file = function ( data, type ) {
 };
 
 HTTPClient.prototype.send_error = function ( e ) {
+  this.super_.send_error(e);
+
   switch ( e.number ) {
     case 404:
       this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
