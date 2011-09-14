@@ -31,7 +31,7 @@ HTTPServer.prototype.run = function () {
   this._server.on( 'request', function( request, response ) {
     new HTTPClient({
       app         : self.app,
-      transport   : self,
+      connection  : self,
       request     : request,
       response    : response
     });

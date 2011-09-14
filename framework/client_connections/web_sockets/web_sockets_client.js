@@ -9,9 +9,7 @@ function WebSocketsClient( params ) {
 
 
 WebSocketsClient.prototype._init = function( params ) {
-  this.super_._init( params );
-
-  if ( !params.ws_client )
+  if ( !params || !params.ws_client )
     throw new Error( '`ws_client` should be Socket.IO client in WebSocketsClient.init' );
 
   this.ws_client = params.ws_client;
@@ -24,6 +22,8 @@ WebSocketsClient.prototype._init = function( params ) {
   this.ws_client.on( 'disconnect', function() {
     self.disconnect();
   } );
+
+  this.super_._init( params );
 };
 
 

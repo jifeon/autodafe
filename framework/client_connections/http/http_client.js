@@ -4,6 +4,7 @@ var formidable      = require('formidable');
 var url             = require('url');
 var content_types   = require('./content-types');
 var fs               = require('fs');
+var path             = require('path');
 
 
 module.exports = HTTPClient.inherits( Client );
@@ -14,24 +15,24 @@ function HTTPClient( params ) {
 
 
 HTTPClient.prototype._init = function( params ) {
-  this.super_._init( params );
-
-  if ( !params.request )
+  if ( !params || !params.request )
     throw new Error( '`request` should be instance of http.ServerRequest in HTTPClient.init' );
 
   if ( !params.response )
     throw new Error( '`response` should be instance of http.ServerResponse in HTTPClient.init' );
 
-  this._.request    = params.request;
-  this._.response   = params.response;
-  this._.post_form  = null
+  this.request    = params.request;
+//  this.request.pause();
+//  this.request.on( 'end', function(){ console.log('END'); } )
+  this.response   = params.response;
+  this.post_form  = null
 
   this._cookie = [];
 
   var self        = this;
-  var disconnect  = function() { self.disconnect(); }
-  this.request.once( 'close', disconnect );
-  this.request.once( 'end',   disconnect );
+  this.request.once( 'close', function() { self.disconnect(); } );
+
+  this.super_._init( params );
 };
 
 
@@ -56,10 +57,12 @@ HTTPClient.prototype.receive = function () {
 HTTPClient.prototype._receive_post = function ( action ) {
   var self = this;
 
-  this._.post_form = new formidable.IncomingForm;
-  this._.post_form.uploadDir      = this.connection.upload_dir;
-  this._.post_form.keepExtensions = true;
-  this._.post_form.parse( this.request, function( err, fields, files ) {
+  this._.post_form = new formidable.IncomingForm();
+  this.post_form.uploadDir      = this.connection.upload_dir;
+  this.post_form.keepExtensions = true;
+//  console.log( this.post_form.type );
+//  this.request.resume();
+  this.post_form.parse( this.request, function( err, fields, files ) {
     if ( err ) return self.send_error( err );
 
     self.super_.receive( action, Object.merge( fields, files ) );
@@ -69,7 +72,7 @@ HTTPClient.prototype._receive_post = function ( action ) {
 
 HTTPClient.prototype._receive_get = function ( base_route, parsed_url ) {
   var folder = this.connection.get_root_folder( base_route );
-  if ( folder == null ) return this.send_file( path.resolve( this.app.base_dir, folder, parsed_url.pathname ) );
+  if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, parsed_url.pathname ) );
 
   this.super_.receive( base_route, parsed_url.query );
 };
@@ -117,13 +120,13 @@ HTTPClient.prototype.send_file = function ( file_path ) {
       return self.send_error( e );
     }
 
-    this.emit( 'send_file', file );
-    this.connection.emit( 'send_file', file, this );
+    self.emit( 'send_file', file );
+    self.connection.emit( 'send_file', file, this );
 
     var file_ext  = path.extname( file_path );
     var type      = content_types[ file_ext.toLowerCase() ] || '';
 
-    if ( !type ) this.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
+    if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
 
     self.response.writeHead( 200, { "Content-Type": type });
     self.response.write( file, "binary" );

@@ -15,12 +15,9 @@ Client.prototype._init = function( params ) {
     throw new Error( '`connection` is not instance of ClientConnection in Client._init' );
 
   this._.connection  = params.connection;
-  this._.session    = this.app.get_session( this.get_session_id(), this );
+  this._.session     = this.app.get_session( this.get_session_id(), this );
 
-  var self = this;
-  process.nextTick( function(){
-    self._call_controller();
-  } )
+  this._call_controller();
 };
 
 
@@ -37,7 +34,9 @@ Client.prototype._call_controller = function () {
 
   var self = this;
   emitter
-    .on( 'success', function() { self._after_connect(); } )
+    .on( 'success', function() {
+      self._after_connect();
+    } )
     .on( 'error', function( e ){
       self.send_error( e );
     } );

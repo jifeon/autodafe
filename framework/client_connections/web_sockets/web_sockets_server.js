@@ -30,9 +30,9 @@ WebSocketsServer.prototype.run = function () {
   var self = this;
   this._io.on( 'connection', function( client ) {
     new WebSocketsClient({
-      app       : self.app,
-      ws_client : client,
-      transport : self
+      app        : self.app,
+      ws_client  : client,
+      connection : self
     });
   } );
 };
