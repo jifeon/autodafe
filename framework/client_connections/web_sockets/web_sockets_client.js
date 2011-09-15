@@ -49,7 +49,7 @@ WebSocketsClient.prototype.__receive = function ( message ) {
     return this.log( 'Message "%s" is not a JSON'.format( message ), 'warning' );
   }
 
-  this.super_.receive( data.action, data.params );
+  this.super_.receive( data.action, data.params, 'ws' );
 };
 
 

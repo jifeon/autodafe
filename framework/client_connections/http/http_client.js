@@ -22,22 +22,14 @@ HTTPClient.prototype._init = function( params ) {
     throw new Error( '`response` should be instance of http.ServerResponse in HTTPClient.init' );
 
   this.request    = params.request;
-//  this.request.pause();
-//  this.request.on( 'end', function(){ console.log('END'); } )
   this.response   = params.response;
   this.post_form  = null
 
   this._cookie = [];
 
-  var self        = this;
-  this.request.once( 'close', function() { self.disconnect(); } );
+  this.request.once( 'close', this.disconnect.bind( this ) );
 
   this.super_._init( params );
-};
-
-
-HTTPClient.prototype._after_connect = function () {
-  this.super_._after_connect();
 
   this.receive();
 };
@@ -57,16 +49,16 @@ HTTPClient.prototype.receive = function () {
 HTTPClient.prototype._receive_post = function ( action ) {
   var self = this;
 
-  this._.post_form = new formidable.IncomingForm();
+  this._.post_form              = new formidable.IncomingForm;
   this.post_form.uploadDir      = this.connection.upload_dir;
   this.post_form.keepExtensions = true;
-//  console.log( this.post_form.type );
-//  this.request.resume();
-  this.post_form.parse( this.request, function( err, fields, files ) {
-    if ( err ) return self.send_error( err );
+  this.post_form.parse( this.request, ( function( err, fields, files ) {
+    if ( err ) return this.send_error( err );
 
-    self.super_.receive( action, Object.merge( fields, files ) );
-  });
+    if ( this.connected ) this.super_.receive( action, Object.merge( fields, files ), 'post' );
+    else this.on( 'connect', this.super_.receive.bind( this, action, Object.merge( fields, files ), 'post' ) );
+
+  }).bind( this ));
 };
 
 
@@ -74,7 +66,8 @@ HTTPClient.prototype._receive_get = function ( base_route, parsed_url ) {
   var folder = this.connection.get_root_folder( base_route );
   if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, parsed_url.pathname ) );
 
-  this.super_.receive( base_route, parsed_url.query );
+  if ( this.connected ) this.super_.receive( base_route, parsed_url.query, this.request.method.toLowerCase() );
+  else this.on( 'connect', this.super_.receive.bind( this, base_route, parsed_url.query, this.request.method.toLowerCase() ) );
 };
 
 
@@ -142,14 +135,14 @@ HTTPClient.prototype.send_error = function ( e ) {
     case 403:
       this.log( 'Error 403 by address `%s`'.format( this.request.url ), 'warning' );
       this.response.statusCode = 403;
-      this.response.end();
+      this.response.end( '<h1>Error 403</h1>' );
       break;
 
     case 404:
     default:
       this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
       this.response.statusCode = 404;
-      this.response.end();
+      this.response.end( '<h1>Error 404</h1>' );
       break;
   }
 };

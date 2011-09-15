@@ -25,13 +25,11 @@ Router.prototype._init = function ( params ) {
 
 Router.prototype._parse_route_paths = function ( rules ) {
   for ( var rule in rules ) {
-    var route = new Route( {
+    this._routes[ rule ] = new Route( {
       path    : rules[ rule ],
       app     : this.app,
       router  : this
     } );
-    
-    this._routes[ route.path ] = route;
   }
 };
 
@@ -82,31 +80,22 @@ Router.prototype.throw_error = function ( message, number ) {
 };
 
 
-Router.prototype.route = function ( route_path, params, client, connection_type ) {
-  var matches = /^((\w+)(\.(\w+))?)?$/.exec( route_path );
-  if ( !matches ) this.throw_error(
-    'Incorrect route path: "%s". Route path should be formatted as controller.action'.format( route_path )
-  );
+Router.prototype.route = function ( route_rule, params, client, connection_type ) {
+  var route       = this._routes[ route_rule ];
+  var controller  = this._controllers[ route.controller ];
 
-  var controller_name = matches[2] || this.app.default_controller;
-  var controller      = this._controllers[ controller_name ];
-
-  if ( !controller ) this.throw_error( 'Controller "%s" is not found'.format( controller_name ) );
-
-  var action_name     = matches[4] || controller.default_action;
-  route_path          = controller_name + '.' + action_name;
-  var route           = this._routes[ route_path ];
+  if ( !controller ) this.throw_error( 'Controller "%s" is not found'.format( route.controller ) );
 
   if ( !route )
-    this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_path ) );
+    this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_rule ) );
 
   if ( !route.is_allowed_con_type( connection_type ) )
-    this.throw_error( 'Route `%s` is not allowed for connection type `%s`'.format( route_path, connection_type ), 403 );
+    this.throw_error( 'Route `%s` is not allowed for connection type `%s`'.format( route.path, connection_type ), 403 );
 
-  this.log( 'Route to `%s`'.format( route_path ), 'trace' );
+  this.log( 'Route to `%s`'.format( route.path ), 'trace' );
 
   try {
-    return controller.run_action( action_name, params, client );
+    return controller.run_action( route.action, params, client );
   }
   catch ( e ) {
     e.number = 404;

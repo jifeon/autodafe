@@ -41,6 +41,7 @@ Route.prototype._parse = function ( route_path ) {
   this.controller       =   matches[2] || null;
   this.action           =   matches[4] || null;
   this.connection_types = ( matches[6] || '' ).split( /[\s|,]+/ ).filter( Boolean );
+  if ( ~this.connection_types.indexOf( 'http' ) ) this.connection_types.push( 'post', 'get', 'delete' );
 };
 
 

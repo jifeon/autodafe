@@ -16,6 +16,7 @@ Client.prototype._init = function( params ) {
 
   this._.connection  = params.connection;
   this._.session     = this.app.get_session( this.get_session_id(), this );
+  this._.connected   = false;
 
   this._call_controller();
 };
@@ -46,6 +47,7 @@ Client.prototype._call_controller = function () {
 Client.prototype._after_connect = function () {
   this.log( '%s is connected ( session id=%s )'.format( this.class_name, this.get_session_id() ) );
 
+  this._.connected = true;
   this.emit( 'connect' );
   this.connection.emit( 'connect_client', this );
 };
@@ -59,17 +61,17 @@ Client.prototype.disconnect = function () {
 };
 
 
-Client.prototype.receive = function ( action, params ) {
+Client.prototype.receive = function ( action, params, connection_type ) {
   this.log( 'Message has been received from %s. Session id - `%s`'.format( this.class_name, this.get_session_id() ) );
 
-  this.emit( 'receive_request', action, params );
-  this.connection.emit( 'receive_request', action, params, this );
+  this.emit( 'receive_request', action, params, connection_type );
+  this.connection.emit( 'receive_request', action, params, connection_type, this );
 
   try {
-    this.app.router.route( action, params, this );
+    this.app.router.route( action, params, this, connection_type );
   }
   catch ( e ) {
-    if ( !this.send_error( e ) ) throw e;
+    this.send_error( e );
   }
 };
 

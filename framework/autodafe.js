@@ -1,5 +1,3 @@
-require.paths.unshift( '/usr/local/lib/node_modules/autodafe/node_modules' );
-
 require.paths.unshift( __dirname );
 require.paths.unshift( __dirname + '/base/' );
 
