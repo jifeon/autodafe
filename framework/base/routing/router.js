@@ -16,6 +16,7 @@ Router.prototype._init = function ( params ) {
   this.super_._init( params );
 
   this._routes         = {};
+  this._rules          = {};
   this._controllers    = {};
 
   this._collect_controllers();
@@ -25,11 +26,14 @@ Router.prototype._init = function ( params ) {
 
 Router.prototype._parse_route_paths = function ( rules ) {
   for ( var rule in rules ) {
-    this._routes[ rule ] = new Route( {
+    var route = new Route( {
       path    : rules[ rule ],
       app     : this.app,
       router  : this
     } );
+
+    this._routes[ rule ] = route;
+    this._rules[ route.path ] = rule;
   }
 };
 
@@ -101,6 +105,12 @@ Router.prototype.route = function ( route_rule, params, client, connection_type 
     e.number = 404;
     throw e;
   }
+};
+
+
+Router.prototype.get_rule = function ( route_path ) {
+  var rule = this._rules[ route_path ];
+  return rule == null ? route_path : rule;
 };
 
 

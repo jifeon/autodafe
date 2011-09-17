@@ -2,6 +2,7 @@ var AppModule = require('app_module');
 var path      = require('path');
 var fs        = require('fs');
 var dust      = require('dust');
+var qs        = require('querystring');
 
 // disable whitespace compression
 dust.optimizers.format = function( ctx, node ) {
@@ -86,4 +87,17 @@ Controller.prototype.send_response = function ( view, client, params, callback )
     client.send( data );
     callback( null, data );
   } );
+};
+
+
+Controller.prototype.create_url = function ( route_path, params ) {
+  var matches = /^((\w+\.)?(\w+))?$/.exec( route_path );
+  if ( !matches ) return route_path;
+  
+  var controller_name = matches[2] || this.name;
+  var action_name     = matches[3] || this.default_action;
+  route_path          = controller_name + '.' + action_name;
+
+  var query = qs.stringify( params );
+  return '/' + this.app.router.get_rule( route_path ) + ( query ? '?' + query : '' );
 };
