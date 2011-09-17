@@ -61,6 +61,7 @@ module.exports = {
   'rtx'     :  'text/richtext',
   'tsv'     :  'text/tab-separated-values',
   'etx'     :  'text/x-setext',
+  'js'      :  'text/javascript',
   'mpe'     :  'video/mpeg',
   'mpg'     :  'video/mpeg',
   'mpeg'    :  'video/mpeg',

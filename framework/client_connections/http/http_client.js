@@ -89,15 +89,12 @@ HTTPClient.prototype.get_cookie = function ( name ) {
 
 
 HTTPClient.prototype.set_cookie = function ( name, value, days ) {
-  this._cookie.push( cookie.make( name, value, days ) );
+  this.response.setHeader( "Set-Cookie", cookie.make( name, value, days ) );
 };
 
 
 HTTPClient.prototype.send = function ( data ) {
-  this.response.setHeader( "Set-Cookie", this._cookie );
-
   this.super_.send( data );
-
   this.response.end( data, 'utf8' );
 };
 
@@ -150,5 +147,6 @@ HTTPClient.prototype.send_error = function ( e ) {
 
 HTTPClient.prototype.redirect = function ( url ) {
   this.response.writeHead( 302, { Location : url } );
+  this.response.end();
 }
 
