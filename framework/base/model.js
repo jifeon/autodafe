@@ -26,7 +26,7 @@ Model.prototype.set_attribute = function ( name, value ) {
 
 Model.prototype.get_attribute = function ( name ) {
   var attribute = this._attributes[ name ] != undefined ? this._attributes[ name ] : this[ name ];
-  if ( attribute == undefined ) attribute = null;
+//  if ( attribute == undefined ) attribute = null;
 
   var self = this;
   return typeof attribute == 'function' ? function() {
