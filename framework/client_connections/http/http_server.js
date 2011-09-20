@@ -65,20 +65,20 @@ HTTPServer.prototype._receive_request = function ( url_str, client ) {
   var type;
   var parsed_url = url.parse( url_str );
 
-  if( parsed_url.pathname.indexOf( '.' ) > 0 ){
-    var file_ext = parsed_url.pathname.split( '.' ).pop();
-    type = content_types[ file_ext.toLowerCase() ] || '';
-    fs.readFile( parsed_url.pathname, "binary", function( err, file ){
-      if( err ){
-        var error = new Error( err );
-        error.number = 404;
-        client.send_error( error );
-        return;
-      }
-      client.send_file( file, type );
-    });
-    return;
-  }
+//  if( parsed_url.pathname.indexOf( '.' ) > 0 ){
+//    var file_ext = parsed_url.pathname.split( '.' ).pop();
+//    type = content_types[ file_ext.toLowerCase() ] || '';
+//    fs.readFile( parsed_url.pathname, "binary", function( err, file ){
+//      if( err ){
+//        var error = new Error( err );
+//        error.number = 404;
+//        client.send_error( error );
+//        return;
+//      }
+//      client.send_file( file, type );
+//    });
+//    return;
+//  }
 
   var action = parsed_url.pathname.substr(1).replace( /\//g, '.' );
   var params = ( client.request.method.toLowerCase() == 'post' ) ? client.request.postData  :

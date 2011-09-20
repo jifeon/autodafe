@@ -12,7 +12,7 @@ Validator.prototype._init = function ( params ) {
   this.errors = [];
 
   this._email = /^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i;
-  this._url   = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+  this._url   = /(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 }
 
 
@@ -105,7 +105,7 @@ Validator.prototype.url = function ( field_name, value, error ) {
 
 
 Validator.prototype.match = function ( field_name, value, re, error ) {
-  if ( !( new RegExp(re) ).text( value ) )
+  if ( !( new RegExp(re) ).test( value ) )
     this.errors.push( this.t( error || 'Field {field_name} is not valid' ).format({
       '{field_name}'  : this.t( field_name )
     }) );

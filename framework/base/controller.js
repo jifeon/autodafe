@@ -81,7 +81,7 @@ Controller.prototype.render = function ( view, params, callback ) {
 
   if ( this.dust.cache[ view ] ) return this.dust.render( view, params, callback );
 
-  var view_path = this.get_view_path( view )
+  var view_path = this.get_view_path( view );
 
   var self = this;
   fs.readFile( view_path, 'UTF8', function( e, template ){
