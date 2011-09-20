@@ -86,12 +86,11 @@ Router.prototype.throw_error = function ( message, number ) {
 
 Router.prototype.route = function ( route_rule, params, client, connection_type ) {
   var route       = this._routes[ route_rule ];
-  var controller  = this._controllers[ route.controller ];
-
-  if ( !controller ) this.throw_error( 'Controller "%s" is not found'.format( route.controller ) );
-
   if ( !route )
-    this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_rule ) );
+      this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_rule ) );
+
+  var controller  = this._controllers[ route.controller ];
+  if ( !controller ) this.throw_error( 'Controller "%s" is not found'.format( route.controller ) );
 
   if ( !route.is_allowed_con_type( connection_type ) )
     this.throw_error( 'Route `%s` is not allowed for connection type `%s`'.format( route.path, connection_type ), 403 );

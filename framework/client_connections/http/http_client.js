@@ -47,18 +47,19 @@ HTTPClient.prototype.receive = function () {
 
 
 HTTPClient.prototype._receive_post = function ( action ) {
-  var self = this;
-
   this._.post_form              = new formidable.IncomingForm;
   this.post_form.uploadDir      = this.connection.upload_dir;
   this.post_form.keepExtensions = true;
-  this.post_form.parse( this.request, ( function( err, fields, files ) {
-    if ( err ) return this.send_error( err );
+  try {
+    this.post_form.parse( this.request, ( function( e, fields, files ) {
+      if ( e ) return this.send_error( e );
 
-    if ( this.connected ) this.super_.receive( action, Object.merge( fields, files ), 'post' );
-    else this.on( 'connect', this.super_.receive.bind( this, action, Object.merge( fields, files ), 'post' ) );
+      if ( this.connected ) this.super_.receive( action, Object.merge( fields, files ), 'post' );
+      else this.on( 'connect', this.super_.receive.bind( this, action, Object.merge( fields, files ), 'post' ) );
 
-  }).bind( this ));
+    }).bind( this ));
+  }
+  catch( e ) { this.send_error( e ); }
 };
 
 
@@ -89,7 +90,11 @@ HTTPClient.prototype.get_cookie = function ( name ) {
 
 
 HTTPClient.prototype.set_cookie = function ( name, value, days ) {
-  this.response.setHeader( "Set-Cookie", cookie.make( name, value, days ) );
+  try{
+    this.response.setHeader( "Set-Cookie", cookie.make( name, value, days ) );
+  } catch ( e ) {
+    this.log( e );
+  }
 };
 
 
