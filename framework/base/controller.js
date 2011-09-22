@@ -2,7 +2,6 @@ var AppModule = require('app_module');
 var path      = require('path');
 var fs        = require('fs');
 var dust      = require('dust');
-var qs        = require('querystring');
 
 // disable whitespace compression
 dust.optimizers.format = function( ctx, node ) {
@@ -63,7 +62,7 @@ Controller.prototype.render = function ( view, params, callback ) {
 
   if ( this.dust.cache[ view ] ) return this.dust.render( view, params, callback );
 
-  var view_path = this.get_view_path( view )
+  var view_path = this.get_view_path( view );
 
   var self = this;
   fs.readFile( view_path, 'UTF8', function( e, template ){
@@ -91,13 +90,5 @@ Controller.prototype.send_response = function ( view, client, params, callback )
 
 
 Controller.prototype.create_url = function ( route_path, params ) {
-  var matches = /^((\w+\.)?(\w+))?$/.exec( route_path );
-  if ( !matches ) return route_path;
-  
-  var controller_name = matches[2] || this.name;
-  var action_name     = matches[3] || this.default_action;
-  route_path          = controller_name + '.' + action_name;
-
-  var query = qs.stringify( params );
-  return '/' + this.app.router.get_rule( route_path ) + ( query ? '?' + query : '' );
+  return this.app.router.create_url( route_path, params, this.name, this.default_action );
 };
