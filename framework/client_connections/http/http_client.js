@@ -28,6 +28,7 @@ HTTPClient.prototype._init = function( params ) {
   this._cookie = [];
 
   this.request.once( 'close', this.disconnect.bind( this ) );
+  this.request.once( 'end', this.disconnect.bind( this ) );
 
   this.super_._init( params );
 
@@ -119,7 +120,7 @@ HTTPClient.prototype.send_file = function ( file_path ) {
     self.connection.emit( 'send_file', file, this );
 
     var file_ext  = path.extname( file_path );
-    var type      = content_types[ file_ext.toLowerCase() ] || '';
+    var type      = content_types[ file_ext.toLowerCase().substr(1) ] || '';
 
     if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
 
