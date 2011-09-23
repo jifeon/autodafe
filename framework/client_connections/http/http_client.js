@@ -28,6 +28,7 @@ HTTPClient.prototype._init = function( params ) {
   this._cookie = [];
 
   this.request.once( 'close', this.disconnect.bind( this ) );
+  this.request.once( 'end', this.disconnect.bind( this ) );
 
   this.super_._init( params );
 
@@ -37,38 +38,43 @@ HTTPClient.prototype._init = function( params ) {
 
 HTTPClient.prototype.receive = function () {
   var parsed_url      = url.parse( this.request.url, true );
-  var matches         = /^\/(.*?)(\/(.*?))?$/.exec( parsed_url.pathname );
-  var base_route      = matches && matches[1] || '';
-  parsed_url.pathname = matches && matches[3] || '';
 
-  if ( this.request.method.toLowerCase() == 'post' ) this._receive_post( base_route );
-  else this._receive_get( base_route, parsed_url );
+  if ( this.request.method.toLowerCase() == 'post' ) this._receive_post( parsed_url.pathname );
+  else this._receive_get( parsed_url );
 };
 
 
-HTTPClient.prototype._receive_post = function ( action ) {
+HTTPClient.prototype._receive_post = function ( path ) {
+  var self = this;
+
   this._.post_form              = new formidable.IncomingForm;
   this.post_form.uploadDir      = this.connection.upload_dir;
   this.post_form.keepExtensions = true;
   try {
-    this.post_form.parse( this.request, ( function( e, fields, files ) {
-      if ( e ) return this.send_error( e );
+    this.post_form.parse( this.request, function( e, fields, files ) {
+      if ( e ) return self.send_error( e );
 
-      if ( this.connected ) this.super_.receive( action, Object.merge( fields, files ), 'post' );
-      else this.on( 'connect', this.super_.receive.bind( this, action, Object.merge( fields, files ), 'post' ) );
+      var params = Object.merge( fields, files );
+      if ( self.connected ) self.super_.receive( path, params, 'post' );
+      else self.on( 'connect', self.super_.receive.bind( self, path, params, 'post' ) );
 
-    }).bind( this ));
+    });
   }
   catch( e ) { this.send_error( e ); }
 };
 
 
-HTTPClient.prototype._receive_get = function ( base_route, parsed_url ) {
-  var folder = this.connection.get_root_folder( base_route );
-  if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, parsed_url.pathname ) );
+HTTPClient.prototype._receive_get = function ( parsed_url ) {
+  // check root folder: /folder/path/to/file
+  var pathname    = parsed_url.pathname;
+  var matches = /^\/(.*?)(\/(.*))?$/.exec( pathname );
+  var folder  = this.connection.get_root_folder( matches && matches[1] || '' );
+  if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, matches && matches[3] || '' ) );
 
-  if ( this.connected ) this.super_.receive( base_route, parsed_url.query, this.request.method.toLowerCase() );
-  else this.on( 'connect', this.super_.receive.bind( this, base_route, parsed_url.query, this.request.method.toLowerCase() ) );
+  var params = parsed_url.query;
+  var method = this.request.method.toLowerCase();
+  if ( this.connected ) this.super_.receive( pathname, params, method );
+  else this.on( 'connect', this.super_.receive.bind( this, pathname, params, method ) );
 };
 
 
@@ -119,7 +125,7 @@ HTTPClient.prototype.send_file = function ( file_path ) {
     self.connection.emit( 'send_file', file, this );
 
     var file_ext  = path.extname( file_path );
-    var type      = content_types[ file_ext.toLowerCase() ] || '';
+    var type      = content_types[ file_ext.toLowerCase().substr(1) ] || '';
 
     if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
 

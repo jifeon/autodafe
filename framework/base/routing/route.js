@@ -26,6 +26,18 @@ Route.prototype._init = function( params ) {
     return controller + '.' + action;
   }
 
+  var self = this;
+  this.rule_params = [];
+  this.rule_re     = {};
+
+  this._source_rule = params.rule;
+  var re_text = this._source_rule.replace( /<(\w+):(.+?)>/g, function( all, $1, $2 ){
+    self.rule_params.push( $1 );
+    self.rule_re[ $1 ] = new RegExp( '^' + $2 + '$' );
+    return '(' + $2 + ')';
+  } );
+  this.rule = new RegExp( '^\/' + re_text + '\/?$' );
+
   // valid : ' controller . action | post ', 'controller.action', 'controller|ws', ' controller', '', '|get'
   // pockets : 2 - controller, 4 - action, 6 - connection_type
   this._re = /^\s*((\w+)\s*(\.\s*(\w+)\s*)?)?(([|,]\s*(post|get|delete|http|ws)\s*)*)$/i;
@@ -47,4 +59,20 @@ Route.prototype._parse = function ( route_path ) {
 
 Route.prototype.is_allowed_con_type = function ( connection_type ) {
   return !this.connection_types.length || ~this.connection_types.indexOf( connection_type );
+};
+
+
+Route.prototype.has_params = function ( params ) {
+  return this.rule_params.every( function( param ) {
+    return param in params && this.rule_re[ param ].test( params[ param ] );
+  }, this );
+};
+
+
+Route.prototype.get_rule = function ( params ) {
+  return this._source_rule.replace( /<(\w+):(.+?)>/g, function( all, $1, $2 ){
+    var param = params[ $1 ];
+    delete params[ $1 ];
+    return param;
+  } );
 };
