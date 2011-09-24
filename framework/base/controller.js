@@ -59,20 +59,7 @@ Controller.prototype.get_view_path = function ( view ) {
 
 
 Controller.prototype.render = function ( view, params, callback ) {
-
-  if ( this.dust.cache[ view ] ) return this.dust.render( view, params, callback );
-
-  var view_path = this.get_view_path( view );
-
-  var self = this;
-  fs.readFile( view_path, 'UTF8', function( e, template ){
-    if ( e ) return callback( e, null );
-
-    var compiled = self.dust.compile( template, view );
-
-    self.dust.loadSource( compiled );
-    self.dust.render( view, params, callback );
-  } );
+  return this.dust.render( view, params, callback );
 };
 
 
