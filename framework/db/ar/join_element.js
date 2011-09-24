@@ -121,13 +121,13 @@ JoinElement.prototype.find = function( criteria, callback ) {
   function after_query( e ) {
     if ( e ) return callback(e);
 
-//    var children = Object.values( this.children );
+//    var children = Object.values( self.children );
     var listener = tools.get_parallel_listener( self.stats.length/* + children.length*/, callback );
     
+//    children.forEach( function( child ){
+//      child.find( {}, listener( 'error' ) );
+//    } );
 
-//    foreach(this.children as child) // find recursively
-//      child.find();
-//
     self.stats.forEach( function( stat ){
       stat.query( listener( 'error' ) );
     } );
@@ -136,6 +136,8 @@ JoinElement.prototype.find = function( criteria, callback ) {
 
 
 JoinElement.prototype.lazy_find = function( base_record, callback ) {
+  var self = this;
+
   if( typeof this.model.table.primary_key == 'string' )
     this.add_record( base_record.get_attribute( this.model.table.primary_key ), base_record );
 
@@ -185,7 +187,6 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     }
 
   //    child.before_find();
-    var self = this;
     child._apply_lazy_condition( query, base_record, function( err ) {
       if ( err ) return callback( err );
 
@@ -203,7 +204,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
             child.find();
           } );
 
-          if( !child.has_records() ) return callback();
+          if( !child.has_records() ) return after_query.bind( child )();
 
           if( child.relation.class_name == 'HasOneRelation' || child.relation.class_name == 'BelongsToRelation' )
             base_record.add_related_record( child.relation.name, child.get_record( 0, true ), false );
@@ -221,11 +222,26 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
             }, this );
           }
 
-          callback();
+          after_query.bind( child )();
         } );
       } );
     } );
-  };
+  }
+
+  function after_query( e ) {
+    if ( e ) return callback(e);
+
+//    var children = Object.values( this.children );
+    var listener = tools.get_parallel_listener( this.stats.length/* + children.length*/, callback );
+
+
+//    foreach(this.children as child) // find recursively
+//      child.find();
+//
+    this.stats.forEach( function( stat ){
+      stat.query( listener( 'error' ) );
+    } );
+  }
 }
 
 
