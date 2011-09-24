@@ -5,19 +5,16 @@ var config = module.exports = {
   params          : {},
 
   default_controller  : 'app',
+  views_folder        : 'views',
+  models_folder       : 'models',
+  controllers_folder  : 'controllers',
+  components_folder   : 'components',
 
   router : {
 
     rules     : {
       'route_abbr'        : 'controller.action',
-      'multi_route'       : [
-        'controller1.some_action',
-        'controller2.another_action'
-      ]
-    },
-
-    root_folders : {
-      'css' : 'views/html/css'
+      'post/<id:\\d+>'    : 'post.show'
     }
   },
 
@@ -34,7 +31,7 @@ var config = module.exports = {
       root_folders: {
         css : 'views/html/css'
       },
-      upload_dir : 'tmo'
+      upload_dir : 'tmp'
     },
 
     users               : {
@@ -80,7 +77,7 @@ var config = module.exports = {
       smtp : {
         user : 'username',
         pass : 'password'//,
-//        host : 'localhost,    - for example smtp.gmail.com
+//        host : 'localhost',    - for example smtp.gmail.com
 //        port : 25,
 //        ssl  : false,
 //        tls  : true

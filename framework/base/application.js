@@ -1,4 +1,6 @@
 var path                  = require('path');
+var fs                    = require('fs');
+var dust                  = require('dust');
 var Session               = require('session');
 var Router                = require('routing/router');
 var Logger                = require('../logging/logger');
@@ -44,9 +46,10 @@ Application.prototype._init = function ( config ) {
   this.models             = null;
 
   this.default_controller     = this._config.default_controller || 'action';
-  this._.path_to_models       = path.join( this.base_dir, 'models' );
-  this._.path_to_controllers  = path.join( this.base_dir, 'controllers' );
-  this._.path_to_components   = path.join( this.base_dir, 'components' );
+  this._.path_to_models       = path.join( this.base_dir, this._config.models_folder      || 'models'      );
+  this._.path_to_controllers  = path.join( this.base_dir, this._config.controllers_folder || 'controllers' );
+  this._.path_to_components   = path.join( this.base_dir, this._config.components_folder  || 'components'  );
+  this._.path_to_views        = path.join( this.base_dir, this._config.views_folder       || 'views'       );
 
   this._preload_components();
   this._init_core( /*before*/ this._init_components );
@@ -54,6 +57,7 @@ Application.prototype._init = function ( config ) {
 
 
 Application.prototype._init_core = function ( callback ) {
+  this.load_views();
   this._init_models( /*before*/ this._init_router );
 
   this.on( 'core_initialized', callback );
@@ -61,6 +65,44 @@ Application.prototype._init_core = function ( callback ) {
   this.on( 'initialized', function() {
     this.run = this.__run;
   } );
+};
+
+
+Application.prototype.load_views = function ( view_path, conflict_names ) {
+  conflict_names     = conflict_names || [];
+  var full_view_path = path.join( this.path_to_views, view_path );
+  var stats          = fs.statSync( full_view_path );
+
+  if ( stats.isDirectory() ) {
+    fs.readdirSync( full_view_path ).forEach( function( file ) {
+      this.load_views( path.join( view_path, file ), conflict_names );
+    }, this );
+  }
+
+  else if ( stats.isFile() ) {
+    this.log( 'Load view `%s`'.format( view_path ), 'trace' );
+
+    var template  = fs.readFileSync( full_view_path, 'utf8' );
+    var compiled  = dust.compile( template, view_path );
+
+    dust.loadSource( compiled );
+
+    var cached    = dust.cache[ view_path ];
+    var file_name = path.basename( view_path );
+
+    if ( dust.cache[ file_name ] ) {
+      conflict_names.push( file_name );
+      dust.cache.__defineGetter__( file_name, function() {
+        throw new Error( 'Ambiguous file name: `%s`. Use full path to render it'.format( file_name ) );
+      } );
+    }
+    else dust.cache[ file_name ] = cached;
+  }
+
+  if ( !view_path && conflict_names.length ) this.log(
+    'You have few views with same name. Include them by full path. List of names of thar views: `%s`'
+      .format( conflict_names.join(', ') ), 'warning'
+  );
 };
 
 
