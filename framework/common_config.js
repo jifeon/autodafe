@@ -10,6 +10,8 @@ var config = module.exports = {
   controllers_folder  : 'controllers',
   components_folder   : 'components',
 
+  cache_views         : false,
+
   router : {
 
     rules     : {
