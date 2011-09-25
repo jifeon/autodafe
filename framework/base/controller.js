@@ -59,6 +59,7 @@ Controller.prototype.get_view_path = function ( view ) {
 
 
 Controller.prototype.render = function ( view, params, callback ) {
+  this.app.load_views();
   return this.dust.render( view, params, callback );
 };
 
