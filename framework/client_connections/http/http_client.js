@@ -96,8 +96,9 @@ HTTPClient.prototype.get_cookie = function ( name ) {
 
 
 HTTPClient.prototype.set_cookie = function ( name, value, days ) {
+  this._cookie.push( cookie.make( name, value, days ) );
   try{
-    this.response.setHeader( "Set-Cookie", cookie.make( name, value, days ) );
+    this.response.setHeader( "Set-Cookie", this._cookie );
   } catch ( e ) {
     this.log( e );
   }
