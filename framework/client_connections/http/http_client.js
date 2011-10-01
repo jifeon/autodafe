@@ -96,8 +96,9 @@ HTTPClient.prototype.get_cookie = function ( name ) {
 
 
 HTTPClient.prototype.set_cookie = function ( name, value, days ) {
+  this._cookie.push( cookie.make( name, value, days ) );
   try{
-    this.response.setHeader( "Set-Cookie", cookie.make( name, value, days ) );
+    this.response.setHeader( "Set-Cookie", this._cookie );
   } catch ( e ) {
     this.log( e );
   }
@@ -143,14 +144,20 @@ HTTPClient.prototype.send_error = function ( e ) {
     case 403:
       this.log( 'Error 403 by address `%s`'.format( this.request.url ), 'warning' );
       this.response.statusCode = 403;
-      this.response.end( '<h1>Error 403</h1>' );
+      this.response.end( '<h1>Error 403. Access denied</h1>' );
       break;
 
     case 404:
-    default:
       this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
       this.response.statusCode = 404;
-      this.response.end( '<h1>Error 404</h1>' );
+      this.response.end( '<h1>Error 404. Page not found</h1>' );
+      break;
+
+    case 500:
+    default:
+      this.log( 'Error 500 by address `%s`'.format( this.request.url ), 'warning' );
+      this.response.statusCode = 500;
+      this.response.end( '<h1>Error 500. Internal Server Error.</h1>' );
       break;
   }
 };
