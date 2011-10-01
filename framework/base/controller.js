@@ -25,6 +25,7 @@ Controller.prototype._init = function ( params ) {
   this.default_action = 'index';
   this.views_path     = 'views';
   this.dust           = dust;
+  this.models         = this.app.models;
 };
 
 
