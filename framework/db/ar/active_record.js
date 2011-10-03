@@ -94,7 +94,7 @@ ActiveRecord.prototype._init_relations = function () {
 
 
 ActiveRecord.prototype.get_attribute = function ( name ) {
-  return this._related[ name ] || this.super_.get_attribute( name );
+  return this._related[ name ] === undefined ? this.super_.get_attribute( name ) : this._related[ name ];
 };
 
 
