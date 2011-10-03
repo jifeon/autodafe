@@ -3,8 +3,8 @@ var cookie          = require('lib/cookie');
 var formidable      = require('formidable');
 var url             = require('url');
 var content_types   = require('./content-types');
-var fs               = require('fs');
-var path             = require('path');
+var fs              = require('fs');
+var path            = require('path');
 
 
 module.exports = HTTPClient.inherits( Client );
@@ -28,7 +28,7 @@ HTTPClient.prototype._init = function( params ) {
   this._cookie = [];
 
   this.request.once( 'close', this.disconnect.bind( this ) );
-  this.request.once( 'end', this.disconnect.bind( this ) );
+  this.request.once( 'end',   this.disconnect.bind( this ) );
 
   this.super_._init( params );
 
