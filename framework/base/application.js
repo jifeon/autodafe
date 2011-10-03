@@ -151,7 +151,7 @@ Application.prototype._init_router = function () {
   router_cfg.app  = this;
   this.router     = new Router( router_cfg );
 
-  this.log( 'Router has initialized', 'info' );
+  this.log( 'Router is initialized', 'info' );
   this.emit( 'core_initialized' );
 };
 
