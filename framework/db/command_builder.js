@@ -100,17 +100,19 @@ CommandBuilder.prototype.create_insert_command = function( table, data, ignore )
 
     fields.push( column.raw_name );
 
-    if ( value instanceof DbExpression ) {
-      placeholders.push( value.expression );
+    if( !Array.isArray( value ) ) value = [ value ];
 
-      for ( var n in value.params ) {
-        values[ n ] = value.params[ n ];
+    for( var v = 0, ln = value.length; v < ln; v++ ){
+      if( !subplaceholders[ v ] ) subplaceholders[ v ] = [];
+
+      if ( value[ v ] instanceof DbExpression ) {
+        subplaceholders[v].push( value[v].expression );
+
+        for ( var n in value[v].params ) {
+          values[ n ] = value[v].params[ n ];
+        }
       }
-    }
-    else {
-      if( !Array.isArray( value ) ) value = [ value ];
-      for( var v = 0, ln = value.length; v < ln; v++ ){
-        if( !subplaceholders[ v ] ) subplaceholders[ v ] = [];
+      else {
         subplaceholders[ v ].push( this.PARAM_PREFIX + i );
         values[ this.PARAM_PREFIX + i ] = column.typecast( value[ v ] );
         i++;

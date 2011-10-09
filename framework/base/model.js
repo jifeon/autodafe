@@ -11,6 +11,8 @@ function Model( params ) {
 Model.prototype._init = function ( params ) {
   this.super_._init( params );
 
+  this.models = this.app.models;
+
   this._attributes = {};
   this._.validator = new Validator( params );
   this._.is_new    = params.is_new == undefined ? true : params.is_new;
