@@ -1,3 +1,4 @@
+var tools                 = require('../lib/tools');
 var path                  = require('path');
 var fs                    = require('fs');
 var dust                  = require('dust');
@@ -41,6 +42,7 @@ Application.prototype._init = function ( config ) {
 
   this._.is_running       = false;
 
+  this.tools              = tools;
   this.logger             = new Logger;
   this.router             = null;
   this.components         = null;

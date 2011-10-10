@@ -33,7 +33,14 @@ var config = module.exports = {
       root_folders: {
         css : 'views/html/css'
       },
-      upload_dir : 'tmp'
+      upload_dir : 'tmp',
+      basic_auth : {
+        message : 'Private zone!! Please authorize',
+        users   : {
+          'john'    : 'password1',
+          'silvia'  : 'glamurko123'
+        }
+      }
     },
 
     users               : {

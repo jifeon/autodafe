@@ -128,6 +128,11 @@ UsersManager.prototype.get_by_session = function ( session ) {
 };
 
 
+UsersManager.prototype.get_by_client = function ( client ) {
+  return this.get_by_session( client.session );
+};
+
+
 UsersManager.prototype.authorize_session = function ( session, model ) {
   var guests_ui = this.get_by_session( session );
   if ( guests_ui && guests_ui != this.guests ) {

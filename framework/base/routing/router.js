@@ -123,11 +123,11 @@ Router.prototype.route = function ( route_rule, params, client, connection_type 
 
 
 Router.prototype.create_url = function ( route_path, params, default_controller, default_action ) {
-  var matches = /^((\w+\.)?(\w+))?$/.exec( route_path );
+  var matches = /^(((\w+)\.)?(\w+))?$/.exec( route_path );
   if ( !matches ) return route_path || '#';
 
-  var controller_name = matches[2] || default_controller;
-  var action_name     = matches[3] || default_action;
+  var controller_name = matches[3] || default_controller;
+  var action_name     = matches[4] || default_action;
   route_path          = controller_name + '.' + action_name;
 
   var routes  = this._routes_by_path[ route_path ];

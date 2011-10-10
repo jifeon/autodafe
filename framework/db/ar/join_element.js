@@ -150,7 +150,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     this.add_record( JSON.stringify( pk ), base_record )
   }
 
-  var listener = tools.get_parallel_listener( this.stats.length, after_stats, this );
+  var listener = tools.get_parallel_listener( this.stats.length, after_stats.bind( this ) );
 
   this.stats.forEach( function( stat ){
     stat.query( listener( 'error' ) );
