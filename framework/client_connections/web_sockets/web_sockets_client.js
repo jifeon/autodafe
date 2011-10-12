@@ -13,17 +13,27 @@ WebSocketsClient.prototype._init = function( params ) {
     throw new Error( '`ws_client` should be Socket.IO client in WebSocketsClient.init' );
 
   this.ws_client = params.ws_client;
+  this.ws_client.cookie = '';
 
   var self = this;
   this.ws_client.on( 'message', function( message ) {
-    self.receive( message );
+    try{
+      message = JSON.parse( message );
+    } catch( e ) {}
+    if( message.action == 'auth' ){
+      self.ws_client.cookie += cookie.make( 'autodafe_sid', message.sid );
+      self.ws_client.cookie += cookie.make( 'autodafe_email', message.email );
+      self.ws_client.cookie += cookie.make( 'autodafe_pass', message.pass );
+      self.super_._init( params );
+    } else
+        self.receive( message );
   } );
 
   this.ws_client.on( 'disconnect', function() {
     self.disconnect();
   } );
 
-  this.super_._init( params );
+//  this.super_._init( params );
 };
 
 
@@ -54,12 +64,14 @@ WebSocketsClient.prototype.__receive = function ( message ) {
 
 
 WebSocketsClient.prototype.get_session_id = function () {
-  return this.ws_client.sessionid;
+  var sid = this.get_cookie( 'autodafe_sid' );
+
+  return sid ? sid : this.ws_client.id;
 };
 
 
 WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
-  return cookie.read( this.ws_client.request.headers.cookie, cookie_name );
+  return cookie.read( this.ws_client.cookie, cookie_name );
 };
 
 

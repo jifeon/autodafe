@@ -26,9 +26,10 @@ WebSocketsServer.prototype.run = function () {
   if ( !this._server ) this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
 
   this._io = io.listen( this._server );
+  this._io.set('log level', 2);
 
   var self = this;
-  this._io.on( 'connection', function( client ) {
+  this._io.sockets.on( 'connection', function( client ) {
     new WebSocketsClient({
       app        : self.app,
       ws_client  : client,
