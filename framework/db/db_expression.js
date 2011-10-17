@@ -10,9 +10,10 @@ DbExpression.prototype._init = function( expression, params ) {
     this.expression = expression.expression;
     this.params     = expression.params || {};
   }
-
-  this.expression = expression;
-  this.params     = params || {};
+  else {
+    this.expression = expression;
+    this.params     = params || {};
+  }
 };
 
 

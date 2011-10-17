@@ -67,7 +67,7 @@ Controller.prototype.render = function ( view, params, callback ) {
 
 Controller.prototype.send_response = function ( view, client, params, callback ) {
 
-  callback = callback || this.default_callback;
+  if ( typeof callback != 'function' ) callback = this.default_callback;
   params   = params   || {};
 
   this.render( view, params, function( e, data ) {

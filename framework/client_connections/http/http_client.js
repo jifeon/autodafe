@@ -117,10 +117,7 @@ HTTPClient.prototype.send_file = function ( file_path ) {
   this.log( 'Send file `%s` to http client ( session id=%s )'.format( file_path, this.get_session_id() ) );
 
   fs.readFile( file_path, "binary", function( e, file ){
-    if( e ){
-      e.number = 404;
-      return self.send_error( e );
-    }
+    if( e ) self.send_error( e, 404 );
 
     self.emit( 'send_file', file );
     self.connection.emit( 'send_file', file, this );
@@ -137,7 +134,9 @@ HTTPClient.prototype.send_file = function ( file_path ) {
 };
 
 
-HTTPClient.prototype.send_error = function ( e ) {
+HTTPClient.prototype.send_error = function ( e, number ) {
+  if ( typeof number == 'number' ) e.number = number;
+
   this.super_.send_error(e);
 
   switch ( e.number ) {
