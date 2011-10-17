@@ -23,7 +23,8 @@ UsersManager.prototype._init = function( params ) {
   this._init_possibilities( params );
 
   this._users = {
-    by_session_id : {}
+    by_session_id : {},
+    by_model_id   : {}
   };
 
   this._.guests = new UserIdentity({
@@ -151,6 +152,11 @@ UsersManager.prototype.authorize_session = function ( session, model ) {
   new_ui.set_model( model );
 
   this._users.by_session_id[ session.id ] = new_ui;
+  if( this._users.by_model_id[ model.id ] ){
+    if( this._users.by_model_id[ model.id ].indexOf( session ) == -1 )
+      this._users.by_model_id[ model.id ].push( session );
+  }
+    else this._users.by_model_id[ model.id ] = [ session ];
 
   var self = this;
   // if user did not was in guests we should add handler on session close
@@ -176,4 +182,12 @@ UsersManager.prototype.logout_session = function ( session ) {
   if ( !ui ) session.once( 'close', function() {
     delete self._users.by_session_id[ session.id ];
   } );
+};
+
+UsersManager.prototype.get_clients_by_model_id = function( id ){
+  var clients = [];
+  if( this._users.by_model_id[ id ] )
+    for( var s = 0, ln_s = this._users.by_model_id[ id ].length; s < ln_s; s++ )
+      clients = clients.concat( this._users.by_model_id[ id ][ s ].clients );
+  return clients;
 };
