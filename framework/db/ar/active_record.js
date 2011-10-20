@@ -122,6 +122,12 @@ ActiveRecord.prototype.add_related_record = function ( name, record, index ) {
 };
 
 
+ActiveRecord.prototype.substitute_related_records = function ( callback ) {
+  for( var relation_name in this._related )
+    this._related[ relation_name ] = callback( this._related[ relation_name ] );
+};
+
+
 ActiveRecord.prototype.clean_related_records = function ( name ) {
   delete this._related[ name ];
 };

@@ -99,7 +99,6 @@ Object.isEmpty = function( v ) {
 
 
 Object.clone = function( obj ) {
-
   if ( Array.isArray( obj ) ) return obj.map( function( item ) {
     return Object.clone( item );
   } );
@@ -116,7 +115,7 @@ Object.clone = function( obj ) {
 
 
 Object.isObject = function( v ) {
-  return v && v instanceof this && !Array.isArray( v );
+  return v && v instanceof this && !Array.isArray( v ) && typeof v != 'function';
 }
 
 

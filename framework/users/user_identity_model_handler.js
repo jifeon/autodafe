@@ -11,8 +11,6 @@ UserIdentityModelHandler.prototype._init = function( params ) {
   this.super_._init( params );
 
   this.user_identity = params.user_identity;
-  this.user_rights   = this.target.constructor.user_rights || {};
-  if ( !this.user_rights.attributes ) this.user_rights.attributes = {};
 
   this.methods = [
     'get_attribute',
@@ -20,7 +18,8 @@ UserIdentityModelHandler.prototype._init = function( params ) {
     'get_attributes',
     'set_attributes',
     'save',
-    'remove'
+    'remove',
+    'release'
   ];
 };
 
@@ -53,14 +52,7 @@ UserIdentityModelHandler.prototype._has_attribute = function ( name ) {
 
 
 UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
-  var roles = this.user_identity.get_roles( this.target, name );
-  var self  = this;
-
-  var has_view_right = function( role ) {
-    return this._has_right( 'view', name, role );
-  }
-
-  if ( this.user_identity.get_roles( this.target, name ).some( has_view_right, this ) )
+  if ( this.user_identity.can( 'view', this.target, name ) )
     return this.target.get_attribute( name );
 
   this.user_identity.app.log(
@@ -71,11 +63,7 @@ UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
 
 
 UserIdentityModelHandler.prototype.set_attribute = function ( name, value ) {
-  var has_edit_right = function( role ) {
-    return this._has_right( 'edit', name, role );
-  }
-
-  if ( this.user_identity.get_roles( this.target, name ).some( has_edit_right, this ) )
+  if ( this.user_identity.can( 'edit', this.target, name ) )
     return this.target.set_attribute( name, value );
 
   this.target.validator.errors.push(
@@ -89,13 +77,8 @@ UserIdentityModelHandler.prototype.set_attribute = function ( name, value ) {
 UserIdentityModelHandler.prototype.get_attributes = function ( names ) {
   var attributes = this.target.get_attributes( names );
 
-  var name;
-  var has_view_right = function( role ) {
-    return this._has_right( 'view', name, role );
-  }
-
-  for ( name in attributes )
-    if ( !this.user_identity.get_roles( this.target, name ).some( has_view_right, this ) )
+  for ( var name in attributes )
+    if ( !this.user_identity.can( 'view', this.target, name ) )
       attributes[ name ] = null;
 
   return attributes;
@@ -104,14 +87,9 @@ UserIdentityModelHandler.prototype.get_attributes = function ( names ) {
 
 UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
   var attrs = {};
-  var name;
 
-  var has_edit_right = function( role ) {
-    return this._has_right( 'edit', name, role );
-  }
-
-  for ( name in attributes )
-    if ( this.user_identity.get_roles( this.target, name ).some( has_edit_right, this ) )
+  for ( var name in attributes )
+    if ( this.user_identity.can( 'edit', this.target, name ) )
       attrs[ name ] = attributes[ name ];
     else this.target.validator.errors.push( 'Permission denied to change `%s`'.format( name ) );
 
@@ -120,40 +98,22 @@ UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
 
 
 UserIdentityModelHandler.prototype.save = function ( attributes, scenario ) {
-  if ( !this.target.is_new ) return this.target.save( attributes, scenario );
-
-  var roles = this.user_identity.get_roles( this.target );
-  var self  = this;
-
-  if ( !roles.some( function( role ) {
-    return self._has_right( 'create', null, role );
-  } ) )
-    this.target.validator.errors.push( 'Permission denied to create model `%s`'.format( this.target.class_name ) );
+  var action = this.target.is_new ? 'create' : 'edit';
+  if ( !this.user_identity.can( action, this.model ) )
+    this.target.validator.errors.push( 'Permission denied to %s model `%s`'.format( action, this.target.class_name ) );
 
   return this.target.save( attributes, scenario );
 };
 
 
 UserIdentityModelHandler.prototype.remove = function () {
-  var roles = this.user_identity.get_roles( this.target );
-  var self  = this;
-
-  if ( roles.some( function( role ) {
-    return self._has_right( 'remove', null, role );
-  } ) )
+  if ( this.user_identity.cal( 'remove', this.target ) )
     return this.target.remove();
 
   return new Error( 'Permission denied to remove model `%s`'.format( this.target.class_name ) );
 };
 
 
-UserIdentityModelHandler.prototype._has_right = function ( right, attribute_name, role ) {
-  var rights_map = right != 'create' && right != 'remove' &&
-                   this.user_rights.attributes[ attribute_name ] &&
-                   this.user_rights.attributes[ attribute_name ][ role ] ||
-                   this.user_rights[ role ] ||
-                   this.user_identity.users_manager.default_possibilities[ role ] ||
-                   [];
-
-  return !!~rights_map.indexOf( right );
+UserIdentityModelHandler.prototype.release = function () {
+  return this.target;
 };

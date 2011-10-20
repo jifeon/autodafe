@@ -1,5 +1,7 @@
 var Component         = require( 'components/component' );
 var UserIdentity      = require( './user_identity' );
+var RolesSet          = require( './roles_set' );
+var ModelsRolesSet    = require( './models_roles_set' );
 
 module.exports = UsersManager.inherits( Component );
 
@@ -14,13 +16,11 @@ UsersManager.prototype._init = function( params ) {
   if ( !params.model || !this.app.models.is_model_exist( params.model ) )
     throw new Error( 'Please bind `users` component to one of exist models of application' );
 
-  this._.model_name             = params.model;
-  this._.model                  = null;
-  this._.roles                  = {};
-  this._.default_possibilities  = {};
+  this.model_name      = params.model;
+  this.roles_set       = null;
+  this.models_roles    = {};
 
   this._init_roles( params );
-  this._init_possibilities( params );
 
   this._users = {
     by_session_id : {},
@@ -40,66 +40,20 @@ UsersManager.prototype._init = function( params ) {
 
 
 UsersManager.prototype._init_roles = function ( params ) {
-  var self = this;
+  this.roles_set = new RolesSet( params );
 
-  this.roles.guest = function( user_model ) {
-    return !user_model;
-  };
-
-  this.roles.author = function( user_model, app, model, attribute ) {
-    if ( attribute == 'login' ) debugger;
-    
-    return user_model.equals( model );
-  };
-
-  for ( var role in params.roles ) {
-    var role_determinant = params.roles[ role ];
-
-    switch ( typeof role_determinant ) {
-      case 'function':
-        this.roles[ role ] = role_determinant;
-        break;
-
-      case 'string':
-        try {
-          this.roles[ role ] = new Function(
-            this.model_name, 'app', 'model', 'attribute',
-            'return ' + role_determinant
-          );
-        }
-        catch ( e ) {
-          throw new Error(
-            'You have syntax error in users.role definition. Check your config file ( components.users.roles.%s )'.format( role )
-          );
-        }
-        break;
-
-      default : throw new Error(
-        'Value of `components.users.roles.%s` hash in your config file should be Strings or Functions'.format( role )
-      );
-    }
-  }
+  this.app.models.for_each_model( function( model ){
+    var models_roles        = typeof model.users_rights == 'function' ? model.users_rights() || {} : {};
+    models_roles.app        = this.app;
+    models_roles.parent_set = this.roles_set;
+    this.models_roles[ model.class_name ] = new ModelsRolesSet( models_roles );
+  }, this );
 };
 
 
-UsersManager.prototype.get_roles = function ( user_identity, target_model, target_attribute ) {
-  var roles = [];
-
-  for ( var role in this.roles )
-    try { // user_identity.model can be null
-      if ( this.roles[ role ]( user_identity.model, this.app, target_model, target_attribute ) )
-        roles.push( role );
-    } catch(e) {}
-
-  return roles;
-};
-
-
-UsersManager.prototype._init_possibilities = function ( params ) {
-  if ( !params.possibilities ) params.possibilities = {};
-
-  for ( var role in this.roles )
-    this.default_possibilities[ role ] = params.possibilities[ role ] || [];
+UsersManager.prototype.check_right = function ( user_identity, action, model, attribute ) {
+  var roles_set = model ? this.models_roles[ model.class_name ] : this.roles_set;
+  return roles_set.check_right( user_identity, action, model, attribute );
 };
 
 

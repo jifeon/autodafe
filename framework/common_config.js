@@ -45,6 +45,7 @@ var config = module.exports = {
 
     users               : {
       model : 'user',
+
       roles : {
         user      : 'user.id != null',
         moderator : 'user.status == "moderator"',
@@ -55,7 +56,7 @@ var config = module.exports = {
       // По умолчанию ниодна роль не имеет права ни на что.
       // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
       // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
-      possibilities : {
+      rights : {
         guest     : [],
         user      : [],
         moderator : [ 'view' ],
