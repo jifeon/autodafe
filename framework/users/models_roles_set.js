@@ -64,7 +64,7 @@ ModelsRolesSet.prototype._apply_rights = function ( params ) {
 
 ModelsRolesSet.prototype.check_right = function ( user_identity, action, model, attribute ) {
   var action_rights = attribute
-    ? this.attrs_rights[ attribute ] && this.attrs_rights[ attribute ][ action ]
+    ? this.attrs_rights[ attribute ] && this.attrs_rights[ attribute ][ action ] || this.roles_rights[ action ]
     : this.roles_rights[ action ];
   if ( !action_rights ) return false;
 

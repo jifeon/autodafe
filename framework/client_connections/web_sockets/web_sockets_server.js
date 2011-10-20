@@ -23,7 +23,7 @@ WebSocketsServer.prototype._init = function ( params ) {
 WebSocketsServer.prototype.run = function () {
 
   this._server  = global.autodafe.get_server( this.port, this.app );
-  if ( !this._server ) this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
+  if ( !this._server ) return this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
 
   this._io = io.listen( this._server );
   this._io.set('log level', 2);

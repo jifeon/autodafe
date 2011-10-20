@@ -16,7 +16,6 @@ UsersManager.prototype._init = function( params ) {
   if ( !params.model || !this.app.models.is_model_exist( params.model ) )
     throw new Error( 'Please bind `users` component to one of exist models of application' );
 
-  this.model_name      = params.model;
   this.roles_set       = null;
   this.models_roles    = {};
 
@@ -46,6 +45,7 @@ UsersManager.prototype._init_roles = function ( params ) {
     var models_roles        = typeof model.users_rights == 'function' ? model.users_rights() || {} : {};
     models_roles.app        = this.app;
     models_roles.parent_set = this.roles_set;
+    models_roles.model      = params.model;
     this.models_roles[ model.class_name ] = new ModelsRolesSet( models_roles );
   }, this );
 };

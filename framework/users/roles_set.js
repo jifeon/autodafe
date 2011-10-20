@@ -13,6 +13,7 @@ RolesSet.prototype._init = function( params ) {
   this.roles           = {};
   this.roles_groups    = {};
   this.roles_rights    = {};
+  this.model_name      = params.model;
 
   this._init_roles( params );
   this._apply_rights( params.rights || {}, this.roles_rights );
