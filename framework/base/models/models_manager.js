@@ -131,3 +131,10 @@ ModelsManager.prototype._get_instance = function ( constructor, params ) {
 ModelsManager.prototype.is_model_exist = function( model_name ){
   return !!this.get_model( model_name );
 };
+
+
+ModelsManager.prototype.for_each_model = function ( callback, context ) {
+  for( var name in this._models ) {
+    callback.call( context || null, this._models[ name ], name );
+  }
+};

@@ -5,15 +5,18 @@ var config = module.exports = {
   params          : {},
 
   default_controller  : 'app',
+  views_folder        : 'views',
+  models_folder       : 'models',
+  controllers_folder  : 'controllers',
+  components_folder   : 'components',
+
+  cache_views         : false,
 
   router : {
 
     rules     : {
       'route_abbr'        : 'controller.action',
-      'multi_route'       : [
-        'controller1.some_action',
-        'controller2.another_action'
-      ]
+      'post/<id:\\d+>'    : 'post.show'
     }
   },
 
@@ -25,8 +28,24 @@ var config = module.exports = {
       port : 8080
     },
 
+    http : {
+      post : 80,
+      root_folders: {
+        css : 'views/html/css'
+      },
+      upload_dir : 'tmp',
+      basic_auth : {
+        message : 'Private zone!! Please authorize',
+        users   : {
+          'john'    : 'password1',
+          'silvia'  : 'glamurko123'
+        }
+      }
+    },
+
     users               : {
       model : 'user',
+
       roles : {
         user      : 'user.id != null',
         moderator : 'user.status == "moderator"',
@@ -37,7 +56,7 @@ var config = module.exports = {
       // По умолчанию ниодна роль не имеет права ни на что.
       // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
       // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
-      possibilities : {
+      rights : {
         guest     : [],
         user      : [],
         moderator : [ 'view' ],
@@ -68,7 +87,7 @@ var config = module.exports = {
       smtp : {
         user : 'username',
         pass : 'password'//,
-//        host : 'localhost,    - for example smtp.gmail.com
+//        host : 'localhost',    - for example smtp.gmail.com
 //        port : 25,
 //        ssl  : false,
 //        tls  : true

@@ -19,6 +19,7 @@ var config = module.exports = {
   },
 
   router : {
+    url_format : 'path',
 
     rules     : {
       'single_route_rule' : 'test.test',
@@ -69,7 +70,7 @@ var config = module.exports = {
       // По умолчанию ниодна роль не имеет права ни на что.
       // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
       // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
-      possibilities : {
+      rights : {
         guest     : [],
         role0     : [ 'view' ],
         role1     : [ 'create' ],

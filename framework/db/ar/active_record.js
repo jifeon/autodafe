@@ -94,7 +94,7 @@ ActiveRecord.prototype._init_relations = function () {
 
 
 ActiveRecord.prototype.get_attribute = function ( name ) {
-  return this._related[ name ] || this.super_.get_attribute( name );
+  return this._related[ name ] === undefined ? this.super_.get_attribute( name ) : this._related[ name ];
 };
 
 
@@ -119,6 +119,12 @@ ActiveRecord.prototype.add_related_record = function ( name, record, index ) {
       else related[ index ] = record;
     }
   }
+};
+
+
+ActiveRecord.prototype.substitute_related_records = function ( callback ) {
+  for( var relation_name in this._related )
+    this._related[ relation_name ] = callback( this._related[ relation_name ] );
 };
 
 

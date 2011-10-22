@@ -54,6 +54,9 @@ Array.prototype.for_each = function ( fun/*, thisp*/ ) {
 
 
 Object.merge = function( obj1, obj2 ) {
+  obj1 = obj1 || {};
+  obj2 = obj2 || {};
+
   if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
 
   var res = Object.not_deep_clone( obj1 );
@@ -96,7 +99,6 @@ Object.isEmpty = function( v ) {
 
 
 Object.clone = function( obj ) {
-
   if ( Array.isArray( obj ) ) return obj.map( function( item ) {
     return Object.clone( item );
   } );
@@ -113,7 +115,7 @@ Object.clone = function( obj ) {
 
 
 Object.isObject = function( v ) {
-  return v && v instanceof this && !Array.isArray( v );
+  return v && v instanceof this && !Array.isArray( v ) && typeof v != 'function';
 }
 
 
@@ -255,6 +257,17 @@ Date.prototype.format = function( format ) {
 }
 
 
+process.EventEmitter.prototype.re_emit = function() {
+  var emitter = arguments[ arguments.length - 1 ];
+  for ( var i = 0, i_ln = arguments.length - 1; i < i_ln; i++ ) {
+    var action = arguments[i];
+    this.on( action, emitter.emit.bind( emitter, action ) );
+  }
+
+  return this;
+}
+
+
 require('dust').filters.n = function( value ){
   return isFinite( value ) ? Number( value ) : 0;
 }
@@ -273,6 +286,11 @@ exports.next_tick = function( result, error, emitter, action ){
   } );
 
   return emitter;
+};
+
+var Listener = require('./listener');
+exports.create_async_listener = function( count, callback, params ) {
+  return new Listener( count, callback, params );
 };
 
 

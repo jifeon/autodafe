@@ -1,13 +1,19 @@
 module.exports = DbExpression;
 
-function DbExpression( params ) {
-  this._init( params );
+function DbExpression( expression, params ) {
+  this._init( expression, params );
 }
 
 
-DbExpression.prototype._init = function( params ) {
-  this.expression = params.expression;
-  this.params     = params.params || {};
+DbExpression.prototype._init = function( expression, params ) {
+  if ( Object.isObject( expression ) ) {
+    this.expression = expression.expression;
+    this.params     = expression.params || {};
+  }
+  else {
+    this.expression = expression;
+    this.params     = params || {};
+  }
 };
 
 

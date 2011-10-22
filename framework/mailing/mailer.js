@@ -14,16 +14,9 @@ Mailer.prototype._init = function( params ) {
   this.super_._init( params );
   this._configured = true;
 
-  if ( !params.smtp || !params.smtp.user || !params.smtp.pass || !params.smtp.host ) {
-    this.log( 'You must specify smtp parametres in your config file for correct work of mailing.' +
-                  ' smtp.user, smtp.pass, smtp.host are required', 'warning' );
-    this._configured = false;
-    return false;
-  }
-
   this._server = email.server.connect({
-    user      : params.smtp.user,
-    password  : params.smtp.pass,
+    user      : params.smtp.user || null,
+    password  : params.smtp.pass || null,
     host      : params.smtp.host || 'localhost',
     port      : params.smtp.port || null,
     ssl       : params.smtp.ssl  || false,
@@ -77,7 +70,10 @@ Mailer.prototype.send = function ( params, callback ) {
   this.log( 'Sending message with id=%s'.format( message.id ) );
   var self = this;
   this._server.send( message, function( e, message ){
-    if ( e ) self.log( e );
+    if ( e ) {
+      self.log( 'Message with id=%s has not been sent'.format( message.id ), 'warning' );
+      self.log( e.error );
+    }
     else self.log( 'Message with id=%s has been sent'.format( message.id ), 'info' );
 
     if ( typeof callback == "function" ) callback( e, message );

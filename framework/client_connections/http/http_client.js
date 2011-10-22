@@ -1,6 +1,10 @@
-var Client = require('client_connections/client');
-var http   = require('http');
-var cookie = require('lib/cookie');
+var Client          = require('client_connections/client');
+var cookie          = require('lib/cookie');
+var formidable      = require('formidable');
+var url             = require('url');
+var content_types   = require('./content-types');
+var fs              = require('fs');
+var path            = require('path');
 
 
 module.exports = HTTPClient.inherits( Client );
@@ -13,36 +17,68 @@ function HTTPClient( params ) {
 HTTPClient.prototype._init = function( params ) {
   if ( !params || !params.request )
     throw new Error( '`request` should be instance of http.ServerRequest in HTTPClient.init' );
-  this.request = params.request;
 
   if ( !params.response )
     throw new Error( '`response` should be instance of http.ServerResponse in HTTPClient.init' );
-  this.response = params.response;
-  this.response.cookie = [];
+
+  this.request    = params.request;
+  this.response   = params.response;
+  this.post_form  = null
+
+  this._cookie = [];
+
+  this.request.once( 'close', this.disconnect.bind( this ) );
+  this.request.once( 'end',   this.disconnect.bind( this ) );
 
   this.super_._init( params );
+
+  this.receive();
 };
 
 
-HTTPClient.prototype.init_events = function () {
-  this.super_.init_events();
+HTTPClient.prototype.receive = function () {
+  var parsed_url      = url.parse( this.request.url, true );
 
-  var listener = function() {
-    this.emit( 'disconnect' );
-  }
+  if ( this.request.method.toLowerCase() == 'post' ) this._receive_post( parsed_url.pathname );
+  else this._receive_get( parsed_url );
+};
 
-  this.request.once( 'close', listener );
-  this.request.once( 'end',   listener );
 
+HTTPClient.prototype._receive_post = function ( path ) {
   var self = this;
-  this.on( 'connect', function() {
-    self.emit( 'request', self.request.url );
-  } );
+
+  this._.post_form              = new formidable.IncomingForm;
+  this.post_form.uploadDir      = this.connection.upload_dir;
+  this.post_form.keepExtensions = true;
+  try {
+    this.post_form.parse( this.request, function( e, fields, files ) {
+      if ( e ) return self.send_error( e );
+
+      var params = Object.merge( fields, files );
+      if ( self.connected ) self.super_.receive( path, params, 'post' );
+      else self.on( 'connect', self.super_.receive.bind( self, path, params, 'post' ) );
+
+    });
+  }
+  catch( e ) { this.send_error( e ); }
+};
+
+
+HTTPClient.prototype._receive_get = function ( parsed_url ) {
+  // check root folder: /folder/path/to/file
+  var pathname    = parsed_url.pathname;
+  var matches = /^\/(.*?)(\/(.*))?$/.exec( pathname );
+  var folder  = this.connection.get_root_folder( matches && matches[1] || '' );
+  if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, matches && matches[3] || '' ) );
+
+  var params = parsed_url.query;
+  var method = this.request.method.toLowerCase();
+  if ( this.connected ) this.super_.receive( pathname, params, method );
+  else this.on( 'connect', this.super_.receive.bind( this, pathname, params, method ) );
 };
 
 
 HTTPClient.prototype.get_session_id = function () {
-  
   var sid = this.get_cookie( 'autodafe_sid' );
 
   if ( !sid ) {
@@ -60,53 +96,74 @@ HTTPClient.prototype.get_cookie = function ( name ) {
 
 
 HTTPClient.prototype.set_cookie = function ( name, value, days ) {
-  this.response.cookie.push( cookie.make( name, value, days ) );
-};
-
-HTTPClient.prototype.set_cookies = function () {
-  this.response.setHeader("Set-Cookie", this.response.cookie );
+  this._cookie.push( cookie.make( name, value, days ) );
+  try{
+    this.response.setHeader( "Set-Cookie", this._cookie );
+  } catch ( e ) {
+    this.log( e );
+  }
 };
 
 
 HTTPClient.prototype.send = function ( data ) {
-  if( this.response.cookie.length > 0 )
-    this.set_cookies();
-
   this.super_.send( data );
-
   this.response.end( data, 'utf8' );
 };
 
-HTTPClient.prototype.send_file = function ( data, type ) {
 
-  this.super_.send( data );
-  this.response.writeHead(200, {"Content-Type": type });
-  this.response.write( data, "binary" );
-  this.response.end();
+HTTPClient.prototype.send_file = function ( file_path ) {
+  var self = this;
+
+  this.log( 'Send file `%s` to http client ( session id=%s )'.format( file_path, this.get_session_id() ) );
+
+  fs.readFile( file_path, "binary", function( e, file ){
+    if( e ) self.send_error( e, 404 );
+
+    self.emit( 'send_file', file );
+    self.connection.emit( 'send_file', file, this );
+
+    var file_ext  = path.extname( file_path );
+    var type      = content_types[ file_ext.toLowerCase().substr(1) ] || '';
+
+    if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
+
+    self.response.writeHead( 200, { "Content-Type": type });
+    self.response.write( file, "binary" );
+    self.response.end();
+  } );
 };
 
-HTTPClient.prototype.send_error = function ( e ) {
-  switch ( e.number ) {
-    case 404:
-      this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
-      this.response.statusCode = 404;
-      this.response.end();
-      return true;
 
+HTTPClient.prototype.send_error = function ( e, number ) {
+  if ( typeof number == 'number' ) e.number = number;
+
+  this.super_.send_error(e);
+
+  switch ( e.number ) {
     case 403:
       this.log( 'Error 403 by address `%s`'.format( this.request.url ), 'warning' );
       this.response.statusCode = 403;
-      this.response.end();
-      return true;
-  }
+      this.response.end( '<h1>Error 403. Access denied</h1>' );
+      break;
 
-  return false;
+    case 404:
+      this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
+      this.response.statusCode = 404;
+      this.response.end( '<h1>Error 404. Page not found</h1>' );
+      break;
+
+    case 500:
+    default:
+      this.log( 'Error 500 by address `%s`'.format( this.request.url ), 'warning' );
+      this.response.statusCode = 500;
+      this.response.end( '<h1>Error 500. Internal Server Error.</h1>' );
+      break;
+  }
 };
 
 
-HTTPClient.prototype.set_url = function ( url ) {
-  this.set_cookies();
-  this.response.cookie = [];
+HTTPClient.prototype.redirect = function ( url ) {
   this.response.writeHead( 302, { Location : url } );
+  this.response.end();
 }
 

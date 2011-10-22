@@ -89,7 +89,7 @@ Validator.prototype.is_number = function( field_name, value, error ){
 
 
 Validator.prototype.phone_number = function ( field_name, value, error ) {
-  if ( !/^[0-9#\-+ ]*$/.test( value ) )
+  if ( !/^[0-9#\-+() ]*$/.test( value ) )
     this.errors.push( this.t( error || 'Field {field_name} should be a phone number' ).format({
       '{field_name}'  : this.t( field_name )
     }) );

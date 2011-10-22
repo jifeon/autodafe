@@ -1,4 +1,4 @@
-var content_types = module.exports = {
+module.exports = {
   'bin'     :  'application/octet-stream',
   'exe'     :  'application/octet-stream',
   'ai'      :  'application/postscript',
@@ -41,6 +41,7 @@ var content_types = module.exports = {
   'wav'     :  'application/x-wav',
   'gif'     :  'image/gif',
   'ief'     :  'image/ief',
+  'png'     :  'image/png',
   'jpe'     :  'image/jpeg',
   'jpg'     :  'image/jpeg',
   'jpeg'    :  'image/jpeg',
@@ -56,11 +57,13 @@ var content_types = module.exports = {
   'xpm'     :  'imaqe/x-xpixrnap',
   'xwd'     :  'image/x-xwindowdump',
   'htm'     :  'text/html',
+  'css'     :  'text/css',
   'html'    :  'text/html',
   'txt'     :  'text/plain',
   'rtx'     :  'text/richtext',
   'tsv'     :  'text/tab-separated-values',
   'etx'     :  'text/x-setext',
+  'js'      :  'text/javascript',
   'mpe'     :  'video/mpeg',
   'mpg'     :  'video/mpeg',
   'mpeg'    :  'video/mpeg',
