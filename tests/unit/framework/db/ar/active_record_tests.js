@@ -9,7 +9,7 @@ exports.get_batch = function( application, assert ) {
     app   : application,
     user  : application.db.user,
     pass  : application.db.pass,
-    base  : application.db.base + '_ar',
+    base  : application.db.base,// + '_ar',
     host  : application.db.host
   });
 
@@ -692,7 +692,8 @@ exports.get_batch = function( application, assert ) {
             title       : 'default title',
             create_time : null,
             author_id   : null,
-            content     : null
+            content     : null,
+            info        : null
           } );
         }
       },
@@ -711,7 +712,8 @@ exports.get_batch = function( application, assert ) {
             title       : 'post 1',
             create_time : new Date( 'Sat, 01 Jan 2000 00:00:00 GMT' ),
             author_id   : 1,
-            content     : 'content 1'
+            content     : 'content 1',
+            info        : 'info 1'
           } );
         }
       },

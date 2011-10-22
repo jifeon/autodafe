@@ -130,6 +130,7 @@ var config = module.exports = {
 //        '../unit/framework/base/app_module_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
+        'ar_relations',
         'web_socket',
         'router',
         'components_manager',
