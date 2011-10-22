@@ -6,7 +6,9 @@ function Category( params ) {
   this._init( params );
 }
 
-Category.table_name           = 'testbase_ar.categories';
+Category.prototype.get_table_name = function(){
+  return 'testbase_ar.categories';
+}
 
 Category.prototype.relations = function(){
   return {

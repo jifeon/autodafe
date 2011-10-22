@@ -25,8 +25,9 @@ ActiveRecord._relations = null;
 ActiveRecord.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this._.is_inited  = false;
-  this._.table_name = this.constructor.table_name;
+  this._.is_inited      = false;
+  this._.table_name     = null;
+  this._.table_name.get = this.get_table_name.bind( this );
 
   if ( !this.table_name )
     throw new Error( 'You should specify `table_name` property for ' + this.class_name );
@@ -59,6 +60,11 @@ ActiveRecord.prototype._init = function( params ) {
   this.app.on( 'models_loaded', function() {
     self._init_relations();
   } );
+};
+
+
+ActiveRecord.prototype.get_table_name = function () {
+  throw new Error( 'You should implement method `get_table_name` for your class `%s`'.format( this.class_name ) );
 };
 
 

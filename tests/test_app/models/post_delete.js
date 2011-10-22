@@ -7,5 +7,9 @@ function PostDelete( params ) {
 }
 
 
-PostDelete.table_name           = 'testbase_ar.posts_for_delete';
-PostDelete.safe_attribute_names = [ 'title' ];
+PostDelete.prototype.get_table_name = function(){
+  return 'testbase_ar.posts_for_delete';
+}
+PostDelete.prototype.get_safe_attributes_names = function(){
+  return [ 'title' ];
+}

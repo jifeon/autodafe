@@ -48,7 +48,7 @@ exports.get_batch = function( application, assert ){
         assert.equal( model.get_attribute( 'me' )(), model );
       },
       'get safe attributes' : function( model ){
-        assert.deepEqual( model.get_safe_attribute_names(), [ 'param1', 'param2' ] );
+        assert.deepEqual( model.get_safe_attributes_names(), [ 'param1', 'param2' ] );
       },
       '`set_attributes` shoud throws if attributes is not an Object' : function( model ){
         assert.throws( function() {

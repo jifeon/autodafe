@@ -11,7 +11,9 @@ function UITest( params ) {
   });
 }
 
-UITest.safe_attribute_names = [ 'p1', 'p2' ];
+UITest.prototype.get_safe_attributes_names = function(){
+  return [ 'p1', 'p2' ];
+}
 
 UITest.user_rights = {
   guest   : [ 'view' ],

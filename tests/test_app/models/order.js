@@ -6,7 +6,9 @@ function Order( params ) {
   this._init( params );
 }
 
-Order.table_name = 'testbase_ar.orders';
+Order.prototype.get_table_name = function(){
+  return 'testbase_ar.orders';
+}
 
 Order.prototype.relations = function(){
   return {

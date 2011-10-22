@@ -2,7 +2,9 @@ var Model = require('model');
 
 module.exports = TestModel.inherits( Model );
 
-TestModel.safe_attribute_names = [ 'param1', 'param2' ];
+TestModel.prototype.get_safe_attributes_names = function(){
+  return [ 'param1', 'param2' ];
+}
 
 function TestModel( params ) {
   this._init( params );

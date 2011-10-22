@@ -6,7 +6,9 @@ function Comment( params ) {
   this._init( params );
 }
 
-Comment.table_name          = 'testbase_ar.comments';
+Comment.prototype.get_table_name = function(){
+  return 'testbase_ar.comments';
+}
 
 Comment.prototype.relations = function(){
   return {

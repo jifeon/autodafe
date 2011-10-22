@@ -6,7 +6,9 @@ function Item( params ) {
   this._init( params );
 }
 
-Item.table_name = 'testbase_ar.items';
+Item.prototype.get_table_name = function(){
+  return 'testbase_ar.items';
+}
 
 
 Item.prototype.relations = function(){
