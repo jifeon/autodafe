@@ -1,6 +1,9 @@
+var tools                 = require('../lib/tools');
 var path                  = require('path');
+var fs                    = require('fs');
+var dust                  = require('dust');
 var Session               = require('session');
-var Router                = require('router');
+var Router                = require('routing/router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('components/components_manager');
 var ModelsManager         = require('models/models_manager');
@@ -24,9 +27,10 @@ Application.prototype._init = function ( config ) {
   this.super_._init();
 
   Application.instances.push( this );
-  this._config      = config            || {};
-  this._sessions    = {};
-  this._run_on_init = false;
+  this._config        = config            || {};
+  this._sessions      = {};
+  this._run_on_init   = false;
+  this.views_loaded   = false;
 
   if ( typeof this._config.name != 'string' )
     throw new Error( 'Please specify application name in your config file' );
@@ -38,15 +42,17 @@ Application.prototype._init = function ( config ) {
 
   this._.is_running       = false;
 
+  this.tools              = tools;
   this.logger             = new Logger;
   this.router             = null;
   this.components         = null;
   this.models             = null;
 
   this.default_controller     = this._config.default_controller || 'action';
-  this._.path_to_models       = path.join( this.base_dir, 'models' );
-  this._.path_to_controllers  = path.join( this.base_dir, 'controllers' );
-  this._.path_to_components   = path.join( this.base_dir, 'components' );
+  this._.path_to_models       = path.join( this.base_dir, this._config.models_folder      || 'models'      );
+  this._.path_to_controllers  = path.join( this.base_dir, this._config.controllers_folder || 'controllers' );
+  this._.path_to_components   = path.join( this.base_dir, this._config.components_folder  || 'components'  );
+  this._.path_to_views        = path.join( this.base_dir, this._config.views_folder       || 'views'       );
 
   this._preload_components();
   this._init_core( /*before*/ this._init_components );
@@ -54,6 +60,8 @@ Application.prototype._init = function ( config ) {
 
 
 Application.prototype._init_core = function ( callback ) {
+  if ( this._config.cache_views !== false ) this.load_views();
+
   this._init_models( /*before*/ this._init_router );
 
   this.on( 'core_initialized', callback );
@@ -61,6 +69,62 @@ Application.prototype._init_core = function ( callback ) {
   this.on( 'initialized', function() {
     this.run = this.__run;
   } );
+};
+
+
+Application.prototype.load_views = function ( view_path, conflict_names ) {
+  if ( !view_path && this.views_loaded ) {
+    if ( this._config.cache_views !== false ) return true;
+    else dust.cache = {};
+  }
+
+  conflict_names     = conflict_names || [];
+  var full_view_path = path.join( this.path_to_views, view_path );
+  var stats          = fs.statSync( full_view_path );
+
+  if ( stats.isDirectory() ) {
+    fs.readdirSync( full_view_path ).forEach( function( file ) {
+      this.load_views( path.join( view_path, file ), conflict_names );
+    }, this );
+  }
+
+  else if ( stats.isFile() ) {
+    this.log( 'Load view `%s`'.format( view_path ), 'trace' );
+
+    var template  = fs.readFileSync( full_view_path, 'utf8' );
+    var compiled  = dust.compile( template, view_path );
+
+    dust.loadSource( compiled );
+
+    var cached    = dust.cache[ view_path ];
+    var full_file_name = path.basename( view_path );
+
+    if ( dust.cache[ full_file_name ] ) {
+      conflict_names.push( full_file_name );
+      dust.cache.__defineGetter__( full_file_name, function() {
+        throw new Error( 'Ambiguous file name: `%s`. Use full path to render it'.format( full_file_name ) );
+      } );
+    }
+    else dust.cache[ full_file_name ] = cached;
+
+    var file_name = path.basename( view_path, path.extname( view_path ) );
+
+    if ( dust.cache[ file_name ] ) {
+      dust.cache.__defineGetter__( file_name, function() {
+        throw new Error( 'Ambiguous abbreviation name: `%s`. Use name with extension or full path to render it'.format( file_name ) );
+      } );
+    }
+    else dust.cache[ file_name ] = cached;
+  }
+
+  if ( !view_path ) {
+    if ( conflict_names.length ) this.log(
+      'You have few views with same name. Include them by full path. List of names of thar views: `%s`'
+        .format( conflict_names.join(', ') ), 'warning'
+    );
+    this.views_loaded = true;
+    this.emit( 'views_loaded' );
+  }
 };
 
 
@@ -89,7 +153,7 @@ Application.prototype._init_router = function () {
   router_cfg.app  = this;
   this.router     = new Router( router_cfg );
 
-  this.log( 'Router has initialized', 'info' );
+  this.log( 'Router is initialized', 'info' );
   this.emit( 'core_initialized' );
 };
 

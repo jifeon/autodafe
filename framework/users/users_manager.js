@@ -1,5 +1,7 @@
 var Component         = require( 'components/component' );
 var UserIdentity      = require( './user_identity' );
+var RolesSet          = require( './roles_set' );
+var ModelsRolesSet    = require( './models_roles_set' );
 
 module.exports = UsersManager.inherits( Component );
 
@@ -14,16 +16,14 @@ UsersManager.prototype._init = function( params ) {
   if ( !params.model || !this.app.models.is_model_exist( params.model ) )
     throw new Error( 'Please bind `users` component to one of exist models of application' );
 
-  this._.model_name             = params.model;
-  this._.model                  = null;
-  this._.roles                  = {};
-  this._.default_possibilities  = {};
+  this.roles_set       = null;
+  this.models_roles    = {};
 
   this._init_roles( params );
-  this._init_possibilities( params );
 
   this._users = {
-    by_session_id : {}
+    by_session_id : {},
+    by_model_id   : {}
   };
 
   this._.guests = new UserIdentity({
@@ -39,66 +39,21 @@ UsersManager.prototype._init = function( params ) {
 
 
 UsersManager.prototype._init_roles = function ( params ) {
-  var self = this;
+  this.roles_set = new RolesSet( params );
 
-  this.roles.guest = function( user_model ) {
-    return !user_model;
-  };
-
-  this.roles.author = function( user_model, app, model, attribute ) {
-    if ( attribute == 'login' ) debugger;
-    
-    return user_model.equals( model );
-  };
-
-  for ( var role in params.roles ) {
-    var role_determinant = params.roles[ role ];
-
-    switch ( typeof role_determinant ) {
-      case 'function':
-        this.roles[ role ] = role_determinant;
-        break;
-
-      case 'string':
-        try {
-          this.roles[ role ] = new Function(
-            this.model_name, 'app', 'model', 'attribute',
-            'return ' + role_determinant
-          );
-        }
-        catch ( e ) {
-          throw new Error(
-            'You have syntax error in users.role definition. Check your config file ( components.users.roles.%s )'.format( role )
-          );
-        }
-        break;
-
-      default : throw new Error(
-        'Value of `components.users.roles.%s` hash in your config file should be Strings or Functions'.format( role )
-      );
-    }
-  }
+  this.app.models.for_each_model( function( model ){
+    var models_roles        = typeof model.users_rights == 'function' ? model.users_rights() || {} : {};
+    models_roles.app        = this.app;
+    models_roles.parent_set = this.roles_set;
+    models_roles.model      = params.model;
+    this.models_roles[ model.class_name ] = new ModelsRolesSet( models_roles );
+  }, this );
 };
 
 
-UsersManager.prototype.get_roles = function ( user_identity, target_model, target_attribute ) {
-  var roles = [];
-
-  for ( var role in this.roles )
-    try { // user_identity.model can be null
-      if ( this.roles[ role ]( user_identity.model, this.app, target_model, target_attribute ) )
-        roles.push( role );
-    } catch(e) {}
-
-  return roles;
-};
-
-
-UsersManager.prototype._init_possibilities = function ( params ) {
-  if ( !params.possibilities ) params.possibilities = {};
-
-  for ( var role in this.roles )
-    this.default_possibilities[ role ] = params.possibilities[ role ] || [];
+UsersManager.prototype.check_right = function ( user_identity, action, model, attribute, params ) {
+  var roles_set = model ? this.models_roles[ model.class_name ] : this.roles_set;
+  return roles_set.check_right( user_identity, action, model, attribute, params );
 };
 
 
@@ -128,6 +83,11 @@ UsersManager.prototype.get_by_session = function ( session ) {
 };
 
 
+UsersManager.prototype.get_by_client = function ( client ) {
+  return this.get_by_session( client.session );
+};
+
+
 UsersManager.prototype.authorize_session = function ( session, model ) {
   var guests_ui = this.get_by_session( session );
   if ( guests_ui && guests_ui != this.guests ) {
@@ -146,6 +106,11 @@ UsersManager.prototype.authorize_session = function ( session, model ) {
   new_ui.set_model( model );
 
   this._users.by_session_id[ session.id ] = new_ui;
+  if( this._users.by_model_id[ model.id ] ){
+    if( this._users.by_model_id[ model.id ].indexOf( session ) == -1 )
+      this._users.by_model_id[ model.id ].push( session );
+  }
+    else this._users.by_model_id[ model.id ] = [ session ];
 
   var self = this;
   // if user did not was in guests we should add handler on session close
@@ -171,4 +136,12 @@ UsersManager.prototype.logout_session = function ( session ) {
   if ( !ui ) session.once( 'close', function() {
     delete self._users.by_session_id[ session.id ];
   } );
+};
+
+UsersManager.prototype.get_clients_by_model_id = function( id ){
+  var clients = [];
+  if( this._users.by_model_id[ id ] )
+    for( var s = 0, ln_s = this._users.by_model_id[ id ].length; s < ln_s; s++ )
+      clients = clients.concat( this._users.by_model_id[ id ][ s ].clients );
+  return clients;
 };

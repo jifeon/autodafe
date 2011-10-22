@@ -60,7 +60,7 @@ ActiveFinder.prototype.query = function( criteria, all, callback ) {
     if( all ) self._join_tree.enum_records( function( record ) {
       if ( criteria.index ) result[ record.index ] = record;
       else result.push( record );
-    } )
+    } );
 
     else if( self._join_tree.has_records() )
       result = self._join_tree.get_record( 0, true );

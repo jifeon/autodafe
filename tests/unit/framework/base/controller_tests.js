@@ -102,13 +102,11 @@ exports.get_batch = function( application, assert ) {
         test_action_has_run = true;
       } );
 
-      controller.allow_actions( 'some_implemented_action' );
       controller.run_action( 'some_implemented_action' );
       assert.isTrue( test_action_has_run );
 
       test_action_has_run = false;
 
-      controller.deny_actions( 'some_implemented_action' );
       assert.throws( function() {
         controller.run_action( 'some_implemented_action' );
       } );

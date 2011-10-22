@@ -13,56 +13,68 @@ WebSocketsClient.prototype._init = function( params ) {
     throw new Error( '`ws_client` should be Socket.IO client in WebSocketsClient.init' );
 
   this.ws_client = params.ws_client;
-
-  this.super_._init( params );
-};
-
-
-WebSocketsClient.prototype.init_events = function () {
-  this.super_.init_events();
-
   var self = this;
+
   this.ws_client.on( 'message', function( message ) {
-    self._on_request( message );
+    self.receive( message );
   } );
 
   this.ws_client.on( 'disconnect', function() {
     self.disconnect();
   } );
+
+  this.super_._init( params );
 };
 
 
-WebSocketsClient.prototype.connect = function () {
-  this._on_request = this._on_request_after_connect;
-  this.super_.connect();
+WebSocketsClient.prototype._after_connect = function () {
+  this.receive = this.__receive;
+  this.super_._after_connect();
 };
 
 
-WebSocketsClient.prototype._on_request = function ( message ) {
+WebSocketsClient.prototype.receive = function ( message ) {
   var self = this;
-  this.on( 'connect', function() {
-    self._on_request_after_connect( message );
+  this.once( 'connect', function() {
+    self.__receive( message );
   } );
 };
 
 
-WebSocketsClient.prototype._on_request_after_connect = function ( message ) {
-  this.emit( 'request', message );
+WebSocketsClient.prototype.__receive = function ( message ) {
+  try {
+    var data = JSON.parse( message );
+  }
+  catch ( e ) {
+    return this.log( 'Message "%s" is not a JSON'.format( message ), 'warning' );
+  }
+
+  this.super_.receive( data.action, data.params, 'ws' );
 };
 
 
 WebSocketsClient.prototype.get_session_id = function () {
-  return this.ws_client.sessionid;
+  var sid = this.get_cookie( 'autodafe_sid' );
+
+  return sid ? sid : this.ws_client.id;
 };
 
 
 WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
-  return cookie.read( this.ws_client.request.headers.cookie, cookie_name );
+  return cookie.read( this.ws_client.handshake.headers.cookie, cookie_name );
+};
+
+WebSocketsClient.prototype.set_cookie = function ( cookie_name ) {
 };
 
 
-WebSocketsClient.prototype.send = function ( data ) {
+WebSocketsClient.prototype.send = function ( action, data ) {
   this.super_.send( data );
 
-  this.ws_client.send( data );
+  this.ws_client.emit( action, data );
 };
+
+WebSocketsClient.prototype.get_client_by_id = function ( id ) {
+  return this.connection._io.sockets.socket[ id ];
+};
+

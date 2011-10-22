@@ -16,6 +16,7 @@ Session.prototype._init = function( params ) {
   this._.id         = params.id;
   this._.clients    = [];
   this._.is_active  = true;
+  this._.secret     = String.unique();
 };
 
 

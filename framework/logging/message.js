@@ -22,5 +22,5 @@ Message.prototype._init = function( params ) {
 
 
 Message.prototype.toString = function () {
-  return this.stack || this.text;
+  return this.level == 'error' ? this.stack || this.text : this.text;
 };

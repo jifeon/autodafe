@@ -25,43 +25,25 @@ Controller.prototype._init = function ( params ) {
   this.default_action = 'index';
   this.views_path     = 'views';
   this.dust           = dust;
-
-  this._actions = {};
-
-  this.allow_actions( 'index' );
+  this.models         = this.app.models;
 };
 
 
-Controller.prototype.before_action = function ( action ) {};
-Controller.prototype.after_action = function ( action ) {};
+Controller.prototype.before_action = function ( action, params, client ) {};
+Controller.prototype.after_action = function ( action /*, params, client*/ ) {};
 
 
-Controller.prototype.allow_actions = function () {
-  Array.prototype.slice.call( arguments ).forEach( function( action ) {
-    this._actions[ action ] = true;
-  }, this );
-};
-
-
-Controller.prototype.deny_actions = function () {
-  Array.prototype.slice.call( arguments ).forEach( function( action ) {
-    this._actions[ action ] = false;
-  }, this );
-};
-
-
-Controller.prototype.run_action = function ( action /*, arg1, arg2, ...*/ ) {
-  action = action || this.default_action;
-
-  if ( !action || !this._actions[ action ] || !this[ action ] )
+Controller.prototype.run_action = function ( action, params, client ) {
+  if ( !action || typeof this[ action ] != 'function' )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
-  var before_action_result = this.before_action.apply( this, arguments );
+  params = params || {};
+  var before_action_result = this.before_action( action, params, client );
   if ( before_action_result === false ) return false;
 
   var args = before_action_result instanceof Array
     ? before_action_result
-    : Array.prototype.slice.call( arguments, 1 );
+    : [ params, client ];
 
   var res = this[ action ].apply( this, args );
 
@@ -78,26 +60,14 @@ Controller.prototype.get_view_path = function ( view ) {
 
 
 Controller.prototype.render = function ( view, params, callback ) {
-
-  if ( this.dust.cache[ view ] ) return this.dust.render( view, params, callback );
-
-  var view_path = this.get_view_path( view );
-
-  var self = this;
-  fs.readFile( view_path, 'UTF8', function( e, template ){
-    if ( e ) return callback( e, null );
-
-    var compiled = self.dust.compile( template, view );
-
-    self.dust.loadSource( compiled );
-    self.dust.render( view, params, callback );
-  } );
+  this.app.load_views();
+  return this.dust.render( view, params, callback );
 };
 
 
 Controller.prototype.send_response = function ( view, client, params, callback ) {
 
-  callback = callback || this.default_callback;
+  if ( typeof callback != 'function' ) callback = this.default_callback;
   params   = params   || {};
 
   this.render( view, params, function( e, data ) {
@@ -105,4 +75,9 @@ Controller.prototype.send_response = function ( view, client, params, callback )
     client.send( data );
     callback( null, data );
   } );
+};
+
+
+Controller.prototype.create_url = function ( route_path, params ) {
+  return this.app.router.create_url( route_path, params, this.name, this.default_action );
 };

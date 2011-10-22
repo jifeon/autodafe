@@ -4,7 +4,6 @@ module.exports = TestController.inherits( Controller );
 
 function TestController( params ) {
   this._init( params );
-  this.allow_actions( 'test', 'ws_test', 'not_existed_test_action', 'connect_client', 'test_http ' );
 
   // log_routes exists here only if it is preloaded
   process.emit( 'Preloaded logger component', this.app.log_router );

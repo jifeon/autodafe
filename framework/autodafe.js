@@ -1,5 +1,3 @@
-require.paths.unshift( '/usr/local/lib/node_modules/autodafe/node_modules' );
-
 require.paths.unshift( __dirname );
 require.paths.unshift( __dirname + '/base/' );
 
@@ -27,6 +25,7 @@ var Autodafe = global.autodafe = module.exports = new function() {
       }
       catch( e ) {
         application.log( 'Can not listen server on port %s'.format( port ), 'error' );
+        return null;
       }
     }
 

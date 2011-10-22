@@ -11,6 +11,8 @@ function Model( params ) {
 Model.prototype._init = function ( params ) {
   this.super_._init( params );
 
+  this.models = this.app.models;
+
   this._attributes = {};
   this._.validator = new Validator( params );
   this._.is_new    = params.is_new == undefined ? true : params.is_new;
@@ -26,7 +28,7 @@ Model.prototype.set_attribute = function ( name, value ) {
 
 Model.prototype.get_attribute = function ( name ) {
   var attribute = this._attributes[ name ] != undefined ? this._attributes[ name ] : this[ name ];
-  if ( attribute == undefined ) attribute = null;
+//  if ( attribute == undefined ) attribute = null;
 
   var self = this;
   return typeof attribute == 'function' ? function() {

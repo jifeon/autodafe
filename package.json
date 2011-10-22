@@ -20,7 +20,7 @@
     "mysql-libmysqlclient"  : ">=1.2.3",
     "dust"                  : ">=0.3.0",
     "formidable"            : ">=1.0.2",
-    "imagemagick"           : ">=0.1.2"
+    "http-auth"             : ">=1.0.4"
   },
-  "engines"       : { "node": ">=0.3.0" }
+  "engines"       : { "node": ">=0.4.0" }
 }

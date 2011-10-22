@@ -1,6 +1,7 @@
 var AppModule                 = require('app_module');
 var UserIdentityModelHandler  = require('./user_identity_model_handler');
 var UserIdentityARHandler     = require('./user_identity_active_record_handler');
+var Model                     = require('model');
 
 module.exports = UserIdentity.inherits( AppModule );
 
@@ -58,11 +59,17 @@ UserIdentity.prototype.set_model = function ( model ) {
 };
 
 
+UserIdentity.prototype.can = function ( action, model, attribute, params ) {
+  return this.users_manager.check_right( this, action, model, attribute, params );
+};
+
+
 UserIdentity.prototype.manage = function ( model ) {
   if ( Array.isArray( model ) ) return model.map( function( model ) {
     return this.manage( model );
   }, this );
 
+  if ( !Model.is_instantiate( model ) ) return model;
   var Handler = model.class_name == 'ActiveRecord' ? UserIdentityARHandler : UserIdentityModelHandler;
 
   var handler = new Handler({
@@ -71,9 +78,4 @@ UserIdentity.prototype.manage = function ( model ) {
   });
 
   return handler.get_proxy();
-};
-
-
-UserIdentity.prototype.get_roles = function ( model, attribute ) {
-  return this.users_manager.get_roles( this, model, attribute );
 };
