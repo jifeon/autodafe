@@ -62,7 +62,7 @@ ModelsRolesSet.prototype._apply_rights = function ( params ) {
 };
 
 
-ModelsRolesSet.prototype.check_right = function ( user_identity, action, model, attribute ) {
+ModelsRolesSet.prototype.check_right = function ( user_identity, action, model, attribute, params ) {
   var action_rights = attribute
     ? this.attrs_rights[ attribute ] && this.attrs_rights[ attribute ][ action ] || this.roles_rights[ action ]
     : this.roles_rights[ action ];
@@ -72,5 +72,5 @@ ModelsRolesSet.prototype.check_right = function ( user_identity, action, model, 
     return action_rights[ role ];
   }
 
-  return this.get_roles( user_identity, model, attribute ).some( has_right );
+  return this.get_roles( user_identity, model, attribute, params ).some( has_right );
 };

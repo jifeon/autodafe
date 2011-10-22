@@ -59,8 +59,8 @@ UserIdentity.prototype.set_model = function ( model ) {
 };
 
 
-UserIdentity.prototype.can = function ( action, model, attribute ) {
-  return this.users_manager.check_right( this, action, model, attribute );
+UserIdentity.prototype.can = function ( action, model, attribute, params ) {
+  return this.users_manager.check_right( this, action, model, attribute, params );
 };
 
 

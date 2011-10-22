@@ -51,9 +51,9 @@ UsersManager.prototype._init_roles = function ( params ) {
 };
 
 
-UsersManager.prototype.check_right = function ( user_identity, action, model, attribute ) {
+UsersManager.prototype.check_right = function ( user_identity, action, model, attribute, params ) {
   var roles_set = model ? this.models_roles[ model.class_name ] : this.roles_set;
-  return roles_set.check_right( user_identity, action, model, attribute );
+  return roles_set.check_right( user_identity, action, model, attribute, params );
 };
 
 
