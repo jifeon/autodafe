@@ -14,6 +14,13 @@ function HTTPClient( params ) {
 }
 
 
+HTTPClient.prototype.errors = {
+  403 : 'Access denied',
+  404 : 'Page not found',
+  500 : 'Internal Server Error'
+};
+
+
 HTTPClient.prototype._init = function( params ) {
   if ( !params || !params.request )
     throw new Error( '`request` should be instance of http.ServerRequest in HTTPClient.init' );
@@ -135,29 +142,19 @@ HTTPClient.prototype.send_file = function ( file_path ) {
 
 
 HTTPClient.prototype.send_error = function ( e, number ) {
-  if ( typeof number == 'number' ) e.number = number;
+  if ( typeof e == 'string' ) e = new Error( e );
+  e.number = e.number || number || 500;
 
   this.super_.send_error(e);
 
-  switch ( e.number ) {
-    case 403:
-      this.log( 'Error 403 by address `%s`'.format( this.request.url ), 'warning' );
-      this.response.statusCode = 403;
-      this.response.end( '<h1>Error 403. Access denied</h1>' );
-      break;
+  this.log( 'Error %s by address `%s`'.format( e.number, this.request.url ), 'warning' );
+  this.response.statusCode = e.number;
 
-    case 404:
-      this.log( 'Error 404 by address `%s`'.format( this.request.url ), 'warning' );
-      this.response.statusCode = 404;
-      this.response.end( '<h1>Error 404. Page not found</h1>' );
-      break;
-
-    case 500:
-    default:
-      this.log( 'Error 500 by address `%s`'.format( this.request.url ), 'warning' );
-      this.response.statusCode = 500;
-      this.response.end( '<h1>Error 500. Internal Server Error.</h1>' );
-      break;
+  try {
+    this.app.router.route( '/' + e.number, null, this );
+  }
+  catch( err ) {
+    this.response.end( '<h1>Error %s. %s</h1>'.format( e.number, this.errors[ e.number ] || '' ) );
   }
 };
 
