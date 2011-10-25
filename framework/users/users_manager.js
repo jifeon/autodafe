@@ -107,7 +107,11 @@ UsersManager.prototype.authorize_session = function ( session, model ) {
 
   this._users.by_session_id[ session.id ] = new_ui;
   if( this._users.by_model_id[ model.id ] ){
-    if( this._users.by_model_id[ model.id ].indexOf( session ) == -1 )
+    var session_in_array = false;
+    this._users.by_model_id[ model.id ].forEach( function( sess ){
+      if( sess.id == session.id ) session_in_array = true;
+    });
+    if( !session_in_array )
       this._users.by_model_id[ model.id ].push( session );
   }
     else this._users.by_model_id[ model.id ] = [ session ];
@@ -127,6 +131,7 @@ UsersManager.prototype.logout_session = function ( session ) {
     return false;
   }
 
+  this.remove_session_by_model_id( session, ui.model.id );
   if ( ui ) ui.remove_session( session );
 
   this.guests.register_session( session );
@@ -144,4 +149,15 @@ UsersManager.prototype.get_clients_by_model_id = function( id ){
     for( var s = 0, ln_s = this._users.by_model_id[ id ].length; s < ln_s; s++ )
       clients = clients.concat( this._users.by_model_id[ id ][ s ].clients );
   return clients;
+};
+
+UsersManager.prototype.remove_session_by_model_id = function( session, id ){
+  if( this._users.by_model_id[ id ] ){
+    var session_in_array = false;
+    for( var i = 0, ln = this._users.by_model_id[ id ].length; i < ln; i++ )
+      if( this._users.by_model_id[ id ][ i ].id == session.id ){
+        this._users.by_model_id[ id ].splice( i, 1 );
+        return;
+      }
+  }
 };

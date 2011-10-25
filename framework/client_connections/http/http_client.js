@@ -23,12 +23,13 @@ HTTPClient.prototype._init = function( params ) {
 
   this.request    = params.request;
   this.response   = params.response;
-  this.post_form  = null
+  this.post_form  = null;
 
   this._cookie = [];
 
+  var self = this;
   this.request.once( 'close', this.disconnect.bind( this ) );
-  this.request.once( 'end',   this.disconnect.bind( this ) );
+  this.response.once( 'end',   this.disconnect.bind( this ) );
 
   this.super_._init( params );
 
