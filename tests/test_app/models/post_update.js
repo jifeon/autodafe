@@ -7,5 +7,9 @@ function PostUpdate( params ) {
 }
 
 
-PostUpdate.table_name           = 'testbase_ar.posts_for_update';
-PostUpdate.safe_attribute_names = [ 'title' ];
+PostUpdate.prototype.get_table_name = function(){
+  return 'testbase_ar.posts_for_update';
+}
+PostUpdate.prototype.get_safe_attributes_names = function(){
+  return [ 'title' ];
+}

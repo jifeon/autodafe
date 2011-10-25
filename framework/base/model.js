@@ -20,6 +20,11 @@ Model.prototype._init = function ( params ) {
 };
 
 
+Model.prototype.attributes_description = function () {
+  return {};
+};
+
+
 Model.prototype.set_attribute = function ( name, value ) {
   if ( this.hasOwnProperty( name ) ) this[ name ] = value;
   else this._attributes[ name ] = value;
@@ -61,7 +66,7 @@ Model.prototype.set_attributes = function ( attributes ) {
   if ( !Object.isObject( attributes ) )
     throw new Error( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ) );
 
-  var attribute_names = this.get_safe_attribute_names();
+  var attribute_names = this.get_safe_attributes_names();
 
   for ( var name in attributes ) {
     if ( attribute_names.indexOf( name ) != -1 ) this.set_attribute( name, attributes[ name ] );
@@ -76,7 +81,7 @@ Model.prototype.set_attributes = function ( attributes ) {
 Model.prototype.save = function ( attributes, scenario ) {
   scenario = scenario || this.is_new ? 'create' : 'update';
 
-  return this.validate( this.constructor.attributes || {}, scenario );
+  return this.validate( this.attributes_description(), scenario );
 };
 
 
@@ -85,8 +90,8 @@ Model.prototype.remove = function () {
 };
 
 
-Model.prototype.get_safe_attribute_names = function () {
-  return this.constructor.safe_attribute_names || [];
+Model.prototype.get_safe_attributes_names = function () {
+  return [];
 };
 
 
@@ -96,7 +101,9 @@ Model.prototype.equals = function ( model ) {
 
 
 Model.prototype.validate = function ( rules, scenario ){
-  rules = rules || this.constructor.attributes || {};
+  this.validator.splice_errors();
+
+  rules = rules || this.attributes_description();
 
   for( var attribute in rules ){
 

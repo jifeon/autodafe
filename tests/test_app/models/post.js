@@ -6,8 +6,12 @@ function Post( params ) {
   this._init( params );
 }
 
-Post.table_name           = 'testbase_ar.posts';
-Post.safe_attribute_names = [ 'title' ];
+Post.prototype.get_table_name = function(){
+  return 'testbase_ar.posts';
+}
+Post.prototype.get_safe_attributes_names = function(){
+  return [ 'title' ];
+}
 
 Post.prototype.relations = function(){
   return {
