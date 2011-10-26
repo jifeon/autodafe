@@ -30,6 +30,7 @@ Application.prototype._init = function ( config ) {
   this._config        = config            || {};
   this._sessions      = {};
   this._run_on_init   = false;
+
   this.views_loaded   = false;
 
   if ( typeof this._config.name != 'string' )
@@ -96,14 +97,15 @@ Application.prototype.load_views = function ( view_path, conflict_names ) {
 
     dust.loadSource( compiled );
 
-    var cached    = dust.cache[ view_path ];
-    var full_file_name = path.basename( view_path );
+    var cached          = dust.cache[ view_path ];
+    var full_file_name  = path.basename( view_path );
 
     if ( dust.cache[ full_file_name ] ) {
       conflict_names.push( full_file_name );
       dust.cache.__defineGetter__( full_file_name, function() {
         throw new Error( 'Ambiguous file name: `%s`. Use full path to render it'.format( full_file_name ) );
       } );
+      dust.cache.__defineSetter__( full_file_name, function() {} );
     }
     else dust.cache[ full_file_name ] = cached;
 
@@ -113,17 +115,19 @@ Application.prototype.load_views = function ( view_path, conflict_names ) {
       dust.cache.__defineGetter__( file_name, function() {
         throw new Error( 'Ambiguous abbreviation name: `%s`. Use name with extension or full path to render it'.format( file_name ) );
       } );
+      dust.cache.__defineSetter__( full_file_name, function() {} );
     }
     else dust.cache[ file_name ] = cached;
   }
 
   if ( !view_path ) {
     if ( conflict_names.length ) this.log(
-      'You have few views with same name. Include them by full path. List of names of thar views: `%s`'
+      'You have few views with same name. Include them by full path. List of names of that views: `%s`'
         .format( conflict_names.join(', ') ), 'warning'
     );
     this.views_loaded = true;
     this.emit( 'views_loaded' );
+    this.log( 'views loaded', 'info' );
   }
 };
 

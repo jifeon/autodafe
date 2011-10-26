@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var Router            = require( 'router' );
+  var Router            = require( 'routing/router' );
   var Logger            = require( 'logging/logger' );
   var ComponentsManager = require( 'components/components_manager' );
   var Component         = require( 'components/component' );
@@ -18,14 +18,14 @@ exports.get_batch = function( application, assert ) {
   var test_vars         = {
     client : new Client({
       app       : application,
-      transport : new ClientConnection({
+      connection : new ClientConnection({
         app   : application,
         name  : 'test_cc'
       })
     }),
     client2 : new Client({
       app       : application,
-      transport : new ClientConnection({
+      connection : new ClientConnection({
         app   : application,
         name  : 'test_cc'
       })

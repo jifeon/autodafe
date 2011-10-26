@@ -6,7 +6,7 @@ exports.get_batch = function( application, assert ) {
   var sid    = Math.random();
   var client = new Client({
     app       : application,
-    transport : new ClientConnection({
+    connection : new ClientConnection({
       app   : application,
       name  : 'test_connection'
     })
@@ -14,7 +14,7 @@ exports.get_batch = function( application, assert ) {
 
   var client2 = new Client({
     app       : application,
-    transport : new ClientConnection({
+    connection : new ClientConnection({
       app   : application,
       name  : 'test_connection'
     })
