@@ -34,9 +34,8 @@ HTTPClient.prototype._init = function( params ) {
 
   this._cookie = [];
 
-  var self = this;
   this.request.once( 'close', this.disconnect.bind( this ) );
-  this.response.once( 'end',   this.disconnect.bind( this ) );
+  this.response.once( 'end',  this.disconnect.bind( this ) );
 
   this.super_._init( params );
 
