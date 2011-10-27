@@ -29,6 +29,7 @@ Application.prototype._init = function ( config ) {
   Application.instances.push( this );
   this._config        = config            || {};
   this._sessions      = {};
+  this._views_mtime   = {};
   this._run_on_init   = false;
   this.views_loaded   = false;
 
@@ -72,49 +73,54 @@ Application.prototype._init_core = function ( callback ) {
 };
 
 
-Application.prototype.load_views = function ( view_path, conflict_names ) {
-  if ( !view_path && this.views_loaded ) {
-    if ( this._config.cache_views !== false ) return true;
-    else dust.cache = {};
-  }
+Application.prototype.load_views = function ( view_path, conflict_names, loaded_views ) {
+  if ( !view_path && this.views_loaded && this._config.cache_views !== false ) return true;
 
   conflict_names     = conflict_names || [];
+  loaded_views       = loaded_views   || {};
+
   var full_view_path = path.join( this.path_to_views, view_path );
   var stats          = fs.statSync( full_view_path );
 
-  if ( stats.isDirectory() ) {
-    fs.readdirSync( full_view_path ).forEach( function( file ) {
-      this.load_views( path.join( view_path, file ), conflict_names );
-    }, this );
-  }
+  if ( stats.isDirectory() ) fs.readdirSync( full_view_path ).forEach( function( file ) {
+    this.load_views( path.join( view_path, file ), conflict_names, loaded_views );
+  }, this );
 
-  else if ( stats.isFile() ) {
+  else if ( stats.isFile() && this._views_mtime[ view_path ] != stats.mtime.getTime() ) {
+
     this.log( 'Load view `%s`'.format( view_path ), 'trace' );
 
     var template  = fs.readFileSync( full_view_path, 'utf8' );
     var compiled  = dust.compile( template, view_path );
 
+    this._views_mtime[ view_path ] = stats.mtime.getTime();
     dust.loadSource( compiled );
 
-    var cached    = dust.cache[ view_path ];
+    var cached         = dust.cache[ view_path ];
     var full_file_name = path.basename( view_path );
 
-    if ( dust.cache[ full_file_name ] ) {
+    if ( loaded_views[ full_file_name ] ) {
       conflict_names.push( full_file_name );
       dust.cache.__defineGetter__( full_file_name, function() {
         throw new Error( 'Ambiguous file name: `%s`. Use full path to render it'.format( full_file_name ) );
       } );
     }
-    else dust.cache[ full_file_name ] = cached;
+    else {
+      dust.cache[ full_file_name ]    = cached;
+      loaded_views[ full_file_name ]  = true;
+    }
 
     var file_name = path.basename( view_path, path.extname( view_path ) );
 
-    if ( dust.cache[ file_name ] ) {
+    if ( loaded_views[ file_name ] ) {
       dust.cache.__defineGetter__( file_name, function() {
         throw new Error( 'Ambiguous abbreviation name: `%s`. Use name with extension or full path to render it'.format( file_name ) );
       } );
     }
-    else dust.cache[ file_name ] = cached;
+    else {
+      dust.cache[ file_name ]   = cached;
+      loaded_views[ file_name ] = true;
+    }
   }
 
   if ( !view_path ) {

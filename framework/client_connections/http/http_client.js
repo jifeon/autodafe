@@ -31,6 +31,7 @@ HTTPClient.prototype._init = function( params ) {
   this.request    = params.request;
   this.response   = params.response;
   this.post_form  = null;
+  this.max_age    = 31536000;
 
   this._cookie = [];
 
@@ -121,22 +122,41 @@ HTTPClient.prototype.send = function ( data ) {
 HTTPClient.prototype.send_file = function ( file_path ) {
   var self = this;
 
-  this.log( 'Send file `%s` to http client ( session id=%s )'.format( file_path, this.get_session_id() ) );
+  fs.stat( file_path, function( e, stats ) {
+    if ( e ) return self.send_error( e, 404 );
 
-  fs.readFile( file_path, "binary", function( e, file ){
-    if( e ) self.send_error( e, 404 );
+    var modify_time = new Date( self.request.headers[ 'if-modified-since' ] );
+    if ( modify_time.getTime() == stats.mtime.getTime() ){
+      self.log( '304. File `%s` not modified ( session id=%s )'.format( file_path, self.get_session_id() ) );
+      self.response.writeHead( 304, {
+        'Cache-Control' : 'max-age=' + self.max_age
+      });
+      self.response.end();
+      return;
+    }
 
-    self.emit( 'send_file', file );
-    self.connection.emit( 'send_file', file, this );
+    fs.readFile( file_path, "binary", function( e, file ){
+      if ( e ) return self.send_error( e, 404 );
 
-    var file_ext  = path.extname( file_path );
-    var type      = content_types[ file_ext.toLowerCase().substr(1) ] || '';
+      self.log( 'Send file `%s` to http client ( session id=%s )'.format( file_path, self.get_session_id() ) );
+      self.emit( 'send_file', file );
+      self.connection.emit( 'send_file', file, this );
 
-    if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
+      var file_ext  = path.extname( file_path );
+      var type      = content_types[ file_ext.toLowerCase().substr(1) ] || '';
 
-    self.response.writeHead( 200, { "Content-Type": type });
-    self.response.write( file, "binary" );
-    self.response.end();
+      if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
+
+      if ( e ) return self.send_error( e, 404 );
+
+      self.response.writeHead( 200, {
+        'Content-Type'  : type,
+        'Cache-Control' : 'max-age=' + self.max_age,
+        'Last-Modified' : stats.mtime.toUTCString()
+      });
+      self.response.write( file, "binary" );
+      self.response.end();
+    } )
   } );
 };
 
