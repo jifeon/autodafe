@@ -63,6 +63,8 @@ Route.prototype.is_allowed_con_type = function ( connection_type ) {
 
 
 Route.prototype.has_params = function ( params ) {
+  params = params || {};
+
   return this.rule_params.every( function( param ) {
     return param in params && this.rule_re[ param ].test( params[ param ] );
   }, this );
