@@ -24,7 +24,6 @@ HTTPServer.prototype._init = function( params ) {
 
 
 HTTPServer.prototype.run = function () {
-
   this._server = global.autodafe.get_server( this.port, this.app );
   if ( !this._server ) return this.log( 'HTTP server not running at port ' + this.port, 'warning' );
 
@@ -45,6 +44,10 @@ HTTPServer.prototype.run = function () {
   this._server.on( 'request', function( request, response ) {
     if ( basic_auth ) basic_auth.apply( request, response, self._create_http_client.bind( self, request, response ) );
     else self._create_http_client( request, response );
+  } );
+
+  this._server.on( 'close', function( errno ) {
+    self.emit( 'close', errno );
   } );
 
   this.log( 'HTTP server started at port ' + this.port, 'info' );

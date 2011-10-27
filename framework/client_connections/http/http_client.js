@@ -36,10 +36,10 @@ HTTPClient.prototype._init = function( params ) {
   this._cookie = [];
 
   this.request.once( 'close', this.disconnect.bind( this ) );
-  this.response.once( 'end',  this.disconnect.bind( this ) );
 
   this.super_._init( params );
 
+  this.connection.once( 'close',  this.disconnect.bind( this ) );
   this.receive();
 };
 
@@ -86,6 +86,12 @@ HTTPClient.prototype._receive_get = function ( parsed_url ) {
 };
 
 
+HTTPClient.prototype.end = function ( data, encoding ) {
+  this.response.end( data, encoding );
+  this.disconnect();
+};
+
+
 HTTPClient.prototype.get_session_id = function () {
   var sid = this.get_cookie( 'autodafe_sid' );
 
@@ -115,7 +121,7 @@ HTTPClient.prototype.set_cookie = function ( name, value, days ) {
 
 HTTPClient.prototype.send = function ( data ) {
   this.super_.send( data );
-  this.response.end( data, 'utf8' );
+  this.end( data, 'utf8' );
 };
 
 
@@ -131,8 +137,8 @@ HTTPClient.prototype.send_file = function ( file_path ) {
       self.response.writeHead( 304, {
         'Cache-Control' : 'max-age=' + self.max_age
       });
-      self.response.end();
-      return;
+
+      return self.end();
     }
 
     fs.readFile( file_path, "binary", function( e, file ){
@@ -154,8 +160,8 @@ HTTPClient.prototype.send_file = function ( file_path ) {
         'Cache-Control' : 'max-age=' + self.max_age,
         'Last-Modified' : stats.mtime.toUTCString()
       });
-      self.response.write( file, "binary" );
-      self.response.end();
+
+      self.end( file, "binary" );
     } )
   } );
 };
@@ -174,13 +180,13 @@ HTTPClient.prototype.send_error = function ( e, number ) {
     this.app.router.route( '/' + e.number, null, this );
   }
   catch( err ) {
-    this.response.end( '<h1>Error %s. %s</h1>'.format( e.number, this.errors[ e.number ] || '' ) );
+    this.end( '<h1>Error %s. %s</h1>'.format( e.number, this.errors[ e.number ] || '' ), 'utf8' );
   }
 };
 
 
 HTTPClient.prototype.redirect = function ( url ) {
   this.response.writeHead( 302, { Location : url } );
-  this.response.end();
+  this.end();
 }
 

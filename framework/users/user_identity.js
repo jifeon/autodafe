@@ -51,7 +51,7 @@ UserIdentity.prototype.is_guest = function () {
 
 UserIdentity.prototype.set_model = function ( model ) {
   if ( this.is_guest() ) {
-    this.log( 'Try to set model for guests\' UserIdentity', 'error' );
+    this.log( 'Try to set model for guests UserIdentity', 'error' );
     return false;
   }
 

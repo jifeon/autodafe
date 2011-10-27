@@ -13,11 +13,10 @@ function UsersManager( params ) {
 UsersManager.prototype._init = function( params ) {
   this.super_._init( params );
 
-  if ( !params.model || !this.app.models.is_model_exist( params.model ) )
-    throw new Error( 'Please bind `users` component to one of exist models of application' );
-
-  this.roles_set       = null;
-  this.models_roles    = {};
+  this.rights = {
+    global : null,
+    models : {}
+  };
 
   this._init_roles( params );
 
@@ -39,20 +38,19 @@ UsersManager.prototype._init = function( params ) {
 
 
 UsersManager.prototype._init_roles = function ( params ) {
-  this.roles_set = new RolesSet( params );
+  this.rights.global = new RolesSet( params );
 
   this.app.models.for_each_model( function( model ){
     var models_roles        = typeof model.users_rights == 'function' ? model.users_rights() || {} : {};
     models_roles.app        = this.app;
-    models_roles.parent_set = this.roles_set;
-    models_roles.model      = params.model;
-    this.models_roles[ model.class_name ] = new ModelsRolesSet( models_roles );
+    models_roles.parent_set = this.rights.global;
+    this.rights.models[ model.class_name ] = new ModelsRolesSet( models_roles );
   }, this );
 };
 
 
 UsersManager.prototype.check_right = function ( user_identity, action, model, attribute, params ) {
-  var roles_set = model ? this.models_roles[ model.class_name ] : this.roles_set;
+  var roles_set = model ? this.rights.models[ model.class_name ] : this.rights.global;
   return roles_set.check_right( user_identity, action, model, attribute, params );
 };
 
@@ -88,33 +86,43 @@ UsersManager.prototype.get_by_client = function ( client ) {
 };
 
 
+UsersManager.prototype.get_by_model = function ( model ) {
+  if ( !model ) return null;
+  return this.get_by_model_id( model.id );
+};
+
+
+UsersManager.prototype.get_by_model_id = function ( id ) {
+  return this._users.by_model_id[ id ] || null;
+};
+
+
 UsersManager.prototype.authorize_session = function ( session, model ) {
   var guests_ui = this.get_by_session( session );
   if ( guests_ui && guests_ui != this.guests ) {
-    this.log( 'Try to double authorize session with id = %s'.format( session.id ), 'warning' );
-    return false;
+    if ( guests_ui.model != model ) this.logout_session( session );
+    else {
+      this.log( 'Try to double authorize session with id = %s'.format( session.id ), 'warning' );
+      return false;
+    }
   }
 
-  if ( guests_ui ) this.guests.remove_session( session );
+  if ( guests_ui ) guests_ui.remove_session( session );
 
-  var new_ui = new UserIdentity({
-    app           : this.app,
-    users_manager : this
-  });
+  var ui = this.get_by_model( model );
 
-  new_ui.register_session( session );
-  new_ui.set_model( model );
-
-  this._users.by_session_id[ session.id ] = new_ui;
-  if( this._users.by_model_id[ model.id ] ){
-    var session_in_array = false;
-    this._users.by_model_id[ model.id ].forEach( function( sess ){
-      if( sess.id == session.id ) session_in_array = true;
+  if ( !ui ){
+    ui = new UserIdentity({
+      app           : this.app,
+      users_manager : this
     });
-    if( !session_in_array )
-      this._users.by_model_id[ model.id ].push( session );
+
+    ui.set_model( model );
+    this._users.by_model_id[ model.id ] = ui;
   }
-    else this._users.by_model_id[ model.id ] = [ session ];
+
+  ui.register_session( session );
+  this._users.by_session_id[ session.id ] = ui;
 
   var self = this;
   // if user did not was in guests we should add handler on session close
@@ -131,7 +139,6 @@ UsersManager.prototype.logout_session = function ( session ) {
     return false;
   }
 
-  this.remove_session_by_model_id( session, ui.model.id );
   if ( ui ) ui.remove_session( session );
 
   this.guests.register_session( session );
@@ -143,21 +150,14 @@ UsersManager.prototype.logout_session = function ( session ) {
   } );
 };
 
+
 UsersManager.prototype.get_clients_by_model_id = function( id ){
   var clients = [];
-  if( this._users.by_model_id[ id ] )
-    for( var s = 0, ln_s = this._users.by_model_id[ id ].length; s < ln_s; s++ )
-      clients = clients.concat( this._users.by_model_id[ id ][ s ].clients );
-  return clients;
-};
+  var ui      = this.get_by_model_id( id );
+  if ( !ui ) return [];
 
-UsersManager.prototype.remove_session_by_model_id = function( session, id ){
-  if( this._users.by_model_id[ id ] ){
-    var session_in_array = false;
-    for( var i = 0, ln = this._users.by_model_id[ id ].length; i < ln; i++ )
-      if( this._users.by_model_id[ id ][ i ].id == session.id ){
-        this._users.by_model_id[ id ].splice( i, 1 );
-        return;
-      }
-  }
+  return ui.sessions.reduce( function( clients, session ){
+    Array.prototype.push.apply( clients, session.clients );
+    return clients;
+  }, [] );
 };

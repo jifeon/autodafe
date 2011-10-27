@@ -13,7 +13,6 @@ RolesSet.prototype._init = function( params ) {
   this.roles           = {};
   this.roles_groups    = {};
   this.roles_rights    = {};
-  this.model_name      = params.model;
 
   this._init_roles( params );
   this._apply_rights( params.rights || {}, this.roles_rights );
@@ -38,7 +37,7 @@ RolesSet.prototype._init_roles = function ( params ) {
       case 'string':
         try {
           this.roles[ role ] = new Function(
-            this.model_name, 'app', 'model', 'attribute', 'params',
+            'user', 'app', 'model', 'attribute', 'params',
             'return ' + role_determinant
           );
         }
