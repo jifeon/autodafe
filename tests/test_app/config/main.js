@@ -22,26 +22,26 @@ var config = module.exports = {
     url_format : 'path',
 
     rules     : {
-      'single_route_rule' : 'test.test',
-      'multi_route_rule'  : [
-        'test.test',
-        'another_test.test'
-      ],
-      'rule_with_unimplemented_test_action' : [
-        'test.test',
-        'test.not_existed_test_action',
-        'another_test.test'
-      ],
-      'rule_with_undeclared_test_action' : [
-        'test.test',
-        'test.some_implemented_action',
-        'another_test.test'
-      ],
-      'rule_with_not_existed_controller' : [
-        'test.test',
-        'bad_controller.test',
-        'another_test.test'
-      ]
+      'single_route_rule' : 'test.test'//,
+//      'multi_route_rule'  : [
+//        'test.test',
+//        'another_test.test'
+//      ],
+//      'rule_with_unimplemented_test_action' : [
+//        'test.test',
+//        'test.not_existed_test_action',
+//        'another_test.test'
+//      ],
+//      'rule_with_undeclared_test_action' : [
+//        'test.test',
+//        'test.some_implemented_action',
+//        'another_test.test'
+//      ],
+//      'rule_with_not_existed_controller' : [
+//        'test.test',
+//        'bad_controller.test',
+//        'another_test.test'
+//      ]
     }
   },
 
@@ -58,25 +58,22 @@ var config = module.exports = {
     },
 
     users               : {
-      model : 'user',
-      roles : {
-        role0     : 'user.role == "role0"',
-        role1     : 'user.role == "role1"',
-        role2     : 'user.role == "role2"',
-        role3     : function( user, app, model, attribute ) {
-          return user.role == 'role3';
-        }
-      },
-      // По умолчанию ниодна роль не имеет права ни на что.
-      // Здесь указываются глобальные параметры ДЛЯ ВСЕГО, которые могут перезаданы для каждой отдельной модели,
-      // которые в свою очередь могут быть перекрыты настройками для ее аттрибутов.
-      rights : {
-        guest     : [],
-        role0     : [ 'view' ],
-        role1     : [ 'create' ],
-        role2     : [ 'edit' ],
-        role3     : [ 'remove' ]
-      }
+      model : 'user'//,
+//      roles : {
+//        role0     : 'user.role == "role0"',
+//        role1     : 'user.role == "role1"',
+//        role2     : 'user.role == "role2"',
+//        role3     : function( user, app, model, attribute ) {
+//          return user.role == 'role3';
+//        }
+//      },
+//      rights : {
+//        guest     : [],
+//        role0     : [ 'view' ],
+//        role1     : [ 'create' ],
+//        role2     : [ 'edit' ],
+//        role3     : [ 'remove' ]
+//      }
     },
 
     db                  : db,

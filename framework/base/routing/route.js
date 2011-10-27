@@ -10,8 +10,10 @@ function Route( params ) {
 Route.prototype._init = function( params ) {
   this.super_._init( params );
 
-  if ( typeof params.path != 'string' ) throw new Error( 'Route path should be string' );
-  if ( !params.router ) throw new Error( 'Link to router is required for Route creation' );
+  if ( typeof params.path != 'string' )
+      throw new Error( 'Route path should be string. Type of `%s` is %s'.format( params.path, typeof params.path ) );
+
+    if ( !params.router ) throw new Error( 'Link to router is required for Route creation' );
 
   this.controller       = null;
   this.action           = null;
