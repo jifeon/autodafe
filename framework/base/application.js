@@ -118,7 +118,7 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
       dust.cache.__defineGetter__( file_name, function() {
         throw new Error( 'Ambiguous abbreviation name: `%s`. Use name with extension or full path to render it'.format( file_name ) );
       } );
-      dust.cache.__defineSetter__( full_file_name, function() {} );
+      dust.cache.__defineSetter__( file_name, function() {} );
     }
     else {
       dust.cache[ file_name ]   = cached;
