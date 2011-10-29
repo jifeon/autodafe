@@ -20,7 +20,9 @@ MysqlConnection.prototype._init = function( params ) {
   });
 
   delete params.app;
-  this._connection = this.get_new_connection( params );
+  this._connection    = this.get_new_connection( params );
+  this._ping_interval = null;
+  this._ping_every    = 60000;
 
   var self = this;
   this.__query( 'SET NAMES "' + this.encoding + '"', function( e ){
@@ -59,6 +61,11 @@ MysqlConnection.prototype.query = function ( sql, callback ) {
 
 
 MysqlConnection.prototype.__query = function ( sql, callback ) {
+  if ( this._ping_interval ) {
+    clearInterval( this._ping_interval );
+  }
+  this._ping_interval = setInterval( this._ping.bind( this ), this._ping_every );
+
   callback = callback || this.app.default_callback;
   if ( typeof sql != "string" || !sql.length ) return callback( 'Bad sql: ' + sql );
 
@@ -70,5 +77,13 @@ MysqlConnection.prototype.__query = function ( sql, callback ) {
       result:res,
       fields:fields
     } ) );
+  } );
+};
+
+
+MysqlConnection.prototype._ping = function () {
+  var self = this;
+  this._connection.ping( function( e, r ){
+    if ( e ) self.log( e );
   } );
 };
