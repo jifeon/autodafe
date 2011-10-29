@@ -21,6 +21,9 @@ MysqlConnection.prototype._init = function( params ) {
 
   delete params.app;
   this._connection    = this.get_new_connection( params );
+
+  this._connection.on( 'error', this.app.log.bind( this.app ) );
+
   this._ping_interval = null;
   this._ping_every    = 60000;
 
