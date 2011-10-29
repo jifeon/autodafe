@@ -67,8 +67,8 @@ var config = module.exports = {
     db                  : {
       type : 'mysql',
       user : 'username',
-      pass : 'password',
-      base : 'db_name',
+      password : 'password',
+      database : 'db_name',
       host : 'localhost'
     },
 

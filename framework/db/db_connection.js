@@ -12,8 +12,8 @@ DbConnection.prototype._init = function( params ) {
   this.super_._init( params );
 
   this._.user     = params.user     || 'root';
-  this._.pass     = params.pass     || '';
-  this._.base     = params.base     || 'test';
+  this._.password = params.password || '';
+  this._.database = params.database || 'test';
   this._.host     = params.host     || 'localhost';
   this._.encoding = params.encoding || 'utf8';
 
@@ -48,7 +48,7 @@ DbConnection.prototype.quote_value = function ( x ) {
         return 'NULL';
 
       else if ( x instanceof Date )
-        return x.format( "'Y-M-D h:m:s'" );
+        return "'" + x.toISOString() + "'";
 
       else {
         this.log( 'Unknown type of `object`. Trying `toString` method', 'warning' );
@@ -68,6 +68,15 @@ DbConnection.prototype.quote_value = function ( x ) {
 
 
 DbConnection.prototype.escape_sql_str = function( str ) {
-  // Backslash-escape single quotes, double quotes and backslash. Morph 0x00 into \0.
-  return str.replace( /(['"\\])/g, '\\$1' ).replace( /\x00/g, '\\0' );
+  return str.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+    switch(s) {
+      case "\0":    return "\\0";
+      case "\n":    return "\\n";
+      case "\r":    return "\\r";
+      case "\b":    return "\\b";
+      case "\t":    return "\\t";
+      case "\x1a":  return "\\Z";
+      default:      return "\\"+s;
+    }
+  });
 }

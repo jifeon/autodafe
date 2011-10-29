@@ -1,7 +1,6 @@
 var config = module.exports = {
   base_dir    : __dirname + '/../',
   
-  application_type    : 'WebSockets',
 //  default_controller  : 'task',
 //
 //  router : {
@@ -15,14 +14,11 @@ var config = module.exports = {
   },
 
   db : {
-    type : 'mysql',
-    user : 'root',
-    pass : 'LJUji9',
-    base : 'draw',
-    host : 'localhost',
-    dbslayer : {
-      host : 'localhost',
-      port : 9090
-    }
+    type      : 'mysql',
+    user      : 'root',
+    password  : 'LJUji9',
+    database  : 'draw',
+    host      : 'localhost',
+    port      : 9090
   }
 };

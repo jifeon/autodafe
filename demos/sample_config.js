@@ -15,19 +15,16 @@
 
     components : {
 
-      web_sockets_server  : true,
+      web_sockets         : true,
       user                : true,
 
       db                  : {
-        type : 'mysql',
-        user : 'root',
-        pass : '',
-        base : 'test',
-        host : 'localhost',
-        dbslayer : {
-          host : 'localhost',
-          port : 9090
-        }
+        type      : 'mysql',
+        user      : 'root',
+        password  : '',
+        database  : 'test',
+        host      : 'localhost',
+        port      : 9090
       },
 
       log_router          : {

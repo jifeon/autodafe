@@ -135,8 +135,8 @@ CommandBuilder.prototype.create_insert_command = function( table, data, ignore )
     } );
   }
 
-  var sql = "INSERT {IGNORE} INTO table (fields) VALUES placeholders".format({
-    '{IGNORE}'    : ignore ? 'IGNORE' : '',
+  var sql = "INSERT {IGNORE}INTO table (fields) VALUES placeholders".format({
+    '{IGNORE}'    : ignore ? 'IGNORE ' : '',
     table         : table.raw_name,
     fields        : fields.join(', '),
     placeholders  : placeholders.join(', ')

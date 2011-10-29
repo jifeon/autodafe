@@ -19,8 +19,6 @@ var config = module.exports = {
   },
 
   router : {
-    url_format : 'path',
-
     rules     : {
       'single_route_rule' : 'test.test'//,
 //      'multi_route_rule'  : [
@@ -121,10 +119,10 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
-        '../unit/framework'
-//        '../unit/framework/base/components/components_manager_tests'
-//        '../unit/framework/db/ar/ar_relations_tests'
-//        '../unit/framework/base/app_module_tests'
+//        '../unit/framework'
+//        '../unit/framework/db/ar/active_record_tests'
+        '../unit/framework/db/ar/ar_relations_tests'
+//        '../unit/framework/db/mysql_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
         'ar_relations',

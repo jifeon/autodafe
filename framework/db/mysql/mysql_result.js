@@ -10,43 +10,34 @@ function MysqlResult( params ) {
 MysqlResult.prototype._init = function( params ) {
   this.super_._init( params );
 
-  if ( !params || !params.source ) throw new Error( '`source` is not defined in MysqlResult.init' );
-  this._.source     = params.source;
-  this._.insert_id  = this.source.insertId;
+  this.result = params.result;
+  this.fields = params.fields;
 };
 
 
 MysqlResult.prototype.get_all_rows = function () {
-  return this.source.fetchAllSync();
+  return this.result;
 };
 
 
 MysqlResult.prototype.get_num_rows = function () {
-  return this.source.numRowsSync();
+  return Array.isArray( this.result ) ? this.result.length : 0;
 };
 
 
 MysqlResult.prototype.fetch_array = function ( callback, context ) {
-  if ( this.source.numRowsSync() == 0 || typeof callback != 'function' ) return false;
+  if ( !this.get_num_rows() || typeof callback != 'function' ) return false;
 
-  var row;
-  while ( row = this.source.fetchArraySync() ) {
-    if ( callback.call( context || null, row ) === false ) break;
-  }
+  this.result.every( function( row ){
+    return callback.call( context || null, Object.values( row ) ) !== false;
+  } );
 };
 
 
 MysqlResult.prototype.fetch_obj = function ( callback, context ) {
-  if ( this.source.numRowsSync() == 0 || typeof callback != 'function' ) return false;
+  if ( this.get_num_rows() == 0 || typeof callback != 'function' ) return false;
 
-  var row;
-  while (row = this.source.fetchArraySync()) {
-
-    var obj = {};
-    for (var i = 0, ln = row.length; i < ln; i++) {
-      obj[ this.source.fetchFieldDirectSync( i ).name ] = row[ i ];
-    }
-
-    if ( callback.call( context || null, obj ) === false) break;
-  }
+  this.result.every( function( row ){
+    return callback.call( context || null, row ) !== false;
+  } );
 };

@@ -6,11 +6,11 @@ exports.get_batch = function( application, assert ) {
   var MysqlConnection = require('db/mysql/mysql_connection');
 
   var db = new MysqlConnection({
-    app   : application,
-    user  : application.db.user,
-    pass  : application.db.pass,
-    base  : application.db.base,// + '_ar',
-    host  : application.db.host
+    app       : application,
+    user      : application.db.user,
+    password  : application.db.password,
+    database  : application.db.database,// + '_ar',
+    host      : application.db.host
   });
 
 
@@ -547,6 +547,8 @@ exports.get_batch = function( application, assert ) {
           var self = this;
 
           application.models.post_delete.find_by_pk( 1 ).on( 'success', function( record ) {
+            if ( !record ) return self.callback( null, 1 );
+
             record.remove().on( 'success', function() {
               application.models.post_delete.find_by_pk( 1 ).on( 'success', function( record ) {
                 self.callback( null, record );

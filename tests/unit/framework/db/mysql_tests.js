@@ -25,6 +25,7 @@ exports.get_batch = function( application, assert ) {
       for ( var property in values ) {
         table.get_column_names().forEach( function( name, i ) {
           var column = table.get_column( name );
+          //noinspection JSUnusedGlobalSymbols
           assert.equal(
             column[ property ], values[ property ][ i ],
             'table.column.name is value_, different from expected exp_value'.format( {
@@ -166,9 +167,9 @@ exports.get_batch = function( application, assert ) {
                 command.execute( this.callback );
               },
               'should insert 6th row' : function( e, result ) {
+                emitter.emit( 'count' );
                 assert.isNull( e );
                 assert.equal( result.insert_id, 6 );
-                emitter.emit( 'count' );
               }
             }
           },
