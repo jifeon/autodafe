@@ -87,6 +87,9 @@ MysqlConnection.prototype.__query = function ( sql, callback ) {
 MysqlConnection.prototype._ping = function () {
   var self = this;
   this._connection.ping( function( e, r ){
-    if ( e ) self.log( e );
+    if ( e ) {
+      self.log( e );
+      clearInterval( self._ping_interval );
+    }
   } );
 };
