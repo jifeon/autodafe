@@ -89,11 +89,11 @@ var config = module.exports = {
 //          levels : [ 'trace', 'info', 'warning', 'error' ]
 //        },
 //        mail : {
-//          levels    : [ 'error' ],
-//          to        : 'jifeon@gmail.com',
+//          levels    : [ 'trace', 'info', 'warning', 'error' ],
+//          to        : 'user@host.ru',
 //          from      : 'Autodafe',
-//          subject   : 'virtroom.in server errors',
-//          frequency : '1 per 1 min'
+//          subject   : 'Autodafe messages',
+//          frequency : '1 per 10 sec'
 //        }
         test : {
           levels : [ 'trace', 'info', 'warning', 'error' ]
