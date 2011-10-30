@@ -10,8 +10,9 @@ function MysqlResult( params ) {
 MysqlResult.prototype._init = function( params ) {
   this.super_._init( params );
 
-  this.result = params.result;
-  this.fields = params.fields;
+  this.result     = params.result;
+  this.fields     = params.fields;
+  this.insert_id  = this.result.insertId;
 };
 
 
