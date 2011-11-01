@@ -257,6 +257,24 @@ Date.prototype.format = function( format ) {
 }
 
 
+Date.prototype.getUTCFormat = function( format ) {
+  var self = this;
+  return format.replace( /[\w]/g, function( match ) {
+    switch ( match ) {
+      case 'Y': return self.getUTCFullYear();
+      case 'M': return two_pos( self.getUTCMonth() + 1 );
+      case 'D': return two_pos( self.getUTCDate() );
+      case 'h': return two_pos( self.getUTCHours() );
+      case 'm': return two_pos( self.getUTCMinutes() );
+      case 's': return two_pos( self.getUTCSeconds() );
+      case 'x':
+        var x = self.getUTCMilliseconds();
+        return x < 100 ? '0' + two_pos( x ) : x;
+    }
+  } );
+}
+
+
 process.EventEmitter.prototype.re_emit = function() {
   var emitter = arguments[ arguments.length - 1 ];
   for ( var i = 0, i_ln = arguments.length - 1; i < i_ln; i++ ) {
