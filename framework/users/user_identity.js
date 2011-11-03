@@ -64,9 +64,14 @@ UserIdentity.prototype.can = function ( action, model, attribute, params ) {
 };
 
 
-UserIdentity.prototype.manage = function ( model ) {
+UserIdentity.prototype.get_roles = function ( model, attribute, params ) {
+  return this.users_manager.get_roles( this, model, attribute, params );
+};
+
+
+UserIdentity.prototype.manage = function ( model, params ) {
   if ( Array.isArray( model ) ) return model.map( function( model ) {
-    return this.manage( model );
+    return this.manage( model, params );
   }, this );
 
   if ( !Model.is_instantiate( model ) ) return model;
@@ -74,7 +79,8 @@ UserIdentity.prototype.manage = function ( model ) {
 
   var handler = new Handler({
     target        : model,
-    user_identity : this
+    user_identity : this,
+    params        : params
   });
 
   return handler.get_proxy();

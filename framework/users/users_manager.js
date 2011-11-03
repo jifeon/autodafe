@@ -50,8 +50,19 @@ UsersManager.prototype._init_roles = function ( params ) {
 
 
 UsersManager.prototype.check_right = function ( user_identity, action, model, attribute, params ) {
-  var roles_set = model ? this.rights.models[ model.class_name ] : this.rights.global;
+  var roles_set = this._get_roles_set( model );
   return roles_set.check_right( user_identity, action, model, attribute, params );
+};
+
+
+UsersManager.prototype.get_roles = function ( ui, model, attribute, params ) {
+  var roles_set = this._get_roles_set( model );
+  return roles_set.get_roles( ui, model, attribute, params );
+};
+
+
+UsersManager.prototype._get_roles_set = function ( model ) {
+  return model ? this.rights.models[ model.class_name ] : this.rights.global;
 };
 
 

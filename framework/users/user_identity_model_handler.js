@@ -11,6 +11,7 @@ UserIdentityModelHandler.prototype._init = function( params ) {
   this.super_._init( params );
 
   this.user_identity = params.user_identity;
+  this.params        = params.params;
 
   this.methods = [
     'get_attribute',
@@ -24,6 +25,14 @@ UserIdentityModelHandler.prototype._init = function( params ) {
 };
 
 
+UserIdentityModelHandler.prototype.access_rights_methods = {
+  'can_be_viewed'   : function() { return this.user_identity.can( 'view',   this.target, null, this.params ); },
+  'can_be_edited'   : function() { return this.user_identity.can( 'edit',   this.target, null, this.params ); },
+  'can_be_removed'  : function() { return this.user_identity.can( 'remove', this.target, null, this.params ); },
+  'can_be_created'  : function() { return this.user_identity.can( 'create', this.target, null, this.params ); }
+};
+
+
 UserIdentityModelHandler.prototype.get = function ( receiver, name ) {
   var self = this;
 
@@ -33,6 +42,9 @@ UserIdentityModelHandler.prototype.get = function ( receiver, name ) {
 
   if ( this._has_attribute( name ) )
     return this.get_attribute( name );
+
+  if ( this.access_rights_methods[ name ] )
+    return this.access_rights_methods[ name ].call( this );
 
   return this.super_.get( receiver, name );
 };
@@ -52,7 +64,7 @@ UserIdentityModelHandler.prototype._has_attribute = function ( name ) {
 
 
 UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
-  if ( this.user_identity.can( 'view', this.target, name ) )
+  if ( this.user_identity.can( 'view', this.target, name, this.params ) )
     return this.target.get_attribute( name );
 
   this.user_identity.app.log(
@@ -63,7 +75,7 @@ UserIdentityModelHandler.prototype.get_attribute = function ( name ) {
 
 
 UserIdentityModelHandler.prototype.set_attribute = function ( name, value ) {
-  if ( this.user_identity.can( 'edit', this.target, name ) )
+  if ( this.user_identity.can( 'edit', this.target, name, this.params ) )
     return this.target.set_attribute( name, value );
 
   this.target.validator.errors.push(
@@ -78,7 +90,7 @@ UserIdentityModelHandler.prototype.get_attributes = function ( names ) {
   var attributes = this.target.get_attributes( names );
 
   for ( var name in attributes )
-    if ( !this.user_identity.can( 'view', this.target, name ) )
+    if ( !this.user_identity.can( 'view', this.target, name, this.params ) )
       attributes[ name ] = null;
 
   return attributes;
@@ -89,7 +101,7 @@ UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
   var attrs = {};
 
   for ( var name in attributes )
-    if ( this.user_identity.can( 'edit', this.target, name ) )
+    if ( this.user_identity.can( 'edit', this.target, name, this.params ) )
       attrs[ name ] = attributes[ name ];
     else this.target.validator.errors.push( 'Permission denied to change `%s`'.format( name ) );
 
@@ -99,7 +111,7 @@ UserIdentityModelHandler.prototype.set_attributes = function ( attributes ) {
 
 UserIdentityModelHandler.prototype.save = function ( attributes, scenario ) {
   var action = this.target.is_new ? 'create' : 'edit';
-  if ( !this.user_identity.can( action, this.model ) )
+  if ( !this.user_identity.can( action, this.model, null, this.params ) )
     this.target.validator.errors.push( 'Permission denied to %s model `%s`'.format( action, this.target.class_name ) );
 
   return this.target.save( attributes, scenario );
@@ -107,7 +119,7 @@ UserIdentityModelHandler.prototype.save = function ( attributes, scenario ) {
 
 
 UserIdentityModelHandler.prototype.remove = function () {
-  if ( this.user_identity.cal( 'remove', this.target ) )
+  if ( this.user_identity.can( 'remove', this.target, null, this.params ) )
     return this.target.remove();
 
   return new Error( 'Permission denied to remove model `%s`'.format( this.target.class_name ) );
