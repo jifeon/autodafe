@@ -285,9 +285,13 @@ process.EventEmitter.prototype.re_emit = function() {
   return this;
 }
 
-
-require('dust').filters.n = function( value ){
+var dust = require('dust');
+dust.filters.n = function( value ){
   return isFinite( value ) ? Number( value ) : 0;
+}
+
+dust.filters.b = function( value ){
+  return value ? 'true' : 'false';
 }
 
 
