@@ -359,7 +359,7 @@ ActiveRecord.prototype.save = function( attributes, scenario ) {
 }
 
 
-ActiveRecord.prototype.insert = function( attributes ) {
+ActiveRecord.prototype.insert = function( attributes, ignore ) {
   this.log( 'insert' );
 
   if ( !this.is_new )
@@ -368,7 +368,7 @@ ActiveRecord.prototype.insert = function( attributes ) {
   var self    = this;
   var emitter = new Emitter;
   var builder = this.get_command_builder();
-  var command = builder.create_insert_command( this.table, this.get_attributes( attributes ) );
+  var command = builder.create_insert_command( this.table, this.get_attributes( attributes ), ignore );
 
   command.execute( function( e, result ) {
     if ( e ) return emitter.emit( 'error', e );

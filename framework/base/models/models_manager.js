@@ -50,6 +50,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
       var model_constructor = require( file_path );
     }
     catch( e ) {
+      this.log( 'Can\'t load model from file: %s'.format( file_path ), 'warning' );
       this.log( e, 'warning' );
       continue;
     }

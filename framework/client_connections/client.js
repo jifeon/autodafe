@@ -85,7 +85,7 @@ Client.prototype.send = function ( data ) {
 
 
 Client.prototype.send_error = function ( e ) {
-  this.log( e, 'warning' );
+  this.log( e && e.stack || e, 'warning' );
 
   this.emit( 'send_error', e );
   this.connection.emit( 'send_error', e, this );
