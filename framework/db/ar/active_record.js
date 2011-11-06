@@ -619,7 +619,7 @@ ActiveRecord.prototype.count = function( condition, params ) {
 
   var builder   = this.get_command_builder();
   var criteria  = builder.create_criteria( condition, params );
-  var command = builder.create_count_command( this.table, criteria );
+  var command   = builder.create_count_command( this.table, criteria );
 
   return this.__execute_command( command, null, 'scalar' );
 }
