@@ -285,7 +285,7 @@ process.EventEmitter.prototype.re_emit = function() {
   return this;
 }
 
-var dust = require('dust');
+var dust = exports.dust = require('dust');
 dust.filters.n = function( value ){
   return isFinite( value ) ? Number( value ) : 0;
 }
