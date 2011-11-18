@@ -23,7 +23,7 @@ var config = module.exports = {
     http                : {
       port            : 3000,
       root_folders    : {
-        js      : 'views/js'
+        js       : 'views/js'
       }
     },
 
