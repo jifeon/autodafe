@@ -311,8 +311,8 @@ exports.next_tick = function( result, error, emitter, action ){
 };
 
 var Listener = require('./listener');
-exports.create_async_listener = function( count, callback, params ) {
-  return new Listener( count, callback, params );
+exports.create_async_listener = function( count, callback, params, do_not_fire ) {
+  return new Listener( count, callback, params, do_not_fire );
 };
 
 

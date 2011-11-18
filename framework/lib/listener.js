@@ -2,7 +2,7 @@ module.exports = Listener;
 
 Listener.inherits( process.EventEmitter );
 
-function Listener( count, callback, params ) {
+function Listener( count, callback, params, do_not_fire ) {
   if ( !isFinite( count ) )
     throw new Error( '`count` should be a number in Listener.init' );
 
@@ -11,7 +11,7 @@ function Listener( count, callback, params ) {
   this.params   = params    || {};
   this.fired    = false;
 
-  if ( !this.count ) this.fire();
+  if ( !this.count && !do_not_fire ) this.fire();
 }
 
 
@@ -26,6 +26,11 @@ Listener.prototype.fire = function () {
 };
 
 
+Listener.prototype.check_count = function () {
+  if ( this.count <= 0 ) this.fire();
+};
+
+
 Listener.prototype.listen = function () {
   var argument_names  = Array.prototype.slice.call( arguments );
   var self            = this;
@@ -34,7 +39,8 @@ Listener.prototype.listen = function () {
     for ( var i = 0, i_ln = argument_names.length; i < i_ln; i++ )
       self.params[ argument_names[i] ] = arguments[i];
 
-    if ( --self.count <= 0 ) self.fire();
+    self.count--;
+    self.check_count();
   }
 };
 
@@ -57,5 +63,6 @@ Listener.prototype.get_emitter = function ( name ) {
 Listener.prototype.register = function ( name, value ) {
   if ( name ) this.params[ name ] = value;
 
-  if ( --this.count <= 0 ) this.fire();
+  this.count--;
+  this.check_count();
 };

@@ -41,13 +41,9 @@ WebSocketsClient.prototype.receive = function ( message ) {
 };
 
 
-WebSocketsClient.prototype.__receive = function ( message ) {
-  try {
-    var data = JSON.parse( message );
-  }
-  catch ( e ) {
-    return this.log( 'Message "%s" is not a JSON'.format( message ), 'warning' );
-  }
+WebSocketsClient.prototype.__receive = function ( data ) {
+  if ( typeof data != 'object' )
+    return this.log( 'Message "%s" should be javascript Object'.format( data ), 'warning' );
 
   this.super_.receive( data.action, data.params, 'ws' );
 };
@@ -64,15 +60,23 @@ WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
   return cookie.read( this.ws_client.handshake.headers.cookie, cookie_name );
 };
 
-WebSocketsClient.prototype.set_cookie = function ( cookie_name ) {
-};
-
 
 WebSocketsClient.prototype.send = function ( action, data ) {
   this.super_.send( data );
 
   this.ws_client.emit( action, data );
 };
+
+
+WebSocketsClient.prototype.broadcast = function ( action, data ) {
+  this.log( 'Broadcast message `%s` from %s ( session id=%s )'.format( action, this.class_name, this.get_session_id() ) );
+
+  this.emit( 'broadcast', data );
+  this.connection.emit( 'broadcast', data, this );
+
+  this.ws_client.broadcast.emit( action, data );
+};
+
 
 WebSocketsClient.prototype.get_client_by_id = function ( id ) {
   return this.connection._io.sockets.socket[ id ];

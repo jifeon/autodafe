@@ -36,6 +36,8 @@ WebSocketsServer.prototype.run = function () {
       connection : self
     });
   } );
+
+  this.log( 'WebSockets server started at port ' + this.port, 'info' );
 };
 
 

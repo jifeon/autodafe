@@ -27,16 +27,20 @@ ModelsManager.prototype.load_models = function ( callback ) {
   var models_path = this.app.path_to_models;
   this.log( 'Loading models from path: ' + models_path, 'trace' );
 
+  var listener = this.app.tools.create_async_listener(
+    0, this._loading_complete.bind( this, callback ), null, true
+  );
+
   try {
     var files = fs.readdirSync( models_path );
   }
   catch ( e ) {
-    this.log( 'Cannot find model\'s folder. Skip loading of models.', 'trace' );
+    this.log( 'Cannot find models folder. Skip loading models.', 'trace' );
+    listener.fire();
     return false;
   }
 
   var self          = this;
-  var async_models  = 0;
 
   for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
 
@@ -56,7 +60,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
     }
 
     if ( !Model.is_instantiate( model_constructor.prototype ) ) {
-      this.log( 'File in path `%s` is not a model'.format( file_path ), 'warning' );
+      this.log( 'File in path `%s` is not a valid model'.format( file_path ), 'warning' );
       continue;
     }
 
@@ -64,30 +68,27 @@ ModelsManager.prototype.load_models = function ( callback ) {
     try {
       var model = this._get_by_constructor( model_constructor );
     } catch (e) {
+      this.log( 'Model "%s" is not loaded'.format( name ), 'error' );
       this.log( e );
-      this.log( 'Model "%s" is not loaded'.format( name ), 'warning' );
       continue;
     }
 
     if ( !model.is_inited ) {
-      async_models++;
-      model.on( 'initialized', load_complete );
+      listener.count++;
+      model.on( 'initialized', listener.listen() );
     }
 
     this._models[ name ] = model;
     this.log( 'Model "%s" is loaded'.format( name ), 'trace' );
   }
 
-  process.nextTick( function(){
-    load_complete( ++async_models );
-  } );
+  listener.check_count.bind( listener );
+};
 
-  function load_complete() {
-    if ( --async_models ) return false;
 
-    self.log( 'Models are loaded', 'info' );
-    callback();
-  }
+ModelsManager.prototype._loading_complete = function ( callback ) {
+  this.log( 'Models are loaded', 'info' );
+  process.nextTick( callback );
 };
 
 

@@ -59,6 +59,7 @@ Router.prototype._collect_controllers = function () {
       var controller_class = require( file_path );
     }
     catch( e ) {
+      this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'warning' );
       this.log( e, 'warning' );
       continue;
     }

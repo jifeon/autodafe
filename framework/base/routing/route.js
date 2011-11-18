@@ -38,7 +38,7 @@ Route.prototype._init = function( params ) {
     self.rule_re[ $1 ] = new RegExp( '^' + $2 + '$' );
     return '(' + $2 + ')';
   } );
-  this.rule = new RegExp( '^\/' + re_text + '\/?$' );
+  this.rule = new RegExp( '^\/?' + re_text + '\/?$' );
 
   // valid : ' controller . action | post ', 'controller.action', 'controller|ws', ' controller', '', '|get'
   // pockets : 2 - controller, 4 - action, 6 - connection_type

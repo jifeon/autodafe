@@ -4,8 +4,7 @@ function DrawDesk ( params ) {
 
 
 DrawDesk.prototype.init = function ( params ) {
-  this.socket = params.socket;
-
+  this.socket   = params.socket;
   this.canvas   = params.canvas;
   this.ctx      = this.canvas.getContext( '2d' );
   this.position = {
@@ -37,6 +36,10 @@ DrawDesk.prototype.add_handlers = function () {
   document.body.onmouseup = function() {
     self.canvas.onmousemove = null;
   };
+
+  this.socket.on( 'line', function( params ){
+    self.line( params );
+  } );
 };
 
 
@@ -54,11 +57,10 @@ DrawDesk.prototype.mousemove = function ( e ) {
   }
 
   this.line( params );
-
-  this.socket.send( JSON.stringify({
-    action : 'action/draw',
+  this.socket.emit( 'message', {
+    action : 'line',
     params : params
-  }) );
+  } );
 };
 
 
