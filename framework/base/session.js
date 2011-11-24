@@ -18,7 +18,7 @@ Session.prototype._init = function( params ) {
   this._.is_active  = true;
   this._.secret     = String.unique();
 
-  this.live_time      = 60000; // 1 min
+  this.live_time      = params.live_time || 60000; // 1 min
   this.remove_timeout = null;
 };
 

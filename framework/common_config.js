@@ -9,6 +9,7 @@ var config = module.exports = {
   models_folder       : 'models',
   controllers_folder  : 'controllers',
   components_folder   : 'components',
+  session_live_time   : 60000, // время которое живет сессия без клиентов
 
   cache_views         : false,
 
