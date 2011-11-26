@@ -294,8 +294,9 @@ Application.prototype.get_session = function ( id, client ) {
 
   if ( !session ) {
     session = new Session({
-      id      : id,
-      app     : this
+      id        : id,
+      app       : this,
+      live_time : this._config.session_live_time
     });
 
     this._sessions[ id ] = session;
