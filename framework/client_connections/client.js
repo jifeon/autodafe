@@ -95,3 +95,7 @@ Client.prototype.send_error = function ( e ) {
 Client.prototype.get_session_id = function () {
   return this.session ? this.session.id : String.unique();
 };
+
+Client.prototype.set_cookie = function(){
+
+};

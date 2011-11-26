@@ -71,7 +71,8 @@ Controller.prototype.send_response = function ( view, client, params, callback )
 
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
-    client.send( data );
+    var action = params.ws_client_action ? params.ws_client_action : '';
+    client.send( data, action );
     callback( null, data );
   } );
 };

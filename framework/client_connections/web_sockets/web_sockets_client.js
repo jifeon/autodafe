@@ -61,7 +61,7 @@ WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
 };
 
 
-WebSocketsClient.prototype.send = function ( action, data ) {
+WebSocketsClient.prototype.send = function ( data, action  ) {
   this.super_.send( data );
 
   this.ws_client.emit( action, data );
