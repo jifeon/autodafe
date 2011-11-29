@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+
+  <!--[if IE]>
+  <script>
+    document.createElement( 'header' );
+    document.createElement( 'nav' );
+    document.createElement( 'section' );
+    document.createElement( 'article' );
+    document.createElement( 'aside' );
+    document.createElement( 'footer' );
+  </script>
+  <![endif]-->
+
+  <title>Autodafe demo blog</title>
+</head>
+<body>
+
+<header id="main">
+  <h1>Autodafe demo blog</h1>
+</header>
+
+<aside>
+  <form name="login" action="{#url}login{/url}" method="post">
+    <h1>Login</h1>
+    <p>
+      <label for="login">login</label><br>
+      <input type="text" id="login" name="login">
+    </p>
+    <p>
+      <label for="pass">password</label><br>
+      <input type="password" id="pass" name="pass">
+    </p>
+    <input type="submit">
+  </form>
+  <form name="registration" action="{#url}register{/url}" method="post">
+    <h1>Register</h1>
+    <p>
+      <label for="reg_login">login</label><br>
+      <input type="text" id="reg_login" name="login">
+    </p>
+    <p>
+      <label for="reg_pass">password</label><br>
+      <input type="password" id="reg_pass" name="pass">
+    </p>
+    <input type="submit">
+  </form>
+</aside>
+
+<section>
+  {+content/}
+</section>
+</body>
+</html>

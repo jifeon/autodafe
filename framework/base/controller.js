@@ -69,6 +69,8 @@ Controller.prototype.send_response = function ( view, client, params, callback )
   if ( typeof callback != 'function' ) callback = this.default_callback;
   params   = params   || {};
 
+  params.url = this.make_dust_url.bind( this );
+
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
     var action = params.ws_client_action ? params.ws_client_action : '';
@@ -80,4 +82,37 @@ Controller.prototype.send_response = function ( view, client, params, callback )
 
 Controller.prototype.create_url = function ( route_path, params ) {
   return this.app.router.create_url( route_path, params, this.name, this.default_action );
+};
+
+
+Controller.prototype.make_dust_url = function ( chunk, context, bodies, params ) {
+  var self = this;
+
+  for ( var param in params ) {
+    var value = params[ param ];
+    if ( typeof value == 'function' ) params[ param ] = this.__get_body_text( chunk, context, value );
+  }
+
+  return bodies.block
+
+    ? chunk.tap( function( data ) {
+      return self.create_url( data, params );
+    }).render( bodies.block, context ).untap()
+
+    : chunk.write( this.create_url( '', params ) );
+};
+
+
+Controller.prototype.__get_body_text = function ( chunk, context, body ) {
+  var result = '';
+
+  var old_write = chunk.write;
+  chunk.write = function( text ) {
+    result += text;
+    return chunk;
+  }
+  body( chunk, context );
+  chunk.write = old_write;
+
+  return result;
 };
