@@ -106,8 +106,16 @@ strong{
   font-weight : bold;
 }
 
+small{
+  font-size : .8em;
+}
+
 header#main {
   background : rgb(255, 231, 191);
+}
+
+header#main a {
+  text-decoration : none;
 }
 
 aside {
@@ -117,22 +125,43 @@ aside {
   width    : 250px;
 }
 
-form {
-  margin   : 0 50px 50px;
+aside form {
+  margin   : 0 25px 50px;
   position : relative;
 }
 
 label {
 }
 
-input[type="text"], input[type="password"] {
+hr{
+  border-top: 1px solid rgb(184, 96, 60);
+  border-bottom: 1px solid rgb(255, 231, 191);
+  width : 100%;
+  margin-top : 15px;
+}
+
+input[type="text"],
+input[type="password"],
+textarea {
   border  : 1px solid #aaa;
   outline : 0 none;
   padding : 4px 5px;
   width   : 100%;
+  color   : rgb(184, 96, 60);
 }
 
-input[type="text"]:focus, input[type="password"]:focus {
+textarea {
+  font-size : 1em;
+  height: 50px;
+}
+
+textarea#topic_description{
+  height : 400px;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus{
   border             : 1px solid rgb(184, 96, 60);
   -moz-box-shadow    : inset 0 0 4px rgb(255, 203, 124);
   -webkit-box-shadow : inset 0 0 4px rgb(255, 203, 124);
@@ -147,37 +176,69 @@ input[type="submit"] {
   float            : right;
 }
 
+#user_info input[type="submit"]{
+  float: none;
+  margin-top : 40px;
+}
+
 input[type="submit"]:hover {
   cursor             : pointer;
-  -webkit-transform  : rotate(-5deg);
-  -moz-transform     : rotate(-5deg);
-  -o-transform       : rotate(-5deg);
-  transform          : rotate(-5deg);
-  font-size          : 1.3em;
+  -webkit-transform  : rotate(-3deg);
+  -moz-transform     : rotate(-3deg);
+  -o-transform       : rotate(-3deg);
+  transform          : rotate(-3deg);
+  font-size          : 1.2em;
   -moz-box-shadow    : 4px 6px 2px rgb(255, 231, 191);
   -webkit-box-shadow : 4px 6px 2px rgb(255, 231, 191);
   box-shadow         : 4px 6px 2px rgb(255, 231, 191);
 }
 
-section {
-  position    : relative;
-  margin-left : 250px;
+footer {
+  height : 100px;
 }
 
-section article {
-  margin   : 0 50px 40px;
+section#content {
+  position    : relative;
+  margin-left : 290px;
+  margin-right : 40px;
+}
+
+section#content article {
+  margin   : 0;
   padding  : 25px 0 0;
   position : relative;
 }
 
-section header {
+section#content header {
   font-size : 1em;
   padding   : 0;
 }
 
-#no_posts{
-  height : 400px;
+.error {
+  color : #d90028;
+  background-color: #ffd0d9;
+
+}
+
+.message_in_content {
   text-align : center;
-  margin-top : 200px;
   padding-right : 40px;
+  margin-top : 45px;
+}
+
+.with_small_indents {
+  margin-top : 20px;
+  margin-bottom : 20px;
+}
+
+.without_other_content{
+  margin-top : 200px;
+}
+
+.left{
+  float : left !important;
+}
+
+.center{
+  text-align : center;
 }

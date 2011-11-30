@@ -21,10 +21,20 @@
 <body>
 
 <header id="main">
-  <h1>Autodafe demo blog</h1>
+  <h1><a href="{#url/}">Autodafe demo blog</a></h1>
 </header>
 
 <aside>
+  {?user}
+  <form id="user_info" action="{#url}create_topic{/url}">
+    <h1 class="center">Welcome!</h1>
+    <p class="center">
+      You are logged in as <strong>{user.login}</strong>
+      <small>( <a title="logout" href="{#url}logout{/url}">x</a> )</small>
+      <input type="submit" value="Create new topic">
+    </p>
+  </form>
+  {:else}
   <form name="login" action="{#url}login{/url}" method="post">
     <h1>Login</h1>
     <p>
@@ -49,10 +59,18 @@
     </p>
     <input type="submit">
   </form>
+  {/user}
 </aside>
 
-<section>
+<section id="content">
+  {?error}<div class="error message_in_content">
+    <strong>{error|s}</strong>
+  </div>{/error}
   {+content/}
 </section>
+
+<footer>
+
+</footer>
 </body>
 </html>

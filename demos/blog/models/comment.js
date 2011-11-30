@@ -12,10 +12,15 @@ Comment.prototype.get_table_name = function () {
 };
 
 
+Comment.prototype.get_safe_attributes_names = function () {
+  return [ 'text' ];
+};
+
+
 Comment.prototype.attributes_description = function(){
   return {
     'user_id'     : [ 'required' ],
-    'subject_id'  : [ 'required' ],
+    'post_id'     : [ 'required' ],
     'text'    : [
       'required',
       { lesser : 1024 }

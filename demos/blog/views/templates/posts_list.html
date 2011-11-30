@@ -3,48 +3,19 @@
   {?posts}{#posts}
   <article>
     <header>
-      <h1><a href="{#url id=post.id}post{/url}">{post.name}</a></h1>
+      <h1><a href="{#url topic_id=id}view_topic{/url}">{name}</a></h1>
     </header>
-    {post.description}
+    {description|s|h|n2br}
   </article>{/posts}
   {:else}
-<!--<article>-->
-      <!--<header>-->
-
-        <!--<h1><a href="">History</a></h1>-->
-      <!--</header>-->
-      <!--<p>Work on&#160;HTML 5&#160;originally started in&#160;late 2003, as&#160;a&#160;proof of&#160;concept to&#160;show that it&#160;was possible to&#160;extend HTML 4's&#160;forms to&#160;provide many of&#160;the features that XForms 1.0&#160;introduced, without requiring browsers to&#160;implement rendering engines that were incompatible with existing HTML Web pages. At&#160;this early stage, while the draft was already publicly available, and input was already being solicited from all sources, the specification was only under Opera Software's&#160;copyright.</p>-->
-
-      <!--<p>In&#160;early 2004, some of&#160;the principles that underlie this effort, as&#160;well as&#160;an&#160;early draft proposal covering just forms-related features, were presented to&#160;the W3C jointly by&#160;Mozilla and Opera at&#160;a&#160;workshop discussing the future of&#160;Web Applications on&#160;the Web. The proposal was rejected on&#160;the grounds that the proposal conflicted with the previously chosen direction for the Web's&#160;evolution.</p>-->
-      <!--<p>Shortly thereafter, Apple, Mozilla, and Opera jointly announced their intent to&#160;continue working on&#160;the effort. A&#160;public mailing list was created, and the drafts were moved to&#160;the WHATWG site. The copyright was subsequently amended to&#160;be&#160;jointly owned by&#160;all three vendors, and to&#160;allow reuse of&#160;the specifications.</p>-->
-
-      <!--<p>In&#160;2006, the W3C expressed interest in&#160;the specification, and created a&#160;working group chartered to&#160;work with the WHATWG on&#160;the development of&#160;the HTML 5&#160;specifications. The working group opened in&#160;2007. Apple, Mozilla, and Opera allowed the W3C to&#160;publish the specifications under the W3C copyright, while keeping versions with the less restrictive license on&#160;the WHATWG site.</p>-->
-      <!--<p>Since then, both groups have been working together.</p>-->
-    <!--</article>-->
-
-    <!--<article>-->
-      <!--<header>-->
-        <!--<h1><a href="">HTML vs XHTML</a></h1>-->
-      <!--</header>-->
-      <!--<p>This specification defines an&#160;abstract language for describing documents and applications, and some APIs for interacting with in-memory representations of&#160;resources that use this language.</p>-->
-
-      <!--<p>The in-memory representation is&#160;known as&#160;&#171;DOM5&#160;HTML&#187;, or&#160;&#171;the DOM&#187; for short.</p>-->
-      <!--<p>There are various concrete syntaxes that can be&#160;used to&#160;transmit resources that use this abstract language, two of&#160;which are defined in&#160;this specification.</p>-->
-
-      <!--<p>The first such concrete syntax is&#160;&#171;HTML5&#187;. This is&#160;the format recommended for most authors. It&#160;is&#160;compatible with most legacy Web browsers. If&#160;a&#160;document is&#160;transmitted with the MIME type text/html, then it&#160;will be&#160;processed as&#160;an&#160;&#171;HTML5&#187; document by&#160;Web browsers.</p>-->
-
-      <!--<p>The second concrete syntax uses XML, and is&#160;known as&#160;&#171;XHTML5&#187;. When a&#160;document is&#160;transmitted with an&#160;XML MIME type, such as&#160;application/xhtml+xml, then it&#160;is&#160;processed by&#160;an&#160;XML processor by&#160;Web browsers, and treated as&#160;an&#160;&#171;XHTML5&#187; document. Authors are reminded that the processing for XML and HTML differs; in&#160;particular, even minor syntax errors will prevent an&#160;XML document from being rendered fully, whereas they would be&#160;ignored in&#160;the &#171;HTML5&#187; syntax.</p>-->
-
-      <!--<p>The &#171;DOM5&#160;HTML&#187;, &#171;HTML5&#187;, and &#171;XHTML5&#187; representations cannot all represent the same content. For example, namespaces cannot be&#160;represented using &#171;HTML5&#187;, but they are supported in&#160;&#171;DOM5&#160;HTML&#187; and &#171;XHTML5&#187;. Similarly, documents that use the noscript feature can be&#160;represented using &#171;HTML5&#187;, but cannot be&#160;represented with &#171;XHTML5&#187; and &#171;DOM5&#160;HTML&#187;. Comments that contain the string &#171;->&#187; can be&#160;represented in&#160;&#171;DOM5&#160;HTML&#187; but not in&#160;&#171;HTML5&#187; and &#171;XHTML5&#187;. And so&#160;forth.</p>-->
-
-    <!--</article>-->
-
-  <div id="no_posts">
-    There are no posts yet.
+  <div class="message_in_content without_other_content">
+    There are no topics yet.
     {?user}
-      <strong><a href="{#url}create_post{/url}">Create one!</a></strong>
+      <strong><a href="{#url}create_topic{/url}">Create one!</a></strong>
     {:else}
-      <strong><a href="#" onclick="document.forms['registration'].login.focus();">Register</a></strong> to create first post
+      <strong><a href="#" onclick="document.forms['login'].login.focus();">Login</a></strong> or
+      <strong><a href="#" onclick="document.forms['registration'].login.focus();">register</a></strong>
+      to create first post
     {/user}
   </div>
   {/posts}
