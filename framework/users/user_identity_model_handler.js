@@ -22,6 +22,23 @@ UserIdentityModelHandler.prototype._init = function( params ) {
     'remove',
     'release'
   ];
+
+  var self      = this;
+  var accessor  = null;
+  this.__defineGetter__( 'accessor', function(){
+    if ( accessor ) return accessor;
+
+    var handler = new ProxyHandler({
+      target : {}
+    });
+
+    handler.get = function( reciever, name ){
+      return self.user_identity.can( name, self.target, null, self.params );
+    }
+
+    accessor = handler.get_proxy();
+    return accessor;
+  } );
 };
 
 
@@ -45,6 +62,8 @@ UserIdentityModelHandler.prototype.get = function ( receiver, name ) {
 
   if ( this.access_rights_methods[ name ] )
     return this.access_rights_methods[ name ].call( this );
+
+  if ( name == 'is_permitted_for' ) return this.accessor;
 
   return this.super_.get( receiver, name );
 };
