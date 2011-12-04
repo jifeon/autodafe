@@ -1,13 +1,28 @@
 var Controller  = require( 'controller' );
 var crypto      = require('crypto');
 
-module.exports = SiteController.inherits( Controller );
+module.exports = SiteController.inherits( Controller ); // наследуем от Controller
 
+/**
+ * Единственный в данном приложении контроллер, который и отвечает за логику работы приложения
+ *
+ * @constructor
+ * @extends Controller
+ * @param {Object} params
+ */
 function SiteController( params ) {
   this._init( params );
 }
 
 
+/**
+ * Метод для отправки view клиенту. Перегружает Controller.send_response, добавляет в параметры, передаваемые в view
+ * ссылку на модель пользователя user, если пользоваетель гость, user будет равен null
+ *
+ * @param {String} view название вьюшки, которую будем рендерить
+ * @param {Client} client клиент которому будет отправлена view
+ * @param {Object} params параметры для передачи в вью
+ */
 SiteController.prototype.send_response = function ( view, client, params ) {
   params = params || {};
 
@@ -22,29 +37,50 @@ SiteController.prototype.send_response = function ( view, client, params ) {
  * Функция выполняется при подключении клиента, она авторизовывает пользователя по куки
  *
  * @param {Client} client подключенный клиент
+ * @return {EventEmitter|Boolean} если connect_client возвращает емиттер, то действие из запроса не будет выполнено, пока
+ * емиттер не вызовет success, при error на клиент отправится ошибка
  */
 SiteController.prototype.connect_client = function ( client ){
+
+  // таким образом можно получить объек UserIdentity привязанный к текущему пользователю из компонента users. client
+  // в свою очередь относится к конкретной сессии, которая может быть уже авторизована и привязана к конкретному
+  // UserIdentity. В обратном случае надо произвести авторизацию по cookie
   var ui = this.app.users.get_by_client( client );
+
+  // проверяем не авторизован ли уже наш клиент
   if ( !ui.is_guest() ) return true;
 
+  // если не авторизован считываем параметры для авторизации из cookie
   var login = client.get_cookie( 'blog_login' );
   var pass  = client.get_cookie( 'blog_pass' );
 
+  // если их нет, даже не пытаемся авторизоваться
   if ( !login || !pass ) return false;
 
   return this._authorize( login, pass, client );
 };
 
 
+/**
+ * Главная страница сайта. Этот метод указан в секции router.rules конфигурационного файла для корня сайта
+ *
+ * @param {Object} params параметры пришедшие с запросом
+ * @param {Client} client клиент совершающий действие
+ * @param {String} error ошибка которая может передасться из других действий для того чтобы показать главную страницу
+ * с ошибкой
+ */
 SiteController.prototype.index = function ( params, client, error ) {
   var self = this;
 
+  // ищем последние 10 топиков для показа их на странице
   this.models.post.find_all({
     limit : 10,
     order : 'date desc'
   })
+    // ошибку шлем клиенту, отобразится как 500 ошибка
     .on( 'error', client.send_error.bind( client ) )
     .on( 'success', function( posts ){
+      // если все хорошо - рендерим вьюшку и отсылаем клиенту
       self.send_response( 'posts_list.html', client, {
         posts : posts,
         error : error ? error : ''
@@ -53,53 +89,93 @@ SiteController.prototype.index = function ( params, client, error ) {
 };
 
 
+/**
+ * Регистрация
+ *
+ * @param {Object} params параметры пришедшие с запросом
+ *    pass  - пароль
+ *    login - логин
+ * @param {Client} client клиент совершающий действие
+ */
 SiteController.prototype.register = function ( params, client ) {
   var self = this;
   params.pass = crypto.createHash('md5').update( params.pass ).digest("hex");
 
+  // проверяем существует ли указанный логин
   this.models.user.exists( 'login=:login', {
     login : params.login
   } )
-    .on( 'error', client.send_error.bind( client ) )
+    .on( 'error', client.send_error.bind( client ) )  // 500 ошибка
     .on( 'success', function( user_exists ) {
+      // если логин уже занят - отправляем главную страницу с показом ошибки
       if( user_exists ) return self.index( null, client, 'This login already in use' );
 
+      // если нет создаем модель пользователя
       var user = new self.models.user;
+
+      // задаем ей параметры ( зададутся только параметры указанные в User.get_safe_attributes )
       user.set_attributes( params );
 
+      // сохраняем
       user.save()
-        .on( 'error', client.send_error.bind( client ) )
+        .on( 'error', client.send_error.bind( client ) )      // 500 ошибка
         .on( 'validation_error', function( errors ){
+          // не пройдена валидация
           self.index( null, client, errors.join('<br/>') );
         } )
 
         .on( 'success', function(  ) {
+          // все хорошо, логиним клиент
           self._login_client( client, user );
+
+          // и редиректим его на главную
           client.redirect( '/' );
         } );
     } );
 };
 
 
+/**
+ * Запрос на вход пользователя
+ *
+ * @param params
+ * @param client
+ */
 SiteController.prototype.login = function ( params, client ) {
   var self = this;
 
+  // пытаемся авотризовать клиента
   this._authorize(
     params.login,
     crypto.createHash('md5').update( params.pass ).digest("hex"),
     client,
-    client.redirect.bind( client, '/' ),
-    this.index.bind( this, null, client, 'Wrong email or/and password' )
+    client.redirect.bind( client, '/' ),                                  // успешно авторизован - редирект на главную
+    this.index.bind( this, null, client, 'Wrong email or/and password' )  // показ ошибки на главной
   );
 };
 
 
+/**
+ * Запрос на выход пользователя
+ *
+ * @param params
+ * @param client
+ */
 SiteController.prototype.logout = function ( params, client ) {
   this._logout_client( client );
   client.redirect( '/' );
 };
 
 
+/**
+ *
+ *
+ * @param login
+ * @param pass
+ * @param client
+ * @param success
+ * @param fail
+ */
 SiteController.prototype._authorize = function ( login, pass, client, success, fail ) {
   var self = this;
   return this.models.user.find_by_attributes( {
