@@ -1,6 +1,6 @@
 var DbCriteria    = require('./db_criteria');
 var DbExpression  = require('./db_expression');
-var AppModule     = require('app_module');
+var AppModule     = global.autodafe.AppModule;
 
 module.exports = CommandBuilder.inherits( AppModule );
 

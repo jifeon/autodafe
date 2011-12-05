@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 var path      = require('path');
 var fs        = require('fs');
 var dust      = require('dust');

@@ -1,10 +1,10 @@
 exports.get_batch = function( application, assert ) {
 
-  var DbSchema        = require('db/db_schema');
-  var DbTableSchema   = require('db/db_table_schema');
-  var DbColumnSchema  = require('db/db_column_schema');
-  var DbCriteria      = require('db/db_criteria');
-  var CommandBuilder  = require('db/command_builder');
+  var DbSchema        = require('autodafe/framework/db/db_schema');
+  var DbTableSchema   = require('autodafe/framework/db/db_table_schema');
+  var DbColumnSchema  = require('autodafe/framework/db/db_column_schema');
+  var DbCriteria      = global.autodafe.db.Criteria;
+  var CommandBuilder  = require('autodafe/framework/db/command_builder');
 
   function query( commands, i, callback ) {
     if ( i >= commands.length ) return callback();

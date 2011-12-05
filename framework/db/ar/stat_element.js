@@ -1,4 +1,4 @@
-var app_module = require('app_module');
+var app_module = global.autodafe.AppModule;
 
 module.exports = StatElement.inherits( app_module );
 

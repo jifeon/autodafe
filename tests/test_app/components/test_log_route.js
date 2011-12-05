@@ -1,4 +1,4 @@
-var LogRoute = require('logging/log_route');
+var LogRoute = require('../../../framework/logging/log_route');
 
 module.exports = TestLogRoute.inherits( LogRoute );
 

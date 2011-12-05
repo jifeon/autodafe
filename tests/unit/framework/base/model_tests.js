@@ -1,6 +1,6 @@
 exports.get_batch = function( application, assert ){
-  var TestModel = require( 'models/test_model' );
-  var Model     = require( 'model' );
+  var TestModel = require( 'autodafe/tests/test_app/models/test_model' );
+  var Model     = global.autodafe.Model;
 
   return {
     'raw model - ' : {

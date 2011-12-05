@@ -1,5 +1,5 @@
-var ClientConnection = require('client_connections/client_connection');
-var HTTPClient       = require('client_connections/http/http_client');
+var ClientConnection = require('../client_connection');
+var HTTPClient       = require('./http_client');
 var http             = require('http');
 var path             = require('path');
 var auth             = require('http-auth');

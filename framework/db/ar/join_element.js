@@ -1,10 +1,9 @@
-var AppModule         = require('app_module');
+var AppModule         = global.autodafe.AppModule;
 var JoinQuery         = require('./join_query');
 var ManyManyRelation  = require('./relations/many_many_relation');
 var HasManyRelation   = require('./relations/has_many_relation');
 var HasOneRelation    = require('./relations/has_one_relation');
 var BelongsToRelation = require('./relations/belongs_to_relation');
-var tools             = require('lib/tools');
 
 module.exports = JoinElement.inherits( AppModule );
 
@@ -122,7 +121,7 @@ JoinElement.prototype.find = function( criteria, callback ) {
     if ( e ) return callback(e);
 
 //    var children = Object.values( self.children );
-    var listener = tools.get_parallel_listener( self.stats.length/* + children.length*/, callback );
+    var listener = self.app.tools.get_parallel_listener( self.stats.length/* + children.length*/, callback );
     
 //    children.forEach( function( child ){
 //      child.find( {}, listener( 'error' ) );
@@ -150,7 +149,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     this.add_record( JSON.stringify( pk ), base_record )
   }
 
-  var listener = tools.get_parallel_listener( this.stats.length, after_stats.bind( this ) );
+  var listener = this.app.tools.get_parallel_listener( this.stats.length, after_stats.bind( this ) );
 
   this.stats.forEach( function( stat ){
     stat.query( listener( 'error' ) );
@@ -181,7 +180,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
       query.params = child.relation.params;
 
     query.elements[ child.id ] = true;
-    if( child.relation instanceof require('db/ar/relations/has_many_relation') ) {
+    if( child.relation instanceof require('./relations/has_many_relation') ) {
       query.limit   = child.relation.limit;
       query.offset  = child.relation.offset;
     }
@@ -232,7 +231,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     if ( e ) return callback(e);
 
 //    var children = Object.values( this.children );
-    var listener = tools.get_parallel_listener( this.stats.length/* + children.length*/, callback );
+    var listener = this.app.tools.get_parallel_listener( this.stats.length/* + children.length*/, callback );
 
 
 //    foreach(this.children as child) // find recursively

@@ -1,5 +1,5 @@
-var AppModule   = require('app_module');
-var DbCriteria  = require('db/db_criteria');
+var AppModule   = global.autodafe.AppModule;
+var DbCriteria  = global.autodafe.db.Criteria;
 
 module.exports = BaseActiveRelation.inherits( AppModule );
 
@@ -16,7 +16,7 @@ BaseActiveRelation.prototype._init = function( params ) {
   );
   this._.name       = params.name;
 
-  var Model = require('model');
+  var Model = global.autodafe.Model;
   if ( !Model.is_instantiate( params.model ) ) throw new Error(
     'Please specify correct model in %s.init'.format( this.class_name )
   );

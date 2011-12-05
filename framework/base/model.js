@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var Validator = require('validator');
+var AppModule = global.autodafe.AppModule;
+var Validator = require('./validator');
 
 module.exports = Model.inherits( AppModule );
 

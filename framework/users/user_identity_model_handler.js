@@ -1,4 +1,4 @@
-var ProxyHandler = require('lib/proxy_handlers/proxy_handler');
+var ProxyHandler = require('../lib/proxy_handlers/proxy_handler');
 
 module.exports = UserIdentityModelHandler.inherits( ProxyHandler );
 

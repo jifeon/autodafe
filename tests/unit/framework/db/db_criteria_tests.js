@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var DbCriteria = require( 'db/db_criteria' );
+  var DbCriteria = global.autodafe.db.Criteria;
 
   return {
     topic : application,

@@ -1,5 +1,5 @@
-var Session = require('session');
-var Client  = require('client_connections/client');
+var Session = require('../base/session');
+var Client  = require('../client_connections/client');
 
 module.exports = TestSession.inherits( Session );
 
@@ -9,7 +9,7 @@ function TestSession( params ) {
 
 
 TestSession.prototype._init = function( params ) {
-  var Application = require('application');
+  var Application = require('../base/application');
   if ( !Object.isObject( params ) || !Application.is_instantiate( params.app ) )
     throw new Error( '`app` should be instance of Application in `TestSession.init`' );
 

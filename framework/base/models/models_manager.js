@@ -1,5 +1,5 @@
-var AppModule           = require('app_module');
-var Model               = require('model');
+var AppModule           = global.autodafe.AppModule;
+var Model               = global.autodafe.Model;
 var ModelProxyHandler   = require('./model_proxy_handler');
 var path                = require('path');
 var fs                  = require('fs');

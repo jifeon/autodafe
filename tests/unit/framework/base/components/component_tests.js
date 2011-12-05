@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var Component = require('components/component');
+  var Component = global.autodafe.Component;
 
   return {
     topic : application,

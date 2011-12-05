@@ -1,4 +1,4 @@
-var Controller  = require( 'controller' );
+var Controller  = global.autodafe.Controller;
 var crypto      = require('crypto');
 
 module.exports = SiteController.inherits( Controller ); // наследуем от Controller

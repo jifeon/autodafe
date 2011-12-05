@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 var WebSocket = require('websocket-client').WebSocket;
 
 

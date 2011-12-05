@@ -1,5 +1,5 @@
-var ProxyHandler        = require('lib/proxy_handlers/proxy_handler');
-var AppModule           = require('app_module');
+var ProxyHandler        = require('../../lib/proxy_handlers/proxy_handler');
+var AppModule           = global.autodafe.AppModule;
 var path                = require('path');
 
 module.exports = ModelsProxyHandler.inherits( ProxyHandler );

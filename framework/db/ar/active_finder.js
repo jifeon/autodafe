@@ -1,4 +1,4 @@
-var AppModule       = require('app_module');
+var AppModule       = global.autodafe.AppModule;
 var JoinElement     = require('./join_element');
 var StatElement     = require('./stat_element');
 var ActiveRelation  = require('./relations/active_relation');
@@ -14,7 +14,7 @@ function ActiveFinder( params ) {
 ActiveFinder.prototype._init = function( params ) {
   this.super_._init( params );
   
-  var Model = require('model');
+  var Model = global.autodafe.Model;
   if ( !Model.is_instantiate( params.model ) ) throw new Error(
     '`model` is required in ActiveFinder.init'
   );

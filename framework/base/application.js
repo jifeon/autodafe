@@ -2,15 +2,15 @@ var tools                 = require('../lib/tools');
 var path                  = require('path');
 var fs                    = require('fs');
 var dust                  = require('dust');
-var Session               = require('session');
-var Router                = require('routing/router');
+var Session               = require('./session');
+var Router                = require('./routing/router');
 var Logger                = require('../logging/logger');
-var ComponentsManager     = require('components/components_manager');
-var ModelsManager         = require('models/models_manager');
-var Component             = require('components/component');
+var ComponentsManager     = require('./components/components_manager');
+var ModelsManager         = require('./models/models_manager');
+var Component             = global.autodafe.Component;
 var ModelsProxyHandler    = require('./models/models_proxy_handler');
-var AutodafePart          = require('autodafe_part');
-var AppModule             = require('app_module');
+var AutodafePart          = global.autodafe.AutodafePart;
+var AppModule             = global.autodafe.AppModule;
 
 module.exports = Application.inherits( AutodafePart );
 

@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var Component = require('components/component');
+var AppModule = global.autodafe.AppModule;
+var Component = global.autodafe.Component;
 var path      = require('path');
 var fs        = require('fs');
 

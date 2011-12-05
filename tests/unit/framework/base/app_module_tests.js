@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var AppModule       = require('app_module');
+  var AppModule       = global.autodafe.AppModule;
 
   var test_log_route  = application.log_router.get_route( 'test' );
 

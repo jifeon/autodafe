@@ -1,5 +1,5 @@
-var FunctionProxyHandler = require('lib/proxy_handlers/function_proxy_handler');
-var ProxyHandler         = require('lib/proxy_handlers/proxy_handler');
+var FunctionProxyHandler = require('../../lib/proxy_handlers/function_proxy_handler');
+var ProxyHandler         = require('../../lib/proxy_handlers/proxy_handler');
 
 module.exports = ModelProxyHandler.inherits( FunctionProxyHandler );
 

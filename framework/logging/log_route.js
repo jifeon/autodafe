@@ -1,5 +1,5 @@
 var Message   = require('./message');
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = LogRoute.inherits( AppModule );
 

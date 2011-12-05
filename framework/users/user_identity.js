@@ -1,7 +1,7 @@
-var AppModule                 = require('app_module');
+var AppModule                 = global.autodafe.AppModule;
 var UserIdentityModelHandler  = require('./user_identity_model_handler');
 var UserIdentityARHandler     = require('./user_identity_active_record_handler');
-var Model                     = require('model');
+var Model                     = global.autodafe.Model;
 
 module.exports = UserIdentity.inherits( AppModule );
 

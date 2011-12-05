@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var AutodafePart = require('autodafe_part');
+  var AutodafePart = global.autodafe.AutodafePart;
 
   return {
     topic : function() {

@@ -1,4 +1,4 @@
-var AppModule   = require('app_module');
+var AppModule   = global.autodafe.AppModule;
 var DbCommand   = require( './db_command' );
 
 module.exports = DbConnection.inherits( AppModule );

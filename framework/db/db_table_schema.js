@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var DbSchema  = require('db/db_schema');
+var AppModule = global.autodafe.AppModule;
+var DbSchema  = require('./db_schema');
 
 module.exports = DbTableSchema.inherits( AppModule );
 

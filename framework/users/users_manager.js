@@ -1,4 +1,4 @@
-var Component         = require( 'components/component' );
+var Component         = global.autodafe.Component;
 var UserIdentity      = require( './user_identity' );
 var RolesSet          = require( './roles_set' );
 var ModelsRolesSet    = require( './models_roles_set' );

@@ -1,9 +1,9 @@
-var Component   = require( 'components/component' );
-var TestsBatch  = require( 'tests/tests_batch' );
+var Component   = global.autodafe.Component;
+var TestsBatch  = require( './tests_batch' );
 var path        = require( 'path' );
 var fs          = require( 'fs' );
 var assert      = require( 'assert' );
-var FixtureManager = require( 'tests/db_fixtures_manager' );
+var FixtureManager = require( './db_fixtures_manager' );
 
 module.exports = TestComponent.inherits( Component );
 

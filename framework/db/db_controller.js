@@ -1,4 +1,4 @@
-var Component       = require('components/component');
+var Component       = global.autodafe.Component;
 var MysqlConnection = require('./mysql/mysql_connection');
 
 module.exports = DbController.inherits( Component );

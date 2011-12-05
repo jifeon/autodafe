@@ -1,19 +1,19 @@
 exports.get_batch = function( application, assert ) {
-  var Router            = require( 'routing/router' );
-  var Logger            = require( 'logging/logger' );
-  var ComponentsManager = require( 'components/components_manager' );
-  var Component         = require( 'components/component' );
+  var Router            = require( 'autodafe/framework/base/routing/router' );
+  var Logger            = require( 'autodafe/framework/logging/logger' );
+  var ComponentsManager = require( 'autodafe/framework/base/components/components_manager' );
+  var Component         = global.autodafe.Component;
   var Autodafe          = global.autodafe;
-  var Application       = require( 'application' );
-  var LogRouter         = require( 'logging/log_router' );
-  var TestComponent     = require( 'tests/test_component' );
-  var TestModel         = require( 'models/test_model' );
-  var Client            = require( 'client_connections/client' );
-  var Session           = require( 'session' );
-  var ClientConnection  = require( 'client_connections/client_connection' );
+  var Application       = require( 'autodafe/framework/base/application' );
+  var LogRouter         = require( 'autodafe/framework/logging/log_router' );
+  var TestComponent     = require( 'autodafe/framework/tests/test_component' );
+  var TestModel         = require( 'autodafe/tests/test_app/models/test_model.js' );
+  var Client            = require( 'autodafe/framework/client_connections/client' );
+  var Session           = require( 'autodafe/framework/base/session' );
+  var ClientConnection  = require( 'autodafe/framework/client_connections/client_connection' );
 
   var path              = require( 'path' );
-  var config            = require( 'config/main' );
+  var config            = require( 'autodafe/tests/test_app/config/main' );
 
   var test_vars         = {
     client : new Client({

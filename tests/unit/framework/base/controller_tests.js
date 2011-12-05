@@ -1,9 +1,9 @@
 exports.get_batch = function( application, assert ) {
-  var Controller  = require( 'controller' );
+  var Controller  = global.autodafe.Controller;
 
   return {
     topic : function() {
-      var TestController = require('controllers/test');
+      var TestController = require('autodafe/tests/test_app/controllers/test');
       return new TestController({
         app   : application,
         name  : 'test'

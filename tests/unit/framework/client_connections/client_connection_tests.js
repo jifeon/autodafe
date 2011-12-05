@@ -1,7 +1,7 @@
 exports.get_batch = function( application, assert ) {
-  var Client            = require( 'client_connections/client' );
-  var ClientConnection  = require( 'client_connections/client_connection' );
-  var Session           = require( 'session' );
+  var Client            = require( 'autodafe/framework/client_connections/client' );
+  var ClientConnection  = require( 'autodafe/framework/client_connections/client_connection' );
+  var Session           = require( 'autodafe/framework/base/session' );
 
   var session_id = 'client_connection_test_session';
   var client     = null;

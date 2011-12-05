@@ -1,4 +1,4 @@
-var Component = require('components/component');
+var Component = global.autodafe.Component;
 
 module.exports = NestedComponent.inherits( Component );
 

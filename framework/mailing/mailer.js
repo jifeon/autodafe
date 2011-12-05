@@ -1,4 +1,4 @@
-var Component = require('components/component');
+var Component = global.autodafe.Component;
 var email     = require('emailjs');
 var os        = require('os');
 

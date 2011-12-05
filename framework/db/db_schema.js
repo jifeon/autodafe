@@ -1,6 +1,6 @@
 var CommandBuilder = require( './command_builder' );
-var AppModule      = require( 'app_module' );
-var DbConnection   = require( 'db/db_connection' );
+var AppModule      = global.autodafe.AppModule;
+var DbConnection   = require( './db_connection' );
 
 module.exports = DbSchema.inherits( AppModule );
 

@@ -1,4 +1,4 @@
-var Model = require('model');
+var Model = global.autodafe.Model;
 
 module.exports = User.inherits( Model );
 

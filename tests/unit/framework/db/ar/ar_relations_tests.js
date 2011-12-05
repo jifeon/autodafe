@@ -1,9 +1,9 @@
 exports.get_batch = function( application, assert ) {
-  var User      = require( 'models/user' );
-  var Comment   = require( 'models/comment' );
-  var Category  = require( 'models/category' );
-  var Order     = require( 'models/order' );
-  var Post      = require( 'models/post' );
+  var User      = require( 'autodafe/tests/test_app/models/user' );
+  var Comment   = require( 'autodafe/tests/test_app/models/comment' );
+  var Category  = require( 'autodafe/tests/test_app/models/category' );
+  var Order     = require( 'autodafe/tests/test_app/models/order' );
+  var Post      = require( 'autodafe/tests/test_app/models/post' );
 
   function lazy_relation_stat_test( model, count, related, related_counts ){
     var tests = {

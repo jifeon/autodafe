@@ -1,17 +1,17 @@
 exports.get_batch = function( application, assert ) {
   var Autodafe          = global.autodafe;
-  var LogRouter         = require( 'logging/log_router' );
-  var ConsoleRoute      = require( 'logging/console_log_route' );
-  var UsersManager      = require( 'users/users_manager' );
-  var Component         = require( 'components/component' );
-  var WebSocketsServer  = require( 'client_connections/web_sockets/web_sockets_server' );
+  var LogRouter         = require( 'autodafe/framework/logging/log_router' );
+  var ConsoleRoute      = require( 'autodafe/framework/logging/console_log_route' );
+  var UsersManager      = require( 'autodafe/framework/users/users_manager' );
+  var Component         = global.autodafe.Component;
+  var WebSocketsServer  = require( 'autodafe/framework/client_connections/web_sockets/web_sockets_server' );
 
   return {
     topic : application.components,
 
     'loaded components' : {
       topic : function() {
-        var config = require('config/config_with_different_components');
+        var config = require('autodafe/tests/test_app/config/config_with_different_components');
 
         var self  = this;
         var app   = Autodafe.create_application( config );
@@ -27,7 +27,7 @@ exports.get_batch = function( application, assert ) {
           assert.instanceOf( app.log_router.get_route( 'console' ), ConsoleRoute );
         },
         'true' : function( e, app ){
-          var Tests = require( 'tests/test_component' );
+          var Tests = require( 'autodafe/framework/tests/test_component' );
           assert.instanceOf( app.tests, Tests );
         },
         'false' : function( e, app ){

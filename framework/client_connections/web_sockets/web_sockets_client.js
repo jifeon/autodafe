@@ -1,5 +1,5 @@
 var Client = require('../client');
-var cookie = require('lib/cookie');
+var cookie = require('../../lib/cookie');
 
 module.exports = WebSocketsClient.inherits( Client );
 

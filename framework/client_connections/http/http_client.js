@@ -1,5 +1,5 @@
-var Client          = require('client_connections/client');
-var cookie          = require('lib/cookie');
+var Client          = require('../client');
+var cookie          = require('../../lib/cookie');
 var formidable      = require('formidable');
 var url             = require('url');
 var content_types   = require('./content-types');

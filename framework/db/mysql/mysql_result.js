@@ -1,4 +1,4 @@
-var AutodafePart = require('autodafe_part');
+var AutodafePart = global.autodafe.AutodafePart;
 
 module.exports = MysqlResult.inherits( AutodafePart );
 
