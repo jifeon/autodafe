@@ -1,6 +1,6 @@
 {
   "name"          : "autodafe",
-  "description"   : "mvc framework for node with mysql orm, web sockets support and a lot of tasty buns",
+  "description"   : "mvc framework for node with mysql orm, web sockets support, logging, routing, user roles etc",
   "keywords"      : [ "mvc", "framework", "mysql", "orm", "websockets" ],
   "version"       : "0.2.0",
   "author"        : "Andrey Balakirev <balakirev.andrey@gmail.com>",
@@ -18,7 +18,7 @@
     "vows"                  : ">=0.5.8",
     "emailjs"               : ">=0.1.8",
     "mysql"                 : ">=0.9.0",
-    "dust"                  : ">=0.3.0",
+    "dust.js"               : ">=0.1.0",
     "formidable"            : ">=1.0.2",
     "http-auth"             : ">=1.0.4"
   },

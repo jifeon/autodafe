@@ -1,5 +1,4 @@
 var Model             = global.autodafe.Model;
-var DbCommand         = require('../db_command');
 var DbCriteria        = global.autodafe.db.Criteria;
 var Emitter           = process.EventEmitter;
 var ActiveFinder      = require('./active_finder');

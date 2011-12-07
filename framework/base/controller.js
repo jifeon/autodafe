@@ -1,7 +1,7 @@
 var AppModule = global.autodafe.AppModule;
 var path      = require('path');
 var fs        = require('fs');
-var dust      = require('dust');
+var dust      = require('dust.js');
 
 // disable whitespace compression
 dust.optimizers.format = function( ctx, node ) {

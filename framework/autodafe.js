@@ -10,9 +10,9 @@ module.exports = new function() {
   this.Controller       = require( './base/controller.js' );
   this.Model            = require( './base/model.js' );
   this.db               = {};
-  this.db.ActiveRecord  = require('./db/ar/active_record.js'),
-  this.db.Expression    = require('./db/db_expression.js'),
-  this.db.Criteria      = require('./db/db_criteria.js')
+  this.db.Expression    = require('./db/db_expression.js');
+  this.db.Criteria      = require('./db/db_criteria.js');
+  this.db.ActiveRecord  = require('./db/ar/active_record.js');
 
   var Application           = require('./base/application.js');
 

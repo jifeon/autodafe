@@ -17,7 +17,10 @@ BaseActiveRelation.prototype._init = function( params ) {
   this._.name       = params.name;
 
   var Model = global.autodafe.Model;
-  if ( !Model.is_instantiate( params.model ) ) throw new Error(
+//  console.log( params.model.class_name );
+//  console.log( params.model instanceof Model );
+  // todo: вернуть проверку после ProxyHandler.get_proxy
+  if ( !/*Model.is_instantiate(*/ params.model /*)*/ ) throw new Error(
     'Please specify correct model in %s.init'.format( this.class_name )
   );
   this._.model = params.model;

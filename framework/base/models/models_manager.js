@@ -1,6 +1,7 @@
 var AppModule           = global.autodafe.AppModule;
 var Model               = global.autodafe.Model;
-var ModelProxyHandler   = require('./model_proxy_handler');
+var ModelProxyHandler            = require('./model_proxy_handler');
+var ModelConstructorProxyHandler = require('./model_constructor_proxy_handler');
 var path                = require('path');
 var fs                  = require('fs');
 
@@ -66,7 +67,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
 
     var name  = path.basename( file_path, '.js' );
     try {
-      var model = this._get_by_constructor( model_constructor );
+      var model = this._get_model_proxy( model_constructor );
     } catch (e) {
       this.log( 'Model "%s" is not loaded'.format( name ), 'error' );
       this.log( e );
@@ -82,7 +83,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
     this.log( 'Model "%s" is loaded'.format( name ), 'trace' );
   }
 
-  listener.check_count.bind( listener );
+  listener.check_count();
 };
 
 
@@ -92,18 +93,9 @@ ModelsManager.prototype._loading_complete = function ( callback ) {
 };
 
 
-ModelsManager.prototype._get_by_constructor = function ( constructor, params ) {
-  var self = this;
-
-  var create_model = function( construct_params ) {
-    return self.implement_model( constructor, construct_params );
-  };
-
-  var model_handler = new ModelProxyHandler({
-    target       : function() {
-      return self._get_instance( constructor, params );
-    },
-    on_construct : create_model
+ModelsManager.prototype._get_model_proxy = function ( constructor, params ) {
+  var model_handler = new ModelConstructorProxyHandler({
+    instance : this._get_instance( constructor, params )
   });
 
   return model_handler.get_proxy();
@@ -111,14 +103,11 @@ ModelsManager.prototype._get_by_constructor = function ( constructor, params ) {
 
 
 ModelsManager.prototype.implement_model = function ( constructor, params ) {
-  var model_instance = this._get_instance( constructor, params );
-
   var handler = new ModelProxyHandler({
-    target    : model_instance,
-    instance  : model_instance
+    target : this._get_instance( constructor, params )
   });
 
-  return handler.get_object_proxy();
+  return handler.get_proxy();
 };
 
 

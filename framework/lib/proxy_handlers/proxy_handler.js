@@ -49,7 +49,8 @@ function ProxyHandler( params ) {
 
 
 ProxyHandler.prototype._init = function ( params ) {
-  this.target = params.target
+  params      = params        || {};
+  this.target = params.target || {};
   this._proxy = null;
 };
 
@@ -199,7 +200,8 @@ ProxyHandler.prototype.keys = function() {
 
 ProxyHandler.prototype.get_proxy = function () {
   if ( !this._proxy )
-    this._proxy = Proxy.create( this, Object.getPrototypeOf( this.target ) );
+    //todo: вернуть прототип обратно и пофиксить баги которые возникают при асинхронной загрузке моделей при этом
+    this._proxy = Proxy.create( this/*, Object.getPrototypeOf( this.target )*/ );
 
   return this._proxy;
 };
