@@ -39,7 +39,6 @@ MysqlTableSchema.prototype._resolve_table_name = function( name ) {
   }
 }
 
-
 MysqlTableSchema.prototype._find_columns = function() {
   var sql             = 'SHOW COLUMNS FROM ' + this.raw_name;
   var self            = this;
@@ -74,7 +73,7 @@ MysqlTableSchema.prototype._find_columns = function() {
 }
 
 
-MysqlTableSchema.prototype._find_constrains = function () {
+MysqlTableSchema.prototype._find_constrains = function ( r ) {
   var self = this;
   var sql  = 'SHOW CREATE TABLE ' + this.raw_name;
   

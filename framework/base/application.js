@@ -36,11 +36,11 @@ Application.prototype._init = function ( config ) {
 
   if ( typeof this._config.name != 'string' )
     throw new Error( 'Please specify application name in your config file' );
-  this._.name     = this._config.name;
+  this._.name         = this._config.name;
 
   if ( !this._config.base_dir )
     throw new Error( 'Please specify `base_dir` in your config file!' );
-  this._.base_dir = path.normalize( this._config.base_dir );
+  this._.base_dir     = path.normalize( this._config.base_dir );
 
   this._.is_running       = false;
 
@@ -62,15 +62,15 @@ Application.prototype._init = function ( config ) {
 
 
 Application.prototype._init_core = function ( callback ) {
-  if ( this._config.cache_views !== false ) this.load_views();
+//  if ( this._config.cache_views !== false ) this.load_views();
 
   this._init_models( /*before*/ this._init_router );
 
-  this.on( 'core_initialized', callback );
+//  this.on( 'core_initialized', callback );
 
-  this.on( 'initialized', function() {
-    this.run = this.__run;
-  } );
+//  this.on( 'initialized', function() {
+//    this.run = this.__run;
+//  } );
 };
 
 

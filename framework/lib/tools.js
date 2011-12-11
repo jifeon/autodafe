@@ -146,20 +146,31 @@ var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );
 
-  Object.defineProperty( this.prototype, 'super_', {
-    get : function() {
+  this.prototype.__defineGetter__( 'super_', function() {
+    var handler = new InheritingProxyHandler( {
+      target  : super_class.prototype,
+      context : this
+    } );
 
-      var handler = new InheritingProxyHandler( {
-        target  : super_class.prototype,
-        context : this
-      } );
-
-      return handler.get_proxy();
-    }
+    return handler.get_proxy();
   } );
 
   return this;
 }
+
+//Function.prototype.inherits = function( super_class ) {
+//  require('util').inherits( this, super_class );
+//
+//  var handler = new InheritingProxyHandler( {
+//    target  : super_class.prototype,
+//    context : this
+//  } );
+//
+//  this.prototype.super_ = handler.get_proxy();
+//
+//  return this;
+//}
+
 
 
 Function.prototype.is_instantiate = function ( obj ) {

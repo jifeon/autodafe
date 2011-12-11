@@ -31,12 +31,9 @@ InheritingProxyHandler.prototype.get = function ( receiver, name ) {
           !super_prototype.hasOwnProperty( name ) ||
           calling_chain.indexOf( super_prototype[ name ] ) != -1
         ) {
-          try {
-            super_prototype = super_prototype.constructor.super_.prototype;
-          }
-          catch ( e ) {
+          super_prototype = Object.getPrototypeOf( super_prototype );
+          if ( super_prototype === null )
             throw new TypeError( name + ' is not a function' );
-          }
         }
 
         var method = super_prototype[ name ];
@@ -54,3 +51,25 @@ InheritingProxyHandler.prototype.get = function ( receiver, name ) {
         return result;
       };
 };
+
+
+//InheritingProxyHandler.prototype.get = function ( receiver, name ) {
+//  var self = this;
+//
+//  if ( typeof this.target[name] != 'function' ) return this.target[name];
+//
+//  var super_prototype = self.target;
+//  while ( !super_prototype.hasOwnProperty( name ) ) {
+//    super_prototype = Object.getPrototypeOf( super_prototype );
+//    if ( super_prototype === null )
+//      throw new TypeError( name + ' is not a function' );
+//  }
+//
+//  var super_pointer_handler = new ProxyHandler({ target : self.context });
+//  super_pointer_handler.get = function( r, name ){
+//    if ( name == 'super_' ) return super_prototype.super_;
+//    return this.__proto__.get.call( this, r, name );
+//  }
+//
+//  return super_prototype[ name ].bind( super_pointer_handler.get_proxy() );
+//};
