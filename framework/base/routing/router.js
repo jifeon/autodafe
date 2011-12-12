@@ -89,32 +89,27 @@ Router.prototype.throw_error = function ( message, number ) {
 };
 
 
-Router.prototype.route = function ( route_rule, params, client, connection_type ) {
-  var route;
-  var matches;
+Router.prototype.route = function ( query ) {
 
-  for ( var i = 0, i_ln = this._routes.length; i < i_ln; i++ ) {
-    route       = this._routes[ i ];
-    if ( matches = route.rule.exec( route_rule ) ) break;
-  }
+  if ( !this._routes.some( function( route ){
+    return route.is_suitable_for( query, true );
+  } ) )
+    this.throw_error( ('Route to `{route_rule}` failed. ' +
+      'File not found and route not specified in section router.rules of configuration file or ' +
+      'specified for other protocol or query type than `{current_ct}`').format( {
+        '{route_rule}' : query.action,
+        '{current_ct}' : query.connection_type
+      } )
+    );
 
-  if ( !matches )
-    this.throw_error( 'Route `%s` is not found in section router.rules of configuration file'.format( route_rule ) );
-
+  var route       = query.route;
   var controller  = this._controllers[ route.controller ];
   if ( !controller ) this.throw_error( 'Controller "%s" is not found'.format( route.controller ) );
 
-  if ( !route.is_allowed_con_type( connection_type ) )
-    this.throw_error( 'Route `%s` is not allowed for connection type `%s`'.format( route.path, connection_type ), 403 );
-
   this.log( 'Route to `%s`'.format( route.path ), 'trace' );
 
-  for ( var i = 0, i_ln = route.rule_params.length; i < i_ln; i++ ) {
-    params[ route.rule_params[i] ] = matches[ i+1 ];
-  }
-
   try {
-    return controller.run_action( route.action, params, client );
+    return controller.run_action( route.action, query.params, query.client );
   }
   catch ( e ) {
     e.number = 404;

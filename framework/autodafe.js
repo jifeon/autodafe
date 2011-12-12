@@ -5,7 +5,7 @@ var tools                 = require( './lib/tools' );
 var Application           = require( 'application' );
 var http                  = require( 'http' );
 
-var Autodafe = global.autodafe = module.exports = new function() {
+global.autodafe = module.exports = new function() {
 
   var server_by_port = {};
 

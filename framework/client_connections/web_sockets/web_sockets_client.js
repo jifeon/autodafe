@@ -45,7 +45,13 @@ WebSocketsClient.prototype.__receive = function ( data ) {
   if ( typeof data != 'object' )
     return this.log( 'Message "%s" should be javascript Object'.format( data ), 'warning' );
 
-  this.super_.receive( data.action, data.params, 'ws' );
+  var query = this._create_query({
+    action          : data.action,
+    params          : data.params,
+    connection_type : 'ws'
+  });
+
+  this.super_.receive( query );
 };
 
 

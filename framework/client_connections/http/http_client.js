@@ -1,7 +1,6 @@
 var Client          = require('client_connections/client');
 var cookie          = require('lib/cookie');
 var formidable      = require('formidable');
-var url             = require('url');
 var content_types   = require('./content-types');
 var fs              = require('fs');
 var path            = require('path');
@@ -45,14 +44,18 @@ HTTPClient.prototype._init = function( params ) {
 
 
 HTTPClient.prototype.receive = function () {
-  var parsed_url      = url.parse( this.request.url, true );
+  var query = this._create_query( {
+    url             : this.request.url,
+    host            : this.request.headers.host,
+    connection_type : this.request.method.toLowerCase()
+  });
 
-  if ( this.request.method.toLowerCase() == 'post' ) this._receive_post( parsed_url.pathname );
-  else this._receive_get( parsed_url );
+  if ( query.connection_type == 'post' ) this._receive_post( query );
+  else this._receive_get( query );
 };
 
 
-HTTPClient.prototype._receive_post = function ( path ) {
+HTTPClient.prototype._receive_post = function ( query ) {
   var self = this;
 
   this._.post_form              = new formidable.IncomingForm;
@@ -62,27 +65,24 @@ HTTPClient.prototype._receive_post = function ( path ) {
     this.post_form.parse( this.request, function( e, fields, files ) {
       if ( e ) return self.send_error( e );
 
-      var params = Object.merge( fields, files );
-      if ( self.connected ) self.super_.receive( path, params, 'post' );
-      else self.on( 'connect', self.super_.receive.bind( self, path, params, 'post' ) );
+      query.params = Object.merge( fields, files );
 
+      if ( self.connected )    self.super_.receive(            query );
+      else self.on( 'connect', self.super_.receive.bind( self, query ) );
     });
   }
   catch( e ) { this.send_error( e ); }
 };
 
 
-HTTPClient.prototype._receive_get = function ( parsed_url ) {
+HTTPClient.prototype._receive_get = function ( query ) {
   // check root folder: /folder/path/to/file
-  var pathname    = parsed_url.pathname;
-  var matches = /^\/(.*?)(\/(.*))?$/.exec( pathname );
+  var matches = /^\/(.*?)(\/(.*))?$/.exec( query.parsed_url.pathname );
   var folder  = this.connection.get_root_folder( matches && matches[1] || '' );
   if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, matches && matches[3] || '' ) );
 
-  var params = parsed_url.query;
-  var method = this.request.method.toLowerCase();
-  if ( this.connected ) this.super_.receive( pathname, params, method );
-  else this.on( 'connect', this.super_.receive.bind( this, pathname, params, method ) );
+  if ( this.connected )    this.super_.receive(            query );
+  else this.on( 'connect', this.super_.receive.bind( this, query ) );
 };
 
 
@@ -177,7 +177,8 @@ HTTPClient.prototype.send_error = function ( e, number ) {
   this.response.statusCode = e.number;
 
   try {
-    this.app.router.route( '/' + e.number, null, this );
+    var query = this._create_query({ action : '/' + e.number });
+    this.app.router.route( query );
   }
   catch( err ) {
     this.end( '<h1>Error %s. %s</h1>'.format( e.number, this.errors[ e.number ] || '' ), 'utf8' );
