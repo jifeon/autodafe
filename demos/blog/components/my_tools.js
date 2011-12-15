@@ -40,6 +40,6 @@ MyTools.prototype._init = function ( params ) {
    * @return {String}
    */
   this.app.tools.dust.filters.n2br = function( value ){
-    return value.replace( /\n/g, '<br/>' );
+    return value.replace( /\r\n|\r|\n/g, '<br/>' );
   };
 };

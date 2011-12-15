@@ -77,6 +77,9 @@ Object.values = function( obj ) {
 
 
 Object.recursive_merge = function( obj1, obj2 ) {
+  obj1 = obj1 || {};
+  obj2 = obj2 || {};
+
   if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
 
   var res = Object.clone( obj1 );
