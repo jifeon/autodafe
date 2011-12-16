@@ -147,30 +147,19 @@ Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );
 
   this.prototype.__defineGetter__( 'super_', function() {
+    if ( this.__super__ ) return this.__super__;
+
     var handler = new InheritingProxyHandler( {
-      target  : super_class.prototype,
+      target  : Object.getPrototypeOf( this ),
       context : this
     } );
 
-    return handler.get_proxy();
+    this.__super__ = handler.get_proxy();
+    return this.__super__;
   } );
 
   return this;
 }
-
-//Function.prototype.inherits = function( super_class ) {
-//  require('util').inherits( this, super_class );
-//
-//  var handler = new InheritingProxyHandler( {
-//    target  : super_class.prototype,
-//    context : this
-//  } );
-//
-//  this.prototype.super_ = handler.get_proxy();
-//
-//  return this;
-//}
-
 
 
 Function.prototype.is_instantiate = function ( obj ) {
