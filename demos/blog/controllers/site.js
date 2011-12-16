@@ -70,22 +70,35 @@ SiteController.prototype.connect_client = function ( client ){
  * с ошибкой
  */
 SiteController.prototype.index = function ( params, client, error ) {
-  var self = this;
+  var self = this,
+      page = parseInt( params.page ) - 1 || 0;
 
-  // ищем последние 10 топиков для показа их на странице
-  this.models.post.find_all({
-    limit : 10,
-    order : 'date desc'
-  })
+  // ищем 10 топиков для показа их на странице и общее кол-во топиков
+  var listener = this.app.tools.create_async_listener( 2, function( send_params ){
     // ошибку шлем клиенту, отобразится как 500 ошибка
-    .on( 'error', client.send_error.bind( client ) )
-    .on( 'success', function( posts ){
-      // если все хорошо - рендерим вьюшку и отсылаем клиенту
-      self.send_response( 'posts_list.html', client, {
-        posts : posts,
-        error : error ? error : ''
-      } );
-    } );
+    if( send_params.error ) return client.send_error();
+    // если все хорошо - рендерим вьюшку и отсылаем клиенту
+    self.send_response( 'posts_list.html', client, {
+      posts : send_params.posts,
+      error : error ? error : '',
+      pages : self.app.create_widget( 'pages', {
+        count          : send_params.count,
+        items_per_page : 10,
+        link_to        : 'site.index',
+        link_params    : {
+          page : page + 1
+        }
+        } )
+    } )
+  } );
+
+  this.models.post.find_all({
+    offset : page * 10,
+    limit  : 10,
+    order  : 'date desc'
+  }).re_emit( 'error', 'success', listener.get_emitter( 'posts' ));
+
+  this.models.post.count().re_emit( 'error', 'success', listener.get_emitter( 'count' ));
 };
 
 

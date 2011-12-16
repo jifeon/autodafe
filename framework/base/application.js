@@ -318,3 +318,7 @@ Application.prototype.get_session = function ( id, client ) {
 Application.prototype.close = function () {
   this.emit( 'close' );
 };
+
+Application.prototype.create_widget = function( widget_name, params ){
+  return this.components.create_widget( widget_name, params );
+}
