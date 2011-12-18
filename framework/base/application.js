@@ -62,15 +62,15 @@ Application.prototype._init = function ( config ) {
 
 
 Application.prototype._init_core = function ( callback ) {
-//  if ( this._config.cache_views !== false ) this.load_views();
+  if ( this._config.cache_views !== false ) this.load_views();
 
   this._init_models( /*before*/ this._init_router );
 
-//  this.on( 'core_initialized', callback );
+  this.on( 'core_initialized', callback );
 
-//  this.on( 'initialized', function() {
-//    this.run = this.__run;
-//  } );
+  this.on( 'initialized', function() {
+    this.run = this.__run;
+  } );
 };
 
 

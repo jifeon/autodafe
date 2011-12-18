@@ -45,14 +45,14 @@ ActiveRecord.prototype._init = function( params ) {
   var self = this;
 
   this.db_connection.db_schema.get_table( this.table_name, function( err, table ) {
-//    if ( err ) {
-//      err.message = 'Error while loading table `%s`. '.format( this.table_name ) + err.message;
-//      throw err;
-//    }
-//
-//    this._.table      = table;
-//    this._.is_inited  = true;
-//    this.emit( 'initialized' );
+    if ( err ) {
+      err.message = 'Error while loading table `%s`. '.format( this.table_name ) + err.message;
+      throw err;
+    }
+
+    this._.table      = table;
+    this._.is_inited  = true;
+    this.emit( 'initialized' );
   }, this );
 
   this.app.on( 'models_loaded', function() {

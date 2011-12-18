@@ -54,6 +54,15 @@ Client.prototype._after_connect = function () {
 };
 
 
+Client.prototype._create_query = function ( params ) {
+  params        = params || {};
+  params.app    = this.app;
+  params.client = this;
+
+  return new Query( params );
+};
+
+
 Client.prototype.disconnect = function () {
   this.log( '%s is disconnected ( session id=%s )'.format( this.class_name, this.get_session_id() ) );
 
@@ -62,14 +71,14 @@ Client.prototype.disconnect = function () {
 };
 
 
-Client.prototype.receive = function ( action, params, connection_type ) {
+Client.prototype.receive = function ( query ) {
   this.log( 'Message has been received from %s. Session id - `%s`'.format( this.class_name, this.get_session_id() ) );
 
-  this.emit( 'receive_request', action, params, connection_type );
-  this.connection.emit( 'receive_request', action, params, connection_type, this );
+  this.emit( 'receive_request', query );
+  this.connection.emit( 'receive_request', query );
 
   try {
-    this.app.router.route( action, params, this, connection_type );
+    this.app.router.route( query );
   }
   catch ( e ) {
     this.send_error( e );

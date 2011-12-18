@@ -77,7 +77,6 @@ ModelsManager.prototype.load_models = function ( callback ) {
     if ( !model.is_inited ) {
       listener.count++;
       model.on( 'initialized', listener.listen() );
-//      listener.register();
     }
 
     this._models[ name ] = model;

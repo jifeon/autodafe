@@ -73,7 +73,7 @@ MysqlTableSchema.prototype._find_columns = function() {
 }
 
 
-MysqlTableSchema.prototype._find_constrains = function ( r ) {
+MysqlTableSchema.prototype._find_constrains = function () {
   var self = this;
   var sql  = 'SHOW CREATE TABLE ' + this.raw_name;
   
