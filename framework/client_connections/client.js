@@ -1,4 +1,5 @@
 var AppModule = global.autodafe.AppModule;
+var Query     = require('./query');
 
 module.exports = Client.inherits( AppModule );
 
