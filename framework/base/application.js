@@ -24,7 +24,7 @@ Application.instances = [];
 Application.prototype._init = function ( config ) {
   this.setMaxListeners( 1000 );
 
-  this.super_._init();
+  Application.parent._init.call( this );
 
   Application.instances.push( this );
   this._config        = config            || {};

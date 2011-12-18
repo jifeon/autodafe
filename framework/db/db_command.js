@@ -8,7 +8,7 @@ function DbCommand( params ) {
 
 
 DbCommand.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbCommand.parent._init.call( this, params );
 
   var DbConnection = require('./db_connection');
   if ( !params || !( params.db_connection instanceof DbConnection ) )

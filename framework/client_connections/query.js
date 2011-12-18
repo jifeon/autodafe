@@ -7,7 +7,7 @@ function Query( params ) {
 }
 
 Query.prototype._init = function( params ) {
-  this.super_._init( params );
+  Query.parent._init.call( this, params );
 
   this.client          = params.client;
   this.connection_type = params.connection_type;

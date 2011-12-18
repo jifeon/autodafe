@@ -8,7 +8,7 @@ function StatElement( params ) {
 
 
 StatElement.prototype._init = function( params ) {
-  this.super_._init( params );
+  StatElement.parent._init.call( this, params );
 
   var ActiveFinder = require( './active_finder' );
   if ( !ActiveFinder.is_instantiate( params.finder ) ) throw new Error(

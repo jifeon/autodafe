@@ -10,7 +10,7 @@ function DbSchema() {
 
 
 DbSchema.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbSchema.parent._init.call( this, params );
 
   this._.db_connection = params.db_connection;
   if ( !( this.db_connection instanceof DbConnection ) )

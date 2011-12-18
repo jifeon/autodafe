@@ -9,7 +9,7 @@ function DbTableSchema() {
 
 
 DbTableSchema.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbTableSchema.parent._init.call( this, params );
 
   this._.db_schema = params.db_schema;
   if ( !( this.db_schema instanceof DbSchema ) )

@@ -9,7 +9,7 @@ function DbConnection() {
 
 
 DbConnection.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbConnection.parent._init.call( this, params );
 
   this._.user     = params.user     || 'root';
   this._.password = params.password || '';

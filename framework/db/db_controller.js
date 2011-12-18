@@ -9,7 +9,7 @@ function DbController( params ) {
 
 
 DbController.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbController.parent._init.call( this, params );
 
   this._db          = null;
   this.__db_config  = params;

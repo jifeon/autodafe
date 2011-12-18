@@ -13,7 +13,7 @@ function JoinElement( params ) {
 
 
 JoinElement.prototype._init = function( params ) {
-  this.super_._init( params );
+  JoinElement.parent._init.call( this, params );
 
   var ActiveFinder = require( './active_finder' );
   if ( !ActiveFinder.is_instantiate( params.finder ) ) throw new Error(

@@ -8,7 +8,7 @@ function Component( params ) {
 
 
 Component.prototype._init = function( params ) {
-  this.super_._init( params );
+  Component.parent._init.call( this, params );
 
   if ( typeof params.name != 'string' )
     throw new Error( 'Please set `name` for creating component' );

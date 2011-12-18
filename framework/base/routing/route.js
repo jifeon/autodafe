@@ -8,7 +8,7 @@ function Route( params ) {
 
 
 Route.prototype._init = function( params ) {
-  this.super_._init( params );
+  Route.parent._init.call( this, params );
 
   if ( typeof params.path != 'string' )
       throw new Error( 'Route path should be string. Type of `%s` is %s'.format( params.path, typeof params.path ) );

@@ -12,7 +12,7 @@ function ActiveFinder( params ) {
 
 
 ActiveFinder.prototype._init = function( params ) {
-  this.super_._init( params );
+  ActiveFinder.parent._init.call( this, params );
   
   var Model = global.autodafe.Model;
   if ( !Model.is_instantiate( params.model ) ) throw new Error(

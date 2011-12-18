@@ -8,7 +8,7 @@ function UserComponent( params ) {
 
 
 UserComponent.prototype._init = function( params ) {
-  this.super_._init( params );
+  UserComponent.parent._init.call( this, params );
 
   this.param = params.param;
 }

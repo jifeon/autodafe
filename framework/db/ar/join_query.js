@@ -8,7 +8,7 @@ function JoinQuery( params ) {
 
 
 JoinQuery.prototype._init = function( params ) {
-  this.super_._init( params );
+  JoinQuery.parent._init.call( this, params );
 
   var JoinElement = require( './join_element' );
   if ( !JoinElement.is_instantiate( params.join_element ) ) throw new Error(

@@ -132,6 +132,7 @@ Object.not_deep_clone = function( obj ) {
   for ( var prop in obj )
     result[ prop ] = obj[ prop ];
 
+
   return result;
 }
 
@@ -143,23 +144,25 @@ Object.reset = function( obj ) {
   return null;
 }
 
-
-var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
+// todo: вернуть после написания тестов
+//var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
 
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );
 
-  this.prototype.__defineGetter__( 'super_', function() {
-    if ( this.__super__ ) return this.__super__;
+  this.parent = super_class.prototype;
 
-    var handler = new InheritingProxyHandler( {
-      target  : Object.getPrototypeOf( this ),
-      context : this
-    } );
+//  this.prototype.__defineGetter__( 'super_', function() {
+//    if ( this.__super__ ) return this.__super__;
 
-    this.__super__ = handler.get_proxy();
-    return this.__super__;
-  } );
+//    var handler = new InheritingProxyHandler( {
+//      target  : Object.getPrototypeOf( this ),
+//      context : this
+//    } );
+//
+//    this.__super__ = handler.get_proxy();
+//    return this.__super__;
+//  } );
 
   return this;
 }

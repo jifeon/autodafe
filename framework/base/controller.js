@@ -16,7 +16,7 @@ function Controller( params ) {
 
 
 Controller.prototype._init = function ( params ) {
-  this.super_._init( params );
+  Controller.parent._init.call( this, params );
 
   if ( !params.name )
     throw new Error( 'Parameter `name` is required for Controller creation' );

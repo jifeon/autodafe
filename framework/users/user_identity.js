@@ -11,7 +11,7 @@ function UserIdentity( params ) {
 
 
 UserIdentity.prototype._init = function( params ) {
-  this.super_._init( params );
+  UserIdentity.parent._init.call( this, params );
 
   var UsersManager = require('./users_manager');
   if ( !UsersManager.is_instantiate( params.users_manager ) ) throw new Error(

@@ -13,7 +13,7 @@ function TestComponent( params ) {
 
 
 TestComponent.prototype._init = function( params ) {
-  this.super_._init( params );
+  TestComponent.parent._init.call( this, params );
 
   this.vows       = require('vows');
   this.paths      = params.paths    || [];

@@ -19,7 +19,7 @@ function MyTools( params ) {
  */
 MyTools.prototype._init = function ( params ) {
   // Вызов инициализации родительского класса
-  this.super_._init( params );
+  MyTools.parent._init.call( this, params );
 
   /**
    * Добавляем фильтр для dust преобразующий дату в читабельное значение

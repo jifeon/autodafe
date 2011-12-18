@@ -10,7 +10,7 @@ function SocketIOClient( params ) {
 
 
 SocketIOClient.prototype._init = function( params ) {
-  this.super_._init( params );
+  SocketIOClient.parent._init.call( this, params );
 
   this._.is_connected = false;
   this._.connection   = new WebSocket(

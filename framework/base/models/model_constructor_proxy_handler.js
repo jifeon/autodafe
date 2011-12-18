@@ -17,7 +17,7 @@ ModelConstructorProxyHandler.prototype._init = function( params ) {
     return self._get_instance( construct_params );
   }
 
-  this.super_._init( params );
+  ModelConstructorProxyHandler.parent._init.call( this, params );
 };
 
 

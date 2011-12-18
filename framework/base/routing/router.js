@@ -14,7 +14,7 @@ function Router( params ) {
 
 
 Router.prototype._init = function ( params ) {
-  this.super_._init( params );
+  Router.parent._init.call( this, params );
 
   this._routes         = [];
   this._routes_by_path = {};

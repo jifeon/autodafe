@@ -13,7 +13,7 @@ CommandBuilder.prototype.PARAM_PREFIX = ':ap';
 
 
 CommandBuilder.prototype._init = function( params ) {
-  this.super_._init( params );
+  CommandBuilder.parent._init.call( this, params );
 
   var DbSchema = require( './db_schema' );
   if ( !DbSchema.is_instantiate( params.db_schema ) )

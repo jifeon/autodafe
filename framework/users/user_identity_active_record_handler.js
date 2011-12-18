@@ -8,7 +8,7 @@ function UserIdentityARHandler( params ) {
 
 
 UserIdentityARHandler.prototype._init = function ( params ) {
-  this.super_._init( params );
+  UserIdentityARHandler.parent._init.call( this, params );
 
   var ui = this.user_identity;
   this.target.substitute_related_records( ui.manage.bind( ui ) );
@@ -17,7 +17,7 @@ UserIdentityARHandler.prototype._init = function ( params ) {
 
 
 UserIdentityARHandler.prototype.save = function ( attributes, scenario ) {
-  var res = this.super_.save( attributes, scenario );
+  var res = UserIdentityARHandler.parent.save.call( this, attributes, scenario );
   if ( res instanceof Error ) {
     var emitter = new process.EventEmitter;
     process.nextTick( function() {
@@ -32,7 +32,7 @@ UserIdentityARHandler.prototype.save = function ( attributes, scenario ) {
 
 
 UserIdentityARHandler.prototype.remove = function () {
-  var res = this.super_.remove();
+  var res = UserIdentityARHandler.parent.remove.call( this );
   if ( res instanceof Error ) {
     var emitter = new process.EventEmitter;
     process.nextTick( function() {

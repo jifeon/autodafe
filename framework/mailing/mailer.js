@@ -11,7 +11,7 @@ function Mailer( params ) {
 
 var message_id = 0;
 Mailer.prototype._init = function( params ) {
-  this.super_._init( params );
+  Mailer.parent._init.call( this, params );
   this._configured = true;
 
   this._server = email.server.connect({

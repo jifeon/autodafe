@@ -8,7 +8,7 @@ function RolesSet( params ) {
 
 
 RolesSet.prototype._init = function( params ) {
-  this.super_._init( params );
+  RolesSet.parent._init.call( this, params );
 
   this.roles           = {};
   this.roles_groups    = {};

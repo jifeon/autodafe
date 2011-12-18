@@ -9,7 +9,7 @@ function Client( params ) {
 
 
 Client.prototype._init = function( params ) {
-  this.super_._init( params );
+  Client.parent._init.call( this, params );
 
   var ClientConnection = require( './client_connection' );
   if ( !ClientConnection.is_instantiate( params.connection ) )

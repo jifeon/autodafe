@@ -20,5 +20,5 @@ TestSession.prototype._init = function( params ) {
     transport : params.app.test_transport
   });
 
-  this.super_._init( params );
+  TestSession.parent._init.call( this, params );
 };

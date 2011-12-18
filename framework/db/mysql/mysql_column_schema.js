@@ -18,7 +18,7 @@ MysqlColumnSchema.prototype._extract_type = function() {
 
 MysqlColumnSchema.prototype._extract_default = function( default_value ) {
   if ( this.db_type == 'timestamp' && default_value == 'CURRENT_TIMESTAMP' ) return null;
-  else return this.super_._extract_default( default_value );
+  else return MysqlColumnSchema.parent._extract_default.call( this, default_value );
 };
 
 
@@ -39,5 +39,5 @@ MysqlColumnSchema.prototype._extract_limit = function() {
 
     this._.size = this._.precision = size - 2;
   }
-  else this.super_._extract_limit();
+  else MysqlColumnSchema.parent._extract_limit.call( this );
 };

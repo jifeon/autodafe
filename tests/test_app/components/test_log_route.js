@@ -8,7 +8,7 @@ function TestLogRoute( params ) {
 
 
 TestLogRoute.prototype._init = function( params ) {
-  this.super_._init( params );
+  TestLogRoute.parent._init.call( this, params );
 };
 
 

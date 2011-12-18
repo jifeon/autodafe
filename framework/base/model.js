@@ -9,7 +9,7 @@ function Model( params ) {
 
 
 Model.prototype._init = function ( params ) {
-  this.super_._init( params );
+  Model.parent._init.call( this, params );
 
   this.models = this.app.models;
 

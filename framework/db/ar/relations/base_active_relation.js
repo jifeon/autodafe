@@ -9,7 +9,7 @@ function BaseActiveRelation( params ) {
 
 
 BaseActiveRelation.prototype._init = function( params ) {
-  this.super_._init( params );
+  BaseActiveRelation.parent._init.call( this, params );
 
   if ( !params.name ) throw new Error(
     'Please specify name of relation in %s.init'.format( this.class_name )

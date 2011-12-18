@@ -23,13 +23,13 @@ WebSocketsClient.prototype._init = function( params ) {
     self.disconnect();
   } );
 
-  this.super_._init( params );
+  WebSocketsClient.parent._init.call( this, params );
 };
 
 
 WebSocketsClient.prototype._after_connect = function () {
   this.receive = this.__receive;
-  this.super_._after_connect();
+  WebSocketsClient.parent._after_connect.call( this );
 };
 
 
@@ -51,7 +51,7 @@ WebSocketsClient.prototype.__receive = function ( data ) {
     connection_type : 'ws'
   });
 
-  this.super_.receive( query );
+  WebSocketsClient.parent.receive.call( this, query );
 };
 
 
@@ -68,7 +68,7 @@ WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
 
 
 WebSocketsClient.prototype.send = function ( data, action  ) {
-  this.super_.send( data );
+  WebSocketsClient.parent.send.call( this, data );
 
   this.ws_client.emit( action, data );
 };

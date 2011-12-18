@@ -8,7 +8,7 @@ function PostExt( params ) {
 
 
 PostExt.prototype._init = function ( params ) {
-  this.super_._init( params );
+  PostExt.parent._init.call( this, params );
 
   this.id     = null;
   this.title  = 'default title';

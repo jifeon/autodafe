@@ -13,7 +13,7 @@ function ModelsManager( params ) {
 
 
 ModelsManager.prototype._init = function( params ){
-  this.super_._init( params );
+  ModelsManager.parent._init.call( this, params );
   
   this._models = {};
 };

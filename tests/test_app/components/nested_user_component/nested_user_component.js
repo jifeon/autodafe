@@ -8,7 +8,7 @@ function NestedComponent( params ) {
 
 
 NestedComponent.prototype._init = function( params ) {
-  this.super_._init( params );
+  NestedComponent.parent._init.call( this, params );
 
   this.param = params.param;
 };

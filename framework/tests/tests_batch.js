@@ -8,7 +8,7 @@ function TestsBatch( params ) {
 
 
 TestsBatch.prototype._init = function( params ) {
-  this.super_._init( params );
+  TestsBatch.parent._init.call( this, params );
 
   this.name  = params.name;
   this.tests = params.tests;

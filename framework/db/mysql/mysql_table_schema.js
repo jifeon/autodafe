@@ -9,7 +9,7 @@ function MysqlTableSchema( params ) {
 
 
 MysqlTableSchema.prototype._init = function( params ) {
-  this.super_._init( params );
+  MysqlTableSchema.parent._init.call( this, params );
 
   this.db_schema_name = null; // name of other database
 

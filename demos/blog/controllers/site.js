@@ -29,7 +29,7 @@ SiteController.prototype.send_response = function ( view, client, params ) {
   var ui = this.app.users.get_by_client( client );
   if ( !ui.is_guest() ) params.user = ui.model;
 
-  this.super_.send_response( view, client, params );
+  SiteController.parent.send_response.call( this, view, client, params );
 };
 
 

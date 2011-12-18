@@ -8,7 +8,7 @@ function Session( params ) {
 
 
 Session.prototype._init = function( params ) {
-  this.super_._init( params );
+  Session.parent._init.call( this, params );
 
   if ( typeof params.id == 'undefined' )
     throw new Error( 'Try to create session without id' );

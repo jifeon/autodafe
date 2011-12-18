@@ -20,7 +20,7 @@ FileLogRoute.prototype._init = function( params ) {
     self.process_logs();
   }, 1000 );
 
-  this.super_._init( params );
+  FileLogRoute.parent._init.call( this, params );
 };
 
 

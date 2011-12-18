@@ -11,7 +11,7 @@ function UsersManager( params ) {
 
 
 UsersManager.prototype._init = function( params ) {
-  this.super_._init( params );
+  UsersManager.parent._init.call( this, params );
 
   this.rights = {
     global : null,

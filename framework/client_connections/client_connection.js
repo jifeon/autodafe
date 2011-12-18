@@ -8,7 +8,7 @@ function ClientConnection( params ) {
 
 
 ClientConnection.prototype._init = function ( params ) {
-  this.super_._init( params );
+  ClientConnection.parent._init.call( this, params );
 
   var self = this;
   this.app.on( 'run', function() {

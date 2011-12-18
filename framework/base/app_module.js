@@ -8,7 +8,7 @@ function AppModule( params ) {
 
 
 AppModule.prototype._init = function( params ) {
-  this.super_._init( params );
+  AppModule.parent._init.call( this, params );
 
   var Application = require( './application' );
 

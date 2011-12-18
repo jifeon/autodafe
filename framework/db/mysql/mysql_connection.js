@@ -11,7 +11,7 @@ function MysqlConnection( params ) {
 
 
 MysqlConnection.prototype._init = function( params ) {
-  this.super_._init( params );
+  MysqlConnection.parent._init.call( this, params );
   this.setMaxListeners( 100 );
 
   this._.db_schema = new MysqlSchema({
