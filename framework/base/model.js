@@ -36,9 +36,7 @@ Model.prototype.get_attribute = function ( name ) {
 //  if ( attribute == undefined ) attribute = null;
 
   var self = this;
-  return typeof attribute == 'function' ? function() {
-    return attribute.apply( self, arguments );
-  } : attribute;
+  return typeof attribute == 'function' ? attribute.bind( this )  : attribute;
 };
 
 
