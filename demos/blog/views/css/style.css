@@ -242,3 +242,14 @@ section#content header {
 .center{
   text-align : center;
 }
+
+table.pages td{
+  padding : 5px;
+}
+td.active{
+  color : #d90028;
+  background-color: #ffd0d9;
+}
+td.active a{
+  text-decoration: none;
+}

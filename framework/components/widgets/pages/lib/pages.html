@@ -1,0 +1,9 @@
+<table class="pages"><tr>
+{#links}
+    {?is_link}
+    <td {?active}class="active"{/active}><a href="{url}" >{number}</a></td>
+    {:else}
+      {number}
+    {/is_link}
+{/links}
+</tr></table>

@@ -61,6 +61,7 @@ var config = module.exports = {
     rules     : {
       // главная
       ''                      : 'site.index',
+      '<page:\\d+>'           : 'site.index',
 
       // запрос на регистрацию пользователя
       'register'              : 'site.register        | post',

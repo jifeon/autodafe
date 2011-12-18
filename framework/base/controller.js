@@ -70,10 +70,11 @@ Controller.prototype.send_response = function ( view, client, params, callback )
   params   = params   || {};
 
   params.url = this.make_dust_url.bind( this );
+  params.widget = this.widget.bind( this );
 
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
-    var action = params.ws_client_action ? params.ws_client_action : '';
+    var action = params.ws_client_action || '';
     client.send( data, action );
     callback( null, data );
   } );
@@ -115,4 +116,14 @@ Controller.prototype.__get_body_text = function ( chunk, context, body ) {
   chunk.write = old_write;
 
   return result;
+};
+
+Controller.prototype.widget = function( chunk, context, bodies, params ){
+  var self = this;
+    return chunk.map( function( chunk ){
+      var widget = context.get( params.name );
+      widget.render( function( data ){
+        chunk.end( data );
+      } )
+    } );
 };

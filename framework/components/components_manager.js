@@ -12,13 +12,13 @@ function ComponentsManager( params ) {
 
 
 ComponentsManager.system_components = {
-  'web_sockets'        : require( '../../client_connections/web_sockets/web_sockets_server' ),
-  'users'              : require( '../../users/users_manager' ),
-  'db'                 : require( '../../db/db_controller' ),
-  'log_router'         : require( '../../logging/log_router' ),
-  'tests'              : require( '../../tests/test_component' ),
-  'mail'               : require( '../../mailing/mailer' ),
-  'http'               : require( '../../client_connections/http/http_server' )
+  'web_sockets'        : require( '../client_connections/web_sockets/web_sockets_server' ),
+  'users'              : require( '../users/users_manager' ),
+  'db'                 : require( '../db/db_controller' ),
+  'log_router'         : require( '../logging/log_router' ),
+  'tests'              : require( '../tests/test_component' ),
+  'mail'               : require( '../mailing/mailer' ),
+  'http'               : require( '../client_connections/http/http_server' )
 };
 
 
@@ -28,6 +28,7 @@ ComponentsManager.prototype._init = function( params ) {
   this._components              = params.components || {};
   this._loaded_components       = {};
   this._user_components         = null;
+  this._system_widgets          = null;
 };
 
 
@@ -100,11 +101,49 @@ ComponentsManager.prototype._collect_components_in_path = function ( components_
   else if ( stats.isFile() ) {
     var component_name = path.basename( components_path, '.js' );
 
-    if ( this._user_components[ component_name ] )
+    if ( components[ component_name ] )
       this.log( 'Two or more user components with same name "%s" are found'.format( component_name ), 'warning' );
     else {
-      this._user_components[ component_name ] = components_path;
+      components[ component_name ] = components_path;
       this.log( 'User component is found: %s'.format( component_name ) );
     }
   }
+};
+
+ComponentsManager.prototype.create_widget = function ( widget_name, widget_params ) {
+
+  this.log( 'Create widget "%s"'.format( widget_name ), 'trace' );
+  if ( !widget_params ) {
+    this.log( 'Widget `%s` has not created because it\'s not configured'.format( widget_name ), 'warning' );
+    return false;
+  }
+
+  if ( typeof widget_params != 'object' ) widget_params = {};
+
+  var widget_class = this.get_user_component( widget_name );
+  if ( !widget_class ) widget_class = this.get_system_widget( widget_name );
+  if ( !widget_class || !Component.is_instantiate( widget_class.prototype ) ) throw new Error(
+    'Try to load unknown widget: "%s"'.format( widget_name )
+   );
+
+  widget_params.name = widget_name;
+  widget_params.app  = this.app;
+
+  return new widget_class( widget_params );
+};
+
+ComponentsManager.prototype.get_system_widget = function ( widget_name ) {
+  if ( !this._system_widgets ) {
+    var widgets_path = path.join( __dirname, 'widgets' );
+
+    this._system_widgets = {};
+    if ( path.existsSync( widgets_path ) ) {
+      this.log( 'Collecting system widgets' );
+      this._collect_components_in_path( widgets_path, this._system_widgets );
+    }
+  }
+  if ( typeof this._system_widgets[ widget_name ] == "string" )
+    this._system_widgets[ widget_name ] = require( this._system_widgets[ widget_name ] );
+
+  return this._system_widgets[ widget_name ];
 };
