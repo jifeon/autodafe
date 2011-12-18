@@ -72,7 +72,7 @@ var config = module.exports = {
       'logout'                : 'site.logout',
 
       // запрос на создание нового топика
-      'new_topic'             : 'site.create_topic    | post',
+      'new_topic'             : 'site.create_topic',
 
       // просмотр топика, примутся УРЛ вида /topic/2
       'topic/<topic_id:\\d+>' : 'site.view_topic',
