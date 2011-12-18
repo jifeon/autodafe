@@ -1,4 +1,4 @@
-var Component         = require( 'components/component' );
+var Component         = global.autodafe.Component;
 var UserIdentity      = require( './user_identity' );
 var RolesSet          = require( './roles_set' );
 var ModelsRolesSet    = require( './models_roles_set' );
@@ -11,7 +11,7 @@ function UsersManager( params ) {
 
 
 UsersManager.prototype._init = function( params ) {
-  this.super_._init( params );
+  UsersManager.parent._init.call( this, params );
 
   this.rights = {
     global : null,

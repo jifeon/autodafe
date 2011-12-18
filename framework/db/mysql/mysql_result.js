@@ -1,4 +1,4 @@
-var AutodafePart = require('autodafe_part');
+var AutodafePart = global.autodafe.AutodafePart;
 
 module.exports = MysqlResult.inherits( AutodafePart );
 
@@ -8,7 +8,7 @@ function MysqlResult( params ) {
 
 
 MysqlResult.prototype._init = function( params ) {
-  this.super_._init( params );
+  MysqlResult.parent._init.call( this, params );
 
   this.result     = params.result;
   this.fields     = params.fields;

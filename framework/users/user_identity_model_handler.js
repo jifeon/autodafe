@@ -1,4 +1,4 @@
-var ProxyHandler = require('lib/proxy_handlers/proxy_handler');
+var ProxyHandler = require('../lib/proxy_handlers/proxy_handler');
 
 module.exports = UserIdentityModelHandler.inherits( ProxyHandler );
 
@@ -8,7 +8,7 @@ function UserIdentityModelHandler( params ) {
 
 
 UserIdentityModelHandler.prototype._init = function( params ) {
-  this.super_._init( params );
+  UserIdentityModelHandler.parent._init.call( this, params );
 
   this.user_identity = params.user_identity;
   this.params        = params.params;
@@ -65,7 +65,7 @@ UserIdentityModelHandler.prototype.get = function ( receiver, name ) {
 
   if ( name == 'is_permitted_for' ) return this.accessor;
 
-  return this.super_.get( receiver, name );
+  return UserIdentityModelHandler.parent.get.call( this, receiver, name );
 };
 
 
@@ -73,7 +73,7 @@ UserIdentityModelHandler.prototype.set = function ( receiver, name, value ) {
   if ( this._has_attribute( name ) )
     return this.set_attribute( name, value );
 
-  return this.super_.set( receiver, name, value );
+  return UserIdentityModelHandler.parent.set.call( this, receiver, name, value );
 };
 
 

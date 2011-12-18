@@ -13,19 +13,19 @@ StatRelation.prototype._init = function( params ) {
   if ( !params.options.select )                             params.options.select         = 'COUNT(*)';
   if ( typeof params.options.default_value == 'undefined' ) params.options.default_value  = 0;
 
-  this.super_._init( params );
+  StatRelation.parent._init.call( this, params );
 };
 
 
 StatRelation.prototype.merge_with = function ( criteria/*, from_scope*/ ) {
-  this.super_.merge_with( criteria/*, from_scope*/ );
+  StatRelation.parent.merge_with.call( this, criteria/*, from_scope*/ );
 
   this.default_value = criteria.default_value || this.default_value;
 };
 
 
 StatRelation.prototype.get_options = function () {
-  var options = this.super_.get_options();
+  var options = StatRelation.parent.get_options.call( this );
 
   options.select        = this.select;
   options.default_value = this.default_value;

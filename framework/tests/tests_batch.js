@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = TestsBatch.inherits( AppModule );
 
@@ -8,7 +8,7 @@ function TestsBatch( params ) {
 
 
 TestsBatch.prototype._init = function( params ) {
-  this.super_._init( params );
+  TestsBatch.parent._init.call( this, params );
 
   this.name  = params.name;
   this.tests = params.tests;

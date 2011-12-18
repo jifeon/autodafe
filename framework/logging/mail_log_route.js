@@ -16,7 +16,7 @@ MailLogRoute.prototype._init = function( params ) {
     error   : 'red'
   };
   
-  this.super_._init( params );
+  MailLogRoute.parent._init.call( this, params );
 
   this._interval_id   = null;
   this._to            = params.to;
@@ -69,7 +69,7 @@ MailLogRoute.prototype._send_logs = function () {
 
 
 MailLogRoute.prototype._format = function ( message ) {
-  var text  = this.super_._format( message );
+  var text  = MailLogRoute.parent._format.call( this, message );
 
   var color = this._level2color[ message.level ];
   return "<div style='color : " + color + ";'>" +

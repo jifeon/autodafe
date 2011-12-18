@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var WebSocketsServer = require('client_connections/web_sockets/web_sockets_server');
+  var WebSocketsServer = require('autodafe/framework/client_connections/web_sockets/web_sockets_server');
   var SocketIOClient   = require('socket.io-client');
 
   var ws_client,

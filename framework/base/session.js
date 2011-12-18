@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = Session.inherits( AppModule );
 
@@ -8,7 +8,7 @@ function Session( params ) {
 
 
 Session.prototype._init = function( params ) {
-  this.super_._init( params );
+  Session.parent._init.call( this, params );
 
   if ( typeof params.id == 'undefined' )
     throw new Error( 'Try to create session without id' );
@@ -34,7 +34,7 @@ Session.prototype.add_client = function ( client ) {
     return false;
   }
 
-  var Client = require( 'client_connections/client' );
+  var Client = require( '../client_connections/client' );
   if ( !Client.is_instantiate( client ) )
     throw new Error( '`client` is not instance of Client in Session.add_client' );
 

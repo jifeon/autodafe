@@ -1,4 +1,4 @@
-var AutodafePart = require( 'autodafe_part' );
+var AutodafePart = global.autodafe.AutodafePart;
 
 module.exports = AppModule.inherits( AutodafePart );
 
@@ -8,9 +8,9 @@ function AppModule( params ) {
 
 
 AppModule.prototype._init = function( params ) {
-  this.super_._init( params );
+  AppModule.parent._init.call( this, params );
 
-  var Application = require( 'application' );
+  var Application = require( './application' );
 
   if ( !params || !Application.is_instantiate( params.app ) ) throw new Error(
     'Link to application is not defined or has wrong type' + ( this.class_name

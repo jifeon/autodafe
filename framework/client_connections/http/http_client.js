@@ -1,5 +1,5 @@
-var Client          = require('client_connections/client');
-var cookie          = require('lib/cookie');
+var Client          = require('../client');
+var cookie          = require('../../lib/cookie');
 var formidable      = require('formidable');
 var content_types   = require('./content-types');
 var fs              = require('fs');
@@ -36,7 +36,7 @@ HTTPClient.prototype._init = function( params ) {
 
   this.request.once( 'close', this.disconnect.bind( this ) );
 
-  this.super_._init( params );
+  HTTPClient.parent._init.call( this, params  );
 
   this.connection.once( 'close',  this.disconnect.bind( this ) );
   this.receive();
@@ -67,8 +67,8 @@ HTTPClient.prototype._receive_post = function ( query ) {
 
       query.params = Object.merge( fields, files );
 
-      if ( self.connected )    self.super_.receive(            query );
-      else self.on( 'connect', self.super_.receive.bind( self, query ) );
+      if ( self.connected )    HTTPClient.parent.receive.call( self, query  );
+      else self.on( 'connect', HTTPClient.parent.receive.bind( self, query  ) );
     });
   }
   catch( e ) { this.send_error( e ); }
@@ -81,8 +81,8 @@ HTTPClient.prototype._receive_get = function ( query ) {
   var folder  = this.connection.get_root_folder( matches && matches[1] || '' );
   if ( folder != null ) return this.send_file( path.resolve( this.app.base_dir, folder, matches && matches[3] || '' ) );
 
-  if ( this.connected )    this.super_.receive(            query );
-  else this.on( 'connect', this.super_.receive.bind( this, query ) );
+  if ( this.connected )    HTTPClient.parent.receive.call( this, query  );
+  else this.on( 'connect', HTTPClient.parent.receive.bind( this, query  ) );
 };
 
 
@@ -120,7 +120,7 @@ HTTPClient.prototype.set_cookie = function ( name, value, days ) {
 
 
 HTTPClient.prototype.send = function ( data ) {
-  this.super_.send( data );
+  HTTPClient.parent.send.call( this, data  );
   this.end( data, 'utf8' );
 };
 
@@ -171,7 +171,7 @@ HTTPClient.prototype.send_error = function ( e, number ) {
   if ( typeof e == 'string' ) e = new Error( e );
   e.number = e.number || number || 500;
 
-  this.super_.send_error(e);
+  HTTPClient.parent.send_error.call( this, e );
 
   this.log( 'Error %s by address `%s`'.format( e.number, this.request.url ), 'warning' );
   this.response.statusCode = e.number;

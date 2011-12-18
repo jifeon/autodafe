@@ -14,12 +14,12 @@ ActiveRelation.prototype._init = function( params ) {
   this.With      = {};
   this.together  = null;
 
-  this.super_._init( params );
+  ActiveRelation.parent._init.call( this, params );
 };
 
 
 ActiveRelation.prototype.get_options = function () {
-  var options = this.super_.get_options();
+  var options = ActiveRelation.parent.get_options.call( this );
 
   options.join_type = this.join_type;
   options.on        = this.on;
@@ -45,7 +45,7 @@ ActiveRelation.prototype.merge_with = function ( criteria/*, from_scope*/ ) {
 //      unset(criteria['condition']);
 //    }
   
-  this.super_.merge_with( criteria );
+  ActiveRelation.parent.merge_with.call( this, criteria );
   
   this.join_type = criteria.join_type || this.join_type;
   if ( criteria.on && this.on != criteria.on ) this.on = !this.on

@@ -1,16 +1,16 @@
 var tools                 = require('../lib/tools');
 var path                  = require('path');
 var fs                    = require('fs');
-var dust                  = require('dust');
-var Session               = require('session');
-var Router                = require('routing/router');
+var dust                  = require('dust.js');
+var Session               = require('./session');
+var Router                = require('./routing/router');
 var Logger                = require('../logging/logger');
-var ComponentsManager     = require('components/components_manager');
-var ModelsManager         = require('models/models_manager');
-var Component             = require('components/component');
-var ModelsProxyHandler    = require('./models/models_proxy_handler');
-var AutodafePart          = require('autodafe_part');
-var AppModule             = require('app_module');
+var ComponentsManager     = require('./components/components_manager');
+var ModelsManager         = require('./models/models_manager');
+var Component             = global.autodafe.Component;
+var ProxyHandler          = require('../lib/proxy_handlers/proxy_handler.js');
+var AutodafePart          = global.autodafe.AutodafePart;
+var AppModule             = global.autodafe.AppModule;
 
 module.exports = Application.inherits( AutodafePart );
 
@@ -24,7 +24,7 @@ Application.instances = [];
 Application.prototype._init = function ( config ) {
   this.setMaxListeners( 1000 );
 
-  this.super_._init();
+  Application.parent._init.call( this );
 
   Application.instances.push( this );
   this._config        = config            || {};
@@ -36,11 +36,11 @@ Application.prototype._init = function ( config ) {
 
   if ( typeof this._config.name != 'string' )
     throw new Error( 'Please specify application name in your config file' );
-  this._.name     = this._config.name;
+  this._.name         = this._config.name;
 
   if ( !this._config.base_dir )
     throw new Error( 'Please specify `base_dir` in your config file!' );
-  this._.base_dir = path.normalize( this._config.base_dir );
+  this._.base_dir     = path.normalize( this._config.base_dir );
 
   this._.is_running       = false;
 
@@ -143,11 +143,12 @@ Application.prototype._init_models = function( callback ){
     app : this
   });
 
-  var models_handler = new ModelsProxyHandler({
-    target : models_manager,
-    app    : this
+  var models_handler = new ProxyHandler({
+    target : models_manager
   });
-
+  models_handler.get = function( receiver, name ){
+    return models_manager.get_model( name ) || Object.getPrototypeOf( this ).get.call( this, receiver, name );
+  }
   this._.models = models_handler.get_proxy();
 
   var self = this;

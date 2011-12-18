@@ -1,4 +1,4 @@
-var AutodafePart  = require('autodafe_part');
+var AutodafePart  = global.autodafe.AutodafePart;
 var Message       = require('./message');
 
 module.exports = Logger.inherits( AutodafePart );
@@ -10,7 +10,7 @@ function Logger( params ) {
 
 
 Logger.prototype._init = function( params ) {
-  this.super_._init();
+  Logger.parent._init.call( this );
   
   this.default_module_name  = 'Application';
   this.max_messages         = 1024;

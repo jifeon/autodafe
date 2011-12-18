@@ -11,7 +11,7 @@ function WebSocketsServer( config ) {
 
 
 WebSocketsServer.prototype._init = function ( params ) {
-  this.super_._init( params );
+  WebSocketsServer.parent._init.call( this, params );
 
   this._io      = null;
   this._server  = null;

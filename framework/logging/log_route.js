@@ -1,5 +1,5 @@
 var Message   = require('./message');
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = LogRoute.inherits( AppModule );
 
@@ -9,7 +9,7 @@ function LogRoute( params ) {
 
 
 LogRoute.prototype._init = function( params ) {
-  this.super_._init( params );
+  LogRoute.parent._init.call( this, params );
   
   this.logger         = this.app.logger;
   this.message_format = 'date [app_name] [level] [module] message';

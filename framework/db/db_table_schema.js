@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var DbSchema  = require('db/db_schema');
+var AppModule = global.autodafe.AppModule;
+var DbSchema  = require('./db_schema');
 
 module.exports = DbTableSchema.inherits( AppModule );
 
@@ -9,7 +9,7 @@ function DbTableSchema() {
 
 
 DbTableSchema.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbTableSchema.parent._init.call( this, params );
 
   this._.db_schema = params.db_schema;
   if ( !( this.db_schema instanceof DbSchema ) )

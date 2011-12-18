@@ -1,6 +1,6 @@
 exports.get_batch = function( application, assert ) {
-  var Model         = require( 'model' );
-  var UserIdentity  = require( 'users/user_identity' );
+  var Model         = global.autodafe.Model;
+  var UserIdentity  = require( 'autodafe/framework/users/user_identity' );
 
   var ui_roles = [];
 

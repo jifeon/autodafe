@@ -1,5 +1,5 @@
-var AppModule   = require('app_module');
-var DbCriteria  = require('db/db_criteria');
+var AppModule   = global.autodafe.AppModule;
+var DbCriteria  = global.autodafe.db.Criteria;
 
 module.exports = BaseActiveRelation.inherits( AppModule );
 
@@ -9,15 +9,18 @@ function BaseActiveRelation( params ) {
 
 
 BaseActiveRelation.prototype._init = function( params ) {
-  this.super_._init( params );
+  BaseActiveRelation.parent._init.call( this, params );
 
   if ( !params.name ) throw new Error(
     'Please specify name of relation in %s.init'.format( this.class_name )
   );
   this._.name       = params.name;
 
-  var Model = require('model');
-  if ( !Model.is_instantiate( params.model ) ) throw new Error(
+  var Model = global.autodafe.Model;
+//  console.log( params.model.class_name );
+//  console.log( params.model instanceof Model );
+  // todo: вернуть проверку после ProxyHandler.get_proxy
+  if ( !/*Model.is_instantiate(*/ params.model /*)*/ ) throw new Error(
     'Please specify correct model in %s.init'.format( this.class_name )
   );
   this._.model = params.model;

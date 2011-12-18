@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var Component = require('components/component');
+var AppModule = global.autodafe.AppModule;
+var Component = global.autodafe.Component;
 var path      = require('path');
 var fs        = require('fs');
 
@@ -23,7 +23,7 @@ ComponentsManager.system_components = {
 
 
 ComponentsManager.prototype._init = function( params ) {
-  this.super_._init( params );
+  ComponentsManager.parent._init.call( this, params );
 
   this._components              = params.components || {};
   this._loaded_components       = {};

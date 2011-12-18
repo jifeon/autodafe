@@ -14,14 +14,14 @@ ModelsRolesSet.prototype._init = function( params ) {
   this.parent_set   = params.parent_set;
   this.attrs_rights = {};
 
-  this.super_._init( params );
+  ModelsRolesSet.parent._init.call( this, params );
 };
 
 
 ModelsRolesSet.prototype._init_roles = function ( params ) {
   this.roles = Object.clone( this.parent_set.roles );
 
-  this.super_._init_roles( params );
+  ModelsRolesSet.parent._init_roles.call( this, params );
 };
 
 
@@ -53,11 +53,11 @@ ModelsRolesSet.prototype._init_roles_groups = function ( params ) {
 ModelsRolesSet.prototype._apply_rights = function ( params ) {
   this.roles_rights = Object.clone( this.parent_set.roles_rights );
 
-  this.super_._apply_rights( params.model, this.roles_rights );
+  ModelsRolesSet.parent._apply_rights.call( this, params.model, this.roles_rights );
 
   for ( var attr_name in params.attributes ){
     this.attrs_rights[ attr_name ] = Object.clone( this.roles_rights );
-    this.super_._apply_rights( params.attributes[ attr_name ], this.attrs_rights[ attr_name ] );
+    ModelsRolesSet.parent._apply_rights.call( this, params.attributes[ attr_name ], this.attrs_rights[ attr_name ] );
   }
 };
 

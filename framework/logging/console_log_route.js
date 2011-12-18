@@ -16,7 +16,7 @@ ConsoleLogRoute.prototype._init = function( params ) {
     error   : 'red'
   };
 
-  this.super_._init( params );
+  ConsoleLogRoute.parent._init.call( this, params );
 };
 
 
@@ -27,7 +27,7 @@ ConsoleLogRoute.prototype.log_message = function ( message ) {
 
 
 ConsoleLogRoute.prototype._format = function ( message ) {
-  var text  = this.super_._format( message );
+  var text  = ConsoleLogRoute.parent._format.call( this, message );
   var style = this._level2style[ message.level ];
 
   return style ? text[ style ] : text;

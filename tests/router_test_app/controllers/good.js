@@ -1,4 +1,4 @@
-var Controller  = require( 'controller' );
+var Controller  = global.autodafe.Controller;
 
 module.exports = GoodController.inherits( Controller );
 

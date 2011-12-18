@@ -1,6 +1,6 @@
 var DbCriteria    = require('./db_criteria');
 var DbExpression  = require('./db_expression');
-var AppModule     = require('app_module');
+var AppModule     = global.autodafe.AppModule;
 
 module.exports = CommandBuilder.inherits( AppModule );
 
@@ -13,7 +13,7 @@ CommandBuilder.prototype.PARAM_PREFIX = ':ap';
 
 
 CommandBuilder.prototype._init = function( params ) {
-  this.super_._init( params );
+  CommandBuilder.parent._init.call( this, params );
 
   var DbSchema = require( './db_schema' );
   if ( !DbSchema.is_instantiate( params.db_schema ) )

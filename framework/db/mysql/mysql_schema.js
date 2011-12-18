@@ -36,7 +36,7 @@ MysqlSchema.prototype._load_table = function( name, callback, context ) {
 
 
 MysqlSchema.prototype.compare_table_names = function ( name1, name2 ) {
-  return this.super_.compare_table_names( name1.toLowerCase(), name2.toLowerCase() )
+  return MysqlSchema.parent.compare_table_names.call( this, name1.toLowerCase(), name2.toLowerCase() )
 };
 
 

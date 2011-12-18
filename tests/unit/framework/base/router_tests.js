@@ -1,8 +1,8 @@
 exports.get_batch = function( application, assert ) {
-  var Router          = require('router');
+  var Router          = require('autodafe/framework/base/routing/router');
   var Autodafe        = global.autodafe;
   var path            = require('path');
-  var TestController  = require('controllers/test');
+  var TestController  = require('autodafe/tests/test_app/controllers/test');
 
   var single_route_test = function( route ) {
     return function( router ) {

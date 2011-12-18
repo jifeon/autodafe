@@ -1,14 +1,13 @@
 var url             = require('url');
-var AppModule       = require('app_module');
 
-module.exports = Query.inherits( AppModule );
+module.exports = Query.inherits( autodafe.AppModule );
 
 function Query( params ) {
   this._init( params );
 }
 
 Query.prototype._init = function( params ) {
-  this.super_._init( params );
+  Query.parent._init.call( this, params );
 
   this.client          = params.client;
   this.connection_type = params.connection_type;

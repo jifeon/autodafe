@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var Query     = require('client_connections/query');
+var AppModule = global.autodafe.AppModule;
+var Query     = require('./query');
 
 module.exports = Client.inherits( AppModule );
 
@@ -9,7 +9,7 @@ function Client( params ) {
 
 
 Client.prototype._init = function( params ) {
-  this.super_._init( params );
+  Client.parent._init.call( this, params );
 
   var ClientConnection = require( './client_connection' );
   if ( !ClientConnection.is_instantiate( params.connection ) )

@@ -49,7 +49,11 @@ function ProxyHandler( params ) {
 
 
 ProxyHandler.prototype._init = function ( params ) {
-  this.target = params.target
+  params      = params        || {};
+  var target  = params.target || {}
+  Object.defineProperty( this, 'target', {
+    get : function(){ return target; }
+  } );
   this._proxy = null;
 };
 

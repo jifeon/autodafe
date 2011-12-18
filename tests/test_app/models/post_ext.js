@@ -1,4 +1,4 @@
-var ActiveRecord = require( 'db/ar/active_record' );
+var ActiveRecord = global.autodafe.db.ActiveRecord;
 
 module.exports = PostExt.inherits( ActiveRecord );
 
@@ -8,7 +8,7 @@ function PostExt( params ) {
 
 
 PostExt.prototype._init = function ( params ) {
-  this.super_._init( params );
+  PostExt.parent._init.call( this, params );
 
   this.id     = null;
   this.title  = 'default title';

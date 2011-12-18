@@ -1,9 +1,9 @@
 exports.get_batch = function( application, assert ) {
-  var Post            = require('models/post');
-  var DbTableSchema   = require('db/db_table_schema');
-  var DbCriteria      = require('db/db_criteria');
-  var CommandBuilder  = require('db/command_builder');
-  var MysqlConnection = require('db/mysql/mysql_connection');
+  var Post            = require('autodafe/tests/test_app/models/post');
+  var DbTableSchema   = require('autodafe/framework/db/db_table_schema');
+  var DbCriteria      = global.autodafe.db.Criteria;
+  var CommandBuilder  = require('autodafe/framework/db/command_builder');
+  var MysqlConnection = require('autodafe/framework/db/mysql/mysql_connection');
 
   var db = new MysqlConnection({
     app       : application,

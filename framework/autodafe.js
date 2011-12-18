@@ -1,13 +1,22 @@
-require.paths.unshift( __dirname );
-require.paths.unshift( __dirname + '/base/' );
-
 var tools                 = require( './lib/tools' );
-var Application           = require( 'application' );
 var http                  = require( 'http' );
 
-global.autodafe = module.exports = new function() {
+module.exports = new function() {
+  global.autodafe   = this;
 
-  var server_by_port = {};
+  this.AutodafePart     = require( './base/autodafe_part.js' );
+  this.AppModule        = require( './base/app_module.js' );
+  this.Component        = require( './base/components/component.js' );
+  this.Controller       = require( './base/controller.js' );
+  this.Model            = require( './base/model.js' );
+  this.db               = {};
+  this.db.Expression    = require('./db/db_expression.js');
+  this.db.Criteria      = require('./db/db_criteria.js');
+  this.db.ActiveRecord  = require('./db/ar/active_record.js');
+
+  var Application           = require('./base/application.js');
+
+  var server_by_port  = {};
 
   this.create_application = function( config ) {
     return new Application( config );
@@ -34,6 +43,7 @@ global.autodafe = module.exports = new function() {
 
   var show_log_on_exit = process.argv[ 2 ] == '--show_log_on_exit';
 
+  var self = this;
   process.on( 'exit', function() {
     var shown_some_log = false;
     var instance, i, i_ln;

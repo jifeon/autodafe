@@ -9,7 +9,7 @@ function FunctionProxyHandler( params ) {
 
 
 FunctionProxyHandler.prototype._init = function ( params ) {
-  this.super_._init( {
+  FunctionProxyHandler.parent._init.call( this, {
     target : params.on_call || params.target
   } );
 

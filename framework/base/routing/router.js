@@ -1,6 +1,6 @@
-var Controller  = require('controller.js');
-var AppModule   = require('app_module');
-var Route       = require('routing/route');
+var Controller  = global.autodafe.Controller;
+var AppModule   = global.autodafe.AppModule;
+var Route       = require('./route');
 var fs          = require('fs');
 var path        = require('path');
 var qs          = require('querystring');
@@ -14,7 +14,7 @@ function Router( params ) {
 
 
 Router.prototype._init = function ( params ) {
-  this.super_._init( params );
+  Router.parent._init.call( this, params );
 
   this._routes         = [];
   this._routes_by_path = {};

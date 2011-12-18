@@ -1,5 +1,5 @@
-var AppModule = require('app_module');
-var Validator = require('validator');
+var AppModule = global.autodafe.AppModule;
+var Validator = require('./validator');
 
 module.exports = Model.inherits( AppModule );
 
@@ -9,7 +9,7 @@ function Model( params ) {
 
 
 Model.prototype._init = function ( params ) {
-  this.super_._init( params );
+  Model.parent._init.call( this, params );
 
   this.models = this.app.models;
 
@@ -36,9 +36,7 @@ Model.prototype.get_attribute = function ( name ) {
 //  if ( attribute == undefined ) attribute = null;
 
   var self = this;
-  return typeof attribute == 'function' ? function() {
-    return attribute.apply( self, arguments );
-  } : attribute;
+  return typeof attribute == 'function' ? attribute.bind( this )  : attribute;
 };
 
 

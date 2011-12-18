@@ -1,4 +1,4 @@
-var ActiveRecord = require( 'db/ar/active_record' );
+var ActiveRecord = global.autodafe.db.ActiveRecord;
 
 module.exports = Post.inherits( ActiveRecord );
 

@@ -12,12 +12,12 @@ HasManyRelation.prototype._init = function( params ) {
   this.offset = -1;
   this.index  = null;
 
-  this.super_._init( params );
+  HasManyRelation.parent._init.call( this, params );
 };
 
 
 HasManyRelation.prototype.merge_with = function ( criteria/*, from_scope*/ ) {
-  this.super_.merge_with( criteria/*, from_scope*/ );
+  HasManyRelation.parent.merge_with.call( this, criteria/*, from_scope*/ );
 
   if( criteria.limit > 0 )    this.limit  = criteria.limit;
   if( criteria.offset >= 0 )  this.offset = criteria.offset;
@@ -26,7 +26,7 @@ HasManyRelation.prototype.merge_with = function ( criteria/*, from_scope*/ ) {
 
 
 HasManyRelation.prototype.get_options = function () {
-  var options = this.super_.get_options();
+  var options = HasManyRelation.parent.get_options.call( this );
 
   options.limit   = this.limit;
   options.offset  = this.offset;

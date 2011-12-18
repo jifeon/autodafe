@@ -1,4 +1,4 @@
-var app_module = require('app_module');
+var app_module = global.autodafe.AppModule;
 
 module.exports = StatElement.inherits( app_module );
 
@@ -8,7 +8,7 @@ function StatElement( params ) {
 
 
 StatElement.prototype._init = function( params ) {
-  this.super_._init( params );
+  StatElement.parent._init.call( this, params );
 
   var ActiveFinder = require( './active_finder' );
   if ( !ActiveFinder.is_instantiate( params.finder ) ) throw new Error(

@@ -1,5 +1,5 @@
-var ClientConnection = require('client_connections/client_connection');
-var HTTPClient       = require('client_connections/http/http_client');
+var ClientConnection = require('../client_connection');
+var HTTPClient       = require('./http_client');
 var http             = require('http');
 var path             = require('path');
 var auth             = require('http-auth');
@@ -12,7 +12,7 @@ function HTTPServer( params ) {
 
 
 HTTPServer.prototype._init = function( params ) {
-  this.super_._init( params );
+  HTTPServer.parent._init.call( this, params );
 
   this._.port         = params.port || 80;
   this._.upload_dir   = path.resolve( this.app.base_dir, params.upload_dir || '/tmp' );

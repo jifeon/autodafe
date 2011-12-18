@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = RolesSet.inherits( AppModule );
 
@@ -8,7 +8,7 @@ function RolesSet( params ) {
 
 
 RolesSet.prototype._init = function( params ) {
-  this.super_._init( params );
+  RolesSet.parent._init.call( this, params );
 
   this.roles           = {};
   this.roles_groups    = {};

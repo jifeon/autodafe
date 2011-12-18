@@ -1,4 +1,4 @@
-var Component = require('components/component');
+var Component = global.autodafe.Component;
 
 module.exports = AnotherNestedComponent.inherits( Component );
 
@@ -8,7 +8,7 @@ function AnotherNestedComponent( params ) {
 
 
 AnotherNestedComponent.prototype._init = function( params ) {
-  this.super_._init( params );
+  AnotherNestedComponent.parent._init.call( this, params );
 
   this.param = params.param;
 };

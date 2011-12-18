@@ -9,7 +9,7 @@ function MysqlTableSchema( params ) {
 
 
 MysqlTableSchema.prototype._init = function( params ) {
-  this.super_._init( params );
+  MysqlTableSchema.parent._init.call( this, params );
 
   this.db_schema_name = null; // name of other database
 
@@ -38,7 +38,6 @@ MysqlTableSchema.prototype._resolve_table_name = function( name ) {
     this._.raw_name       = this.db_schema.quote_table_name( this.name );
   }
 }
-
 
 MysqlTableSchema.prototype._find_columns = function() {
   var sql             = 'SHOW COLUMNS FROM ' + this.raw_name;

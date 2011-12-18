@@ -1,5 +1,5 @@
 exports.get_batch = function( application, assert ) {
-  var Logger = require( 'logging/logger' );
+  var Logger = require( 'autodafe/framework/logging/logger' );
 
   return {
     topic : application.logger,

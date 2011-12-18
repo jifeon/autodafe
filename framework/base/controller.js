@@ -1,7 +1,7 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 var path      = require('path');
 var fs        = require('fs');
-var dust      = require('dust');
+var dust      = require('dust.js');
 
 // disable whitespace compression
 dust.optimizers.format = function( ctx, node ) {
@@ -16,7 +16,7 @@ function Controller( params ) {
 
 
 Controller.prototype._init = function ( params ) {
-  this.super_._init( params );
+  Controller.parent._init.call( this, params );
 
   if ( !params.name )
     throw new Error( 'Parameter `name` is required for Controller creation' );

@@ -1,5 +1,5 @@
 var config    = require( './config/main' ),
-    autodafe  = require( '../../framework/autodafe.js' );
+    autodafe  = require( 'autodafe/framework/autodafe.js' );
 
 var app = autodafe.create_application( config );
 app.run( function() {

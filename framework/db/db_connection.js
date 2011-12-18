@@ -1,4 +1,4 @@
-var AppModule   = require('app_module');
+var AppModule   = global.autodafe.AppModule;
 var DbCommand   = require( './db_command' );
 
 module.exports = DbConnection.inherits( AppModule );
@@ -9,7 +9,7 @@ function DbConnection() {
 
 
 DbConnection.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbConnection.parent._init.call( this, params );
 
   this._.user     = params.user     || 'root';
   this._.password = params.password || '';

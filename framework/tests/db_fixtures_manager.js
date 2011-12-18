@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = DbFixtureManager.inherits( AppModule );
 
@@ -7,7 +7,7 @@ function DbFixtureManager( params ) {
 }
 
 DbFixtureManager.prototype._init = function( params ){
-  this.super_._init( params );
+  DbFixtureManager.parent._init.call( this, params );
 
   this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
   this.fixtures_count = 0;

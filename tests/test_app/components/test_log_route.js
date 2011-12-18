@@ -1,4 +1,4 @@
-var LogRoute = require('logging/log_route');
+var LogRoute = require('../../../framework/logging/log_route');
 
 module.exports = TestLogRoute.inherits( LogRoute );
 
@@ -8,7 +8,7 @@ function TestLogRoute( params ) {
 
 
 TestLogRoute.prototype._init = function( params ) {
-  this.super_._init( params );
+  TestLogRoute.parent._init.call( this, params );
 };
 
 

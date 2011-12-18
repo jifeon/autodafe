@@ -132,6 +132,7 @@ Object.not_deep_clone = function( obj ) {
   for ( var prop in obj )
     result[ prop ] = obj[ prop ];
 
+
   return result;
 }
 
@@ -143,23 +144,25 @@ Object.reset = function( obj ) {
   return null;
 }
 
-
-var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
+// todo: вернуть после написания тестов
+//var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
 
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );
 
-  Object.defineProperty( this.prototype, 'super_', {
-    get : function() {
+  this.parent = super_class.prototype;
 
-      var handler = new InheritingProxyHandler( {
-        target  : super_class.prototype,
-        context : this
-      } );
+//  this.prototype.__defineGetter__( 'super_', function() {
+//    if ( this.__super__ ) return this.__super__;
 
-      return handler.get_proxy();
-    }
-  } );
+//    var handler = new InheritingProxyHandler( {
+//      target  : Object.getPrototypeOf( this ),
+//      context : this
+//    } );
+//
+//    this.__super__ = handler.get_proxy();
+//    return this.__super__;
+//  } );
 
   return this;
 }
@@ -288,7 +291,7 @@ process.EventEmitter.prototype.re_emit = function() {
   return this;
 }
 
-var dust = exports.dust = require('dust');
+var dust = exports.dust = require('dust.js');
 dust.filters.n = function( value ){
   return isFinite( value ) ? Number( value ) : 0;
 }

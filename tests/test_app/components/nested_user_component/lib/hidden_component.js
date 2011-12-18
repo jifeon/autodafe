@@ -1,4 +1,4 @@
-var Component = require('components/component');
+var Component = global.autodafe.Component;
 
 module.exports = HiddenComponent.inherits( Component );
 
@@ -8,7 +8,7 @@ function HiddenComponent( params ) {
 
 
 HiddenComponent.prototype._init = function( params ) {
-  this.super_._init( params );
+  HiddenComponent.parent._init.call( this, params );
 
   this.param = params.param;
 };

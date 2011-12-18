@@ -1,4 +1,4 @@
-var AppModule = require('app_module');
+var AppModule = global.autodafe.AppModule;
 
 module.exports = DbColumnSchema.inherits( AppModule );
 
@@ -8,7 +8,7 @@ function DbColumnSchema() {
 
 
 DbColumnSchema.prototype._init = function( params ) {
-  this.super_._init( params );
+  DbColumnSchema.parent._init.call( this, params );
 
   if ( !params || !params.db_schema ) throw new Error( 'Link to Db schema is undefined in DbColumnSchema.init' );
 

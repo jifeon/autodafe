@@ -1,7 +1,7 @@
-var AppModule                 = require('app_module');
+var AppModule                 = global.autodafe.AppModule;
 var UserIdentityModelHandler  = require('./user_identity_model_handler');
 var UserIdentityARHandler     = require('./user_identity_active_record_handler');
-var Model                     = require('model');
+var Model                     = global.autodafe.Model;
 
 module.exports = UserIdentity.inherits( AppModule );
 
@@ -11,7 +11,7 @@ function UserIdentity( params ) {
 
 
 UserIdentity.prototype._init = function( params ) {
-  this.super_._init( params );
+  UserIdentity.parent._init.call( this, params );
 
   var UsersManager = require('./users_manager');
   if ( !UsersManager.is_instantiate( params.users_manager ) ) throw new Error(

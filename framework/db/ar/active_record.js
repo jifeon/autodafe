@@ -1,9 +1,7 @@
-var Model             = require('model');
-var DbCommand         = require('db/db_command');
-var DbCriteria        = require('db/db_criteria');
+var Model             = global.autodafe.Model;
+var DbCriteria        = global.autodafe.db.Criteria;
 var Emitter           = process.EventEmitter;
 var ActiveFinder      = require('./active_finder');
-var tools             = require( 'lib/tools' );
 var active_relations  = {
   belongs_to  : require('./relations/belongs_to_relation'),
   stat        : require('./relations/stat_relation'),
@@ -23,7 +21,7 @@ ActiveRecord._relations = null;
 
 
 ActiveRecord.prototype._init = function( params ) {
-  this.super_._init( params );
+  ActiveRecord.parent._init.call( this, params );
 
   this._.is_inited      = false;
   this._.table_name     = null;
@@ -100,7 +98,7 @@ ActiveRecord.prototype._init_relations = function () {
 
 
 ActiveRecord.prototype.get_attribute = function ( name ) {
-  return this._related[ name ] === undefined ? this.super_.get_attribute( name ) : this._related[ name ];
+  return this._related[ name ] === undefined ? ActiveRecord.parent.get_attribute.call( this, name ) : this._related[ name ];
 };
 
 
@@ -150,13 +148,13 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   );
 
   if ( this._related[ name ] != null && !refresh && Object.isEmpty( params ) )
-    return tools.next_tick( this._related[ name ] );
+    return this.app.tools.next_tick( this._related[ name ] );
 
   this.log( 'Load relation `%s`'.format( name ), 'trace' );
   
   var relation        = relations[ name ];
   if ( this.is_new && ( relation instanceof active_relations[ 'has_one' ] || relation instanceof active_relations[ 'has_many' ] ) )
-    return tools.next_tick( relation instanceof active_relations[ 'has_one' ] ? null : [] );
+    return this.app.tools.next_tick( relation instanceof active_relations[ 'has_one' ] ? null : [] );
 
   var saved_relation  = null;
   var With = {};
@@ -177,7 +175,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   var self    = this;
 
   finder.lazy_find( this, function( err ){
-    if ( err ) return tools.next_tick( null, err, emitter );
+    if ( err ) return self.app.tools.next_tick( null, err, emitter );
 
     if( self._related[ name ] == null )
       self._related[ name ] = relation instanceof active_relations[ 'has_many' ]
@@ -192,7 +190,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
       if( saved_relation != null ) self._related[ name ] = saved_relation;
       else                  delete self._related[ name ];
 
-    tools.next_tick( result, null, emitter );
+    self.app.tools.next_tick( result, null, emitter );
   } );
 
   return emitter;
@@ -352,8 +350,8 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
 
 
 ActiveRecord.prototype.save = function( attributes, scenario ) {
-  if ( !this.super_.save( attributes, scenario ) )
-    return tools.next_tick( this.get_errors(), null, null, 'validation_error' );
+  if ( !ActiveRecord.parent.save.call( this, attributes, scenario ) )
+    return this.app.tools.next_tick( this.get_errors(), null, null, 'validation_error' );
 
   return this.is_new ? this.insert( attributes ) : this.update( attributes );
 }
