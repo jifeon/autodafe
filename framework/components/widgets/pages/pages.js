@@ -1,10 +1,8 @@
-var Component = require('components/component');
-var dust   = require('dust');
-var path      = require('path');
-var fs        = require('fs');
+var dust   = require('dust.js');
+var path   = require('path');
+var fs     = require('fs');
 
-
-module.exports = Pages.inherits( Component ); // наследуем от компонент
+module.exports = Pages.inherits( autodafe.Component ); // наследуем от компонент
 
 function Pages( params ) {
   this._init( params );
@@ -17,7 +15,7 @@ function Pages( params ) {
  */
 Pages.prototype._init = function ( params ) {
   // Вызов инициализации родительского класса
-  this.super_._init( params );
+  Pages.parent._init.call( this, params );
 
   // массив объектов из которых генерятся ссылки на страницы
   this.links = [];
