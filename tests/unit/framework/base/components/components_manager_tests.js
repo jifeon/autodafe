@@ -38,14 +38,14 @@ exports.get_batch = function( application, assert ) {
       'load on the fly' : {
         'system component without params' : function( e, app ){
           assert.doesNotThrow( function() {
-            app.components.load_component( 'web_sockets', true );
+            app.components.load( 'web_sockets', true );
           })
 
           assert.instanceOf( app.web_sockets, WebSocketsServer );
         },
         'with params' : function( e, app ){
           assert.doesNotThrow( function() {
-            app.components.load_component( 'another_nested_component', {
+            app.components.load( 'another_nested_component', {
               param : 5
             } );
           })
@@ -74,7 +74,7 @@ exports.get_batch = function( application, assert ) {
 
       'hidden component in `lib` folder should not be loaded' : function( e, app ) {
         assert.throws( function() {
-          app.components.load_component( 'hidden_component', true );
+          app.components.load( 'hidden_component', true );
         } );
         assert.isUndefined( app.hidden_component );
       }
@@ -82,14 +82,14 @@ exports.get_batch = function( application, assert ) {
 
     'try load unknown component' : function( components ) {
       assert.throws( function() {
-        components.load_component( 'unknown_component', true );
+        components.load( 'unknown_component', true );
       } );
     },
 
     'try to load not configured component should log a warning' : function( components ){
       var test_log_route = application.log_router.get_route('test');
       var messages       = test_log_route.grep_messages( function() {
-        components.load_component( 'unknown_component' );
+        components.load( 'unknown_component' );
       } );
 
       assert.isTrue( messages.some( function( message ) { return message.level == 'warning'; } ) );

@@ -7,6 +7,7 @@ module.exports = new function() {
   this.AutodafePart     = require( './base/autodafe_part.js' );
   this.AppModule        = require( './base/app_module.js' );
   this.Component        = require( './components/component.js' );
+  this.Widget           = require( './components/widget.js' );
   this.Controller       = require( './base/controller.js' );
   this.Model            = require( './base/model.js' );
   this.db               = {};

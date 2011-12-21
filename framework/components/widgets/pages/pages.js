@@ -2,7 +2,7 @@ var dust   = require('dust.js');
 var path   = require('path');
 var fs     = require('fs');
 
-module.exports = Pages.inherits( autodafe.Component ); // наследуем от компонент
+module.exports = Pages.inherits( autodafe.Widget );
 
 function Pages( params ) {
   this._init( params );
@@ -39,9 +39,9 @@ Pages.prototype._init = function ( params ) {
   //  ссылки выводятся в виде :
   // {left_block_count} .. {middle_block_count}{active_page}{middle_block_count} .. {right_block_count}
 
-  this.left_block_count   = params.left_block_count || 2;
+  this.left_block_count   = params.left_block_count   || 2;
   this.middle_block_count = params.middle_block_count || 2;
-  this.right_block_count  = params.right_block_count || 2;
+  this.right_block_count  = params.right_block_count  || 2;
 
   };
 

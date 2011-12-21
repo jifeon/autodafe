@@ -7,12 +7,9 @@ var Router                = require('./routing/router');
 var Logger                = require('../logging/logger');
 var ComponentsManager     = require('../components/components_manager');
 var ModelsManager         = require('./models/models_manager');
-var Component             = global.autodafe.Component;
 var ProxyHandler          = require('../lib/proxy_handlers/proxy_handler.js');
-var AutodafePart          = global.autodafe.AutodafePart;
-var AppModule             = global.autodafe.AppModule;
 
-module.exports = Application.inherits( AutodafePart );
+module.exports = Application.inherits( autodafe.AutodafePart );
 
 function Application( config ) {
   this._init( config );
@@ -173,84 +170,60 @@ Application.prototype._preload_components = function () {
   this.log( 'Preload components' );
 
   this.components = new ComponentsManager( {
-    components : this._config.components,
     app        : this
   } );
 
-  var preload = this._config.preload_components;
-  if ( preload instanceof Array ) preload.forEach( function( component_name ){
-    this.components.load_component( component_name );
+  var components  = this._config.components         || {};
+  var preload     = this._config.preload_components || [];
+
+  preload.forEach( function( name ){
+    var params = components[ name ];
+    if ( params ) this.components.load( name, params );
   }, this );
 };
 
 
 Application.prototype._init_components = function () {
   this.log( 'Load components' );
-  this.components.load_components();
+  var components  = this._config.components         || {};
+
+  for( var name in components ){
+    var params = components[ name ];
+    if ( params ) this.components.load( name, params );
+  }
+
   this.log( 'Components are loaded', 'info' );
   this.emit( 'initialized' );
 };
 
 
 Application.prototype.register_component = function ( component ) {
-  var name;
+  if ( !autodafe.Component.is_instantiate( component ) )
+    throw new Error( 'Try to register `%s` as Component'.format( component && typeof component && component.class_name ) );
 
-  if ( typeof component == 'string' ) {
-    name      = component;
-    component = null;
-    if ( this.is_property_engaged( name ) ) return false;
+  var name = component.name;
+
+  var property_descriptor = Object.getOwnPropertyDescriptor( this, name );
+  if ( property_descriptor ) {
+    var error = autodafe.Component.is_instantiate( component )
+      ? 'Try to register two component with same name: %s'.format( name )
+      : 'Try to register component with name engaged for property of application: %s'.format( name );
+
+    this.log( error, 'error' );
+    return false;
   }
-  else name = component.name;
-
-  if ( this.is_component_registered( name ) )  // !== undefined && !== null -> it's component
-    throw new Error( 'Try to register two component with same name: %s'.format( name ) );
-
-  if ( this.is_property_engaged( name ) )
-    throw new Error(
-      'Try to create component with name engaged for property of application: %s '.format( name )
-    );
 
   this._[ name ] = component;
-  this._[ name ].get = function() {
-    if ( component ) return component.get();
-    throw new Error(
-      'Try to use component "%s" which is not included. \
-       To include component configure it in your config file'.format( name )
-    );
+  this._[ name ].get = function( descriptor ) {
+    return descriptor.value.get();
   };
 
   this._[ name ].set = function( v ) {
     throw new Error(
-      'Property "%s" in Application engaged for native autodafe\'s component. \
-       You can\'t set it to "%s"'.format( name, v )
+      'Property `%s` in Application engaged by component. \
+       You can\'t redefine it to `%s`'.format( name, v )
     );
   }
-};
-
-
-Application.prototype.is_component_registered = function ( name ) {
-  try {
-    this[ name ];
-  }
-  catch( e ){ // component name engaged but null instead of component ( uses for system components )
-    return false;
-  }
-
-  return this[ name ] instanceof Component;
-
-//  return this._[ name ].value != null;  // !== undefined && !== null && in _ -> it's component
-};
-
-
-Application.prototype.is_property_engaged = function ( name ) {
-  try {
-    this[ name ];
-  }
-  catch( e ){ // component name engaged but null instead of component ( uses for system components )
-    return false;
-  }
-
-  return typeof this[ name ] != 'undefined';
 };
 
 
@@ -273,7 +246,7 @@ Application.prototype.run = function ( callback ) {
 Application.prototype.__run = function ( callback ) {
   if ( this.is_running ) return false;
 
-  callback = callback || AppModule.prototype.default_callback;
+  callback = callback || autodafe.AppModule.prototype.default_callback;
 
   this.log( 'Running application' );
   this.emit( 'run' );
@@ -319,7 +292,3 @@ Application.prototype.get_session = function ( id, client ) {
 Application.prototype.close = function () {
   this.emit( 'close' );
 };
-
-Application.prototype.create_widget = function( widget_name, params ){
-  return this.components.create_widget( widget_name, params );
-}

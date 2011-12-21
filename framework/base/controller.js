@@ -127,3 +127,8 @@ Controller.prototype.widget = function( chunk, context, bodies, params ){
       } )
     } );
 };
+
+
+Controller.prototype.create_widget = function( widget_name, params ){
+  return this.app.components.create_widget( widget_name, params );
+}

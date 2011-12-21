@@ -12,6 +12,8 @@ module.exports = SiteController.inherits( Controller ); // наследуем о
  */
 function SiteController( params ) {
   this._init( params );
+
+  this.POSTS_PER_PAGE = 10;
 }
 
 
@@ -74,31 +76,43 @@ SiteController.prototype.index = function ( params, client, error ) {
       page = parseInt( params.page ) - 1 || 0;
 
   // ищем 10 топиков для показа их на странице и общее кол-во топиков
-  var listener = this.app.tools.create_async_listener( 2, function( send_params ){
-    // ошибку шлем клиенту, отобразится как 500 ошибка
-    if( send_params.error ) return client.send_error();
-    // если все хорошо - рендерим вьюшку и отсылаем клиенту
-    self.send_response( 'posts_list.html', client, {
-      posts : send_params.posts,
-      error : error ? error : '',
-      pages : self.app.create_widget( 'pages', {
-        count          : send_params.count,
-        items_per_page : 10,
-        link_to        : 'site.index',
-        link_params    : {
-          page : page + 1
-        }
-        } )
-    } )
-  } );
+  var listener = this.app.tools.create_async_listener(
+    2, this.show_index.bind( this, client, error, page )
+  );
+
+  var on_error = client.send_error.bind( client );
 
   this.models.post.find_all({
-    offset : page * 10,
-    limit  : 10,
+    offset : page * this.POSTS_PER_PAGE,
+    limit  : this.POSTS_PER_PAGE,
     order  : 'date desc'
-  }).re_emit( 'error', 'success', listener.get_emitter( 'posts' ));
+  })
+    .on( 'error', on_error )
+    .re_emit( 'success', listener.get_emitter( 'posts' ));
 
-  this.models.post.count().re_emit( 'error', 'success', listener.get_emitter( 'count' ));
+  this.models.post.count()
+    .on( 'error', on_error )
+    .re_emit( 'success', listener.get_emitter( 'count' ));
+};
+
+
+SiteController.prototype.show_index = function ( client, error, page, send_params ) {
+  // ошибку шлем клиенту, отобразится как 500 ошибка
+  if( send_params.error ) return client.send_error( send_params.error );
+
+  // если все хорошо - рендерим вьюшку и отсылаем клиенту
+  this.send_response( 'posts_list.html', client, {
+    posts : send_params.posts,
+    error : error ? error : '',
+    pages : this.create_widget( 'pages', {
+      count          : send_params.count,
+      items_per_page : this.POSTS_PER_PAGE,
+      link_to        : 'site.index',
+      link_params    : {
+        page : page + 1
+      }
+      } )
+  } )
 };
 
 
