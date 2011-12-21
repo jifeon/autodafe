@@ -16,7 +16,7 @@ var config = module.exports = {
    *
    * @type {String}
    */
-  base_dir            : __dirname + '/../',
+  base_dir            : require('path').join( __dirname, '..' ),
 
   /**
    * Контроллер использующийся по умолчанию там где не указан явно. Важно: при подключении к приложению по любому из

@@ -1,6 +1,6 @@
 var config = module.exports = {
   name                : 'drawing',
-  base_dir            : __dirname + '/../',
+  base_dir            : require('path').join( __dirname, '..' ),
 
   default_controller  : 'action',
   views_folder        : 'views/templates',

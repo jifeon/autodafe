@@ -1,5 +1,5 @@
 module.exports = {
-  base_dir        : __dirname + '/../',
+  base_dir        : require('path').join( __dirname, '..' ),
   name            : 'CMApp',
 
   preload_components : [ 'log_router' ],

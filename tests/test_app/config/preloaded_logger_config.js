@@ -1,5 +1,5 @@
 var config = module.exports = {
-  base_dir    : __dirname + '/../',
+  base_dir    : require('path').join( __dirname, '..' ),
   name        : 'Preloaded logger',
 
   default_controller  : 'test',

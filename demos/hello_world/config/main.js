@@ -16,7 +16,7 @@ var config = module.exports = {
    *
    * @type {String}
    */
-  base_dir            : __dirname + '/../',
+  base_dir            : require('path').join( __dirname, '..' ),
 
   /**
    * Настройки компонента отвечающего за перенаправление запросов и генерацию запросов
