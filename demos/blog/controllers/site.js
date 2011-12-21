@@ -39,7 +39,7 @@ SiteController.prototype.send_response = function ( view, client, params ) {
  * Функция выполняется при подключении клиента, она авторизовывает пользователя по куки
  *
  * @param {Client} client подключенный клиент
- * @return {EventEmitter|Boolean} если connect_client возвращает емиттер, то действие из запроса не будет выполнено, пока
+ * @returns {EventEmitter|Boolean} если connect_client возвращает емиттер, то действие из запроса не будет выполнено, пока
  * емиттер не вызовет success, при error на клиент отправится ошибка
  */
 SiteController.prototype.connect_client = function ( client ){
@@ -120,8 +120,8 @@ SiteController.prototype.show_index = function ( client, error, page, send_param
  * Регистрация
  *
  * @param {Object} params параметры пришедшие с запросом
- *    pass  - пароль
- *    login - логин
+ * @param {String} params.pass пароль
+ * @param {String} params.login логин
  * @param {Client} client клиент совершающий действие
  */
 SiteController.prototype.register = function ( params, client ) {
@@ -195,17 +195,18 @@ SiteController.prototype.logout = function ( params, client ) {
 
 
 /**
+ * Авторизация пользвоателя
  *
- *
- * @param login
- * @param pass
- * @param client
- * @param success
- * @param fail
+ * @private
+ * @param {String} login
+ * @param {String} pass
+ * @param {Client} client
+ * @param {Function} [success] функция которая выполнится при успешной авторизации
+ * @param {Function} [fail] функция, которая выполнится если авторизация не пройдет
  */
 SiteController.prototype._authorize = function ( login, pass, client, success, fail ) {
   var self = this;
-  return this.models.user.find_by_attributes( {
+  this.models.user.find_by_attributes( {
     login : login,
     pass  : pass
   } )
