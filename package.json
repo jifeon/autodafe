@@ -8,7 +8,7 @@
   "main"          : "./framework/autodafe",
   "repository"    : {
     "type" : "git",
-    "url"  : "http://github.com/jifeon/node.autodafe.js.git"
+    "url"  : "http://github.com/jifeon/autodafe.git"
   },
   "dependencies"  : {
     "socket.io"             : ">=0.5.2",
