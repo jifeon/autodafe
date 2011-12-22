@@ -1,7 +1,4 @@
-var Controller  = global.autodafe.Controller;
-var crypto      = require('crypto');
-
-module.exports = SiteController.inherits( Controller ); // наследуем от Controller
+module.exports = SiteController.inherits( autodafe.Controller ); // наследуем от Controller
 
 /**
  * Единственный в данном приложении контроллер, который и отвечает за логику работы приложения
@@ -22,5 +19,7 @@ function SiteController( params ) {
  * @param {Client} client клиент совершающий действие
  */
 SiteController.prototype.index = function ( params, client ) {
-  this.send_response( 'index.html', client );
+  this.send_response( 'index.html', client, {
+    name : this.app.get_param( 'your_name' )
+  } );
 };
