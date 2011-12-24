@@ -15,7 +15,7 @@ module.exports = new function() {
   this.db.Criteria      = require('./db/db_criteria.js');
   this.db.ActiveRecord  = require('./db/ar/active_record.js');
 
-  var Application           = require('./base/application.js');
+  var Application       = require('./base/application.js');
 
   var server_by_port  = {};
 

@@ -1,11 +1,17 @@
-exports.get_batch = function( application, assert ) {
-  var AppModule       = global.autodafe.AppModule;
+var vows      = require( 'autodafe/node_modules/vows' );
+var assert    = require( 'assert' );
 
-  var test_log_route  = application.log_router.get_route( 'test' );
+var Autodafe  = require( 'autodafe' );
+var AppModule = require( 'autodafe/framework/base/app_module' );
 
-  return {
+
+//var test_log_route  = application.log_router.get_route( 'test' );
+
+
+vows.describe( 'app_module' ).addBatch({
+  '' :  {
     topic : new AppModule({
-      app : application
+      app : null,//application
     }),
     'link to application' : function( app_module ){
       assert.equal( app_module.app, application );
@@ -87,4 +93,4 @@ exports.get_batch = function( application, assert ) {
 
     }
   }
-}
+});
