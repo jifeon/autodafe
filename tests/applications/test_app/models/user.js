@@ -7,7 +7,7 @@ function User( params ) {
 }
 
 User.prototype.get_table_name = function(){
-  return 'testbase_ar.users';
+  return 'users';
 }
 
 User.prototype.relations = function(){

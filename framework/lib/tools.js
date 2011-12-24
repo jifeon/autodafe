@@ -1,3 +1,4 @@
+//todo: delete
 Array.prototype.diff = function( ar ) {
   "use strict";
 
@@ -9,6 +10,7 @@ Array.prototype.diff = function( ar ) {
 };
 
 
+//todo: delete
 Array.prototype.merge = function( ar ) {
   "use strict";
 
@@ -20,6 +22,7 @@ Array.prototype.merge = function( ar ) {
 };
 
 
+//todo: delete
 Array.prototype.unique = function () {
   "use strict";
 
@@ -29,6 +32,7 @@ Array.prototype.unique = function () {
 };
 
 
+//todo: delete
 Array.prototype.for_each = function ( fun/*, thisp*/ ) {
   "use strict";
 
@@ -69,13 +73,6 @@ Object.merge = function( obj1, obj2 ) {
 };
 
 
-Object.values = function( obj ) {
-  return Object.keys( obj ).map( function( v ) {
-    return obj[v];
-  } );
-}
-
-
 Object.recursive_merge = function( obj1, obj2 ) {
   obj1 = obj1 || {};
   obj2 = obj2 || {};
@@ -92,6 +89,14 @@ Object.recursive_merge = function( obj1, obj2 ) {
 
   return res;
 };
+
+
+//todo: delete
+Object.values = function( obj ) {
+  return Object.keys( obj ).map( function( v ) {
+    return obj[v];
+  } );
+}
 
 
 Object.isEmpty = function( v ) {
@@ -137,6 +142,7 @@ Object.not_deep_clone = function( obj ) {
 }
 
 
+//todo: delete
 Object.reset = function( obj ) {
   if ( this.isEmpty( obj ) ) return null;
   if ( Array.isArray( obj ) ) return obj[0];
@@ -321,7 +327,7 @@ exports.create_async_listener = function( count, callback, params, do_not_fire )
   return new Listener( count, callback, params, do_not_fire );
 };
 
-
+//todo: delete
 exports.get_parallel_listener = function ( count, callback, context, params ) {
   var fired = 0;
   var self  = this;

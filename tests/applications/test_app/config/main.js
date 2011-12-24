@@ -1,5 +1,5 @@
 try {
-  var db = require('./db').db;
+  var db = require('db.js').db;
 }
 catch ( e ) {
   throw new Error( 'Please copy file `' + __dirname + '/common_db.js` to `' + __dirname + '/db.js` and edit it for your current mysql connection' );
@@ -20,33 +20,13 @@ var config = module.exports = {
 
   router : {
     rules     : {
-      'single_route_rule' : 'test.test'//,
-//      'multi_route_rule'  : [
-//        'test.test',
-//        'another_test.test'
-//      ],
-//      'rule_with_unimplemented_test_action' : [
-//        'test.test',
-//        'test.not_existed_test_action',
-//        'another_test.test'
-//      ],
-//      'rule_with_undeclared_test_action' : [
-//        'test.test',
-//        'test.some_implemented_action',
-//        'another_test.test'
-//      ],
-//      'rule_with_not_existed_controller' : [
-//        'test.test',
-//        'bad_controller.test',
-//        'another_test.test'
-//      ]
+      'single_route_rule' : 'test.test'
     }
   },
 
   preload_components : [
     'log_router',
-    'db'//,
-//    'files'
+    'db'
   ],
 
   components : {
@@ -119,12 +99,14 @@ var config = module.exports = {
 
     tests : {
       paths : [      // base_dir + path
+        '../unit'
 //        '../unit/framework'
 //        '../unit/framework/db/ar/active_record_tests'
-        '../unit/framework/db/ar/ar_relations_tests'
+//        '../unit/framework/db/ar/ar_relations_tests'
 //        '../unit/framework/db/mysql_tests'
       ],
       exclude : [    // may be regexp or string which will be searched in path
+        'framework',
         'ar_relations',
         'web_socket',
         'router',

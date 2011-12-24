@@ -37,7 +37,7 @@ function ComponentsManager( params ) {
  * @property {UsersManager} users
  * @property {DbController} db
  * @property {LogRouter} log_router
- * @property {TestComponent} tests
+ * //@property {TestComponent} tests
  * @property {Mailer} mail
  * @property {HTTPServer} http
  */
@@ -46,7 +46,8 @@ ComponentsManager._system_components = {
   'users'              : require( '../users/users_manager' ),
   'db'                 : require( '../db/db_controller' ),
   'log_router'         : require( '../logging/log_router' ),
-  'tests'              : require( '../tests/test_component' ),
+// отключен потому что делает совсем не то что от него надо #282
+//  'tests'              : require( '../tests/test_component' ),
   'mail'               : require( '../mailing/mailer' ),
   'http'               : require( '../client_connections/http/http_server' )
 };

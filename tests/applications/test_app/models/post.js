@@ -7,7 +7,7 @@ function Post( params ) {
 }
 
 Post.prototype.get_table_name = function(){
-  return 'testbase_ar.posts';
+  return 'posts';
 }
 Post.prototype.get_safe_attributes_names = function(){
   return [ 'title' ];

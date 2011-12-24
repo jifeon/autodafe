@@ -8,7 +8,7 @@ function PostUpdate( params ) {
 
 
 PostUpdate.prototype.get_table_name = function(){
-  return 'testbase_ar.posts_for_update';
+  return 'posts_for_update';
 }
 PostUpdate.prototype.get_safe_attributes_names = function(){
   return [ 'title' ];

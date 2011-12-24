@@ -7,7 +7,7 @@ function Comment( params ) {
 }
 
 Comment.prototype.get_table_name = function(){
-  return 'testbase_ar.comments';
+  return 'comments';
 }
 
 Comment.prototype.relations = function(){

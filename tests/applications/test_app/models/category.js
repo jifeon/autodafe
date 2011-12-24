@@ -7,7 +7,7 @@ function Category( params ) {
 }
 
 Category.prototype.get_table_name = function(){
-  return 'testbase_ar.categories';
+  return 'categories';
 }
 
 Category.prototype.relations = function(){

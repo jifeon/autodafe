@@ -16,7 +16,7 @@ PostExt.prototype._init = function ( params ) {
 
 
 PostExt.prototype.get_table_name = function(){
-  return 'testbase_ar.posts';
+  return 'posts';
 }
 PostExt.prototype.get_safe_attributes_names = function(){
   return [ 'title' ];

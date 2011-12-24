@@ -60,7 +60,7 @@ exports.get_batch = function( application, assert ) {
         assert.equal( post.db_connection, application.db );
       },
       'table name' : function( post ){
-        assert.equal( post.table_name, 'testbase_ar.posts' );
+        assert.equal( post.table_name, 'posts' );
       },
       'table schema' : {
         topic : function( post ) {

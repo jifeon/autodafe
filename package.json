@@ -6,21 +6,34 @@
   "author"        : "Andrey Balakirev <balakirev.andrey@gmail.com>",
   "contributors"  : [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
   "main"          : "./framework/autodafe",
+  "bugs"          : {
+    "url" : "http://treeit.ru:3000/projects/autodafe/issues",
+    "email" : "jifeon@gmail.com"
+  },
   "repository"    : {
     "type" : "git",
     "url"  : "http://github.com/jifeon/autodafe.git"
   },
+  "directories"   : {
+    "lib"     : "./framework",
+    "example" : "./demos"
+  },
+  "scripts" : {
+    "test" : "./tests/run_tests"
+  },
   "dependencies"  : {
     "socket.io"             : ">=0.5.2",
-    "socket.io-client"      : ">=0.7.2",
     "node-proxy"            : ">=0.4.0",
     "colors"                : ">=0.3.0",
-    "vows"                  : ">=0.5.8",
     "emailjs"               : ">=0.1.8",
     "mysql"                 : ">=0.9.0",
     "dust.js"               : ">=0.1.0",
     "formidable"            : ">=1.0.2",
     "http-auth"             : ">=1.0.4"
+  },
+  "devDependencies" : {
+    "vows"                  : ">=0.5.8",
+    "socket.io-client"      : ">=0.7.2"
   },
   "engines"       : { "node": ">=0.4.0" }
 }

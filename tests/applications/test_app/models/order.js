@@ -7,7 +7,7 @@ function Order( params ) {
 }
 
 Order.prototype.get_table_name = function(){
-  return 'testbase_ar.orders';
+  return 'orders';
 }
 
 Order.prototype.relations = function(){

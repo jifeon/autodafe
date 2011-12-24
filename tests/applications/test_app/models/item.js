@@ -7,7 +7,7 @@ function Item( params ) {
 }
 
 Item.prototype.get_table_name = function(){
-  return 'testbase_ar.items';
+  return 'items';
 }
 
 
