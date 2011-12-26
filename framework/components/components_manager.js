@@ -5,7 +5,7 @@ module.exports = ComponentsManager.inherits( autodafe.AppModule );
 
 
 /**
- * ComponentsManager - класс управляющий загрузкой и подключением компонентов.
+ * Класс управляющий загрузкой и подключением компонентов.
  *
  * Что такое компонент смотри в {@link Component}
  *
@@ -28,18 +28,18 @@ function ComponentsManager( params ) {
 
 
 /**
- * Хэш где собраны ссылки на классы системных компонентов
+ * Хэш где собраны ссылки на конструкторы системных компонентов
  *
  * @static
  * @private
  * @type {Object}
- * @property {WebSocketsServer} web_sockets
- * @property {UsersManager} users
- * @property {DbController} db
- * @property {LogRouter} log_router
- * //@property {TestComponent} tests
- * @property {Mailer} mail
- * @property {HTTPServer} http
+ * @property {Function} web_sockets {@link WebSocketsServer}
+ * @property {Function} users {@link UsersManager}
+ * @property {Function} db {@link DbController}
+ * @property {Function} log_router {@link LogRouter}
+ * //@property {Function} tests {@link TestComponent}
+ * @property {Function} mail {@link Mailer}
+ * @property {Function} http {@link HTTPServer}
  */
 ComponentsManager._system_components = {
   'web_sockets'        : require( '../client_connections/web_sockets/web_sockets_server' ),

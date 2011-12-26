@@ -1,4 +1,5 @@
 var Component = global.autodafe.Component;
+var http      = require( 'http' );
 
 module.exports = ClientConnection.inherits( Component );
 
@@ -18,6 +19,21 @@ ClientConnection.prototype._init = function ( params ) {
   this.app.on( 'close', function() {
     self.close();
   } );
+};
+
+
+ClientConnection.prototype.get_server = function ( port ) {
+  var server = http.createServer();
+
+  try {
+    server.listen( port );
+  }
+  catch( e ) {
+    this.log( 'Can not listen server on port %s'.format( port ), 'error' );
+    return null;
+  }
+
+  return server;
 };
 
 

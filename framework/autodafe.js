@@ -1,10 +1,50 @@
-var tools                 = require( './lib/tools' );
-var http                  = require( 'http' );
+var tools = require( './lib/tools' );
 
-module.exports = new function() {
-  global.autodafe   = this;
+var AutodafePart = require('./base/autodafe_part');
+Autodafe.inherits( AutodafePart );
 
-  this.AutodafePart     = require( './base/autodafe_part.js' );
+/**
+ * Класс управляющий приложениями.
+ *
+ * Позволяет создавать приложения на основе конфигурации для них. По завершениею процесса закрывает все приложения.
+ * ( {@link Application.close} )
+ *
+ * @constructor
+ * @extends AutodafePart
+ * @property {Function} AutodafePart конструктор {@link AutodafePart}
+ * @property {Function} AppModule конструктор {@link AppModule}
+ * @property {Function} Component конструктор {@link Component}
+ * @property {Function} Widget конструктор {@link Widget}
+ * @property {Function} Controller конструктор {@link Controller}
+ * @property {Function} Model конструктор {@link Model}
+ * @property {Object} db сборка ссылок на конструкторы часто используемых модулей из компонента для работы с базой
+ * данных
+ * @property {Function} db.Expression конструктор {@link DbExpression}
+ * @property {Function} db.Criteria конструктор {@link DbCriteria}
+ * @property {Function} db.ActiveRecord конструктор {@link ActiveRecord}
+ * @example Создание и запуск минималистичного приложения приложения
+ *
+ * ```javascript
+ * var autodafe = require( 'autodafe' );
+ * autodafe.create_application( { name : 'MyApp', base_dir : __dirname } ).run();
+ * ```
+ */
+function Autodafe() {
+  this._init();
+}
+
+
+/**
+ * Инициализация Autodafe - происходит один раз при первом подключении фреймворка
+ *
+ * @private
+ */
+Autodafe.prototype._init = function() {
+  Autodafe.parent._init.call( this );
+
+  global.autodafe       = this;
+
+  this.AutodafePart     = AutodafePart;
   this.AppModule        = require( './base/app_module.js' );
   this.Component        = require( './components/component.js' );
   this.Widget           = require( './components/widget.js' );
@@ -15,60 +55,52 @@ module.exports = new function() {
   this.db.Criteria      = require('./db/db_criteria.js');
   this.db.ActiveRecord  = require('./db/ar/active_record.js');
 
-  var Application       = require('./base/application.js');
+  /**
+   * Созданные приложения
+   *
+   * @type {Application[]}
+   */
+  this._.applications   = [];
 
-  var server_by_port  = {};
+  process.on( 'exit', this.on_exit.bind( this ) );
+};
 
-  this.create_application = function( config ) {
-    return new Application( config );
-  };
 
-  this.get_server = function( port, application ) {
-    if ( typeof port != 'number' ) throw new Error(
-      '`port` should be a number in Autodafe.get_server'
-    );
+/**
+ * Создает приложение
+ *
+ * @param {Object} config конфигурация приложения
+ * @returns {Application} новое приложение
+ */
+Autodafe.prototype.create_application = function ( config ) {
+  var Application = require('./base/application.js');
+  var app = new Application( config );
+  this.applications.push( app );
+  return app;
+};
 
-    if ( !server_by_port[ port ] ) {
-      server_by_port[ port ] = http.createServer();
-      try {
-        server_by_port[ port ].listen( port );
-      }
-      catch( e ) {
-        application.log( 'Can not listen server on port %s'.format( port ), 'error' );
-        return null;
-      }
-    }
 
-    return server_by_port[ port ];
-  };
+/**
+ * Выполняется при process.exit
+ *
+ * Проверяет были ли выведены сообщения в консоль хоть из одного приложения, если нет - показывает сообщение, что
+ * нужно настроить логгер
+ *
+ * Выолняет для всех приложений {@link Application.close}
+ */
+Autodafe.prototype.on_exit = function () {
+  var silent            = process.argv[2] == '--silent';
+  var some_log_is_shown = this.applications.some( function( app ){
+    return app.log_router.get_route( 'console' );
+  } );
 
-  var show_log_on_exit = process.argv[ 2 ] == '--show_log_on_exit';
+  if ( !silent && !some_log_is_shown ) console.log(
+    'If you don\'t look any log messages, preload and configure `log_router` component. ' +
+    'To hide this message run the application with `--silent` option' );
 
-  var self = this;
-  process.on( 'exit', function() {
-    var shown_some_log = false;
-    var instance, i, i_ln;
-
-    for ( i = 0, i_ln = Application.instances.length; i < i_ln; i++ ) {
-      instance = Application.instances[i];
-      if ( instance.log_router && instance.log_router.get_route('console') ) {
-        shown_some_log = true;
-        break;
-      }
-    }
-
-    if ( !show_log_on_exit && !shown_some_log )
-      console.log(
-        'If you don\'t look any log messages, preload and configure "log_router" component ' +
-        'or run the application with --show_log_on_exit option' );
-
-    else if ( show_log_on_exit && Application.instance && Application.instance.logger )
-      Application.instance.logger.messages.forEach( function( message ) {
-        console.log( '%s: "%s" in module "%s"', message.level, message.text, message.module );
-      } );
-
-    Application.instances.forEach( function( app ) {
-      app.close();
-    } );
+  this.applications.forEach( function( app ) {
+    app.close();
   } );
 };
+
+module.exports = new Autodafe;

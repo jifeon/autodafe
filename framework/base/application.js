@@ -16,14 +16,11 @@ function Application( config ) {
 }
 
 
-Application.instances = [];
-
 Application.prototype._init = function ( config ) {
   this.setMaxListeners( 1000 );
 
   Application.parent._init.call( this );
 
-  Application.instances.push( this );
   this._config        = config            || {};
   this._sessions      = {};
   this._views_mtime   = {};
