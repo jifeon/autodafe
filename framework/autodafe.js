@@ -58,11 +58,14 @@ Autodafe.prototype._init = function() {
   /**
    * Созданные приложения
    *
-   * @type {Application[]}
+   * Ключи - названия приложений, значения - сами приложения
+   *
+   * @type {Object}
+   * @private
    */
-  this._.applications   = [];
+  this._applications   = {};
 
-  process.on( 'exit', this.on_exit.bind( this ) );
+  process.on( 'exit', this._on_exit.bind( this ) );
 };
 
 
@@ -74,9 +77,29 @@ Autodafe.prototype._init = function() {
  */
 Autodafe.prototype.create_application = function ( config ) {
   var Application = require('./base/application.js');
-  var app = new Application( config );
-  this.applications.push( app );
+  var app   = new Application( config );
+  var name  = app.name;
+
+  if ( this._applications[ name ] ) {
+    var warning = 'Creating few applications with same name `%s` can lead to bugs'.format( name );
+
+    this._applications[ name ].log( warning, 'warning', 'Autodafe' );
+    app.log( warning, 'warning', 'Autodafe' );
+  }
+
+  this._applications[ name ] = app;
   return app;
+};
+
+
+/**
+ * Возвращает приложение по его имени.
+ *
+ * @param {String} name имя приложения
+ * @returns {Application} Приложение если находит его и null если нет
+ */
+Autodafe.prototype.get_application = function ( name ) {
+  return this._applications[ name ] || null;
 };
 
 
@@ -87,20 +110,27 @@ Autodafe.prototype.create_application = function ( config ) {
  * нужно настроить логгер
  *
  * Выолняет для всех приложений {@link Application.close}
+ *
+ * @private
  */
-Autodafe.prototype.on_exit = function () {
+Autodafe.prototype._on_exit = function () {
   var silent            = process.argv[2] == '--silent';
-  var some_log_is_shown = this.applications.some( function( app ){
-    return app.log_router.get_route( 'console' );
-  } );
+  var some_log_is_shown = false;
+
+  for ( var name in this._applications ) {
+    var log_router = this._applications[ name ].log_router;
+    if ( log_router && log_router.get_route( 'console' ) ){
+      some_log_is_shown = true;
+      break;
+    }
+  }
 
   if ( !silent && !some_log_is_shown ) console.log(
     'If you don\'t look any log messages, preload and configure `log_router` component. ' +
-    'To hide this message run the application with `--silent` option' );
+    'To hide this message run the main script with `--silent` option' );
 
-  this.applications.forEach( function( app ) {
-    app.close();
-  } );
+  for ( name in this._applications )
+    this._applications[ name ].close();
 };
 
 module.exports = new Autodafe;
