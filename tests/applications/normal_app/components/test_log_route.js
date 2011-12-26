@@ -1,4 +1,4 @@
-var LogRoute = require('../../../framework/logging/log_route');
+var LogRoute = require('autodafe/framework/logging/log_route');
 
 module.exports = TestLogRoute.inherits( LogRoute );
 
@@ -7,32 +7,25 @@ function TestLogRoute( params ) {
 }
 
 
-TestLogRoute.prototype._init = function( params ) {
-  TestLogRoute.parent._init.call( this, params );
-};
-
-
 TestLogRoute.prototype.log_message = function ( message ) {
   this.emit( 'message', message );
 };
 
 
-TestLogRoute.prototype.grep_messages = function ( fun, args, context ) {
+TestLogRoute.prototype.grep_messages = function ( callback ) {
   var messages = [];
   var listener = function( message ) {
     messages.push( message );
   };
 
   this.on( 'message', listener );
-
-  fun.apply( context || null, args || [] );
-
+  callback();
   this.removeListener( 'message', listener );
 
   return messages;
 };
 
 
-TestLogRoute.prototype.get_first_message = function () {
-  return this.grep_messages.apply( this, arguments )[0] || null;
+TestLogRoute.prototype.get_first_message = function ( callback ) {
+  return this.grep_messages( callback )[0] || null;
 };
