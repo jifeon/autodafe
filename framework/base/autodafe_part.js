@@ -31,8 +31,9 @@ AutodafePart.prototype._init = function() {
    * @name _
    * @public
    * @type {Proxy}
-   * @example Создание защищенных свойств. Внимание! Задание защищенных свойств частично необратимо ( удалить защищенные
-   * переменные полностью невозможно ).
+   * @example Создание защищенных свойств.
+   *
+   * Внимание! Задание защищенных свойств частично необратимо ( удалить защищенные переменные полностью невозможно )
    *
    * ```javascript
    * var AutodafePart = require('autodafe_part');
@@ -93,7 +94,6 @@ AutodafePart.prototype._init = function() {
    * Имя класса экземпляр которого мы исследуем. Имя определяется как имя конструктора ( instance.contructor.name ),
    * поэтому необходимо чтобы все классы наследуемые от AutodafePart были объявлены как функции имеющие имя.
    *
-   * @name class_name
    * @type {String}
    * @example
    * ```javascript
