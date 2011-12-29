@@ -16,7 +16,7 @@ MysqlTableSchema.prototype._init = function( params ) {
   this._resolve_table_name( params.name );
   this._find_columns();
   
-  this.on( 'initialized', function() {
+  this.on( 'ready', function() {
     this.is_inited = true;
     this.log( 'Table "%s" has initialized'.format( this.name ) );
   } );
@@ -94,7 +94,7 @@ MysqlTableSchema.prototype._find_constrains = function () {
       }
     } )
 
-    self.emit( 'initialized' );
+    self.emit( 'ready' );
   } );
 };
 

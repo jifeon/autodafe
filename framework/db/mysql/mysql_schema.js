@@ -26,7 +26,7 @@ MysqlSchema.prototype._load_table = function( name, callback, context ) {
   });
 
   table
-    .on( 'initialized', function() {
+    .on( 'ready', function() {
       callback.call( context || null, null, table );
     } )
     .on( 'error', function( e ) {

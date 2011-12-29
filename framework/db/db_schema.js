@@ -44,7 +44,7 @@ DbSchema.prototype.get_table = function( name, callback, context ) {
 
   if ( table.is_inited ) callback.call( context || null, null, table );
   else table
-    .on( 'initialized', function() {
+    .on( 'ready', function() {
       callback.call( context || null, null, table );
     } )
     .on( 'error', function( e ) {

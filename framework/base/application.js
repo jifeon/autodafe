@@ -36,13 +36,13 @@ Application.prototype._init = function ( config ) {
     throw new Error( 'Please specify `base_dir` in your config file!' );
   this._.base_dir     = path.normalize( this._config.base_dir );
 
-  this._.is_running       = false;
+  this._.is_running   = false;
 
-  this.tools              = tools;
-  this.logger             = new Logger;
-  this.router             = null;
-  this.components         = null;
-  this.models             = null;
+  this.tools          = tools;
+  this.logger         = new Logger;
+  this.router         = null;
+  this.components     = null;
+  this.models         = null;
 
   this.default_controller     = this._config.default_controller || 'action';
   this._.path_to_models       = path.join( this.base_dir, this._config.models_folder      || 'models'      );
@@ -51,19 +51,23 @@ Application.prototype._init = function ( config ) {
   this._.path_to_views        = path.join( this.base_dir, this._config.views_folder       || 'views'       );
 
   this._preload_components();
-  this._init_core( /*before*/ this._init_components );
+  this._init_core();
+  this.on( 'core_is_built', this._init_components );
+  this.on( 'components_are_loaded', function() {
+    this.run = this.__run;
+    this.log( 'Application is ready to run', 'info' );
+    this.emit( 'ready' );
+  } );
 };
 
 
-Application.prototype._init_core = function ( callback ) {
+Application.prototype._init_core = function () {
   if ( this._config.cache_views !== false ) this.load_views();
 
-  this._init_models( /*before*/ this._init_router );
-
-  this.on( 'core_initialized', callback );
-
-  this.on( 'initialized', function() {
-    this.run = this.__run;
+  this._init_models();
+  this.on( 'models_are_loaded', this._init_router );
+  this.on( 'router_is_ready', function() {
+    this.emit( 'core_is_built' );
   } );
 };
 
@@ -126,13 +130,13 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
         .format( conflict_names.join(', ') ), 'warning'
     );
     this.views_loaded = true;
-    this.emit( 'views_loaded' );
-    this.log( 'views loaded', 'info' );
+    this.emit( 'views_are_loaded' );
+    this.log( 'Views are loaded', 'info' );
   }
 };
 
 
-Application.prototype._init_models = function( callback ){
+Application.prototype._init_models = function(){
   var models_manager = new ModelsManager({
     app : this
   });
@@ -146,9 +150,9 @@ Application.prototype._init_models = function( callback ){
   this._.models = models_handler.get_proxy();
 
   var self = this;
-  models_manager.load_models( function() {
-    self.emit( 'models_loaded' );
-    callback.call( self );
+  models_manager.load_models( function( e ) {
+    if ( e ) self.emit( 'error', e );
+    else self.emit( 'models_are_loaded' );
   } );
 };
 
@@ -156,10 +160,16 @@ Application.prototype._init_models = function( callback ){
 Application.prototype._init_router = function () {
   var router_cfg  = this._config.router || {};
   router_cfg.app  = this;
-  this.router     = new Router( router_cfg );
+  try {
+    this.router     = new Router( router_cfg );
+  }
+  catch( e ){
+    this.emit( 'error', e );
+    return false;
+  }
 
   this.log( 'Router is initialized', 'info' );
-  this.emit( 'core_initialized' );
+  this.emit( 'router_is_ready' );
 };
 
 
@@ -190,7 +200,7 @@ Application.prototype._init_components = function () {
   }
 
   this.log( 'Components are loaded', 'info' );
-  this.emit( 'initialized' );
+  this.emit( 'components_are_loaded' );
 };
 
 
@@ -201,14 +211,11 @@ Application.prototype.register_component = function ( component ) {
   var name = component.name;
 
   var property_descriptor = Object.getOwnPropertyDescriptor( this, name );
-  if ( property_descriptor ) {
-    var error = autodafe.Component.is_instantiate( component )
-      ? 'Try to register two component with same name: %s'.format( name )
-      : 'Try to register component with name engaged for property of application: %s'.format( name );
-
-    this.log( error, 'error' );
-    return false;
-  }
+  if ( property_descriptor ) throw new Error(
+    autodafe.Component.is_instantiate( property_descriptor.value || this._[name].value )
+    ? 'Try to register two components with same name: %s'.format( name )
+    : 'Try to register a component with name engaged for property of application: %s'.format( name )
+  );
 
   this._[ name ] = component;
   this._[ name ].get = function( descriptor ) {
@@ -233,7 +240,7 @@ Application.prototype.run = function ( callback ) {
   if ( this._run_on_init ) return false; // double run before init
 
   this._run_on_init = true;
-  this.once( 'initialized', function(){
+  this.once( 'ready', function(){
     this.__run( callback );
   } );
   return true;

@@ -72,14 +72,28 @@ Autodafe.prototype._init = function() {
 /**
  * Создает приложение
  *
- * @param {Object} config конфигурация приложения
+ * @param {Object} config конфигурация приложения, обязательные параметры смотри в {@link Application._init}
+ * @param {Function} [callback={@link AppModule.default_callback}] Вызывается, если во время создания приложения
+ * произошла ошибка ( callback( Error ) ), или после того как приложение полностью проинициализируется и будет готово
+ * к запуску ( callback( null, {@link Application} ) )
  * @returns {Application} новое приложение
  */
-Autodafe.prototype.create_application = function ( config ) {
-  var Application = require('./base/application.js');
-  var app   = new Application( config );
-  var name  = app.name;
+Autodafe.prototype.create_application = function ( config, callback ) {
+  callback = typeof callback == 'function' ? callback : this.AppModule.prototype.default_callback;
 
+  var Application = require('./base/application');
+  try {
+    var app = new Application( config );
+  }
+  catch( e ){
+    callback( e );
+    return null;
+  }
+
+  app.on( 'error', callback );
+  app.on( 'ready', function(){ callback( null, app ) } );
+
+  var name = app.name;
   if ( this._applications[ name ] ) {
     var warning = 'Creating few applications with same name `%s` can lead to bugs'.format( name );
 

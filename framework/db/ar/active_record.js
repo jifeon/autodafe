@@ -52,10 +52,10 @@ ActiveRecord.prototype._init = function( params ) {
 
     this._.table      = table;
     this._.is_inited  = true;
-    this.emit( 'initialized' );
+    this.emit( 'ready' );
   }, this );
 
-  this.app.on( 'models_loaded', function() {
+  this.app.on( 'models_are_loaded', function() {
     self._init_relations();
   } );
 };

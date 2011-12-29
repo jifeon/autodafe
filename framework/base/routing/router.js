@@ -59,9 +59,8 @@ Router.prototype._collect_controllers = function () {
       var controller_class = require( file_path );
     }
     catch( e ) {
-      this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'warning' );
-      this.log( e, 'warning' );
-      continue;
+      this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'error' );
+      throw e;
     }
 
     if ( !Controller.is_instantiate( controller_class.prototype ) ) {
@@ -72,10 +71,17 @@ Router.prototype._collect_controllers = function () {
     var name = path.basename( file_path, '.js' );
 
     this.log( 'Controller "%s" is added'.format( name ), 'trace' );
-    this._controllers[ name ] = new controller_class({
-      app   : this.app,
-      name  : name
-    });
+
+    try {
+      this._controllers[ name ] = new controller_class({
+        app   : this.app,
+        name  : name
+      });
+    }
+    catch( e ) {
+      this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'error' );
+      throw e;
+    }
   }
 
   this.log( 'Controllers are included', 'info' );

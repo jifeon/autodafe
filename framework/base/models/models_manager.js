@@ -28,20 +28,23 @@ ModelsManager.prototype.load_models = function ( callback ) {
   var models_path = this.app.path_to_models;
   this.log( 'Loading models from path: ' + models_path, 'trace' );
 
-  var listener = this.app.tools.create_async_listener(
-    0, this._loading_complete.bind( this, callback ), null, true
-  );
+  var self          = this;
+  var skip_loading  = false;
+
+  var listener = this.app.tools.create_async_listener( 0, function(){
+    if ( !skip_loading ) self.log( 'Models are loaded', 'info' );
+    process.nextTick( callback );
+  }, null, true );
 
   try {
     var files = fs.readdirSync( models_path );
   }
   catch ( e ) {
-    this.log( 'Cannot find models folder. Skip loading models.', 'trace' );
+    this.log( 'Cannot find models folder. Skip loading models', 'warning' );
+    skip_loading = true;
     listener.fire();
     return false;
   }
-
-  var self          = this;
 
   for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
 
@@ -55,13 +58,12 @@ ModelsManager.prototype.load_models = function ( callback ) {
       var model_constructor = require( file_path );
     }
     catch( e ) {
-      this.log( 'Can\'t load model from file: %s'.format( file_path ), 'warning' );
-      this.log( e, 'warning' );
-      continue;
+      this.log( 'Can\'t load model from file: %s'.format( file_path ), 'error' );
+      return callback( e );
     }
 
     if ( !Model.is_instantiate( model_constructor.prototype ) ) {
-      this.log( 'File in path `%s` is not a valid model'.format( file_path ), 'warning' );
+      this.log( 'File in path `%s` is not a model'.format( file_path ), 'warning' );
       continue;
     }
 
@@ -70,13 +72,12 @@ ModelsManager.prototype.load_models = function ( callback ) {
       var model = this._get_model_proxy( model_constructor );
     } catch (e) {
       this.log( 'Model "%s" is not loaded'.format( name ), 'error' );
-      this.log( e );
-      continue;
+      callback( e );
     }
 
     if ( !model.is_inited ) {
       listener.count++;
-      model.on( 'initialized', listener.listen() );
+      model.on( 'ready', listener.listen() );
     }
 
     this._models[ name ] = model;
@@ -84,12 +85,6 @@ ModelsManager.prototype.load_models = function ( callback ) {
   }
 
   listener.check_count();
-};
-
-
-ModelsManager.prototype._loading_complete = function ( callback ) {
-  this.log( 'Models are loaded', 'info' );
-  process.nextTick( callback );
 };
 
 
