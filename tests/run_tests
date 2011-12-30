@@ -16,17 +16,9 @@ var util  = require('util'),
 }
   else if ( stats.isFile() ) paths.push( tests_path );
 
-})( path.join( __dirname, 'test' ) );
+})( path.join( __dirname, 'units' ) );
 
 var vows  = spawn( path.resolve( __dirname, '../node_modules/vows/bin/vows' ), paths );
-
-/*vows.stdout.on('data', function (data) {
-  console.log( data.toString('utf8') );
-});
-
-vows.stderr.on('data', function (data) {
-  console.error( data.toString('utf8') );
-});*/
 
 vows.stdout.pipe( process.stdout );
 vows.stderr.pipe( process.stderr );

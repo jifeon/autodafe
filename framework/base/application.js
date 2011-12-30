@@ -1,4 +1,3 @@
-var tools                 = require('../lib/tools');
 var path                  = require('path');
 var fs                    = require('fs');
 var dust                  = require('dust.js');
@@ -14,6 +13,9 @@ module.exports = Application.inherits( autodafe.AutodafePart );
 function Application( config ) {
   this._init( config );
 }
+
+
+Application.prototype.tools = require('../lib/tools');
 
 
 Application.prototype._init = function ( config ) {
@@ -38,7 +40,6 @@ Application.prototype._init = function ( config ) {
 
   this._.is_running   = false;
 
-  this.tools          = tools;
   this.logger         = new Logger;
   this.router         = null;
   this.components     = null;
@@ -293,6 +294,7 @@ Application.prototype.get_session = function ( id, client ) {
 };
 
 
-Application.prototype.close = function () {
-  this.emit( 'close' );
+Application.prototype.stop = function () {
+  this.log( 'Stop application' );
+  this.emit( 'stop' );
 };

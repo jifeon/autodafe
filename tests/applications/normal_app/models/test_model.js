@@ -1,6 +1,4 @@
-var Model = global.autodafe.Model;
-
-module.exports = TestModel.inherits( Model );
+module.exports = TestModel.inherits( autodafe.Model );
 
 TestModel.prototype.get_safe_attributes_names = function(){
   return [ 'param1', 'param2' ];

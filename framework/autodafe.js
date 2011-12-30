@@ -144,7 +144,7 @@ Autodafe.prototype._on_exit = function () {
     'To hide this message run the main script with `--silent` option' );
 
   for ( name in this._applications )
-    this._applications[ name ].close();
+    this._applications[ name ].stop();
 };
 
 module.exports = new Autodafe;
