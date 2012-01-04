@@ -1,6 +1,4 @@
-var Component = global.autodafe.Component;
-
-module.exports = NestedComponent.inherits( Component );
+module.exports = NestedComponent.inherits( autodafe.Component );
 
 function NestedComponent( params ) {
   this._init( params );

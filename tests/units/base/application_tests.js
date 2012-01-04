@@ -2,7 +2,6 @@ var vows        = require( 'autodafe/node_modules/vows' );
 var assert      = require( 'assert' );
 var path        = require( 'path' );
 var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
-var tools       = require( 'autodafe/framework/lib/tools' );
 
 
 var Autodafe          = require( 'autodafe' );
@@ -19,23 +18,6 @@ var ClientConnection  = require( 'autodafe/framework/client_connections/client_c
 
 
 var config    = tests_tools.normal_config;
-var app_count = 0;
-
-
-function get_new_app( app_config, options ) {
-  options    = options    || {};
-  app_config = app_config ||  {
-    base_dir : config.base_dir,
-    name     : 'test_application_' + app_count++
-  };
-
-  var app = Autodafe.create_application( app_config, options.create_callback );
-
-  if ( options.run ) app.run( options.run_callback );
-
-  return app;
-}
-
 
 function get_client( app ){
   return new Client({
@@ -76,7 +58,7 @@ vows.describe( 'application' ).addBatch({
 
     '.default_controller' : function( app ){
       assert.equal( app.default_controller, config.default_controller );
-      assert.equal( get_new_app().default_controller, 'action' );
+      assert.equal( tests_tools.get_new_app().default_controller, 'action' );
     },
 
     '.path_to_models' : function( app ){
@@ -120,7 +102,7 @@ vows.describe( 'application' ).addBatch({
     },
 
     '.tools' : function( app ){
-      assert.equal( app.tools, tools );
+      assert.equal( app.tools, require( 'autodafe/framework/lib/tools' ) );
     },
 
     '.models' : {
@@ -238,7 +220,7 @@ vows.describe( 'application' ).addBatch({
     },
 
     '.run() before' : function( app ) {
-      var new_app = get_new_app();
+      var new_app = tests_tools.get_new_app();
       assert.isFalse( new_app.is_running );
 
       assert.isTrue( new_app.run() );
@@ -248,7 +230,7 @@ vows.describe( 'application' ).addBatch({
 
     '.run()' : {
       topic : function(){
-        get_new_app().run( this.callback );
+        tests_tools.get_new_app().run( this.callback );
       },
       'after' : function( err, app ){
         var double_run = false;
@@ -386,7 +368,7 @@ vows.describe( 'application' ).addBatch({
 
     topic : function(){
       var config = require( 'autodafe/tests/applications/mini_app/config.js' );
-      get_new_app( config, {
+      tests_tools.get_new_app( config, {
         create_callback : this.callback
       } );
     },

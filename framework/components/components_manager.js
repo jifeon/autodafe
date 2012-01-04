@@ -37,7 +37,6 @@ function ComponentsManager( params ) {
  * @property {Function} users {@link UsersManager}
  * @property {Function} db {@link DbController}
  * @property {Function} log_router {@link LogRouter}
- * //@property {Function} tests {@link TestComponent}
  * @property {Function} mail {@link Mailer}
  * @property {Function} http {@link HTTPServer}
  */

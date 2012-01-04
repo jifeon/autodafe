@@ -1,6 +1,4 @@
-var Component = global.autodafe.Component;
-
-module.exports = UserComponent.inherits( Component );
+module.exports = UserComponent.inherits( autodafe.Component );
 
 function UserComponent( params ) {
   this._init( params );

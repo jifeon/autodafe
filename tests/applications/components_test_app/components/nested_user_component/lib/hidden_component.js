@@ -1,6 +1,4 @@
-var Component = global.autodafe.Component;
-
-module.exports = HiddenComponent.inherits( Component );
+module.exports = HiddenComponent.inherits( autodafe.Component );
 
 function HiddenComponent( params ) {
   this._init( params );

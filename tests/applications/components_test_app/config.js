@@ -1,12 +1,12 @@
 module.exports = {
-  base_dir        : require('path').join( __dirname, '..' ),
-  name            : 'CMApp',
+  base_dir        : __dirname,
+  name            : 'components_test_app',
 
   preload_components : [ 'log_router' ],
 
   components      : {
     web_sockets         : false,
-    tests               : true,
+    http                : true,
 
     log_router          : {
       routes : {
@@ -16,7 +16,6 @@ module.exports = {
       }
     },
 
-    // user's components
     user_component : {
       param : 42
     },
