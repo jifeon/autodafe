@@ -46,7 +46,15 @@ Router.prototype._collect_controllers = function () {
   var controllers_path = this.app.path_to_controllers;
   this.log( 'Collecting controllers in path: ' + controllers_path, 'trace' );
 
-  var files = fs.readdirSync( controllers_path );
+  var files = null;
+  try {
+    files = fs.readdirSync( controllers_path );
+  }
+  catch(e){
+    this.log( 'Controllers folder is not found. Skip loading controllers', 'warning' );
+    return false;
+  }
+
   for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
 
     try {

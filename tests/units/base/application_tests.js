@@ -6,6 +6,7 @@ var tools       = require( 'autodafe/framework/lib/tools' );
 
 
 var Autodafe          = require( 'autodafe' );
+var Application       = require( 'autodafe/framework/base/application' );
 var Router            = require( 'autodafe/framework/base/routing/router' );
 var Logger            = require( 'autodafe/framework/logging/logger' );
 var ComponentsManager = require( 'autodafe/framework/components/components_manager' );
@@ -28,9 +29,9 @@ function get_new_app( app_config, options ) {
     name     : 'test_application_' + app_count++
   };
 
-  var app = Autodafe.create_application( app_config );
+  var app = Autodafe.create_application( app_config, options.create_callback );
 
-  if ( options.run ) app.run();
+  if ( options.run ) app.run( options.run_callback );
 
   return app;
 }
@@ -378,6 +379,32 @@ vows.describe( 'application' ).addBatch({
       } );
       app.stop();
       assert.isTrue( stop_emitted );
+    }
+  },
+
+  'creating minimalistic application' : {
+
+    topic : function(){
+      var config = require( 'autodafe/tests/applications/mini_app/config.js' );
+      get_new_app( config, {
+        create_callback : this.callback
+      } );
+    },
+
+    'should work without any errors' : function( err, app ){
+      assert.isNull( err );
+      assert.instanceOf( app, Application );
+    },
+
+    'and run it' : {
+      topic : function( app ){
+        app.run( this.callback );
+      },
+
+      'should work' : function( err, app ){
+        assert.isNull( err );
+        assert.instanceOf( app, Application );
+      }
     }
   },
 

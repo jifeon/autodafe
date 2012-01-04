@@ -482,13 +482,20 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
   loaded_views       = loaded_views   || {};
 
   var full_view_path = path.join( this.path_to_views, view_path );
-  var stats          = fs.statSync( full_view_path );
+  var stats          = null;
 
-  if ( stats.isDirectory() ) fs.readdirSync( full_view_path ).forEach( function( file ) {
+  try {
+    stats = fs.statSync( full_view_path );
+  }
+  catch(e) {
+    this.log( 'Views folder is not found. Skip loading views', 'warning' );
+  }
+
+  if ( stats && stats.isDirectory() ) fs.readdirSync( full_view_path ).forEach( function( file ) {
     this.load_views( path.join( view_path, file ), conflict_names, loaded_views );
   }, this );
 
-  else if ( stats.isFile() && this._views_mtime[ view_path ] != stats.mtime.getTime() ) {
+  else if ( stats && stats.isFile() && this._views_mtime[ view_path ] != stats.mtime.getTime() ) {
 
     this.log( 'Load view `%s`'.format( view_path ), 'trace' );
 
@@ -533,8 +540,8 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
         .format( conflict_names.join(', ') ), 'warning'
     );
     this.views_loaded = true;
+    if ( stats ) this.log( 'Views are loaded', 'info' );
     this.emit( 'views_are_loaded' );
-    this.log( 'Views are loaded', 'info' );
   }
 };
 
