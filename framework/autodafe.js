@@ -22,12 +22,6 @@ Autodafe.inherits( AutodafePart );
  * @property {Function} db.Expression конструктор {@link DbExpression}
  * @property {Function} db.Criteria конструктор {@link DbCriteria}
  * @property {Function} db.ActiveRecord конструктор {@link ActiveRecord}
- * @example Создание и запуск минималистичного приложения приложения
- *
- * ```javascript
- * var autodafe = require( 'autodafe' );
- * autodafe.create_application( { name : 'MyApp', base_dir : __dirname } ).run();
- * ```
  */
 function Autodafe() {
   this._init();
@@ -73,10 +67,16 @@ Autodafe.prototype._init = function() {
  * Создает приложение
  *
  * @param {Object} config конфигурация приложения, обязательные параметры смотри в {@link Application._init}
- * @param {Function} [callback={@link AppModule.default_callback}] Вызывается, если во время создания приложения
+ * @param {Function} [callback=AppModule.default_callback] Вызывается, если во время создания приложения
  * произошла ошибка ( callback( Error ) ), или после того как приложение полностью проинициализируется и будет готово
  * к запуску ( callback( null, {@link Application} ) )
  * @returns {Application} новое приложение
+ * @example Создание и запуск минималистичного приложения
+ *
+ * <pre><code class="javascript">
+ * var autodafe = require( 'autodafe' );
+ * autodafe.create_application( { name : 'MyApp', base_dir : __dirname } ).run();
+ * </code></pre>
  */
 Autodafe.prototype.create_application = function ( config, callback ) {
   callback = typeof callback == 'function' ? callback : this.AppModule.prototype.default_callback;

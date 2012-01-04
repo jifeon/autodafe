@@ -35,7 +35,7 @@ AutodafePart.prototype._init = function() {
    *
    * Внимание! Задание защищенных свойств частично необратимо ( удалить защищенные переменные полностью невозможно )
    *
-   * ```javascript
+   * <pre><code class="javascript">
    * var AutodafePart = require('autodafe_part');
    *
    * module.exports = MyClass.inherits( AutodafePart );
@@ -79,7 +79,7 @@ AutodafePart.prototype._init = function() {
    *                               // ничего не делать
    *
    * delete inst._;                // возвращает false - подчеркивание удалить нельзя ( как и перезадать )
-   * ```
+   * </code></pre>
    * @see {@link ProtectedValuesDescriptor} описание дескриптора
    */
   Object.defineProperty( this, '_', {
@@ -96,7 +96,7 @@ AutodafePart.prototype._init = function() {
    *
    * @type {String}
    * @example
-   * ```javascript
+   * <pre><code class="javascript">
    * module.exports = MyClass.inherits( autodafe.AutodafePart );
    *
    * function MyClass() {
@@ -105,7 +105,7 @@ AutodafePart.prototype._init = function() {
    *
    * var instance = new MyClass;
    * console.log( instance.class_name );     // выведет в консоль "MyClass"
-   * ```
+   * </code></pre>
    */
   this._.class_name = this.constructor.name;
 };

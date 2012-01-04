@@ -10,50 +10,435 @@ var ProxyHandler          = require('../lib/proxy_handlers/proxy_handler.js');
 
 module.exports = Application.inherits( autodafe.AutodafePart );
 
+
+/**
+ * Класс описывающий приложение. Используя его можно обратиться ко всем компонентам, контроллерам, моделям и т.д.
+ * Создавать приложение нужно пользуясь {@link Autodafe.create_application} Ссылка на приложение app есть во всех
+ * классах унаследованных от {@link AppModule}, таких в фреймворке большинство.
+ *
+ * @constructor
+ * @extends AutodafePart
+ * @param {Object} config см. {@link Application._init}
+ */
 function Application( config ) {
   this._init( config );
 }
 
 
+/**
+ * @event
+ * @name Application#ready
+ * @description Приложение готово к запуску
+ *
+ * Событие вызывается, когда загружено ядро и все компоненты. После этого приложение начнет запускаться если был вызван
+ * {@link Application.run} Если хотите выполнить при инициализированном, но не запущенном приложении используйте это
+ * событие
+ *
+ * @see Application#event:run
+ */
+
+
+/**
+ * @event
+ * @name Application#core_is_built
+ * @description Ядро ( все для работы mvc и компонентов ) загружено и инициализировано
+ */
+
+
+/**
+ * @event
+ * @name Application#views_are_loaded
+ * @description Загружены шаблоны
+ *
+ * Событие вызывается, когда загружены все вьюшки, если Вам надо делать какие-либо операции каждый раз когда шаблоны
+ * перезагружаются, используйте это событие
+ */
+
+
+/**
+ * @event
+ * @name Application#models_are_loaded
+ * @description все модели загружены и проинициализированы
+ *
+ * В том числе у моделей унаследованных от {@link ActiveRecord} в данный момент будут загружены таблицы соответствующие
+ * им
+ */
+
+
+/**
+ * @event
+ * @name Application#error
+ * @description ошибка во время инициализации приложения
+ *
+ * вместо использования этого события лучше передавать параметр callback в {@link Autodafe.create_application}
+ */
+
+
+/**
+ * @event
+ * @name Application#router_is_ready
+ * @description Маршрутизатор запросов готов, все контроллеры загружены
+ */
+
+
+/**
+ * @event
+ * @name Application#components_are_loaded
+ * @description Все компоненты загружены
+ */
+
+
+/**
+ * @event
+ * @name Application#run
+ * @description Запуск приложения
+ *
+ * Вызывается во время запуска приложения, до того как {@link Application.is_running} вставлен в true. В это время уже
+ * инициализировано ядро приложения и все его компоненты. На это событие обычно вешаются обработчики открывающие
+ * приложение для внешнего использования: так, например, во время этого события {@link WebSocketsServer} и
+ * {@link HTTPServer} начинают слушать порты, на которые они повешаны, чтобы приходящие запросы уходили уже к полностью
+ * работающему приложению.
+ *
+ * @example Пример использования:
+ *
+ * допустим у нас есть компонент, который должен что-то делать после того, как приложение полностью проинициализировано.
+ *
+ * <pre><code class="javascript">
+ * module.exports = MyComponent.inherits( autodafe.Component );
+ *
+ * function MyComponent( params ){
+ *   this._init( params );
+ * }
+ *
+ * MyComponent.prototype._init = function( params ) {
+ *   MyComponent.parent._init.call( this, params );  // вызываем метод родительского класса
+ *
+ *   // делаем инициализацию компонента
+ *
+ *   this.app.on( 'run', this._run.bind( this ) );
+ * }
+ *
+ * MyComponent.prototype._run = function() {
+ *   // этот код выполнится после полной инициализации приложения
+ * }
+ * </code></pre>
+ */
+
+
+/**
+ * @event
+ * @name Application#new_session
+ * @param {Session} session Только что созданная сессия
+ * @description Вызывается во время создания новой сессии
+ */
+
+
+/**
+ * @event
+ * @name Application#stop
+ * @description Остановка приложения
+ */
+
+
+// todo: задокументировать более подробно
+/**
+ * Различные инструменты
+ *
+ * @type {Object}
+ */
 Application.prototype.tools = require('../lib/tools');
 
 
+/**
+ * Инициализация Application
+ *
+ * @private
+ * @param {Object} config конфиг для приложения
+ * @param {String} config.name имя приложения
+ * @param {String} config.base_dir Корневая директория приложения, в ней по умолчанию ищутся директории с моделями,
+ * контроллерами, вьюшками,компонентами, а также относительно нее задаются другие пути в конфигурационном файле
+ * @param {Object} [config.params={}] Параметры приложения, которые доступны в любом месте приложения через функцияю
+ * {@link Application.get_param}
+ * @param {String} [config.default_controller="action"] Контроллер использующийся по умолчанию там где не указан явно.
+ * При подключении к приложению по любому из протоколов, у этого контроллера вызывается действие
+ * {@link Controller.connect_client}, где можно например произвести авторизацию клиента. Имя контроллера должно
+ * совпадать с названием файла, в котором он описан.
+ * @param {String} [config.views_folder="views"] путь от base_dir до места где будут искаться шаблоны
+ * @param {String} [config.models_folder="models"] путь от base_dir до моделей
+ * @param {String} [config.controllers_folder="controllers"] путь от base_dir до контроллеров
+ * @param {String} [config.components_folder="components"] путь от base_dir до пользовательских компонентов
+ * @param {Number} [config.session_live_time=60000] время, которое живет сессия без клиентов в мс
+ * @param {Boolean} [config.remove_timeout=cache_views] Если значение true - вьюшки подгружаются один раз при создании
+ * приложения и больше никогда не проверяются на изменения, если false - измененные вьюшки перезагружаются каждый раз
+ * при обращении к ним
+ * @param {Object} [config.router={}] Настройки компонента отвечающего за перенаправление запросов и генерацию УРЛ,
+ * подробнее в {@link Router._init}
+ * @param {String[]} [config.preload_components=[]] Компоненты, загружаемые до инициализации ядра приложения.
+ * Системные компоненты, которые стоит указывать в этой секции, если они используются (т е указаны в params.components):
+ * log_router - чтобы видеть в логе этапы инициализации ядра, db - для инициализации моделей, которые используют доступ
+ * к базе данных
+ * @param {Object} [config.components={}] Настройка подключаемых компонентов. Здесь указываются как компаненты autodafe,
+ * так и пользовательские. Ключами всегда является название подключаемого компонентка ( для пользовательских компонентов
+ * это название файла ), а значениями - настройки для компонента. Если для компонента не надо передавать настройки,
+ * нужно просто указать true. Список системных компонентов можно посмотреть в
+ * {@link ComponentsManager._system_components}
+ */
 Application.prototype._init = function ( config ) {
   this.setMaxListeners( 1000 );
 
   Application.parent._init.call( this );
 
+  /**
+   * Настройки приложения
+   *
+   * Передаются при инициализации. Подробное описание в {@link Application._init}. Тем не менее этот объект может
+   * незначительно отличаться от того, что был изначально в конфигурации, так как некоторые компоненты и модули меняют
+   * параметры переданные им.
+   *
+   * @private
+   * @type {Object}
+   */
   this._config        = config            || {};
-  this._sessions      = {};
-  this._views_mtime   = {};
-  this._run_on_init   = false;
-
-  this.views_loaded   = false;
 
   if ( typeof this._config.name != 'string' )
-    throw new Error( 'Please specify application name in your config file' );
-  this._.name         = this._config.name;
+      throw new Error( 'Please specify application name in your config file' );
 
   if ( !this._config.base_dir )
-    throw new Error( 'Please specify `base_dir` in your config file!' );
+      throw new Error( 'Please specify `base_dir` in your config file!' );
+
+  /**
+   * Хранилище сессий
+   *
+   * Объект в котором храняться сессии, созданные в методе {@link Application.get_session} Ключи объекта -
+   * идентификаторы сессий, значения - экземпляры класса {@link Session}
+   *
+   * @private
+   * @type {Object}
+   */
+  this._sessions      = {};
+
+  /**
+   * Последние модификации вьюшек
+   *
+   * Хэш хранит даты последнего изменения вьюшек. Если cache_views выставлено в false, то во время
+   * {@link Controller.send_response} вьюшки, имеющие время последнего обновления отличное от хранящегося здесь, будут
+   * перезагружены. Ключи объекта - пути к шаблонам, значения время последней модификации в мс
+   *
+   * @private
+   * @type {Object}
+   */
+  this._views_mtime   = {};
+
+  /**
+   * Запуск сразу после инициализации
+   *
+   * Признак того, что приложение надо запустить сразу после его инициализации, выставлется в true, если запуск
+   * приложения {@link Application.run} был вызван еще до окончания инициализации.
+   *
+   * @private
+   * @type {Boolean}
+   */
+  this._run_on_init   = false;
+
+  /**
+   * Шаблоны загружены
+   *
+   * выставляется в true после первой загрузки шаблонов
+   *
+   * @type {Boolean}
+   */
+  this.views_loaded   = false;
+
+  /**
+   * Имя приложения
+   *
+   * Задается в конфигурационном файле, неизменяемо во время работы приложения.
+   *
+   * @type {String}
+   */
+  this._.name         = this._config.name;
+
+  /**
+   * Корневая директория приложения
+   *
+   * Нормализованный путь до корневой директории приложения. Указывается в конфигурационном файле, после чего
+   * претерпивает изменения через функцию path.normolize. Неизменяем во время работы приложения.
+   *
+   * @type {String}
+   */
   this._.base_dir     = path.normalize( this._config.base_dir );
 
+  /**
+   * Признак того, что приложение запущенно
+   *
+   * Выставляется в true если был вызов run. Повторно приложение запуститься не может. Свойство доступно только для
+   * чтения.
+   *
+   * @type {Boolean}
+   */
   this._.is_running   = false;
 
+  /**
+   * Логгер приложения
+   *
+   * Для того чтобы отправить сообщение в логгер, можно использовать функцию обертку {@link Application.log} самого
+   * приложения или же {@link AppModule.log} для классов унаследованных от AppModule. Настройка логирования происходит
+   * в конфигурационном файле.
+   *
+   * @type {Logger}
+   */
   this.logger         = new Logger;
+
+  /**
+   * Роутер приложения
+   *
+   * Обрабатывает запросы, которые обычно поступают приложению от клиентов (см. {@link Client}), и перенаправляет их
+   * (запросы) в нужный метод указанного контроллера (см. {@link Controller}. Настройка производится в конфигурационном
+   * файле.
+   *
+   * @type {Router}
+   */
   this.router         = null;
+
+  /**
+   * Менеджер компонентов
+   *
+   * Занимается загрузкой компонентов. Настройка компонентов производится в конфигурационном файле, секция components
+   *
+   * @type {ComponentsManager}
+   */
   this.components     = null;
+
+  /**
+   * Менеджер моделей
+   *
+   * Это Proxy объект для {@link ModelsManager}. Через данное свойство можно получить доступ к моделям приложения, а
+   * именно можно создать модель и получить доступ к методам модели без ее явного создания. Инструкция по написанию
+   * моделей здесь: {@link Model}.
+   *
+   * @type {Proxy}
+   * @example примеры использования свойства models
+   *
+   * Допустим, что в папке {@link Application.path_to_models} у нас лежит файл post.js, который содержит правильно
+   * описанную модель ({@link Model}) Post.
+   *
+   * Сначала отметим что создавать модели просто пользуясь конструктором - неправильно, потому что в этом случае будет
+   * неправильно работать механизм задания атрибутов, и как следствие будут возникать конфликты работы остального
+   * приложения с данной моделью:
+   *
+   * <pre><code class="javascript">
+   * var Post = require('post');   //
+   * var post = new Post({         //        ТАК
+   *   app : application           //   НЕ ПРАВИЛЬНО !!!
+   * });                           //
+   * </code></pre>
+   *
+   * На самом деле при создании модели не просто создается экземпляр класса модели, но и специальный Proxy объект
+   * (хэндлер {@link ModelProxyHandler}), с которым и ведется дальнейша работа. Рассмотрим пример создания и сохранения
+   * новой модели:
+   *
+   * <pre><code class="javascript">
+   * var post    = new application.models.post;    // создаем новую модель
+   * //                                    ↑ совпадает с названием файла, содержащего
+   * //                                      необходимую модель
+   * post.param1 = 42;
+   * post.param2 = 'text';                         // задаем необходимые атрибуты
+   * post.save();                                  // и сохраняем
+   * </code></pre>
+   *
+   * Если мы хотим передать в конструктор модели параметы, можно поступить следующим образом:
+   *
+   * <pre><code class="javascript">
+   * var post = new application.models.post({
+   *   author : 'Andrew'
+   * });
+   * </code></pre>
+   *
+   * Возможна также ситуация, когда у нас уже есть конструктор модели, которая лежит в отличном от стандартного месте,
+   * и мы хотим получить "правильную" модель.
+   *
+   * <pre><code class="javascript">
+   * var Post = require('post');
+   * var post = application.models.implement_model( Post, {
+   *   author : 'Andrew'
+   * } );
+   * </code></pre>
+   *
+   * Допустим у нашей модели есть некий статичный метод, назовем его find, который находит и создает другие модели по
+   * определенным правилам. Для его вызова нам необязательно создавать модель, мы можем использовать следующую
+   * особенность свойства models:
+   *
+   * <pre><code class="javascript">
+   * application.models.post.find();       // создаст экземпляр модели Post, и вызовет метод find
+   * //                  ↑ совпадает с названием файла
+   *
+   * application.models.post.find();       // при повторном вызове берет уже созданный и закэшированный
+   *                                       // экземпляр класса Post и вызывает у него find
+   * </code></pre>
+   *
+   * Напоследок типы используемых переменных:
+   *
+   * <pre><code class="javascript">
+   * var Post = require('post');
+   * application.models.post == Post;                  // false - models.post это не конструктор модели
+   * application.models.post instanceof Post;          // false - и не экземпляр
+   * application.models.post instanceof Function;      // true  - это прокси функции
+   *
+   * var post = new application.models.post;           // создающей прокси от экземпляров классов моделей
+   * post instanceof Post;                             // true, хотя на самом деле это Proxy
+   *                                                   // над экземпляром класса Post
+   * </code></pre>
+   *
+   * @see ModelsManager
+   * @see ModelProxyHandler
+   * @see ModelConstructorProxyHandler
+   *
+   */
   this.models         = null;
 
+  /**
+   * Стандартный контроллер
+   *
+   * Контроллер, в который перенаправляются действия по умолчанию.
+   *
+   * @type {String}
+   * @see Controller
+   * @see Router
+   * @see Client._call_controller
+   */
   this.default_controller     = this._config.default_controller || 'action';
+
+  /**
+   * Местоположение моделей
+   *
+   * @type {String}
+   */
   this._.path_to_models       = path.join( this.base_dir, this._config.models_folder      || 'models'      );
+
+  /**
+   * Местоположение контроллеров
+   *
+   * @type {String}
+   */
   this._.path_to_controllers  = path.join( this.base_dir, this._config.controllers_folder || 'controllers' );
+
+  /**
+   * Местоположение компонентов
+   *
+   * @type {String}
+   */
   this._.path_to_components   = path.join( this.base_dir, this._config.components_folder  || 'components'  );
+
+  /**
+   * Местоположение шаблонов
+   *
+   * @type {String}
+   */
   this._.path_to_views        = path.join( this.base_dir, this._config.views_folder       || 'views'       );
 
   this._preload_components();
   this._init_core();
-  this.on( 'core_is_built', this._init_components );
+  this.on( 'core_is_built', this._load_components );
   this.on( 'components_are_loaded', function() {
     this.run = this.__run;
     this.log( 'Application is ready to run', 'info' );
@@ -62,6 +447,13 @@ Application.prototype._init = function ( config ) {
 };
 
 
+/**
+ * Инициализирует ядро
+ *
+ * Метод подгружает вьюшки и модели, инициализирует роутер и контроллеры
+ *
+ * @private
+ */
 Application.prototype._init_core = function () {
   if ( this._config.cache_views !== false ) this.load_views();
 
@@ -73,6 +465,16 @@ Application.prototype._init_core = function () {
 };
 
 
+//todo: полное описание
+/**
+ * Загружает шаблоны
+ *
+ * @param {String} [view_path=''] путь, начиная от {@link Application.path_to_views}, где будут рекурсивно собираться
+ * шаблоны
+ * @param {String[]} [conflict_names=[]] повторяющиеся имена шаблонов, собираются для того, чтобы вывести сообщение о
+ * том, чтобы данные шаблоны подключали по полному пути
+ * @param {Object} [loaded_views={}] хэш загруженных вьюшек для выявления конфликтных названий
+ */
 Application.prototype.load_views = function ( view_path, conflict_names, loaded_views ) {
   if ( !view_path && this.views_loaded && this._config.cache_views !== false ) return true;
 
@@ -137,6 +539,13 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
 };
 
 
+/**
+ * Инициализация моделей
+ *
+ * Создает {@link ModelsManager} и свойство {@link Application.models}
+ *
+ * @private
+ */
 Application.prototype._init_models = function(){
   var models_manager = new ModelsManager({
     app : this
@@ -158,6 +567,14 @@ Application.prototype._init_models = function(){
 };
 
 
+/**
+ * Инициализирует роутер
+ *
+ * @private
+ * @see Router
+ * @see Application.router
+ * @see Application.router_is_ready
+ */
 Application.prototype._init_router = function () {
   var router_cfg  = this._config.router || {};
   router_cfg.app  = this;
@@ -174,6 +591,14 @@ Application.prototype._init_router = function () {
 };
 
 
+/**
+ * Загружает компоненты из секции preload_components
+ *
+ * Загрузка происходит до инициализации ядра {@link Application._init_core}. В этот момент недоступны модели,
+ * контроллеры и другие компоненты.
+ *
+ * @private
+ */
 Application.prototype._preload_components = function () {
   this.log( 'Preload components' );
 
@@ -191,7 +616,12 @@ Application.prototype._preload_components = function () {
 };
 
 
-Application.prototype._init_components = function () {
+/**
+ * Загружает компоненты оставшиеся после {@link Application._preload_components}
+ *
+ * @private
+ */
+Application.prototype._load_components = function () {
   this.log( 'Load components' );
   var components  = this._config.components         || {};
 
@@ -205,6 +635,41 @@ Application.prototype._init_components = function () {
 };
 
 
+/**
+ * Регистрирует компонент
+ *
+ * Создает геттер и сеттер для свойства приложения одноименного с именем компонента. Геттер возвращает результат
+ * функции {@link Component.get}
+ *
+ * @param {Component} component регистрируемый компонент
+ * @throws {Error} при регистрации экземпляра класса неунаследованного от {@link Component}
+ * @throws {Error} если данное имя уже занято компонентом, свойством или методом {@link Application}
+ * @example Пример использования
+ *
+ * <pre><code class="javascript">
+ * var my_component = new MyComponent({
+ *   app   : application,
+ *   name  : 'my_component'
+ * });
+ *
+ * application.register_component( my_component );
+ * application.my_component;                        // теперь вернет результат my_component.get();
+ * application.my_component = "some value";         // throws Error
+ * </code></pre>
+ *
+ * Неправильно названные компоненты вызовут ошибку во время регистрации:
+ *
+ * <pre><code class="javascript">
+ * var my_component = new MyComponent({
+ *   app   : application,
+ *   name  : 'default_controller'                   // одноименно со свойством приложения
+ * });
+ *
+ * application.register_component( my_component );  // throws Error
+ * </code></pre>
+ *
+ * Регистрация двух компонентов с одним именем также вызовет ошибку.
+ */
 Application.prototype.register_component = function ( component ) {
   if ( !autodafe.Component.is_instantiate( component ) )
     throw new Error( 'Try to register `%s` as Component'.format( component && typeof component && component.class_name ) );
@@ -232,11 +697,69 @@ Application.prototype.register_component = function ( component ) {
 };
 
 
+/**
+ * Возвращает параметр приложения
+ *
+ * @param {String} name имя параметра
+ * @returns параметр приложения
+ * @example Пример использования
+ *
+ * допустим в конфигурационном файле секция params выглядит так:
+ *
+ * <pre><code class="javascript">
+ * // ...
+ *   params : {
+ *     param1 : 42,
+ *     param2 : {
+ *       fun : function() {
+ *       }
+ *     }
+ *   },
+ * //...
+ * </code></pre>
+ *
+ * Тогда мы можем взять param1 и param2 следующем образом:
+ *
+ * <pre><code class="javascript">
+ * application.get_param( 'param1' );
+ * var param2 = application.get_param( 'param2' );
+ * param2.fun();
+ * </code></pre>
+ */
 Application.prototype.get_param = function ( name ) {
   return this._config.params[ name ] === undefined ? null : this._config.params[ name ];
 };
 
 
+/**
+ * Запускает приложение
+ *
+ * Приложение запускается асинхронно, поэтому данная функция, если приложение еще не проинициализированно, лишь
+ * помечает его, чтобы оно запустилось сразу после инициализации.
+ *
+ * @param {Function} [callback=AppModule.default_callback] вызывается после
+ * полного запуска приложения,
+ * @param {Error} callback.error если во время запуска приложения произошла ошибка она будет передана первым параметром
+ * @param {Application} callback.app
+ * @returns {Boolean} true - если все хорошо, false если приложение уже запущено или будет запущено после инициализации
+ * @example Создание и запуск приложения с отслеживанием ошибок
+ *
+ * <pre><code class="javascript">
+ * var application = autodafe.create_application( config, function( e, app ){
+ *   if ( e ) throw e;                                    // ошибка во время инициализации
+ *   console.log( 'Приложение готово к запуску' );
+ * } );
+ *
+ * application.run( function( e, app ){
+ *   if ( e ) throw e;                                    // ошибка во время запуска
+ *   console.log( 'Приложение запущено' );
+ * } );
+ * </code></pre>
+ *
+ * @see Application.__run
+ * @see Application#event:run
+ * @see ClientConnection.run
+ */
 Application.prototype.run = function ( callback ) {
   if ( this._run_on_init ) return false; // double run before init
 
@@ -248,6 +771,15 @@ Application.prototype.run = function ( callback ) {
 };
 
 
+/**
+ * Реальный запуск приложения после его инициализации
+ *
+ * Функция встает на место {@link Application.run} после того как приложение проинициализировано
+ * {@link Application.ready}.
+ *
+ * @private
+ * @param {Function} [callback] см. {@link Application.run}
+ */
 Application.prototype.__run = function ( callback ) {
   if ( this.is_running ) return false;
 
@@ -263,11 +795,45 @@ Application.prototype.__run = function ( callback ) {
 };
 
 
+/**
+ * Логирует сообщение
+ *
+ * Метод иcпользует {@link Logger.log} Данный метод является сокращением для application.logger.log, у всех классов
+ * унаследованных от {@link AppModule} есть свой метод для логирования {@link AppModule.log}, который автоматически
+ * определяем имя модуля.
+ *
+ * @param {String|Error} message Сообщение, которое будет залогировано. Может быть строкой содержащей текст сообщения
+ * или ошибкой. В случае, когда тип параметра Error, второй параметр автоматически выставится в 'error', но его можно
+ * переопределить на любой другой. Если в логгер попадает объект класса Error, то логгер показывает trace пользуясь
+ * именно ошибкой ( Error.trace ) , что точнее определяет место ее возникновения
+ * @param {String} [level] Тип сообщения, может быть "info", "trace", "warning" или "error". По умолчанию - "trace".
+ * Если первый параметр ошибка, по умолчанию - "error"
+ * @param {String} [module] Имя модуля, которое будет прописано в логе
+ */
 Application.prototype.log = function ( message, level, module ) {
   this.logger.log( message, level, module );
 };
 
 
+/**
+ * Метод ищет существующую сессию с указанным id и возвращает ее. Если не находит создает новую. Если указан клиент -
+ * добавляет клиента к сессии (Session.add_client). Если сессия была закрыта (Session) она удаляется из закешированных
+ * сессий {@link Application._sessions}
+ *
+ * @param {String} id Идентификатор сессии
+ * @param {Client} [client] Можно указать клиента, который будет привязан либо к существующей, либо к только что
+ * созданной сессии
+ *
+ * @example Пример использования
+ * <pre><code class="javascript">
+ * application.get_session( 5 );
+ * application.get_session( "C9FDF8DE-C848-4411-B098-7689A04E841B", new Client({
+ * //...
+ * }) );
+ * </code></pre>
+ *
+ * @see Application.new_session
+ */
 Application.prototype.get_session = function ( id, client ) {
   var session = this._sessions[ id ];
 
@@ -294,6 +860,13 @@ Application.prototype.get_session = function ( id, client ) {
 };
 
 
+/**
+ * Останавливает приложение
+ *
+ * Обычно на это реагируют сервера созданные в компонентах и они освобождают заданные порты.
+ *
+ * @see Application#event:stop
+ */
 Application.prototype.stop = function () {
   this.log( 'Stop application' );
   this.emit( 'stop' );

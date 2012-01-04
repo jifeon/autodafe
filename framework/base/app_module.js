@@ -8,7 +8,7 @@ module.exports = AppModule.inherits( autodafe.AutodafePart );
  * @param {Object} params см. {@link AppModule._init}
  * @example Пример использования
  *
- * ```javascript
+ * <pre><code class="javascript">
  * module.exports = MyClass.inherits( autodafe.AppModule );
  *
  * function MyClass( params ) {
@@ -28,7 +28,7 @@ module.exports = AppModule.inherits( autodafe.AutodafePart );
  *   app : application,                           // обязательно передаем ссылку на приложение
  *   ...
  * });
- * ```
+ * </code></pre>
  */
 function AppModule( params ) {
   this._init( params );
@@ -89,13 +89,13 @@ AppModule.prototype._init = function( params ) {
  * Если первый параметр ошибка, по умолчанию - "error"
  * @example Пример использования
  *
- * ```javascript
+ * <pre><code class="javascript">
  * // где-то в методе класса унаследованного от AppModule..
  *
  * this.log( 'Text of message', 'info' );
  * this.log( new Error( 'Error while doing something' ) );
  * this.log( new Error( 'Something wrong' ), 'warning' );
- * ```
+ * </code></pre>
  */
 AppModule.prototype.log = function ( message, level ) {
   this.app.logger.log( message, level, this.class_name );
@@ -115,7 +115,7 @@ AppModule.prototype.log = function ( message, level ) {
  * Рассмотрим метод, который делает какие-либо асинхронные действия и возвращает результат в callback, который в свою
  * очередь необязателен
  *
- * ```javascript
+ * <pre><code class="javascript">
  * MyClass.prototype.do_something_async = function( callback ) {
  *   // проверяем полученный параметр и заменяем его на стандартный если callback не передан или передана не функция
  *   callback = typeof callback == 'function' ? callback : this.default_callback;
@@ -126,7 +126,7 @@ AppModule.prototype.log = function ( message, level ) {
  *
  *   return callback( null, result );
  * }
- * ```
+ * </code></pre>
  *
  * Теперь даже если метод не получит callback, ошибка не замолчится а пойдет дальше по указанным правилам.
  */
