@@ -28,7 +28,6 @@ Client.prototype._call_controller = function () {
   var emitter;
   if (
     !controller ||
-    typeof controller.connect_client != 'function' ||
     !( ( emitter = controller.connect_client( this ) ) instanceof process.EventEmitter )
   )
     return this._after_connect();

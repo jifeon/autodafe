@@ -1,18 +1,13 @@
-var AppModule = global.autodafe.AppModule;
-var path      = require('path');
-var fs        = require('fs');
-var dust      = require('dust.js');
+var path = require('path');
 
-// disable whitespace compression
-dust.optimizers.format = function( ctx, node ) {
-  return node
-};
-
-module.exports = Controller.inherits( AppModule );
+module.exports = Controller.inherits( autodafe.AppModule );
 
 function Controller( params ) {
   this._init( params );
 }
+
+
+Controller.prototype.dust = require('dust.js');
 
 
 Controller.prototype._init = function ( params ) {
@@ -23,14 +18,16 @@ Controller.prototype._init = function ( params ) {
   this._.name = params.name;
 
   this.default_action = 'index';
-  this.views_path     = 'views';
-  this.dust           = dust;
   this.models         = this.app.models;
+
+  this._url_function_for_dust     = this._url_function_for_dust.bind( this );
+  this._widget_function_for_dust  = this._widget_function_for_dust.bind( this );
 };
 
 
-Controller.prototype.before_action = function ( action, params, client ) {};
-Controller.prototype.after_action = function ( action /*, params, client*/ ) {};
+Controller.prototype.before_action  = function ( action, params, client ) {};
+Controller.prototype.after_action   = function ( action /*, params, client*/ ) {};
+Controller.prototype.connect_client = function ( client ) {};
 
 
 Controller.prototype.run_action = function ( action, params, client ) {
@@ -54,11 +51,6 @@ Controller.prototype.run_action = function ( action, params, client ) {
 };
 
 
-Controller.prototype.get_view_path = function ( view ) {
-  return path.join( this.app.base_dir, this.views_path, view );
-};
-
-
 Controller.prototype.render = function ( view, params, callback ) {
   this.app.load_views();
   return this.dust.render( view, params, callback );
@@ -69,8 +61,8 @@ Controller.prototype.send_response = function ( view, client, params, callback )
   if ( typeof callback != 'function' ) callback = this.default_callback;
   params   = params   || {};
 
-  params.url = this.make_dust_url.bind( this );
-  params.widget = this.widget.bind( this );
+  params.url    = this._url_function_for_dust;
+  params.widget = this._widget_function_for_dust;
 
   this.render( view, params, function( e, data ) {
     if ( e ) callback( e );
@@ -86,12 +78,18 @@ Controller.prototype.create_url = function ( route_path, params ) {
 };
 
 
-Controller.prototype.make_dust_url = function ( chunk, context, bodies, params ) {
+Controller.prototype.create_widget = function( widget_name, params ){
+  return this.app.components.create_widget( widget_name, params );
+}
+
+
+Controller.prototype._url_function_for_dust = function ( chunk, context, bodies, params ) {
   var self = this;
 
   for ( var param in params ) {
     var value = params[ param ];
-    if ( typeof value == 'function' ) params[ param ] = this.__get_body_text( chunk, context, value );
+    if ( typeof value == 'function' )
+      params[ param ] = this.app.tools.get_dust_chunk_body_content( chunk, context, value );
   }
 
   return bodies.block
@@ -104,21 +102,7 @@ Controller.prototype.make_dust_url = function ( chunk, context, bodies, params )
 };
 
 
-Controller.prototype.__get_body_text = function ( chunk, context, body ) {
-  var result = '';
-
-  var old_write = chunk.write;
-  chunk.write = function( text ) {
-    result += text;
-    return chunk;
-  }
-  body( chunk, context );
-  chunk.write = old_write;
-
-  return result;
-};
-
-Controller.prototype.widget = function( chunk, context, bodies, params ){
+Controller.prototype._widget_function_for_dust = function( chunk, context, bodies, params ){
   var self = this;
     return chunk.map( function( chunk ){
       var widget = context.get( params.name );
@@ -127,8 +111,3 @@ Controller.prototype.widget = function( chunk, context, bodies, params ){
       } )
     } );
 };
-
-
-Controller.prototype.create_widget = function( widget_name, params ){
-  return this.app.components.create_widget( widget_name, params );
-}

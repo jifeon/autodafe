@@ -329,6 +329,26 @@ dust.filters.b = function( value ){
   return value ? 'true' : 'false';
 }
 
+// disable whitespace compression
+dust.optimizers.format = function( ctx, node ) {
+  return node
+};
+
+
+exports.get_dust_chunk_body_content = function( chunk, context, body ){
+  var result = '';
+
+  var old_write = chunk.write;
+  chunk.write = function( text ) {
+    result += text;
+    return chunk;
+  }
+  body( chunk, context );
+  chunk.write = old_write;
+
+  return result;
+}
+
 
 function two_pos( i ) {
   return i < 10 ? '0' + i : i;
