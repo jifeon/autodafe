@@ -121,15 +121,23 @@ JoinElement.prototype.find = function( criteria, callback ) {
     if ( e ) return callback(e);
 
 //    var children = Object.values( self.children );
-    var listener = self.app.tools.get_parallel_listener( self.stats.length/* + children.length*/, callback );
-    
+
+    var listener = self.app.tools.create_async_listener(
+      self.stats.length/* + children.length*/, callback, null, {
+        error_in_callback : true,
+        do_not_fire       : true
+      }
+    );
+
 //    children.forEach( function( child ){
 //      child.find( {}, listener( 'error' ) );
 //    } );
 
     self.stats.forEach( function( stat ){
-      stat.query( listener( 'error' ) );
+      stat.query( listener.listen( 'error' ) );
     } );
+
+    listener.check_count();
   }
 }
 
@@ -149,14 +157,18 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     this.add_record( JSON.stringify( pk ), base_record )
   }
 
-  var listener = this.app.tools.get_parallel_listener( this.stats.length, after_stats.bind( this ) );
+  var listener = this.app.tools.create_async_listener(
+    this.stats.length, after_stats.bind( this ), null, { do_not_fire : true }
+  );
 
   this.stats.forEach( function( stat ){
-    stat.query( listener( 'error' ) );
+    stat.query( listener.listen( 'error' ) );
   } );
 
-  function after_stats( e ) {
-    if ( e ) return callback(e);
+  listener.check_count();
+
+  function after_stats( params ) {
+    if ( params.error ) return callback( params.error );
 
     var child = Object.reset( this.children );
     if ( !child ) return callback();
@@ -231,15 +243,21 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
     if ( e ) return callback(e);
 
 //    var children = Object.values( this.children );
-    var listener = this.app.tools.get_parallel_listener( this.stats.length/* + children.length*/, callback );
-
+    var listener = this.app.tools.create_async_listener(
+      this.stats.length/* + children.length*/, callback, null, {
+        error_in_callback : true,
+        do_not_fire       : true
+      }
+    );
 
 //    foreach(this.children as child) // find recursively
 //      child.find();
 //
     this.stats.forEach( function( stat ){
-      stat.query( listener( 'error' ) );
+      stat.query( listener.listen( 'error' ) );
     } );
+
+    listener.check_count();
   }
 }
 

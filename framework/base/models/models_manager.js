@@ -34,7 +34,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
   var listener = this.app.tools.create_async_listener( 0, function(){
     if ( !skip_loading ) self.log( 'Models are loaded', 'info' );
     process.nextTick( callback );
-  }, null, true );
+  }, null, { do_not_fire : true } );
 
   try {
     var files = fs.readdirSync( models_path );
