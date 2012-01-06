@@ -125,11 +125,15 @@ HTTPClient.prototype.send = function ( data ) {
 };
 
 
-HTTPClient.prototype.send_file = function ( file_path ) {
+HTTPClient.prototype.send_file = function ( file_path, headers, callback ) {
   var self = this;
 
+  if ( typeof callback != 'function' ) callback = function( e ){
+    if (e) self.send_error( e, 404 );
+  }
+
   fs.stat( file_path, function( e, stats ) {
-    if ( e ) return self.send_error( e, 404 );
+    if ( e ) return callback( e );
 
     var modify_time = new Date( self.request.headers[ 'if-modified-since' ] );
     if ( modify_time.getTime() == stats.mtime.getTime() ){
@@ -142,7 +146,7 @@ HTTPClient.prototype.send_file = function ( file_path ) {
     }
 
     fs.readFile( file_path, "binary", function( e, file ){
-      if ( e ) return self.send_error( e, 404 );
+      if ( e ) return callback( e );
 
       self.log( 'Send file `%s` to http client ( session id=%s )'.format( file_path, self.get_session_id() ) );
       self.emit( 'send_file', file );
@@ -153,15 +157,16 @@ HTTPClient.prototype.send_file = function ( file_path ) {
 
       if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
 
-      if ( e ) return self.send_error( e, 404 );
-
-      self.response.writeHead( 200, {
+      headers = Object.merge( {
         'Content-Type'  : type,
         'Cache-Control' : 'max-age=' + self.max_age,
         'Last-Modified' : stats.mtime.toUTCString()
-      });
+      }, headers );
+
+      self.response.writeHead( 200, headers );
 
       self.end( file, "binary" );
+      callback( null, file );
     } )
   } );
 };
