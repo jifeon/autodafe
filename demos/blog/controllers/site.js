@@ -72,6 +72,8 @@ SiteController.prototype.connect_client = function ( client ){
  * с ошибкой
  */
 SiteController.prototype.index = function ( params, client, error ) {
+  params = params || {};
+
   var self = this,
       page = parseInt( params.page ) - 1 || 0;
 
