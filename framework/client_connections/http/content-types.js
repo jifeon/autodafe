@@ -58,6 +58,7 @@ module.exports = {
   'xwd'     :  'image/x-xwindowdump',
   'htm'     :  'text/html',
   'css'     :  'text/css',
+  'less'    :  'text/less',
   'html'    :  'text/html',
   'txt'     :  'text/plain',
   'rtx'     :  'text/richtext',
