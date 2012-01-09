@@ -15,6 +15,11 @@ function AutodafePart() {
 }
 
 
+/**
+ * Инициализация AutodafePart
+ *
+ * @private
+ */
 AutodafePart.prototype._init = function() {
   var handler = new ProtectedValuesProxyHandler( {
     target : this
