@@ -1,12 +1,10 @@
-var Controller  = global.autodafe.Controller;
-var AppModule   = global.autodafe.AppModule;
 var Route       = require('./route');
 var fs          = require('fs');
 var path        = require('path');
 var qs          = require('querystring');
 
 
-module.exports = Router.inherits( AppModule );
+module.exports = Router.inherits( autodafe.AppModule );
 
 
 /**
@@ -177,7 +175,7 @@ Router.prototype._collect_controllers = function () {
       throw e;
     }
 
-    if ( !Controller.is_instantiate( controller_class.prototype ) ) {
+    if ( !autodafe.Controller.is_instantiate( controller_class.prototype ) ) {
       this.log( 'File in path `%s` is not a controller'.format( file_path ), 'warning' );
       continue;
     }

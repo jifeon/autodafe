@@ -1,0 +1,147 @@
+var vows        = require( 'autodafe/node_modules/vows' );
+var assert      = require( 'assert' );
+var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
+
+var Query       = require('autodafe/framework/client_connections/query');
+
+
+function route_test( url, test_action, test_params, waited_params, query_params ) {
+  waited_params = waited_params || test_params;
+
+  return {
+    topic : function( app ) { return app; },
+    'test' : function( app ){
+      query_params = Object.merge( {
+        app     : app,
+        url     : url,
+        params  : test_params
+      }, query_params );
+
+      var query  = new Query( query_params );
+      var good   = app.router.get_controller( 'good' );
+      var action = null;
+      var params = null;
+
+      good.once( 'action', function( act, act_params ){
+        action = act;
+        params = act_params;
+      } );
+
+      app.router.route( query );
+
+      assert.equal( action, test_action );
+      assert.deepEqual( params, waited_params );
+    }
+  }
+}
+
+
+function route_error_test( url, params ){
+  return {
+    topic : function( app ) { return app; },
+    'should throw error 404' : function( app ){
+      var query  = new Query( {
+        app     : app,
+        url     : url,
+        params  : params || null
+      } );
+
+      var error = null;
+      try {
+        app.router.route( query );
+      }
+      catch(e) { error = e; }
+
+      assert.isError( error );
+      assert.equal( error.number, 404 );
+    }
+  }
+}
+
+
+function create_url( path, params, url ) {
+  return function( app ){
+    assert.equal( app.router.create_url( path, params, 'good', 'index' ), url );
+  }
+}
+
+
+var action_params = { number : 42, text : 'text' };
+
+
+vows.describe( 'components manager' ).addBatch({
+
+  'Router Application' : {
+    topic : function(){
+      var config = require( 'autodafe/tests/applications/router_test_app/config/working_config' );
+      tests_tools.get_new_app( config, {
+        create_callback : this.callback
+      } );
+    },
+
+    '.get_controller' : function( app ){
+      var GoodController = require( 'autodafe/tests/applications/router_test_app/controllers/good' );
+      assert.instanceOf( app.router.get_controller( 'good' ), GoodController );
+      assert.isNull( app.router.get_controller( 'blank' ) );
+      assert.isNull( app.router.get_controller( 'not_controller' ) );
+    },
+
+    '.route' : {
+      'good.index'                      : route_test( '/',            'index',  action_params ),
+      'good.action without params'      : route_test( '/action',      'action', null, {} ),
+      'good.action with number'         : route_test( '/action',      'action', { number : 42 } ),
+      'good.action with number in path' : route_test( '/action/42',   'action', null, { number : 42 } ),
+      'good.action with string'         : route_test( '/action',      'action', { text : 'text' } ),
+      'good.action with string in path' : route_test( '/action/text', 'action', null, { text : 'text' } ),
+      'good.action with params'         : route_test( '/action',      'action', action_params ),
+      'good.action with params in path' : route_test( '/action/42',   'action', { text : 'text' }, action_params ),
+      'good.remove by delete query'     : route_test( '/remove',      'remove', null, {}, { connection_type : 'delete' } ),
+      'good.remove by post query'       : route_test( '/remove',      'remove', null, {}, { connection_type : 'post' } ),
+      'good.domain_index'               : route_test( '/',            'domain_index', action_params, null, { host : 'domain.com' } ),
+      'good.domain_action'              : route_test( '/action/42/text', 'domain_action', null, action_params, { host : 'domain.com:3000' } ),
+
+      'good.do without param'           : route_error_test( '/do' ),
+      'good.bad_action'                 : route_error_test( '/bad_action_in_good' ),
+      'no_controller.action'            : route_error_test( '/bad_action' )
+    },
+
+    '.create_url' : {
+      topic : function( app ) { return app; },
+      'to root'                       : create_url( 'good.index',  null, '/' ),
+      'to action'                     : create_url( 'good.action', null, '/action' ),
+      'to action with text'           : create_url( 'good.action', { text : 'text' }, '/action/text' ),
+      'to action with number'         : create_url( 'good.action', { number : 42 }, '/action/42' ),
+      'to action: choose relevant'    : create_url( 'good.action', { number : 42, some_param : 5 }, '/action/42/5' ),
+      'to action with text and some_param'
+                                      : create_url( 'good.action', { text : 'text', some_param : 5 }, '/action/text?some_param=5' ),
+      'to domain_action with text and number'
+                                      : create_url( 'good.domain_action', { text : 'text', number : 42 }, '/action/42/text' ),
+      'to remove'                     : create_url( 'good.remove', null, '/remove' ),
+      'to domain_index'               : create_url( 'good.domain_index', null, '/' )
+    }
+  },
+
+  'Router Application with text file instead of controller' : {
+    topic : function(){
+      var config = require( 'autodafe/tests/applications/router_test_app/config/crashing_config' );
+      tests_tools.get_new_app( config, {
+        create_callback : this.callback
+      } );
+    },
+    'should callback an error' : function( err, app ){
+      assert.isError( err );
+    }
+  },
+
+  'Router Application with broken controller' : {
+    topic : function(){
+      var config = require( 'autodafe/tests/applications/router_test_app/config/crashing_config2' );
+      tests_tools.get_new_app( config, {
+        create_callback : this.callback
+      } );
+    },
+    'should callback an error' : function( err, app ){
+      assert.isError( err );
+    }
+  }
+}).export( module );

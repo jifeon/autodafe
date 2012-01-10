@@ -37,7 +37,7 @@ Route.prototype._init = function( params ) {
   this.rule         = null;
 
   // valid : ' controller . action | post ', 'controller.action', 'controller|ws', ' controller', '', '|get'
-  // pockets : 2 - controller, 4 - action, 6 - connection_type
+  // pockets : 2 - controller, 4 - action, 5 - connection types: " | post, delete"
   this._re = /^\s*((\w+)\s*(\.\s*(\w+)\s*)?)?(([|,]\s*(post|get|delete|http|ws)\s*)*)$/i;
 
   this._parse_rule( params.rule );
@@ -73,7 +73,7 @@ Route.prototype._parse_path = function ( route_path ) {
 
   this.controller       =   matches[2] || null;
   this.action           =   matches[4] || null;
-  this.connection_types = ( matches[6] || '' ).split( /[\s|,]+/ ).filter( Boolean );
+  this.connection_types = ( matches[5] || '' ).split( /[\s|,]+/ ).filter( Boolean );
   if ( ~this.connection_types.indexOf( 'http' ) ) this.connection_types.push( 'post', 'get', 'delete' );
 };
 
