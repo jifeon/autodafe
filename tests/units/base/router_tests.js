@@ -118,6 +118,39 @@ vows.describe( 'components manager' ).addBatch({
                                       : create_url( 'good.domain_action', { text : 'text', number : 42 }, '/action/42/text' ),
       'to remove'                     : create_url( 'good.remove', null, '/remove' ),
       'to domain_index'               : create_url( 'good.domain_index', null, '/' )
+    },
+
+    '.add_controller' : {
+      topic : function( app ) { return app; },
+
+      'by local path' : function( app ){
+        app.router.add_controller( 'out_of_config_folder/out' );
+        assert.instanceOf( app.router.get_controller( 'out' ), autodafe.Controller );
+      },
+
+      'by global path' : function( app ){
+        app.router.add_controller( require('path').join( app.base_dir, 'out_of_config_folder/out2' ) );
+        assert.instanceOf( app.router.get_controller( 'out2' ), autodafe.Controller );
+      },
+
+      'by constructor' : function( app ){
+        var SomeController = require( require('path').join( app.base_dir, 'out_of_config_folder/out2' ));
+        app.router.add_controller( SomeController, 'some' );
+        assert.instanceOf( app.router.get_controller( 'some' ), SomeController );
+      },
+
+      'by constructor without name' : function( app ){
+        var SomeController = require( require('path').join( app.base_dir, 'out_of_config_folder/out2' ));
+        assert.throws(function(){
+          app.router.add_controller( SomeController );
+        })
+      },
+
+      'without params' : function( app ){
+        assert.throws(function(){
+          app.router.add_controller();
+        })
+      }
     }
   },
 

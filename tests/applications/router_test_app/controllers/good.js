@@ -1,6 +1,4 @@
-var Controller  = global.autodafe.Controller;
-
-module.exports = GoodController.inherits( Controller );
+module.exports = GoodController.inherits( autodafe.Controller );
 
 function GoodController( params ) {
   this._init( params );

@@ -142,9 +142,7 @@ Router.prototype._parse_route_paths = function ( rules ) {
  * Контроллеры ищутся в {@link Application.path_to_controllers}
  *
  * @private
- * @throws {Error} если возникнет проблема при подключении файла с контроллером
- * @throws {Error} если возникнет проблема во время инициализации контроллера
- *
+ * @see Router.add_controller
  */
 Router.prototype._collect_controllers = function () {
   var controllers_path = this.app.path_to_controllers;
@@ -161,42 +159,66 @@ Router.prototype._collect_controllers = function () {
 
   for ( var f = 0, f_ln = files.length; f < f_ln; f++ ) {
 
-    try {
-      var file        = files[f];
-      var file_path   = path.join( controllers_path, file );
-      var stat        = fs.statSync( file_path );
+    var file        = files[f];
+    var file_path   = path.join( controllers_path, file );
 
-      if ( !stat.isFile() ) continue;
-
-      var controller_class = require( file_path );
-    }
-    catch( e ) {
-      this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'error' );
-      throw e;
-    }
-
-    if ( !autodafe.Controller.is_instantiate( controller_class.prototype ) ) {
-      this.log( 'File in path `%s` is not a controller'.format( file_path ), 'warning' );
-      continue;
-    }
-
-    var name = path.basename( file_path, '.js' );
-
-    this.log( 'Controller "%s" is added'.format( name ), 'trace' );
-
-    try {
-      this._controllers[ name ] = new controller_class({
-        app   : this.app,
-        name  : name
-      });
-    }
-    catch( e ) {
-      this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'error' );
-      throw e;
-    }
+    this.add_controller( file_path );
   }
 
   this.log( 'Controllers are included', 'info' );
+};
+
+
+/**
+ * Добавляет контроллер
+ *
+ * @param {String|Controller} controller относительный путь до контроллера от {@link Application.base_dir}, абсолютный
+ * путь до контроллера, или конструктор контроллера
+ * @param {String} [name] Имя контроллера, этот параметр необязателен если указан путь до контроллера и обязателен
+ * если контроллер добавляется по конструктору
+ * @throws {Error} если возникнет проблема при подключении файла с контроллером
+ * @throws {Error} если возникнет проблема во время инициализации контроллера
+ * @throws {Error} если не указано имя контроллера, а в первом аргументе конструктор
+ * @throws {Error} если не указан первый аргумент
+ * @returns {Boolean} true если контроллер добавлен
+ */
+Router.prototype.add_controller = function ( controller, name ) {
+  if ( !controller ) throw new Error( 'You should specify path to controller or controller constructor in ' +
+    'first argument of Router.add_controller' );
+
+  if ( typeof controller == 'string' ) try {
+    var file_path = path.resolve( this.app.base_dir, controller );
+    name          = name || path.basename( file_path, '.js' );
+    controller    = require( file_path );
+  }
+  catch( e ) {
+    this.log( 'Problem while including controller in path `%s`'.format( file_path ), 'error' );
+    throw e;
+  }
+
+  if ( !autodafe.Controller.is_instantiate( controller.prototype ) ) {
+    this.log( 'File in path `%s` is not a controller'.format( file_path ), 'warning' );
+    return false;
+  }
+
+  if ( !name ) throw new Error(
+    'You should set name of controller as second argument in Router.add_controller if you add it by constructor `%s`'
+    .format( controller.name )
+  );
+
+  try {
+    this._controllers[ name ] = new controller({
+      app   : this.app,
+      name  : name
+    });
+  }
+  catch( e ) {
+    this.log( 'Problem while initializing controller `%s`'.format( name ), 'error' );
+    throw e;
+  }
+
+  this.log( 'Controller "%s" is added'.format( name ), 'trace' );
+  return true;
 };
 
 
