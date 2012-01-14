@@ -151,6 +151,30 @@ vows.describe( 'components manager' ).addBatch({
           app.router.add_controller();
         })
       }
+    },
+
+    '.add_route' : function( app ){
+      var good = app.router.get_controller( 'good' );
+      good.new_action = function(){};
+
+      app.router.add_rule( '/new_action/<param:\\w+>', 'good.new_action' );
+
+      var action = null;
+      var params = null;
+
+      good.once( 'action', function( act, act_params ){
+        action = act;
+        params = act_params;
+      } );
+
+      app.router.route( new Query({
+        action : '/new_action/text',
+        app    : app
+      }) );
+
+      assert.equal( action, 'new_action' );
+      assert.deepEqual( params, { param : 'text' } );
+      assert.equal( app.router.create_url( 'good.new_action', { param : 'param' } ), '/new_action/param' );
     }
   },
 

@@ -115,24 +115,40 @@ Router.prototype._init = function ( params ) {
 
 
 /**
- * Парсит пути
+ * Строит таблицу маршрутизации
  *
  * @param {Object} rules пути, описание см. в {@link Router._init}
  */
 Router.prototype._parse_route_paths = function ( rules ) {
-  for ( var rule in rules ) {
-    var route = new Route( {
-      path    : rules[ rule ],
-      rule    : rule,
-      app     : this.app,
-      router  : this
-    } );
+  for ( var rule in rules ) this.add_rule( rule, rules[ rule ] );
+};
 
-    this._routes.push( route );
-    var route_path = route.path;
-    if ( !this._routes_by_path[ route_path ] ) this._routes_by_path[ route_path ] = [];
-    this._routes_by_path[ route_path ].push( route );
-  }
+
+/**
+ * Добавляет правило в таблицу маршрутизации
+ *
+ * @param {String} route_path путь, который необходимо перенаправить
+ * @param {String} path_to_action путь до действия контроллера
+ * @example Добавление правила
+ *
+ * <pre><code class="javascript">
+ * this.app.router.add_rule( '/path/with/<param:\\w+>', 'controller.action' );
+ * </code></pre>
+ *
+ * @see Router._init
+ */
+Router.prototype.add_rule = function ( route_path, path_to_action ) {
+  var route = new Route( {
+    path    : path_to_action,
+    rule    : route_path,
+    app     : this.app,
+    router  : this
+  } );
+
+  this._routes.push( route );
+  path_to_action = route.path;
+  if ( !this._routes_by_path[ path_to_action ] ) this._routes_by_path[ path_to_action ] = [];
+  this._routes_by_path[ path_to_action ].push( route );
 };
 
 
