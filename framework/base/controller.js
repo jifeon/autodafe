@@ -6,10 +6,9 @@ module.exports = Controller.inherits( autodafe.AppModule );
 /**
  * Базовый класс для всех контроллеров в приожении.
  *
- * Контроллеры реализуют логику выполнения запросов в приложении. У
- * контроллеров есть специальные методы - действия. Они вызываются из роутера, куда попадают все запросы к приложению.
- * Из действий контроллеров можно легко получить доступ к любому из компонентов, а также отрисовать представление и
- * отослать его необходимым клиентам.
+ * Контроллеры реализуют логику выполнения запросов в приложении. У контроллеров есть специальные методы - действия.
+ * Они вызываются из роутера, куда попадают все запросы к приложению. Из действий контроллеров можно легко получить
+ * доступ к любому из компонентов, а также отрисовать представление и отослать его необходимым клиентам.
  *
  * @constructor
  * @extends AppModule
@@ -135,7 +134,7 @@ Controller.prototype.connect_client = function ( client ) { return undefined; };
 Controller.prototype.run_action = function ( action, params, client ) {
   action = action || this.default_action;
 
-  if ( !action || typeof this[ action ] != 'function' )
+  if ( typeof this[ action ] != 'function' )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
   params = params || {};
