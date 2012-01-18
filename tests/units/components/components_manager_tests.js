@@ -12,6 +12,10 @@ vows.describe( 'components manager' ).addBatch({
       } );
     },
 
+    'should be created without errors' : function( err, app ){
+      assert.isNull( err );
+    },
+
     '.components' : {
       // todo: delete, it's tmp fix for vows
       topic : function( app ){
@@ -95,6 +99,14 @@ vows.describe( 'components manager' ).addBatch({
         assert.throws( function() {
           app.components.load( 'unknown_component', true );
         } );
+      },
+
+      'outside components' : function( app ){
+        assert.instanceOf( app.sample, autodafe.Component );
+        assert.instanceOf( app.preload, autodafe.Component );
+        assert.equal( app.sample.models_in_app, app.models );
+        // preload загружается до инициализации моделей
+        assert.isNull( app.preload.models_in_app );
       }
     },
 

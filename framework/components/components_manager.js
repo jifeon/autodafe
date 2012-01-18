@@ -104,7 +104,7 @@ ComponentsManager.prototype._init = function( params ) {
  * Метод ищет компонент в пользовательских, а затем в системных компонентах, загружает его и регистрирует в приложении
  * {@link Application.register_component}
  *
- * @param {String} name имя загружаемого компонента
+ * @param {String} name имя загружаемого компонента, либо путь до него начиная от {@link Application.base_dir}
  * @param {Object} [params={}] параметры для загружаемого компонента
  * @throws {Error} если не может найти файл с компонентом или найденный файл неправильного типа
  */
@@ -118,7 +118,7 @@ ComponentsManager.prototype.load = function ( name, params ) {
     throw new Error( 'Try to load unknown component `%s`'.format( name ) );
   
   if ( !Object.isObject( params ) ) params = {};
-  params.name = name;
+  params.name = path.basename( name, '.js' );
   params.app  = this.app;
 
   var component = new component_class( params );
@@ -143,7 +143,8 @@ ComponentsManager.prototype.get_system_component = function ( name ) {
  *
  * Осуществляет поис в пользовательских компонентах и возвращает компонент с именем name. При первом обращении
  * пользовательские компоненты рекурсивно набираются из директории {@link Application.path_to_components}. Папки с
- * названием lib при этом не парсятся.
+ * названием lib при этом не парсятся. Если компонент не найден в {@link Application.path_to_components}, то считается
+ * что указан путь до компонента начиная от {@link Application.base_dir}
  *
  * @param {String} name имя искомого компонента
  * @returns {Function} конструктор компонента {@link Component}
@@ -162,6 +163,11 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
   if ( typeof this._user_components[ name ] == "string" )
     this._user_components[ name ] = require( this._user_components[ name ] );
 
+  else if ( typeof this._user_components[ name ] == 'undefined' ) try {
+    this._user_components[ name ] = require( path.join( this.app.base_dir, name ) );
+  }
+  catch(e){}
+
   return this._user_components[ name ];
 };
 
@@ -169,7 +175,8 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
 /**
  * Собирает пути до файлов внутри какой-либо директории.
  *
- * При этом пропуская директории с названием lib
+ * При этом пропуская директории с названием lib. Если указанная директория или файл не будут найдены, то залогируется
+ * warning
  *
  * @private
  * @param {String} components_path путь до директории в которой надо собрать пути до файлов
@@ -179,7 +186,13 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
 ComponentsManager.prototype._collect_components_in_path = function ( components_path, components ) {
   if ( path.basename( components_path ) == 'lib' ) return;
 
-  var stats = fs.statSync( components_path );
+  try {
+    var stats = fs.statSync( components_path );
+  }
+  catch( e ){
+    this.log( 'Path `%s` for collecting components is not found'.format( components_path ), 'warning' );
+    return false;
+  }
 
   if ( stats.isDirectory() ) fs.readdirSync( components_path ).forEach( function( file ) {
       this._collect_components_in_path( path.join( components_path, file ), components );
