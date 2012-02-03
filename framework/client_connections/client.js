@@ -155,8 +155,8 @@ Client.prototype._after_connect = function () {
 /**
  * Создает запрос
  *
- * @param {Object} [params={}] параметры для запроса, которые будут расширены ссылкой на приложение и клиент. см
- * {@link Query}
+ * @param {Object} [params={}] параметры для запроса, которые будут расширены ссылкой на приложение и клиент. Описание
+ * параметров см. в {@link Query._init}
  * @returns {Query}
  */
 Client.prototype.create_query = function ( params ) {

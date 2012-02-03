@@ -244,9 +244,9 @@ Router.prototype.add_controller = function ( controller, name ) {
  * @param {Query} query запрос
  * @throws {Error} 404 если не найден подходящий маршрут
  * @throws {Error} 404 если не найден контроллер по наиболее релевантному маршруту
- * @throws {Error} 404 если возникла ошибка при вызове действия контроллера ( см. {@link Controller.run_action})
+ * @throws {Error} 404 если возникла ошибка при вызове действия контроллера (см. {@link Controller.run_action})
  */
-Router.prototype.route = function ( query ) {
+Router.prototype.route = function( query ) {
   var error;
 
   if ( !this._routes.some( function( route ){
