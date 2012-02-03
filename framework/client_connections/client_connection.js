@@ -17,6 +17,49 @@ function ClientConnection( params ) {
 
 
 /**
+ * @event
+ * @name ClientConnection#connect_client
+ * @param {Client} client подключенный клиент
+ * @description Подключен новый клиент
+ */
+
+
+/**
+ * @event
+ * @name ClientConnection#disconnect_client
+ * @param {Client} client отключенный клиент
+ * @description Клиент отключен
+ */
+
+
+/**
+ * @event
+ * @name ClientConnection#receive_request
+ * @param {Query} query запрос
+ * @param {Client} client клиент от которого получен запрос
+ * @description Получен запрос
+ */
+
+
+/**
+ * @event
+ * @name ClientConnection#send_response
+ * @param data Отправленная информация
+ * @param {Client} client клиент которому отправлена информация
+ * @description Отправлена информация клиенту
+ */
+
+
+/**
+ * @event
+ * @name ClientConnection#send_error
+ * @param {Error|String} ошибка
+ * @param {Client} client клиент которому отправлена ошибка
+ * @description Клиенту отправлена ошибка
+ */
+
+
+/**
  * Инициализация подключения
  *
  * @private

@@ -44,7 +44,7 @@ HTTPClient.prototype._init = function( params ) {
 
 
 HTTPClient.prototype.receive = function () {
-  var query = this._create_query( {
+  var query = this.create_query( {
     url             : this.request.url,
     host            : this.request.headers.host,
     connection_type : this.request.method.toLowerCase()
@@ -182,7 +182,7 @@ HTTPClient.prototype.send_error = function ( e, number ) {
   this.response.statusCode = e.number;
 
   try {
-    var query = this._create_query({ action : '/' + e.number });
+    var query = this.create_query({ action : '/' + e.number });
     this.app.router.route( query );
   }
   catch( err ) {
