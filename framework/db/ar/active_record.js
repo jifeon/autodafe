@@ -1,4 +1,3 @@
-var Model             = global.autodafe.Model;
 var DbCriteria        = global.autodafe.db.Criteria;
 var Emitter           = process.EventEmitter;
 var ActiveFinder      = require('./active_finder');
@@ -10,8 +9,17 @@ var active_relations  = {
   many_many   : require('./relations/many_many_relation')
 };
 
-module.exports = ActiveRecord.inherits( Model );
+module.exports = ActiveRecord.inherits( autodafe.Model );
 
+
+//todo: описать созжание и использование
+
+/**
+ * Класс описывающий особый тип моделей, которые сохраняют информацию в базу данных
+ *
+ * @constructor
+ * @extends Model
+ */
 function ActiveRecord() {
   throw new Error( 'ActiveRecord is abstract class. You can\'t instantiate it!' );
 }
@@ -20,24 +28,56 @@ function ActiveRecord() {
 ActiveRecord._relations = null;
 
 
+/**
+ * Инициаизация ActiveRecord
+ *
+ * @private
+ * @param {Object} params см. {@link Model._init}
+ */
 ActiveRecord.prototype._init = function( params ) {
   ActiveRecord.parent._init.call( this, params );
 
+  /**
+   * Признак того, что экземпляр привязан к нужной таблице и может использоваться
+   *
+   * @type {Boolean}
+   */
   this._.is_inited      = false;
+
+  /**
+   * Имя таблицы, к которой привязана запись
+   *
+   * @type {String}
+   */
   this._.table_name     = null;
   this._.table_name.get = this.get_table_name.bind( this );
 
   if ( !this.table_name )
     throw new Error( 'You should specify `table_name` property for ' + this.class_name );
 
+  /**
+   * Соединение к базе данных, которую использует данная запись
+   *
+   * @type {DbConnection}
+   */
   this._.db_connection  = this.app.db;
   if ( !this.db_connection )
     throw new Error(
       'Looks like you don\'t preload or config `db` component, but it\'s required for use ActiveRecord class `%s`'.format( this.class_name )
     );
 
+  /**
+   * Таблица, к которой привязана данная запись
+   *
+   * @type {DbTableSchema}
+   */
   this._.table          = null;
 
+  /**
+   * Отношение данной записи к другим ActiveRecord
+   *
+   * @type {Object}
+   */
   this._related         = {};
   this._alias           = 't';
   this._criteria        = null;
@@ -61,11 +101,25 @@ ActiveRecord.prototype._init = function( params ) {
 };
 
 
+/**
+ * Возвращает имя таблицы, к которой привязана запись
+ *
+ * Необходимо переопределить в наследуемом классе. Для получение данного значения можно пользоваться геттером
+ * {@link ActiveRecord.table_name}
+ *
+ * @returns {String} имя таблицы
+ * @throws {Error} если не переопределить данный метод
+ */
 ActiveRecord.prototype.get_table_name = function () {
   throw new Error( 'You should implement method `get_table_name` for your class `%s`'.format( this.class_name ) );
 };
 
 
+/**
+ * Инициализая отношений с другими ActiveRecord
+ *
+ * @private
+ */
 ActiveRecord.prototype._init_relations = function () {
   if ( this.get_relations() ) return;
 
@@ -97,21 +151,49 @@ ActiveRecord.prototype._init_relations = function () {
 };
 
 
+/**
+ * Возвращает значение атрибута
+ *
+ * Именем атрибута может быть как название колонки в базе данных, отношение, так и переменные определенные в методе
+ * _init унаследованного класса
+ *
+ * @param {String} name имя атрибута
+ * @returns {mixed} значение атрибута
+ */
 ActiveRecord.prototype.get_attribute = function ( name ) {
   return this._related[ name ] === undefined ? ActiveRecord.parent.get_attribute.call( this, name ) : this._related[ name ];
 };
 
 
+/**
+ * Функция возвращающая отношение данного AR с другими
+ *
+ * Должна быть переопределена в наследуемых классах
+ *
+ * @returns {Object}
+ */
 ActiveRecord.prototype.relations = function () {
   return {};
 };
 
 
+/**
+ * Возвращает глобальные отношения всех AR
+ *
+ * @returns {Object}
+ */
 ActiveRecord.prototype.get_relations = function () {
   return this.constructor._relations;
 };
 
 
+/**
+ * Добавляет отношение
+ *
+ * @param {String} name название отношения
+ * @param {ActiveRecord} record AR
+ * @param {Boolean} index перечисляемое ли отношение добавляется
+ */
 ActiveRecord.prototype.add_related_record = function ( name, record, index ) {
   var related = this._related;
 
@@ -132,11 +214,27 @@ ActiveRecord.prototype.substitute_related_records = function ( callback ) {
 };
 
 
+/**
+ * Удаляет отношение
+ *
+ * @param {String} name имя отношения
+ */
 ActiveRecord.prototype.clean_related_records = function ( name ) {
   delete this._related[ name ];
 };
 
 
+/**
+ * Возвращает отношение
+ *
+ * @param {String} name имя отношения
+ * @param {Boolean} [refresh=false] надо ли очистить кэш
+ * @param {Object} [params={}] параметры для запроса отношения
+ * @example
+ * <pre><code class="javascript">
+ * user.get_related( 'posts', true, { limit : 50 } );
+ * </code></pre>
+ */
 ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   refresh = refresh || false;
   params  = params  || {};
@@ -276,6 +374,13 @@ ActiveRecord.prototype.get_attributes = function( names ) {
 };
 
 
+/**
+ * Проверяет на идентичность модели.
+ *
+ * Две AR считаются одинаковыми, если они принадлежат одной таблице и имеют одинаковые значнения первичного ключа
+ *
+ * @param {Model} model модель с которой надо сравнить текущую
+ */
 ActiveRecord.prototype.equals = function ( model ) {
   var result = model instanceof ActiveRecord && this.table_name == model.table_name;
   if ( !result ) return false;
@@ -301,6 +406,17 @@ ActiveRecord.prototype.__execute_command = function ( command, emitter, option )
 };
 
 
+/**
+ * Метод для подключения отношения в запрос
+ *
+ * Для корректной работы отношение должно быть определено в {@link ActiveRecord.relations}
+ *
+ * @returns {ActiveRecord} текущий AR
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.With( 'comments.author', 'comments_count' ).find_all().on( 'success', ... );
+ * </code></pre>
+ */
 ActiveRecord.prototype.With = function () {
   var With = Array.prototype.slice.call( arguments, 0 );
   if ( Array.isArray( With[0] ) ) With = With[0];
@@ -312,6 +428,11 @@ ActiveRecord.prototype.With = function () {
 };
 
 
+/**
+ * Возвращает построитель комманд
+ *
+ * @returns {CommandBuilder}
+ */
 ActiveRecord.prototype.get_command_builder = function () {
   return this.db_connection.db_schema.command_builder;
 };
@@ -327,6 +448,11 @@ ActiveRecord.prototype.set_table_alias = function ( alias ) {
 };
 
 
+/**
+ * Возвращает значение первичного ключа
+ *
+ * @returns {mixed} Если ПК несколько, то вернется массив, если их нет - то null
+ */
 ActiveRecord.prototype.get_primary_key = function () {
 
   var result = [];
@@ -339,6 +465,11 @@ ActiveRecord.prototype.get_primary_key = function () {
 };
 
 
+/**
+ * Задает ПК
+ *
+ * @param primary_key первичный ключ, если их несколько, то надо передать объект вида { pk1 : value, ... }
+ */
 ActiveRecord.prototype.set_primary_key = function( primary_key ) {
   if ( Array.isArray( this.table.primary_key ) )
     this.table.each_primary_key( function( key ) {
@@ -349,6 +480,39 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
 }
 
 
+/**
+ * Валидирует и сохраняет AR
+ *
+ * Для новой записи будет выполнен {@link ActiveRecord.insert}, для существующей {@link ActiveRecord.update}
+ *
+ * @param {String[]} [attributes] массив названий сохраняемых атрибутов
+ * @param {String} [scenario] название сценария использующегося при сохранении, используется в валидации todo: пример
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error ), validation_error( String[] )
+ * @example
+ * <pre><code class="javascript">
+ * var post = new this.models.post;
+ * post.title = "Name";
+ * post.content = "Description";
+ * post.save()
+ *   .on( 'error', function(e){} )
+ *   .on( 'validation_error', function( errors ){} )
+ *   .on( 'success', function( result ){
+ *     console.log( post.id == result.insert_id ); // primary key будет присвоен автоматически после сохранения
+ *   } );
+ * </code></pre>
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_by_pk(2)
+ *   .on( 'error', ... )
+ *   .on( 'success', function( post ){
+ *     if ( !post ) return; // post not found
+ *
+ *     post.title = 'changed';
+ *     post.save( [ 'title' ] ); // можно указать сохраняемые атрибуты, иначе в запрос попадут все остальные даже
+ *                               // неизмененные атрибуты
+ *   } )
+ * </code></pre>
+ */
 ActiveRecord.prototype.save = function( attributes, scenario ) {
   if ( !ActiveRecord.parent.save.call( this, attributes, scenario ) )
     return this.app.tools.next_tick( this.get_errors(), null, null, 'validation_error' );
@@ -357,6 +521,15 @@ ActiveRecord.prototype.save = function( attributes, scenario ) {
 }
 
 
+/**
+ * Сохраняет новую AR в базу
+ *
+ * @param {String[]} [attributes] названия атрибутов, которые надо сохранить
+ * @param {Boolean} [ignore=false] добавляет IGNORE в sql запрос, что позволяет замалчивать ошибки сохранения записей с
+ * одинаковыми уникальнымиполями
+ * @throws {Error} при попытке сохранения существующей записи
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ */
 ActiveRecord.prototype.insert = function( attributes, ignore ) {
   this.log( 'insert' );
 
@@ -388,6 +561,13 @@ ActiveRecord.prototype.insert = function( attributes, ignore ) {
 }
 
 
+/**
+ * Сохраняет существующую AR в базу
+ *
+ * @param {String[]} [attributes] названия атрибутов, которые надо сохранить
+ * @throws {Error} при попытке сохранения новой записи
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ */
 ActiveRecord.prototype.update = function( attributes ) {
   this.log( 'update' );
 
@@ -398,6 +578,12 @@ ActiveRecord.prototype.update = function( attributes ) {
 }
 
 
+/**
+ * Удаление AR из базы
+ *
+ * @throws {Error} при попытке удалить новую AR
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ */
 ActiveRecord.prototype.remove = function() {
   this.log( 'remove' );
 
@@ -407,6 +593,12 @@ ActiveRecord.prototype.remove = function() {
 }
 
 
+/**
+ * Обновление существующей AR
+ *
+ * @throws {Error} при попытке обновить новую AR
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ */
 ActiveRecord.prototype.refresh = function() {
   this.log( 'refresh' );
 
@@ -511,6 +703,25 @@ ActiveRecord.prototype.instantiate = function () {
 };
 
 
+/**
+ * Поиск одной AR
+ *
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}
+ * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
+ * @exmaple
+ * <pre><code class="javascript">
+ * this.models.post.find(); // первая попавшаяся
+ * this.models.post.find( 'id=:id', { id : 5 } );
+ * this.models.post.find( 'text=:text OR id=8', {text : "Текст будет экранирован"} );
+ * this.models.post.find( {
+ *   condition : "text=:text and some_table.some_value = 5",
+ *   params    : { text : 'some text' },
+ *   order     : 'date',
+ *   join      : 'INNER JOIN some_table'
+ * } )
+ * </code></pre>
+ */
 ActiveRecord.prototype.find = function ( condition, params ) {
   this.log( 'find' );
 
@@ -520,6 +731,13 @@ ActiveRecord.prototype.find = function ( condition, params ) {
 };
 
 
+/**
+ * Ищет все записи подходящие по условиям
+ *
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
+ */
 ActiveRecord.prototype.find_all = function( condition, params ) {
   this.log( 'find_all' );
 
@@ -529,6 +747,18 @@ ActiveRecord.prototype.find_all = function( condition, params ) {
 };
 
 
+/**
+ * Ищет AR по первичному ключу
+ *
+ * @param {Array|mixed} pk первичный ключ
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_by_pk(2);
+ * </code></pre>
+ */
 ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
   this.log( 'find_by_pk' );
 
@@ -539,6 +769,21 @@ ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
 };
 
 
+/**
+ * Ищет несколько AR по первичному ключу
+ *
+ * @param {Array} pk массив первичных ключей
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_all_by_pk( [2, 3] );
+ *
+ * //для таблиц с множественным ПК
+ * this.models.category.find_all_by_pk( [ { key1 : 2, key2 : 1 }, { key1 : 1, key2 : 3 } ] );
+ * </code></pre>
+ */
 ActiveRecord.prototype.find_all_by_pk = function( pk, condition, params ) {
   this.log( 'find_all_by_pk' );
 
@@ -549,6 +794,18 @@ ActiveRecord.prototype.find_all_by_pk = function( pk, condition, params ) {
 }
 
 
+/**
+ * Поиск AR по атрибутам
+ *
+ * @param {Object} attributes атрибуты по которым ищем
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_by_attributes( { user_id : 4, type : 'topic' } );
+ * </code></pre>
+ */
 ActiveRecord.prototype.find_by_attributes = function( attributes, condition, params ) {
   this.log( 'find_by_attributes' );
 
@@ -559,6 +816,18 @@ ActiveRecord.prototype.find_by_attributes = function( attributes, condition, par
 }
 
 
+/**
+ * Поиск нескольких AR по атрибутам
+ *
+ * @param {Object} attributes атрибуты по которым ищем
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_all_by_attributes( { user_id : 4, type : 'topic' } );
+ * </code></pre>
+ */
 ActiveRecord.prototype.find_all_by_attributes = function( attributes, condition, params ) {
   this.log( 'find_all_by_attributes' );
 
@@ -569,6 +838,17 @@ ActiveRecord.prototype.find_all_by_attributes = function( attributes, condition,
 }
 
 
+/**
+ * Поиск AR по sql
+ *
+ * @param {String} sql sql запрос
+ * @param {Object} [params={}] параметры к sql запросу
+ * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_by_sql( 'select title from `posts` where text=:text', { text : 'some text' } );
+ * </code></pre>
+ */
 ActiveRecord.prototype.find_by_sql = function( sql, params ) {
   this.log( 'find_by_sql' );
 
@@ -592,6 +872,17 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
 }
 
 
+/**
+ * Поиск нескольких AR по sql
+ *
+ * @param {String} sql sql запрос
+ * @param {Object} [params={}] параметры к sql запросу
+ * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.find_all_by_sql( 'select title from `posts` where text=:text', { text : 'some text' } );
+ * </code></pre>
+ */
 ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
   this.log( 'find_all_by_sql' );
 
@@ -612,6 +903,18 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
   return emitter;
 }
 
+
+/**
+ * Выяснение количества AR
+ *
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( Number ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.count().on( 'success', function( count ){ ... } );
+ * </code></pre>
+ */
 ActiveRecord.prototype.count = function( condition, params ) {
   this.log( 'count' );
 
@@ -623,6 +926,13 @@ ActiveRecord.prototype.count = function( condition, params ) {
 }
 
 
+/**
+ * Выяснение количества AR найденных по определенному sql запросу
+ *
+ * @param {String} sql sql запрос
+ * @param {Object} [params={}] параметры к sql запросу
+ * @returns {events.EventEmitter} success( Number ), error( Error )
+ */
 ActiveRecord.prototype.count_by_sql = function( sql, params ) {
   this.log( 'count_by_sql' );
 
@@ -632,7 +942,14 @@ ActiveRecord.prototype.count_by_sql = function( sql, params ) {
   return this.__execute_command( command, null, 'scalar' );
 }
 
-
+/**
+ * Выяснение количества AR соответствующих указанным атрибутам
+ *
+ * @param {Object} attributes атрибуты по которым ищем
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( Number ), error( Error )
+ */
 ActiveRecord.prototype.count_by_attributes = function ( attributes, condition, params ) {
   this.log( 'count_by_attributes' );
 
@@ -645,6 +962,13 @@ ActiveRecord.prototype.count_by_attributes = function ( attributes, condition, p
 };
 
 
+/**
+ * Выяснение существования AR
+ *
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( Boolean ), error( Error )
+ */
 ActiveRecord.prototype.exists = function( condition, params ) {
   this.log( 'exists' );
 
@@ -666,6 +990,19 @@ ActiveRecord.prototype.exists = function( condition, params ) {
 }
 
 
+/**
+ * Обновление AR по первичному ключу
+ *
+ * @param {mixed} pk первичный ключ
+ * @param {Object} attributes атрибуты которые будут обновлены
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.update_by_pk( 2, { text : 'new text' }, 'user_id=5' )
+ * </code></pre>
+ */
 ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, params ) {
   this.log( 'update_by_pk' );
 
@@ -677,6 +1014,18 @@ ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, param
 }
 
 
+/**
+ * Обновление всех подходящих AR
+ *
+ * @param {Object} attributes атрибуты которые будут обновлены
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * this.models.post.update_all( { text : 'new text' }, 'user_id=5' )
+ * </code></pre>
+ */
 ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
   this.log( 'update_all' );
 
@@ -688,6 +1037,19 @@ ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
 }
 
 
+/**
+ * Увеличение и уменьшение числовых полей
+ *
+ * @param {Object} counters поля которые надо изменить
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
+ * @example
+ * <pre><code class="javascript">
+ * // прибавит пользователю с id=5 количетво визитов на 1, и отнимет рейтинг на 15
+ * this.models.user.update_counters( { visits : +1, rating : -15 }, 'id=5' )
+ * </code></pre>
+ */
 ActiveRecord.prototype.update_counters = function( counters, condition, params ) {
   this.log( 'update_counters' );
 
@@ -697,6 +1059,7 @@ ActiveRecord.prototype.update_counters = function( counters, condition, params )
 
   return this.__execute_command( command );
 }
+
 
 ActiveRecord.prototype.update_all_by_sql = function( sql, params ) {
   this.log( 'update_all_by_sql' );
@@ -708,7 +1071,13 @@ ActiveRecord.prototype.update_all_by_sql = function( sql, params ) {
 }
 
 
-
+/**
+ * Удаление по первичному ключу
+ *
+ * @param {mixed} pk первичный ключ
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ */
 ActiveRecord.prototype.remove_by_pk = function( pk, condition, params ) {
   this.log( 'remove_by_pk' );
 
@@ -720,6 +1089,12 @@ ActiveRecord.prototype.remove_by_pk = function( pk, condition, params ) {
 }
 
 
+/**
+ * Удалит все подходящие AR
+ *
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ */
 ActiveRecord.prototype.remove_all = function( condition, params ) {
   this.log( 'remove_all' );
 
@@ -731,6 +1106,13 @@ ActiveRecord.prototype.remove_all = function( condition, params ) {
 }
 
 
+/**
+ * Удалит все подходящие по атрибутам AR
+ *
+ * @param {Object} attributes атрибуты по которым будет производится поиск
+ * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
+ */
 ActiveRecord.prototype.remove_all_by_attributes = function( attributes, condition, params ) {
   this.log( 'remove_all_by_attributes' );
 
