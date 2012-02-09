@@ -230,7 +230,7 @@ ActiveRecord.prototype.clean_related_records = function ( name ) {
  * @param {String} name имя отношения
  * @param {Boolean} [refresh=false] надо ли очистить кэш
  * @param {Object} [params={}] параметры для запроса отношения
- * @example
+ * @example get_related
  * <pre><code class="javascript">
  * user.get_related( 'posts', true, { limit : 50 } );
  * </code></pre>
@@ -412,7 +412,7 @@ ActiveRecord.prototype.__execute_command = function ( command, emitter, option )
  * Для корректной работы отношение должно быть определено в {@link ActiveRecord.relations}
  *
  * @returns {ActiveRecord} текущий AR
- * @example
+ * @example With
  * <pre><code class="javascript">
  * this.models.post.With( 'comments.author', 'comments_count' ).find_all().on( 'success', ... );
  * </code></pre>
@@ -488,7 +488,7 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
  * @param {String[]} [attributes] массив названий сохраняемых атрибутов
  * @param {String} [scenario] название сценария использующегося при сохранении, используется в валидации todo: пример
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error ), validation_error( String[] )
- * @example
+ * @example save new record
  * <pre><code class="javascript">
  * var post = new this.models.post;
  * post.title = "Name";
@@ -500,7 +500,7 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
  *     console.log( post.id == result.insert_id ); // primary key будет присвоен автоматически после сохранения
  *   } );
  * </code></pre>
- * @example
+ * save exist record
  * <pre><code class="javascript">
  * this.models.post.find_by_pk(2)
  *   .on( 'error', ... )
@@ -709,7 +709,7 @@ ActiveRecord.prototype.instantiate = function () {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}
  * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
- * @exmaple
+ * @example find
  * <pre><code class="javascript">
  * this.models.post.find(); // первая попавшаяся
  * this.models.post.find( 'id=:id', { id : 5 } );
@@ -754,7 +754,7 @@ ActiveRecord.prototype.find_all = function( condition, params ) {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
- * @example
+ * @example find_by_pk
  * <pre><code class="javascript">
  * this.models.post.find_by_pk(2);
  * </code></pre>
@@ -776,7 +776,7 @@ ActiveRecord.prototype.find_by_pk = function( pk, condition, params ) {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
- * @example
+ * @example find_all_by_pk
  * <pre><code class="javascript">
  * this.models.post.find_all_by_pk( [2, 3] );
  *
@@ -801,7 +801,7 @@ ActiveRecord.prototype.find_all_by_pk = function( pk, condition, params ) {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
- * @example
+ * @example find_by_attributes
  * <pre><code class="javascript">
  * this.models.post.find_by_attributes( { user_id : 4, type : 'topic' } );
  * </code></pre>
@@ -823,7 +823,7 @@ ActiveRecord.prototype.find_by_attributes = function( attributes, condition, par
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
- * @example
+ * @example find_all_by_attributes
  * <pre><code class="javascript">
  * this.models.post.find_all_by_attributes( { user_id : 4, type : 'topic' } );
  * </code></pre>
@@ -844,7 +844,7 @@ ActiveRecord.prototype.find_all_by_attributes = function( attributes, condition,
  * @param {String} sql sql запрос
  * @param {Object} [params={}] параметры к sql запросу
  * @returns {events.EventEmitter} success( {@link ActiveRecord} ), error( Error )
- * @example
+ * @example find_by_sql
  * <pre><code class="javascript">
  * this.models.post.find_by_sql( 'select title from `posts` where text=:text', { text : 'some text' } );
  * </code></pre>
@@ -878,7 +878,7 @@ ActiveRecord.prototype.find_by_sql = function( sql, params ) {
  * @param {String} sql sql запрос
  * @param {Object} [params={}] параметры к sql запросу
  * @returns {events.EventEmitter} success( {@link ActiveRecord}[] ), error( Error )
- * @example
+ * @example find_all_by_sql
  * <pre><code class="javascript">
  * this.models.post.find_all_by_sql( 'select title from `posts` where text=:text', { text : 'some text' } );
  * </code></pre>
@@ -910,7 +910,7 @@ ActiveRecord.prototype.find_all_by_sql = function( sql, params ) {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( Number ), error( Error )
- * @example
+ * @example count
  * <pre><code class="javascript">
  * this.models.post.count().on( 'success', function( count ){ ... } );
  * </code></pre>
@@ -998,7 +998,7 @@ ActiveRecord.prototype.exists = function( condition, params ) {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
- * @example
+ * @example update_by_pk
  * <pre><code class="javascript">
  * this.models.post.update_by_pk( 2, { text : 'new text' }, 'user_id=5' )
  * </code></pre>
@@ -1021,7 +1021,7 @@ ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, param
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
- * @example
+ * @example update_all
  * <pre><code class="javascript">
  * this.models.post.update_all( { text : 'new text' }, 'user_id=5' )
  * </code></pre>
@@ -1044,7 +1044,7 @@ ActiveRecord.prototype.update_all = function( attributes, condition, params ) {
  * @param {DbCriteria|Object|String} [condition=''] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @param {Object} [params={}] см. {@link CommandBuilder.create_criteria}, примеры {@link ActiveRecord.find}
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
- * @example
+ * @example update_counters
  * <pre><code class="javascript">
  * // прибавит пользователю с id=5 количетво визитов на 1, и отнимет рейтинг на 15
  * this.models.user.update_counters( { visits : +1, rating : -15 }, 'id=5' )
