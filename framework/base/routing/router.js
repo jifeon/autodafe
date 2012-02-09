@@ -297,21 +297,33 @@ Router.prototype.route = function( query ) {
  */
 Router.prototype.create_url = function ( route_path, params, default_controller, default_action ) {
   var matches = this._route_path_re.exec( route_path );
-  if ( !matches ) return route_path || '#';
+  if ( !matches ) {
+    this.log( 'Bad route path `%s`. Route path should be formated as controller.action'.format( route_path ), 'warning' );
+    return route_path || '#';
+  }
 
   var controller_name = matches[3] || default_controller || this.app.default_controller;
   var action_name     = matches[4] || default_action     || '';
   route_path          = controller_name + '.' + action_name;
 
   var routes  = this._routes_by_path[ route_path ];
-  if ( !routes ) return route_path || '#';
+  if ( !routes ) {
+    this.log( 'Routes for route path `%s` are not found'.format( route_path ), 'warning' );
+    return route_path || '#';
+  }
 
   var route = routes.filter( function( route ){
     return route.has_params( params );
   } ).sort( function( a, b ){
     return Object.keys( a.rule_params ).length < Object.keys( b.rule_params ).length;
   } )[0];
-  if ( !route ) return '#';
+
+  if ( !route ) {
+    this.log(
+      'Can not found exact route for route path `%s`. Check parametres for Router.create_url'.format( route_path ),
+      'warning' );
+    return '#';
+  }
 
   var rule  = route.get_rule( params );
   var query = qs.stringify( params );
