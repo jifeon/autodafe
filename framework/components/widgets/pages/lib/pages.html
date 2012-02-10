@@ -1,9 +1,22 @@
+{?table}
 <table class="pages"><tr>
-{#links}
-    {?is_link}
-    <td {?active}class="active"{/active}><a href="{url}" >{number}</a></td>
-    {:else}
-      {number}
-    {/is_link}
-{/links}
+  {#pages}
+  {?insert_space}<td class="space">..</td>{/insert_space}
+  <td class="{?active}active{/active}"><a href="{url}">{number}</a></td>
+  {/pages}
 </tr></table>
+{/table}
+
+{?ul}
+<ul class="pages">
+  {#pages}
+  {?insert_space}<li class="space">..</li>{/insert_space}
+  <li class="{?active}active{/active}"><a href="{url}">{number}</a></li>
+  {/pages}
+</ul>
+{/ul}
+
+{?links}{#pages}
+  {?insert_space}<span class="space">..</span>{/insert_space}
+  <a class="{?active}active{/active}" href="{url}">{number}</a>
+{/pages}{/links}

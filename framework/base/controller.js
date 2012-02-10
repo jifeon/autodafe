@@ -226,6 +226,7 @@ Controller.prototype.create_url = function ( path_to_action, params ) {
  * @returns {Widget}
  */
 Controller.prototype.create_widget = function( widget_name, params ){
+  if ( params.controller ) params.controller = this.name;
   return this.app.components.create_widget( widget_name, params );
 }
 
@@ -274,11 +275,40 @@ Controller.prototype._url_function_for_dust = function ( chunk, context, bodies,
  * @param params
  */
 Controller.prototype._widget_function_for_dust = function( chunk, context, bodies, params ){
+  var no_widget_name_error = 'Please specify widget name. For example: write in template {#widget}widget_name{/widget}';
+
+  if ( !bodies.block ) {
+    this.log( no_widget_name_error, 'warning' );
+    return chunk;
+  }
+
+  for ( var param in params ) {
+    var value = params[ param ];
+    if ( typeof value == 'function' )
+      params[ param ] = this.app.tools.get_dust_chunk_body_content( chunk, context, value );
+  }
+
+  var widget_name = this.app.tools.get_dust_chunk_body_content( chunk, context, bodies.block );
+  if ( !widget_name ) {
+    this.log( no_widget_name_error, 'warning' );
+    return chunk;
+  }
+
+  var widget = context.get( widget_name );
+  if ( !widget ) {
+    this.log( 'Widget `%s` is not found'.format( widget_name ), 'warning' );
+    return chunk;
+  }
+
   var self = this;
-    return chunk.map( function( chunk ){
-      var widget = context.get( params.name );
-      widget.render( function( data ){
-        chunk.end( data );
-      } )
-    } );
+  return chunk.map( function( chunk ){
+    widget.render( function( e, data ){
+      if ( e ) {
+        self.log( e, 'warning' );
+        return chunk;
+      }
+
+      chunk.end( data );
+    }, params )
+  } );
 };

@@ -13,7 +13,7 @@ module.exports = SiteController.inherits( Controller ); // наследуем о
 function SiteController( params ) {
   this._init( params );
 
-  this.POSTS_PER_PAGE = 10;
+  this.POSTS_PER_PAGE = 5;
 }
 
 
@@ -74,46 +74,41 @@ SiteController.prototype.connect_client = function ( client ){
 SiteController.prototype.index = function ( params, client, error ) {
   params = params || {};
 
-  var self = this,
-      page = parseInt( params.page ) - 1 || 0;
+  var pages = this.create_widget( 'pages', {
+    items_per_page : this.POSTS_PER_PAGE,
+    action_path    : 'site.index',
+    current_page   : params.page,
+    view           : 'table'
+  } );
 
   // ищем 10 топиков для показа их на странице и общее кол-во топиков
   var listener = this.app.tools.create_async_listener(
-    2, this.show_index.bind( this, client, error, page )
+    2, this.show_index.bind( this, client, error, pages )
   );
 
-  var on_error = client.send_error.bind( client );
-
   this.models.post.find_all({
-    offset : page * this.POSTS_PER_PAGE,
+    offset : pages.current_page * this.POSTS_PER_PAGE,
     limit  : this.POSTS_PER_PAGE,
     order  : 'date desc'
   })
-    .on( 'error', on_error )
-    .re_emit( 'success', listener.get_emitter( 'posts' ));
+    .re_emit( 'success', 'error', listener.get_emitter( 'posts' ));
 
   this.models.post.count()
-    .on( 'error', on_error )
-    .re_emit( 'success', listener.get_emitter( 'count' ));
+    .re_emit( 'success', 'error', listener.get_emitter( 'count' ));
 };
 
 
-SiteController.prototype.show_index = function ( client, error, page, send_params ) {
+SiteController.prototype.show_index = function ( client, error, pages, params ) {
   // ошибку шлем клиенту, отобразится как 500 ошибка
-  if( send_params.error ) return client.send_error( send_params.error );
+  if( params.error ) return client.send_error( params.error );
+
+  pages.count = params.count;
 
   // если все хорошо - рендерим вьюшку и отсылаем клиенту
   this.send_response( 'posts_list.html', client, {
-    posts : send_params.posts,
+    posts : params.posts,
     error : error ? error : '',
-    pages : this.create_widget( 'pages', {
-      count          : send_params.count,
-      items_per_page : this.POSTS_PER_PAGE,
-      link_to        : 'site.index',
-      link_params    : {
-        page : page + 1
-      }
-      } )
+    pages : pages
   } )
 };
 
