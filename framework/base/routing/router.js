@@ -46,7 +46,7 @@ function Router( params ) {
  * и свойству action действия пришедшего по websockets. Внутри пути могут быть описаны параметры в виде
  * <param_name:param_pattern> где param_name - имя параметра, а param_pattern - регулярное выражение соответствующее
  * данному параметру. Также перед путем разделяя пробелами можно указать фильтры в виде filter_name:filter_value, где
- * filter_name - часть распаршенного url, (см. <a href="http://nodejs.org/docs/latest/api/url.html#url.parse"url.parse</a>)
+ * filter_name - часть распаршенного url, (см. <a href="http://nodejs.org/docs/latest/api/url.html#url.parse">url.parse</a>)
  * а filter_value значение которое должно соответствовать части url. filter_name по умолчанию равно 'hostname'
  *
  * Значения rules - пути к действиям в виде 'контроллер.действие'. Если указать только контроллер: 'контроллер' - в
