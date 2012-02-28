@@ -87,7 +87,7 @@ Route.prototype.is_suitable_for = function ( query, extend_params_on_success ) {
     query.route = this;
 
     this.rule_params.forEach( function( param, i ){
-      query.params[ param ] = matches[ i+1 ];
+      query.params[ param ] = decodeURI( matches[ i+1 ] );
     } );
   }
 
@@ -122,6 +122,6 @@ Route.prototype.get_rule = function ( params ) {
   return this._source_rule.replace( /<(\w+):(.+?)>/g, function( all, $1, $2 ){
     var param = params[ $1 ];
     delete params[ $1 ];
-    return param;
+    return encodeURI( param );
   } );
 };
