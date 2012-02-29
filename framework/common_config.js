@@ -30,7 +30,7 @@ var config = module.exports = {
     },
 
     http : {
-      post : 80,
+      port : 80,
       root_folders: {
         css : 'views/html/css'
       },
@@ -80,6 +80,12 @@ var config = module.exports = {
         },
         file : {
           levels : [ 'trace', 'info', 'warning', 'error' ]
+        },
+        mail : {
+          levels    : [ 'error' ],
+          to        : 'your@email.com',
+          subject   : 'AppName server errors',
+          frequency : '1 per 1 min'
         }
       }
     },
@@ -98,15 +104,6 @@ var config = module.exports = {
 //        from    : 'another_user@host.com',
 //        subject : 'subject'
       }
-    },
-
-    tests : {
-      paths : [      // base_dir + path
-        '../unit/framework/'
-      ],
-      exclude : [    // may be regexp or string which will be searched in path
-        'active_record_tests.js'
-      ]
     },
 
     user_component : {

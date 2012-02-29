@@ -13,7 +13,7 @@ var util  = require('util'),
     fs.readdirSync( tests_path ).forEach( function( file ) {
       ls( path.join( tests_path, file ) );
     }, this );
-}
+  }
   else if ( stats.isFile() ) paths.push( tests_path );
 
 })( path.join( __dirname, 'units' ) );

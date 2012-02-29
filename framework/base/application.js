@@ -168,7 +168,7 @@ Application.prototype.tools = require('../lib/tools');
  * @param {String} [config.controllers_folder="controllers"] путь от base_dir до контроллеров
  * @param {String} [config.components_folder="components"] путь от base_dir до пользовательских компонентов
  * @param {Number} [config.session_live_time=60000] время, которое живет сессия без клиентов в мс
- * @param {Boolean} [config.remove_timeout=cache_views] Если значение true - вьюшки подгружаются один раз при создании
+ * @param {Boolean} [config.cache_views=true] Если значение true - вьюшки подгружаются один раз при создании
  * приложения и больше никогда не проверяются на изменения, если false - измененные вьюшки перезагружаются каждый раз
  * при обращении к ним
  * @param {Object} [config.router={}] Настройки компонента отвечающего за перенаправление запросов и генерацию УРЛ,
