@@ -124,6 +124,7 @@ ComponentsManager.prototype.load = function ( name, params ) {
   var component = new component_class( params );
   this._loaded[ name ] = true;
   this.app.register_component( component );
+  this.log( 'Component `%s` is loaded'.format( component.name ), 'info' );
 };
 
 
@@ -158,6 +159,7 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
       this.log( 'Collecting user components in ' + components_path );
       this._collect_components_in_path( components_path, this._user_components );
     }
+    else this.log( 'Folder with user components `%s` is not found'.format( components_path ), 'warning' );
   }
 
   if ( typeof this._user_components[ name ] == "string" )
