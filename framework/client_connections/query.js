@@ -26,7 +26,7 @@ function Query( params ) {
  * @param {Client} [params.client] клиент инициализирующий запрос, при пользовании {@link Client.create_query}
  * подставляется автоматически
  * @param {String} [params.connection_type] тип подключения клиента, возможные значения задаваемые {@link HTTPClient} и
- * {@link WebSocketsClient}: "post", "get", "delete", "ws"
+ * {@link WebSocketsClient}: "post", "get", "delete", "http", "ws" Про использование можно почитать в {@link Router._init}
  * @param {Route} [params.route=null] мрашрут, к которому привязан данный запрос, todo: remove
  * @param {String} [params.host=''] хост на который пришел запрос
  * @param {String} [params.url=''] урл
@@ -45,13 +45,16 @@ Query.prototype._init = function( params ) {
 
   /**
    * тип подключения клиента, возможные значения задаваемые {@link HTTPClient} и {@link WebSocketsClient}: "post",
-   * "get", "delete", "ws"
+   * "get", "delete", "http", "ws"
    *
    * @type {String}
+   * @see Router._init
    */
   this.connection_type = params.connection_type;
 
-  //todo: remove
+  /**
+   * @deprecated Начиная с версии 0.2.2 Будет удалено в последующих версиях
+   */
   this.route           = params.route  || null;
 
   /**

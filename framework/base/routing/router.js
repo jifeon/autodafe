@@ -52,7 +52,7 @@ function Router( params ) {
  * Значения rules - пути к действиям в виде 'контроллер.действие'. Если указать только контроллер: 'контроллер' - в
  * качестве действия будет взято {@link Controller.default_action} этого контроллера, если указать пустую строку,
  * будет взят {@link Application.default_controller}. После вертикально слэша можно указать методы и протоколы, по
- * каоторым будет работать запрос: post, get, update, ws ( WebSockets )
+ * каоторым будет работать запрос: post, get, update, http (включает в себя первые 3), ws (WebSockets)
  *
  * @example Таблица маршрутизации
  * <pre><code class="javascript">
@@ -127,6 +127,7 @@ Router.prototype._parse_route_paths = function ( rules ) {
 /**
  * Добавляет правило в таблицу маршрутизации
  *
+ * @since 0.2.2
  * @param {String} route_path путь, который необходимо перенаправить
  * @param {String} path_to_action путь до действия контроллера
  * @example Добавление правила
@@ -188,6 +189,7 @@ Router.prototype._collect_controllers = function () {
 /**
  * Добавляет контроллер
  *
+ * @since 0.2.2
  * @param {String|Controller} controller относительный путь до контроллера от {@link Application.base_dir}, абсолютный
  * путь до контроллера, или конструктор контроллера
  * @param {String} [name] Имя контроллера, этот параметр необязателен если указан путь до контроллера и обязателен
