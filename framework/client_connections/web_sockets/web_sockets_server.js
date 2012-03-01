@@ -20,7 +20,7 @@ WebSocketsServer.prototype._init = function ( params ) {
 };
 
 
-WebSocketsServer.prototype.run = function () {
+WebSocketsServer.prototype._run = function () {
 
   this._server  = this.get_server( this.port );
   if ( !this._server ) return this.log( 'WebSockets server not running at port ' + this.port, 'warning' );

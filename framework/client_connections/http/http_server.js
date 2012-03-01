@@ -1,29 +1,100 @@
 var ClientConnection = require('../client_connection');
 var HTTPClient       = require('./http_client');
-var http             = require('http');
 var path             = require('path');
 var auth             = require('http-auth');
 
 module.exports = HTTPServer.inherits( ClientConnection );
 
+
+/**
+ * Компонент позволяющий общаться с приложением по протоколу HTTP
+ *
+ * После запуска прилодения запускает HTTP сервер, и на каждый запрос создает {@link HTTPClient}, который вполследствии
+ * выполняет данный запрос. Помимо этого компонент умеет проводить HTTP аутентификацию.
+ *
+ * @constructor
+ * @extends ClientConnection
+ * @param {Object} params см. {@link HTTPServer._init}
+ */
 function HTTPServer( params ) {
   this._init( params );
 }
 
 
+/**
+ * Инициализация HTTPServer
+ *
+ * @private
+ * @param {Object} params параметры для инициализации HTTPServer
+ * @param {Number} [params.port=80] Порт на котором будет запущен HTTP сервер
+ * @param {String} [params.upload_dir='/tmp'] Директория в которую будут складываться загруженные файлы. Может быть
+ * абсолютным или относительным начиная с {@link Application.base_dir}
+ * @param {Object} [params.root_folders={}] Корневые директории, в которых хранятся статические файлы. Например, если
+ * root_folder выглядит так:
+ * <pre><code class="javascript">
+ * root_folders : {
+ *   css : 'views/css'
+ * }
+ * </code></pre>
+ * то приложение по запросу /css/style.css проверит наличие файла views/css/style.css, и отдаст его, если он существует
+ * @param {Object} [params.basic_auth] Настройки http аутентификации
+ * @see ClientConnection._init
+ */
 HTTPServer.prototype._init = function( params ) {
   HTTPServer.parent._init.call( this, params );
 
+  /**
+   * Порт на котором запущен HTTP сервер
+   *
+   * @type {Number}
+   * @default 80
+   */
   this._.port         = params.port || 80;
+
+  /**
+   * Абсолютный путь до директории, в которую будут загружаться файлы
+   *
+   * @type {String}
+   * @default /tmp
+   */
   this._.upload_dir   = path.resolve( this.app.base_dir, params.upload_dir || '/tmp' );
 
+  /**
+   * Корневые директории, в которых хранятся статические файлы. Ключи - первая часть пути URL. Значения -
+   * соответствующие им директории
+   *
+   * @private
+   * @type {Object}
+   */
   this._root_folders  = params.root_folders || {};
+
+  /**
+   * Node http сервер
+   *
+   * @private
+   * @type {http.Server}
+   * @see <a href="http://nodejs.org/docs/latest/api/http.html#http.Server">http.Server in node docs</a>
+   */
   this._server        = null;
+
+  /**
+   * Настройки для HHTP аутентификации
+   *
+   * @private
+   * @type {Object}
+   */
   this._basic_auth    = params.basic_auth;
 };
 
 
-HTTPServer.prototype.run = function () {
+/**
+ * Запуск сервера
+ *
+ * Выполняется после запуска приложения {@link Application.run}. Создает сервер и начинает принимать HTTP запросы
+ *
+ * @private
+ */
+HTTPServer.prototype._run = function () {
   this._server = this.get_server( this.port );
   if ( !this._server ) return this.log( 'HTTP server is not running at port ' + this.port, 'warning' );
 
@@ -54,6 +125,15 @@ HTTPServer.prototype.run = function () {
 };
 
 
+/**
+ * Создает {@link HTTPClient}
+ *
+ * @private
+ * @param {http.ServerRequest} request
+ * @param {http.ServerResponse} response
+ * @see <a href="http://nodejs.org/docs/latest/api/http.html#http.ServerRequest">http.ServerRequest in node docs</a>
+ * @see <a href="http://nodejs.org/docs/latest/api/http.html#http.ServerResponse">http.ServerResponse in node docs</a>
+ */
 HTTPServer.prototype._create_http_client = function ( request, response ) {
   new HTTPClient({
     app         : this.app,
@@ -64,6 +144,11 @@ HTTPServer.prototype._create_http_client = function ( request, response ) {
 };
 
 
+/**
+ * Останавливает HTTP сервер.
+ *
+ * По умолчанию вызывается при остановке приложения.
+ */
 HTTPServer.prototype.close = function () {
   try{
     if ( this._server ) this._server.close();
@@ -73,6 +158,13 @@ HTTPServer.prototype.close = function () {
 };
 
 
+/**
+ * Возвращает путь до корневой директории со статическими файлами
+ *
+ * @param {String} name название корневой директории
+ * @returns {String}
+ * @see HTTPServer._root_folders
+ */
 HTTPServer.prototype.get_root_folder = function ( name ) {
   return this._root_folders[ name ];
 };

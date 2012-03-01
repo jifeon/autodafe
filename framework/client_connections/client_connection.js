@@ -68,8 +68,8 @@ function ClientConnection( params ) {
 ClientConnection.prototype._init = function ( params ) {
   ClientConnection.parent._init.call( this, params );
 
-  this.app.on( 'run',   this.run.bind( this ) );
-  this.app.on( 'close', this.close.bind( this ) );
+  this.app.on( 'run',  this._run.bind( this ) );
+  this.app.on( 'stop', this.close.bind( this ) );
 };
 
 
@@ -97,15 +97,15 @@ ClientConnection.prototype.get_server = function ( port ) {
 /**
  * Выполняется при запуске приложения
  *
- * Метож можно перегрузить в наследуемых классах, и проводить в нем инициализацию, которая пройдет в полностью
+ * Метод можно переопределить в наследуемых классах, и проводить в нем инициализацию, которая пройдет в полностью
  * рабочем приложении
  */
-ClientConnection.prototype.run    = function () {};
+ClientConnection.prototype._run    = function () {};
 
 
 /**
  * Выполняется при закрытии приложения
  *
- * Метож можно перегрузить в наследуемых классах
+ * Метод можно переопределить в наследуемых классах
  */
 ClientConnection.prototype.close  = function () {};
