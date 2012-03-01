@@ -2,7 +2,7 @@
   "name"          : "autodafe",
   "description"   : "mvc framework for node with mysql orm, web sockets support, logging, routing, user roles etc",
   "keywords"      : [ "mvc", "framework", "mysql", "orm", "websockets" ],
-  "version"       : "0.2.1",
+  "version"       : "0.2.2",
   "author"        : "Andrey Balakirev <balakirev.andrey@gmail.com>",
   "contributors"  : [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
   "main"          : "./framework/autodafe",
