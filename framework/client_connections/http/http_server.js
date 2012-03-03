@@ -9,7 +9,7 @@ module.exports = HTTPServer.inherits( ClientConnection );
 /**
  * Компонент позволяющий общаться с приложением по протоколу HTTP
  *
- * После запуска прилодения запускает HTTP сервер, и на каждый запрос создает {@link HTTPClient}, который вполследствии
+ * После запуска приложения запускает HTTP сервер, и на каждый запрос создает {@link HTTPClient}, который вполследствии
  * выполняет данный запрос. Помимо этого компонент умеет проводить HTTP аутентификацию.
  *
  * @constructor
@@ -100,12 +100,12 @@ HTTPServer.prototype._run = function () {
 
   var basic_auth;
   if ( this._basic_auth ) {
-    var auth_users = {}, i = 0;
+    var auth_users = [];
     for ( var user in this._basic_auth.users ) {
-      auth_users[ i++ ] = user + ':' + this._basic_auth.users[ user ];
+      auth_users.push( user + ':' + this._basic_auth.users[ user ] );
     }
 
-    basic_auth = auth.basic({
+    basic_auth = auth({
       authRealm : this._basic_auth.message || 'Autodafe private area with basic access authentication.',
       authList  : auth_users
     });

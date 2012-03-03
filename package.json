@@ -29,7 +29,7 @@
     "mysql"                 : ">=0.9.0",
     "dust.js"               : ">=0.1.0",
     "formidable"            : ">=1.0.2",
-    "http-auth"             : ">=1.0.4"
+    "http-auth"             : ">=1.1.9"
   },
   "devDependencies" : {
     "vows"                  : ">=0.5.8",

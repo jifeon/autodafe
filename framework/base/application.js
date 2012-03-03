@@ -796,8 +796,7 @@ Application.prototype.__run = function ( callback ) {
   this.emit( 'run' );
   this._.is_running = true;
 
-  callback( null, this );
-
+  process.nextTick( callback.bind( null, null, this ) );
   return true;
 };
 

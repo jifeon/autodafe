@@ -12,6 +12,12 @@ module.exports = {
     param4 : null
   },
 
+  router : {
+    rules : {
+      'test' : 'test.test'
+    }
+  },
+
   components : {
     log_router          : {
 
@@ -23,6 +29,14 @@ module.exports = {
           levels : [ 'trace', 'info', 'warning', 'error' ]
         }
       }
+    },
+
+    http : {
+      port : 3002,
+      root_folders : {
+        config : 'config'
+      },
+      upload_dir : 'upload'
     }
   }
 }
