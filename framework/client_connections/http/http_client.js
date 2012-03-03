@@ -33,6 +33,7 @@ HTTPClient.prototype._init = function( params ) {
   this.max_age    = 31536000;
 
   this._cookie = [];
+  this._sid    = this.get_session_id();
 
   this.request.once( 'close', this.disconnect.bind( this ) );
 
@@ -93,7 +94,7 @@ HTTPClient.prototype.end = function ( data, encoding ) {
 
 
 HTTPClient.prototype.get_session_id = function () {
-  var sid = this.get_cookie( 'autodafe_sid' );
+  var sid = this._sid || this.get_cookie( 'autodafe_sid' );
 
   if ( !sid ) {
     sid = String.unique();
