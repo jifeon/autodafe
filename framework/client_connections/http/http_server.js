@@ -149,7 +149,7 @@ HTTPServer.prototype._create_http_client = function ( request, response ) {
  *
  * По умолчанию вызывается при остановке приложения.
  */
-HTTPServer.prototype.close = function () {
+HTTPServer.prototype.close = function() {
   try{
     if ( this._server ) this._server.close();
   } catch( e ) {
@@ -165,6 +165,29 @@ HTTPServer.prototype.close = function () {
  * @returns {String}
  * @see HTTPServer._root_folders
  */
-HTTPServer.prototype.get_root_folder = function ( name ) {
-  return this._root_folders[ name ];
+HTTPServer.prototype.get_root_folder = function( name ) {
+  return this._root_folders[ name ] || null;
+};
+
+
+/**
+ * Задает путь до корневой директории со статическими файлами
+ *
+ * @param {String} name название сокращения
+ * @param {String} path путь до директории
+ * @see HTTPServer._root_folders
+ */
+HTTPServer.prototype.set_root_folder = function( name, path ){
+  this._root_folders[ name ] = path;
+};
+
+
+/**
+ * Удаляет путь до корневой директории со статическими файлами
+ *
+ * @param {String} name название удаляемой корневой директории
+ * @see HTTPServer._root_folders
+ */
+HTTPServer.prototype.remove_root_folder = function( name ){
+  delete this._root_folders[ name ];
 };

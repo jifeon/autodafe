@@ -46,6 +46,16 @@ vows.describe( 'http server' ).addBatch({
         assert.equal( http_server.get_root_folder( 'config' ), 'config' );
       },
 
+      '.set_root_folder()' : function( http_server ){
+        http_server.set_root_folder( 'view', 'view' );
+        assert.equal( http_server.get_root_folder( 'view' ), 'view' );
+      },
+
+      '.remove_root_folder()' : function( http_server ){
+        http_server.remove_root_folder( 'view' );
+        assert.isNull( http_server.get_root_folder( 'view' ) );
+      },
+
       'should create HTTPClient' : {
         topic : function( http_server ){
           var self = this;
@@ -72,8 +82,6 @@ vows.describe( 'http server' ).addBatch({
     }
   },
 
-
-  
   'HTTP application with basic authentication' : {
     topic : function(){
       tests_tools.get_new_app( {
