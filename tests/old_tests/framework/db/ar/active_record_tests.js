@@ -182,7 +182,7 @@ exports.get_batch = function( application, assert ) {
             return post.find_all();
           },
           'should return array of 5 posts' : function( e, posts ){
-            assert.length( posts, 5 );
+            assert.lengthOf( posts, 5 );
             assert.instanceOf( posts[2], Post );
             assert.equal( posts[3].id, 4 );
           }
@@ -195,7 +195,7 @@ exports.get_batch = function( application, assert ) {
             }) );
           },
           'should return array of 3 posts' : function( e, posts ){
-            assert.length( posts, 3 );
+            assert.lengthOf( posts, 3 );
             assert.instanceOf( posts[2], Post );
             assert.equal( posts[2].id, 4 );
           }
@@ -261,7 +261,7 @@ exports.get_batch = function( application, assert ) {
             return post.find_all_by_pk( [4,3,2], 'id<4' );
           },
           'should return array with 2 entries' : function( e, posts ){
-            assert.length( posts, 2 );
+            assert.lengthOf( posts, 2 );
             assert.equal( posts[0].id, 2 );
             assert.equal( posts[1].id, 3 );
           }
@@ -290,7 +290,7 @@ exports.get_batch = function( application, assert ) {
           return post.find_all_by_attributes( { author_id : 2 } );
         },
         'should return array with 3 items' : function( e, posts ){
-          assert.length( posts, 3 );
+          assert.lengthOf( posts, 3 );
         }
       },
 
@@ -308,7 +308,7 @@ exports.get_batch = function( application, assert ) {
           return post.find_all_by_sql( 'select * from posts where id>:id', { id : 2 } );
         },
         'should return array with 3 items' : function( e, posts ){
-          assert.length( posts, 3 );
+          assert.lengthOf( posts, 3 );
         }
       },
 
@@ -565,7 +565,7 @@ exports.get_batch = function( application, assert ) {
             return application.models.post_delete.find_all_by_pk( [ 2, 3 ] );
           },
           'with id 2 and 3' : function( records ){
-            assert.length( records, 2 );
+            assert.lengthOf( records, 2 );
           },
           'and we can delete them too' : {
             topic : function() {

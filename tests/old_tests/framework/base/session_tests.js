@@ -53,9 +53,9 @@ exports.get_batch = function( application, assert ) {
       },
       'add client' : function( session ){
         assert.isTrue( session.add_client( client ) );
-        assert.length( session.clients, 1 );
+        assert.lengthOf( session.clients, 1 );
         assert.isTrue( session.add_client( client2 ) );
-        assert.length( session.clients, 2 );
+        assert.lengthOf( session.clients, 2 );
 
         assert.throws( function() {
           session.add_client( {} )
@@ -72,7 +72,7 @@ exports.get_batch = function( application, assert ) {
         assert.equal( message.level, 'warning' );
 
         client2.disconnect();
-        assert.length( session.clients, 1 );
+        assert.lengthOf( session.clients, 1 );
 
         assert.doesNotThrow( function() {
           session.remove_client( 5 );

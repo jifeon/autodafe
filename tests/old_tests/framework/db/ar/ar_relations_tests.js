@@ -12,7 +12,7 @@ exports.get_batch = function( application, assert ) {
       },
       'check count' : function( err, records ){
         assert.isNull( err );
-        assert.length( records, count );
+        assert.lengthOf( records, count );
       }
     }
 
@@ -92,7 +92,7 @@ exports.get_batch = function( application, assert ) {
         },
         'comments' : function( err, comments ){
           assert.isNull( err );
-          assert.length( comments, 2 );
+          assert.lengthOf( comments, 2 );
           assert.deepEqual( comments[0].get_attributes(), {
             id        : 5,
             content   : 'comment 5',
@@ -123,7 +123,7 @@ exports.get_batch = function( application, assert ) {
         },
         'comments' : function( err, comments ){
           assert.isNull( err );
-          assert.length( comments, 0 );
+          assert.lengthOf( comments, 0 );
         }
       },
       'many_many exist' : {
@@ -132,7 +132,7 @@ exports.get_batch = function( application, assert ) {
         },
         'categories' : function( err, categories ){
           assert.isNull( err );
-          assert.length( categories, 2 );
+          assert.lengthOf( categories, 2 );
           assert.deepEqual( categories[0].get_attributes(), {
             id        : 1,
             name      : 'cat 1',
@@ -161,7 +161,7 @@ exports.get_batch = function( application, assert ) {
         },
         'categories' : function( err, categories ){
           assert.isNull( err );
-          assert.length( categories, 0 );
+          assert.lengthOf( categories, 0 );
         }
       },
       'self join 1' : {
@@ -174,7 +174,7 @@ exports.get_batch = function( application, assert ) {
           },
           'check' : function( err, posts ){
             assert.isNull( err );
-            assert.length( posts, 0 );
+            assert.lengthOf( posts, 0 );
           }
         },
         'category children' : {
@@ -183,7 +183,7 @@ exports.get_batch = function( application, assert ) {
           },
           'check length' : function( err, children ){
             assert.isNull( err );
-            assert.length( children, 2 );
+            assert.lengthOf( children, 2 );
           },
           'check attrs' : function( err, children ){
             assert.deepEqual( children[0].get_attributes(), {
@@ -223,7 +223,7 @@ exports.get_batch = function( application, assert ) {
           },
           'check' : function( err, posts ){
             assert.isNull( err );
-            assert.length( posts, 1 );
+            assert.lengthOf( posts, 1 );
           }
         },
         'category children' : {
@@ -232,7 +232,7 @@ exports.get_batch = function( application, assert ) {
           },
           'check length' : function( err, children ){
             assert.isNull( err );
-            assert.length( children, 0 );
+            assert.lengthOf( children, 0 );
           }
         },
         'category parent' : {
@@ -265,7 +265,7 @@ exports.get_batch = function( application, assert ) {
         },
         'check count of items' : function( err, items ){
           assert.isNull( err );
-          assert.length( items, 2 );
+          assert.lengthOf( items, 2 );
         }
       },
       'composite key order 2,1' : {
@@ -288,7 +288,7 @@ exports.get_batch = function( application, assert ) {
         },
         'check count of items' : function( err, items ){
           assert.isNull( err );
-          assert.length( items, 0 );
+          assert.lengthOf( items, 0 );
         }
       },
       'composite key item 4' : {
@@ -343,8 +343,8 @@ exports.get_batch = function( application, assert ) {
           email     : 'email2'
         } );
         assert.isNull( post.first_comment );
-        assert.length( post.comments, 0 );
-        assert.length( post.categories, 0 );
+        assert.lengthOf( post.comments, 0 );
+        assert.lengthOf( post.categories, 0 );
 
       }
     },
@@ -359,7 +359,7 @@ exports.get_batch = function( application, assert ) {
         },
         'check' : function( err, comments ){
           assert.isNull( err );
-          assert.length( comments, 2 );
+          assert.lengthOf( comments, 2 );
           assert.instanceOf( comments[0].post, Post );
           assert.instanceOf( comments[1].post, Post );
           assert.instanceOf( comments[0].author, User );
@@ -371,7 +371,7 @@ exports.get_batch = function( application, assert ) {
           },
           'posts' : function( err, posts ){
             assert.isNull( err );
-            assert.length( posts, 3 );
+            assert.lengthOf( posts, 3 );
           },
           'posts.' : {
             topic : function( posts ) {
@@ -388,7 +388,7 @@ exports.get_batch = function( application, assert ) {
           },
           'posts' : function( err, posts ){
             assert.isNull( err );
-            assert.length( posts, 3 );
+            assert.lengthOf( posts, 3 );
           }
         }
       }
@@ -404,11 +404,11 @@ exports.get_batch = function( application, assert ) {
         },
         'nodes' : function( err, nodes ){
           assert.isNull( err );
-          assert.length( nodes, 2 );
+          assert.lengthOf( nodes, 2 );
           assert.instanceOf( nodes[0].parent, Category );
           assert.instanceOf( nodes[1].parent, Category );
-          assert.length( nodes[0].children, 0 );
-          assert.length( nodes[1].children, 2 );
+          assert.lengthOf( nodes[0].children, 0 );
+          assert.lengthOf( nodes[1].children, 2 );
         }
       }
     },
@@ -418,8 +418,8 @@ exports.get_batch = function( application, assert ) {
         return application.models.post.With( 'comments.author', 'categories' ).find_by_pk(2);
       },
       'check' : function( post ){
-        assert.length( post.comments, 2 );
-        assert.length( post.categories, 2 );
+        assert.lengthOf( post.comments, 2 );
+        assert.lengthOf( post.categories, 2 );
       }
     },
 
@@ -428,7 +428,7 @@ exports.get_batch = function( application, assert ) {
         return application.models.post_ext.With( 'comments' ).find_all();
       },
       'check' : function( posts ){
-        assert.length( posts, 5 );
+        assert.lengthOf( posts, 5 );
       }
     },
 
@@ -603,7 +603,7 @@ exports.get_batch = function( application, assert ) {
       },
       'user with post count' : function( err, users ){
         assert.isNull( err );
-        assert.length( users, 3 );  // todo: replace to 4 after db fixtures are done
+        assert.lengthOf( users, 3 );  // todo: replace to 4 after db fixtures are done
         assert.equal( users[0].post_count, 1 );
         assert.equal( users[1].post_count, 3 );
         assert.equal( users[2].post_count, 1 );
@@ -619,7 +619,7 @@ exports.get_batch = function( application, assert ) {
       },
       'order with items count' : function( err, orders ){
         assert.isNull( err );
-        assert.length( orders, 4 );
+        assert.lengthOf( orders, 4 );
         assert.equal( orders[0].item_count, 2 );
         assert.equal( orders[1].item_count, 1 );
         assert.equal( orders[2].item_count, 0 );
@@ -635,7 +635,7 @@ exports.get_batch = function( application, assert ) {
       },
       'order with items count' : function( err, categories ){
         assert.isNull( err );
-        assert.length( categories, 7 );
+        assert.lengthOf( categories, 7 );
         assert.equal( categories[0].post_count, 3 );
         assert.equal( categories[1].post_count, 1 );
         assert.equal( categories[2].post_count, 1 );
@@ -880,7 +880,7 @@ exports.get_batch = function( application, assert ) {
         } );
       },
       'comments' : function( err, post ){
-        assert.length( post.comments, 2 );
+        assert.lengthOf( post.comments, 2 );
         assert.instanceOf( post.comments[0], Comment );
         assert.deepEqual( post.comments[0].get_attributes(), {
           id        : 5,
@@ -896,7 +896,7 @@ exports.get_batch = function( application, assert ) {
         } );
       },
       'categories' : function( err, post ){
-        assert.length( post.categories, 2 );
+        assert.lengthOf( post.categories, 2 );
         assert.instanceOf( post.categories[0], Category );
         assert.deepEqual( post.categories[0].get_attributes(), {
           id        : 1,

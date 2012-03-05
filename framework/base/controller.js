@@ -1,7 +1,4 @@
-var path = require('path');
-
 module.exports = Controller.inherits( autodafe.AppModule );
-
 
 /**
  * Базовый класс для всех контроллеров в приожении.

@@ -70,7 +70,8 @@ MysqlConnection.prototype.__query = function ( sql, callback ) {
   this._ping_interval = setInterval( this._ping.bind( this ), this._ping_every );
 
   callback = callback || this.app.default_callback;
-  if ( typeof sql != "string" || !sql.length ) return callback( 'Bad sql: ' + sql );
+  if ( typeof sql != "string" || !sql.length )
+    return callback( new Error( 'Bad sql: `%s`'.format( sql )));
 
   this.log( 'Querying sql: ' + sql );
   return this._connection.query( sql, function( e, res, fields ) {

@@ -1,3 +1,8 @@
+var db_root_config = Object.merge( require( 'autodafe/tests/data/db_root_config' ), {
+  type     : 'mysql',
+  database : 'autodafe_tests'
+} );
+
 module.exports = {
   name      : 'normal_app',
   base_dir  : require('path').join( __dirname, '..' ),
@@ -37,6 +42,8 @@ module.exports = {
         config : 'config'
       },
       upload_dir : 'upload'
-    }
+    },
+
+    db : db_root_config
   }
 }

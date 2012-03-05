@@ -78,7 +78,7 @@ exports.get_batch = function( application, assert ){
 
         assert.deepEqual( unsafe_attribute_names, [ 'param', 'param3' ] );
         assert.deepEqual( unsafe_attribute_values, [ 32, null ] );
-        assert.length( messages, 2 );
+        assert.lengthOf( messages, 2 );
         assert.equal( messages[0].level, 'warning' );
         assert.equal( messages[1].level, 'warning' );
 

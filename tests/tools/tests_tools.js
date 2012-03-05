@@ -1,4 +1,6 @@
-var Autodafe  = require( 'autodafe' );
+var Autodafe  = require('autodafe');
+var assert    = require('assert');
+var path      = require('path');
 
 module.exports.normal_config = require('autodafe/tests/applications/normal_app/config/normal_config');
 
@@ -30,4 +32,119 @@ module.exports.get_new_app = function( app_config, options ) {
   if ( options.run ) app.run( options.run_callback );
 
   return app;
+}
+
+
+module.exports.create_db_app = function( callback ){
+  if ( db_app ) return callback( null, db_app );
+
+  var db_root_config  = require( 'autodafe/tests/data/db_root_config' );
+  db_root_config.type = 'mysql';
+
+  try{
+    schema_commands = require('fs')
+      .readFileSync( path.resolve( __dirname, '../data/table_schemas.sql' ), 'utf8' )
+      .split(';').filter( function( str ){
+        return str.trim();
+      } );
+  }catch(e){
+    return callback(e);
+  }
+
+  db_app = module.exports.get_new_app( {
+    components : {
+      log_router : { routes : { console : { levels : [ 'error', 'warning', 'info', 'trace' ] } } },
+      db         : db_root_config
+    }
+  }, {
+    merge_config    : true,
+    create_callback : callback
+  } )
+}
+
+
+var db_app, schema_commands;
+module.exports.prepare_base = function(){
+  return {
+    'Prepare schemas' : {
+      topic : function(){
+        module.exports.create_db_app( this.callback );
+      },
+
+      'exec sql file' : {
+        topic : function( app ){
+
+          var listener = app.tools.create_async_listener( schema_commands.length, this.callback, null, {
+            error_in_callback : true
+          } );
+
+          app.log_router.get_route( 'console' ).switch_level_off( 'trace' );
+          schema_commands.forEach( function( command ){
+            app.db.query( command, listener.listen( 'error' ) );
+          } );
+        },
+
+        'check' : function( e, res ){
+          assert.isNull(e);
+        }
+      }
+    }
+  }
+}
+
+
+function load_fixture( name, app, callback ){
+  try{
+    var fixture = require( 'autodafe/tests/data/fixtures/' + name + '.js' ).slice(0);
+  } catch(e){
+    return callback(e);
+  }
+
+  var columns  = fixture.shift();
+  var listener = app.tools.create_async_listener( fixture.length, callback, null, {
+    error_in_callback : true
+  } );
+
+  fixture.forEach( function( values ){
+    var sql = "INSERT INTO table (fields) VALUES (values)".format({
+      table   : name,
+      fields  : columns.join(', '),
+      values  : values.map( app.db.quote_value.bind( app.db ) ).join(', ')
+    });
+    app.db.query( sql, listener.listen('error') );
+  } )
+}
+
+
+module.exports.prepare_tables = function(){
+  var tables = Array.prototype.slice.call( arguments, 0 );
+
+  return {
+    'Prepare tables' : {
+      topic : function(){
+        module.exports.create_db_app( this.callback );
+      },
+
+      'exec fixtures' : {
+        topic : function( app ){
+
+          var listener = app.tools.create_async_listener( tables.length/**2*/, this.callback, null, {
+            error_in_callback : true
+          } );
+
+//          tables.forEach( function( table ){
+//            app.db.query( 'delete from ' + table, listener.listen('error') );
+//          } );
+
+          tables.forEach( function( table ){
+            load_fixture( table, app, listener.listen( 'error' ) );
+          } );
+        },
+
+        'check' : function( e, res ){
+          assert.isNull(e);
+        }
+      }
+    }
+  }
 }
