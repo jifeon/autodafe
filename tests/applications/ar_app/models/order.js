@@ -1,14 +1,14 @@
-var ActiveRecord = global.autodafe.db.ActiveRecord;
-
-module.exports = Order.inherits( ActiveRecord );
+module.exports = Order.inherits( autodafe.db.ActiveRecord );
 
 function Order( params ) {
   this._init( params );
 }
 
+
 Order.prototype.get_table_name = function(){
   return 'orders';
 }
+
 
 Order.prototype.relations = function(){
   return {

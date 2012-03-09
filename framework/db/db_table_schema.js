@@ -31,6 +31,11 @@ DbTableSchema.prototype.get_column = function( name ) {
 };
 
 
+DbTableSchema.prototype.has_column = function( name ){
+  return !!this._columns[ name ];
+};
+
+
 DbTableSchema.prototype.get_column_names = function() {
   return Object.keys( this._columns );
 };

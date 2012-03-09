@@ -1,17 +1,19 @@
-var ActiveRecord = global.autodafe.db.ActiveRecord;
-
-module.exports = Post.inherits( ActiveRecord );
+module.exports = Post.inherits( autodafe.db.ActiveRecord );
 
 function Post( params ) {
   this._init( params );
 }
 
+
 Post.prototype.get_table_name = function(){
   return 'posts';
 }
+
+
 Post.prototype.get_safe_attributes_names = function(){
   return [ 'title' ];
 }
+
 
 Post.prototype.relations = function(){
   return {

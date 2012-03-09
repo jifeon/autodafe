@@ -1,14 +1,14 @@
-var ActiveRecord = global.autodafe.db.ActiveRecord;
-
-module.exports = User.inherits( ActiveRecord );
+module.exports = User.inherits( autodafe.db.ActiveRecord );
 
 function User( params ) {
   this._init( params );
 }
 
+
 User.prototype.get_table_name = function(){
   return 'users';
 }
+
 
 User.prototype.relations = function(){
   return {

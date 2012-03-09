@@ -1,10 +1,9 @@
-var ActiveRecord = global.autodafe.db.ActiveRecord;
-
-module.exports = Item.inherits( ActiveRecord );
+module.exports = Item.inherits( autodafe.db.ActiveRecord );
 
 function Item( params ) {
   this._init( params );
 }
+
 
 Item.prototype.get_table_name = function(){
   return 'items';

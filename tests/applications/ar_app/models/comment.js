@@ -1,14 +1,14 @@
-var ActiveRecord = global.autodafe.db.ActiveRecord;
-
-module.exports = Comment.inherits( ActiveRecord );
+module.exports = Comment.inherits( autodafe.db.ActiveRecord );
 
 function Comment( params ) {
   this._init( params );
 }
 
+
 Comment.prototype.get_table_name = function(){
   return 'comments';
 }
+
 
 Comment.prototype.relations = function(){
   return {

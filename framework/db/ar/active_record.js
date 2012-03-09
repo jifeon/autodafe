@@ -161,7 +161,15 @@ ActiveRecord.prototype._init_relations = function () {
  * @returns {mixed} значение атрибута
  */
 ActiveRecord.prototype.get_attribute = function ( name ) {
-  return this._related[ name ] === undefined ? ActiveRecord.parent.get_attribute.call( this, name ) : this._related[ name ];
+  var attr = this._related[ name ] === undefined
+    ? ActiveRecord.parent.get_attribute.call( this, name )
+    : this._related[ name ];
+
+  return attr !== undefined
+    ? attr
+    : this.table.has_column( name )
+      ? null
+      : undefined;
 };
 
 

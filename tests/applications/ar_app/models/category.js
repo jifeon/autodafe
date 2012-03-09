@@ -1,14 +1,14 @@
-var ActiveRecord = global.autodafe.db.ActiveRecord;
-
-module.exports = Category.inherits( ActiveRecord );
+module.exports = Category.inherits( autodafe.db.ActiveRecord );
 
 function Category( params ) {
   this._init( params );
 }
 
+
 Category.prototype.get_table_name = function(){
   return 'categories';
 }
+
 
 Category.prototype.relations = function(){
   return {

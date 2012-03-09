@@ -52,6 +52,8 @@ module.exports.create_db_app = function( callback ){
   }
 
   db_app = module.exports.get_new_app( {
+//    base_dir : path.join( __dirname, '../applications/db_app' ),
+    preload_components : ['log_router', 'db'],
     components : {
       log_router : { routes : { console : { levels : [ 'error', 'warning', 'info', 'trace' ] } } },
       db         : db_root_config

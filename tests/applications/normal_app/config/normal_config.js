@@ -7,7 +7,7 @@ module.exports = {
   name      : 'normal_app',
   base_dir  : require('path').join( __dirname, '..' ),
 
-  preload_components : [ 'log_router' ],
+  preload_components : [ 'log_router', 'db' ],
   default_controller : 'test',
 
   params              : {
