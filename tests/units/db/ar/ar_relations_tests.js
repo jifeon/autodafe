@@ -1,42 +1,112 @@
-exports.get_batch = function( application, assert ) {
-  var User      = require( 'autodafe/tests/test_app/models/user' );
-  var Comment   = require( 'autodafe/tests/test_app/models/comment' );
-  var Category  = require( 'autodafe/tests/test_app/models/category' );
-  var Order     = require( 'autodafe/tests/test_app/models/order' );
-  var Post      = require( 'autodafe/tests/test_app/models/post' );
+var vows            = require( 'autodafe/node_modules/vows' );
+var assert          = require( 'assert' );
+var tests_tools     = require( 'autodafe/tests/tools/tests_tools' );
 
-  function lazy_relation_stat_test( model, count, related, related_counts ){
-    var tests = {
-      topic : function(){
-        return application.models[ model ].find_all();
-      },
-      'check count' : function( err, records ){
-        assert.isNull( err );
-        assert.lengthOf( records, count );
+var User      = require( 'autodafe/tests/applications/ar_app/models/user' );
+var Comment   = require( 'autodafe/tests/applications/ar_app/models/comment' );
+var Category  = require( 'autodafe/tests/applications/ar_app/models/category' );
+var Order     = require( 'autodafe/tests/applications/ar_app/models/order' );
+var Post      = require( 'autodafe/tests/applications/ar_app/models/post' );
+
+function lazy_relation_stat_test( model, count, related, related_counts ){
+  var tests = {
+    topic : function( app ){
+      return app.models[ model ].find_all();
+    },
+    'check count' : function( err, records ){
+      assert.isNull( err );
+      assert.lengthOf( records, count );
+    }
+  }
+
+  related_counts.forEach( function( related_count, i ){
+    var test_name = model + 's[' + i + '].';
+    tests[ test_name ] = {
+      topic : function( records ){
+        return records[ i ].get_related( related );
       }
     }
 
-    related_counts.forEach( function( related_count, i ){
-      var test_name = model + 's[' + i + '].';
-      tests[ test_name ] = {
-        topic : function( records ){
-          return records[ i ].get_related( related );
-        }
-      }
+    tests[ test_name ][ related ] = function( err, count ){
+      assert.isNull( err );
+      assert.equal( count, related_count );
+    }
+  } );
 
-      tests[ test_name ][ related ] = function( err, count ){
-        assert.isNull( err );
-        assert.equal( count, related_count );
-      }
-    } );
+  return tests;
+}
 
-    return tests;
-  }
 
+function test_eager_relation( topic ) {
   return {
+    topic : topic,
+    'author' : function( err, post ){
+      assert.isNull( err );
+      assert.instanceOf( post, Post );
+      assert.instanceOf( post.author, User );
+      assert.deepEqual( post.author.get_attributes(), {
+        id        : 2,
+        username  : 'user2',
+        password  : 'pass2',
+        email     : 'email2'
+      } );
+    },
+    'first comment' : function( err, post ){
+      assert.instanceOf( post.first_comment, Comment );
+      assert.deepEqual( post.first_comment.get_attributes(), {
+        id        : 4,
+        content   : 'comment 4',
+        post_id   : 2,
+        author_id : 2
+      } );
+    },
+    'comments' : function( err, post ){
+      assert.lengthOf( post.comments, 2 );
+      assert.instanceOf( post.comments[0], Comment );
+      assert.deepEqual( post.comments[0].get_attributes(), {
+        id        : 5,
+        content   : 'comment 5',
+        post_id   : 2,
+        author_id : 2
+      } );
+      assert.deepEqual( post.comments[1].get_attributes(), {
+        id        : 4,
+        content   : 'comment 4',
+        post_id   : 2,
+        author_id : 2
+      } );
+    },
+    'categories' : function( err, post ){
+      assert.lengthOf( post.categories, 2 );
+      assert.instanceOf( post.categories[0], Category );
+      assert.deepEqual( post.categories[0].get_attributes(), {
+        id        : 1,
+        name      : 'cat 1',
+        parent_id : null
+      } );
+      assert.deepEqual( post.categories[1].get_attributes(), {
+        id        : 4,
+        name      : 'cat 4',
+        parent_id : 1
+      } );
+    }
+  }
+}
+
+
+vows.describe( 'active record relations' )
+.addBatch( tests_tools.prepare_base() )
+.addBatch( tests_tools.prepare_tables(
+  'users', 'profiles', 'posts', 'comments', 'categories', 'post_category', 'orders', 'items' ) )
+.addBatch({
+  'App' : {
+    topic : function(){
+      tests_tools.get_ar_app( this.callback );
+    },
+
     'lazy relation' : {
-      topic : function() {
-        return application.models.post.find_by_pk( 2 );
+      topic : function( app ) {
+        return app.models.post.find_by_pk( 2 );
       },
       'belongs_to' : {
         topic : function( post ) {
@@ -69,9 +139,9 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'has_one not exist' : {
-        topic : function(){
+        topic : function( post, app ){
           var self = this;
-          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+          app.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
             post.get_related( 'first_comment' )
               .on( 'success', function( comment ){
                 self.callback( null, comment );
@@ -108,10 +178,10 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'has_many not exist' : {
-        topic : function( post ){
+        topic : function( post, app ){
           var self = this;
 
-          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+          app.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
             post.get_related( 'comments' )
               .on( 'success', function( comments ){
                 self.callback( null, comments );
@@ -146,10 +216,10 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'many_many not exist' : {
-        topic : function(){
+        topic : function( post, app ){
           var self = this;
 
-          application.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
+          app.models.post.find_by_pk( 4 ).on( 'success', function( post ) {
             post.get_related( 'categories' )
               .on( 'success', function( categories ){
                 self.callback( null, categories );
@@ -165,8 +235,8 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'self join 1' : {
-        topic : function() {
-          return application.models.category.find_by_pk( 5 );
+        topic : function( post, app ) {
+          return app.models.category.find_by_pk( 5 );
         },
         'category posts' : {
           topic : function( category ) {
@@ -214,8 +284,8 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'self join 2' : {
-        topic : function() {
-          return application.models.category.find_by_pk( 2 );
+        topic : function( post, app ) {
+          return app.models.category.find_by_pk( 2 );
         },
         'category posts' : {
           topic : function( category ) {
@@ -246,10 +316,10 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'composite key order 1,2' : {
-        topic : function(){
+        topic : function( post, app ){
           var self = this;
 
-          application.models.order.find_by_pk( {
+          app.models.order.find_by_pk( {
             key1 : 1,
             key2 : 2
           } )
@@ -269,10 +339,10 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'composite key order 2,1' : {
-        topic : function(){
+        topic : function( post, app ){
           var self = this;
 
-          application.models.order.find_by_pk( {
+          app.models.order.find_by_pk( {
             key1 : 2,
             key2 : 1
           } )
@@ -292,10 +362,10 @@ exports.get_batch = function( application, assert ) {
         }
       },
       'composite key item 4' : {
-        topic : function(){
+        topic : function( post, app ){
           var self = this;
 
-          application.models.item.find_by_pk( 4 )
+          app.models.item.find_by_pk( 4 )
             .on( 'success', function( item ){
               item.get_related( 'order' )
                 .on( 'success', function( order ){
@@ -317,20 +387,20 @@ exports.get_batch = function( application, assert ) {
         }
       }
     },
-    'eager relation 1' : test_eager_relation( function() {
-      return application.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(2);
+    'eager relation 1' : test_eager_relation( function( app ) {
+      return app.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(2);
     } ),
-    'eager relation 2' : test_eager_relation( function() {
-      return application.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(2);
+    'eager relation 2' : test_eager_relation( function( app ) {
+      return app.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(2);
     } ),
-    'eager relation 3' : test_eager_relation( function() {
-      return application.models.post.find_by_pk( 2, {
+    'eager relation 3' : test_eager_relation( function( app ) {
+      return app.models.post.find_by_pk( 2, {
         With : [ 'author', 'first_comment', 'comments', 'categories' ]
       } );
     } ),
     'eager relation 4' : {
-      topic : function() {
-        return application.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(4);
+      topic : function( app ) {
+        return app.models.post.With( 'author', 'first_comment', 'comments', 'categories' ).find_by_pk(4);
       },
       'check' : function( err, post ) {
         assert.isNull( err );
@@ -350,8 +420,8 @@ exports.get_batch = function( application, assert ) {
     },
 
     'lazy recursive relation' : {
-      topic : function(){
-        return application.models.post_ext.find_by_pk(2);
+      topic : function( app ){
+        return app.models.post_ext.find_by_pk(2);
       },
       'post_ext.comments' : {
         topic : function( post ){
@@ -395,8 +465,8 @@ exports.get_batch = function( application, assert ) {
     },
 
     'lazy recursive relation - self join' : {
-      topic : function() {
-        return application.models.category.find_by_pk(1);
+      topic : function( app ) {
+        return app.models.category.find_by_pk(1);
       },
       'category.' : {
         topic : function( category ){
@@ -414,8 +484,8 @@ exports.get_batch = function( application, assert ) {
     },
 
     'eager recursive relation' : {
-      topic : function() {
-        return application.models.post.With( 'comments.author', 'categories' ).find_by_pk(2);
+      topic : function( app ) {
+        return app.models.post.With( 'comments.author', 'categories' ).find_by_pk(2);
       },
       'check' : function( post ){
         assert.lengthOf( post.comments, 2 );
@@ -424,17 +494,17 @@ exports.get_batch = function( application, assert ) {
     },
 
     'eager recursive relation 2' : {
-      topic : function() {
-        return application.models.post_ext.With( 'comments' ).find_all();
+      topic : function( app ) {
+        return app.models.post_ext.With( 'comments' ).find_all();
       },
       'check' : function( posts ){
-        assert.lengthOf( posts, 5 );
+        assert.lengthOf( posts, 5, 'posts.length should be 5' );
       }
     },
 
     'eager relation with condition' : {
-      topic : function(){
-        return application.models.post.With( 'comments' ).find_all_by_pk( [2,3,4], {
+      topic : function( app ){
+        return app.models.post.With( 'comments' ).find_all_by_pk( [2,3,4], {
           order : 't.id'
         } );
       }
@@ -598,8 +668,8 @@ exports.get_batch = function( application, assert ) {
 //
 //
     'eager relation stat' : {
-      topic : function(){
-        return application.models.user.With( 'post_count' ).find_all();
+      topic : function( app ){
+        return app.models.user.With( 'post_count' ).find_all();
       },
       'user with post count' : function( err, users ){
         assert.isNull( err );
@@ -614,8 +684,8 @@ exports.get_batch = function( application, assert ) {
     'lazy relation stat' : lazy_relation_stat_test( 'user', 3, 'post_count', [ 1,3,1 ] ),
 
     'eager relation stat 2' : {
-      topic : function(){
-        return application.models.order.With( 'item_count' ).find_all();
+      topic : function( app ){
+        return app.models.order.With( 'item_count' ).find_all();
       },
       'order with items count' : function( err, orders ){
         assert.isNull( err );
@@ -630,8 +700,8 @@ exports.get_batch = function( application, assert ) {
     'lazy relation stat 2' : lazy_relation_stat_test( 'order', 4, 'item_count', [2,1,0,2] ),
 
     'eager relation stat 3' : {
-      topic : function(){
-        return application.models.category.With( 'post_count' ).find_all();
+      topic : function( app ){
+        return app.models.category.With( 'post_count' ).find_all();
       },
       'order with items count' : function( err, categories ){
         assert.isNull( err );
@@ -856,60 +926,6 @@ exports.get_batch = function( application, assert ) {
 
 
 
-  function test_eager_relation( topic ) {
-    return {
-      topic : topic,
-      'author' : function( err, post ){
-        assert.isNull( err );
-        assert.instanceOf( post, Post );
-        assert.instanceOf( post.author, User );
-        assert.deepEqual( post.author.get_attributes(), {
-          id        : 2,
-          username  : 'user2',
-          password  : 'pass2',
-          email     : 'email2'
-        } );
-      },
-      'first comment' : function( err, post ){
-        assert.instanceOf( post.first_comment, Comment );
-        assert.deepEqual( post.first_comment.get_attributes(), {
-          id        : 4,
-          content   : 'comment 4',
-          post_id   : 2,
-          author_id : 2
-        } );
-      },
-      'comments' : function( err, post ){
-        assert.lengthOf( post.comments, 2 );
-        assert.instanceOf( post.comments[0], Comment );
-        assert.deepEqual( post.comments[0].get_attributes(), {
-          id        : 5,
-          content   : 'comment 5',
-          post_id   : 2,
-          author_id : 2
-        } );
-        assert.deepEqual( post.comments[1].get_attributes(), {
-          id        : 4,
-          content   : 'comment 4',
-          post_id   : 2,
-          author_id : 2
-        } );
-      },
-      'categories' : function( err, post ){
-        assert.lengthOf( post.categories, 2 );
-        assert.instanceOf( post.categories[0], Category );
-        assert.deepEqual( post.categories[0].get_attributes(), {
-          id        : 1,
-          name      : 'cat 1',
-          parent_id : null
-        } );
-        assert.deepEqual( post.categories[1].get_attributes(), {
-          id        : 4,
-          name      : 'cat 4',
-          parent_id : 1
-        } );
-      }
-    }
-  }
-}
+
+}).export( module );
 

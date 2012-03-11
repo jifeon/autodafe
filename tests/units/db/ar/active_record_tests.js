@@ -7,27 +7,12 @@ var DbTableSchema   = require('autodafe/framework/db/db_table_schema');
 var DbCriteria      = global.autodafe.db.Criteria;
 var CommandBuilder  = require('autodafe/framework/db/command_builder');
 
-var ar_config       = require( 'autodafe/tests/applications/ar_app/config' );
-var ar_app;
-function get_ar_app( callback ){
-  if ( ar_app ) {
-    if ( ar_app.is_running ) callback( null, ar_app );
-    else ar_app.on( 'run', callback.bind( null, null, ar_app ) );
-    return;
-  }
-
-  ar_app = tests_tools.get_new_app( ar_config, {
-    run_callback : callback,
-    run          : true
-  } );
-}
-
 
 function command_test( command, tests ){
   var test = {
     'AR Application' : {
       topic : function(){
-        get_ar_app( this.callback );
+        tests_tools.get_ar_app( this.callback );
       },
       'command' : {
         topic : function( app ){
@@ -52,7 +37,7 @@ vows.describe( 'active record' )
 
   'AR Application' : {
     topic : function(){
-      get_ar_app( this.callback );
+      tests_tools.get_ar_app( this.callback );
     },
 
     '.models.post' : {
@@ -709,7 +694,7 @@ vows.describe( 'active record' )
 .addBatch({
   'AR Application' : {
     topic : function(){
-      get_ar_app( this.callback );
+      tests_tools.get_ar_app( this.callback );
     },
 
     '.models.order.table' : {

@@ -150,3 +150,19 @@ module.exports.prepare_tables = function(){
     }
   }
 }
+
+
+var ar_config       = require( 'autodafe/tests/applications/ar_app/config' );
+var ar_app;
+module.exports.get_ar_app = function( callback ){
+  if ( ar_app ) {
+    if ( ar_app.is_running ) callback( null, ar_app );
+    else ar_app.on( 'run', callback.bind( null, null, ar_app ) );
+    return;
+  }
+
+  ar_app = this.get_new_app( ar_config, {
+    run_callback : callback,
+    run          : true
+  } );
+}
