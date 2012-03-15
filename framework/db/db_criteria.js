@@ -1,10 +1,21 @@
-module.exports = DbCriteria;
+module.exports = DbCriteria.inherits( autodafe.AutodafePart );
 
+
+/**
+ * Класс, представляющий собой критерии SQL запроса
+ *
+ * @param params см. {@link DbCriteria._init}
+ */
 function DbCriteria( params ) {
   this._init( params );
 }
 
 
+/**
+ * Инициализация DbCriteria
+ *
+ * @param {Object} params
+ */
 DbCriteria.prototype._init = function( params ) {
   this.select     = '*';
   this.distinct   = false;
