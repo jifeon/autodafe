@@ -77,7 +77,7 @@ ClientConnection.prototype._init = function ( params ) {
  * Создавет HTTP сервер и начинает слушать его на указанном порту
  *
  * @param {Number} port порт
- * @returns {http.Server|null} Сервер, если все хорошо, и null, если порт занят
+ * @returns {http.Server} Сервер, если все хорошо, и null, если порт занят
  */
 ClientConnection.prototype.get_server = function ( port ) {
   var server = http.createServer();

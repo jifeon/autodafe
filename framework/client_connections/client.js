@@ -244,7 +244,7 @@ Client.prototype.get_session_id = function () {
 /**
  * Возвращает cookie
  *
- * Нужно переопределить для наследуемых клиентов, если они работает с cookie
+ * Нужно переопределить для наследуемых клиентов, если они работают с cookie
  */
 Client.prototype.get_cookie = function () {};
 
@@ -252,6 +252,6 @@ Client.prototype.get_cookie = function () {};
 /**
  * Задает cookie
  *
- * Нужно переопределить для наследуемых клиентов, если они работает с cookie
+ * Нужно переопределить для наследуемых клиентов, если они работают с cookie
  */
 Client.prototype.set_cookie = function () {};

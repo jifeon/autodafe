@@ -19,7 +19,8 @@ module.exports = {
 
   router : {
     rules : {
-      'test' : 'test.test'
+      'test'                   : 'test.test',
+      'test_client_connection' : 'test.test_client_connection'
     }
   },
 
