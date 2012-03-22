@@ -20,7 +20,11 @@ function DbConnection() {
  *
  * @private
  * @param {Object} params Параметры соединения
- *
+ * @param {String} [params.user='root']
+ * @param {String} [params.password='']
+ * @param {String} [params.database='test']
+ * @param {String} [params.host='localhost']
+ * @param {String} [params.encoding='utf-8']
  */
 DbConnection.prototype._init = function( params ) {
   DbConnection.parent._init.call( this, params );

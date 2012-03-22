@@ -20,14 +20,15 @@ function DbSchema() {
 /**
  * Инициализация класса.
  *
- * @param {Object} params Содержит ссылку на соединение с базой данных
+ * @param {Object} params хэш параметров
+ * @param {DbConnection} params.db_connection Соединение с базой данных
  */
 
 DbSchema.prototype._init = function( params ) {
   DbSchema.parent._init.call( this, params );
 
   /**
-   * Ссылка на соединение с базой
+   * Соединение с базой данных
    *
    * @public
    * @name db_connection
