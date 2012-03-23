@@ -19,7 +19,8 @@ module.exports = {
 
   router : {
     rules : {
-      'test' : 'test.test'
+      'test'                   : 'test.test',
+      'test_client_connection' : 'test.test_client_connection'
     }
   },
 
@@ -42,6 +43,10 @@ module.exports = {
         config : 'config'
       },
       upload_dir : 'upload'
+    },
+
+    web_sockets : {
+      port : 8080
     },
 
     db : db_root_config

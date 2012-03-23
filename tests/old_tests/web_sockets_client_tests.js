@@ -1,20 +1,26 @@
-exports.get_batch = function( application, assert ) {
-  var WebSocketsServer = require('autodafe/framework/client_connections/web_sockets/web_sockets_server');
-  var SocketIOClient   = require('socket.io-client');
+var vows        = require( 'autodafe/node_modules/vows' );
+var assert      = require( 'assert' );
+var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 
-  var ws_client,
-      session;
-  var test_controller = application.router.get_controller( 'test' );
-  var params          = {
-    param1 : 42,
-    param2 : false
-  };
+var WebSocketsServer = require('autodafe/framework/client_connections/web_sockets/web_sockets_server');
+var SocketIOClient   = require('socket.io-client');
 
-  return {
-    topic : application.web_sockets,
-    '`web_sockets` component should be instance of WebSocketsServer' : function( ws ){
-      assert.instanceOf( ws, WebSocketsServer );
+var ws_client,
+    session;
+var test_controller = application.router.get_controller( 'test' );
+var params          = {
+  param1 : 42,
+  param2 : false
+};
+
+
+
+vows.describe( 'web sockets client' ).addBatch({
+  'Application' : {
+    topic : function(){
+      tests_tools.create_normal_application( this.callback );
     },
+
     'connect to server' : {
       topic : function() {
         var emitter = new process.EventEmitter;
@@ -91,4 +97,4 @@ exports.get_batch = function( application, assert ) {
 //      }
     }
   }
-}
+}).export( module );

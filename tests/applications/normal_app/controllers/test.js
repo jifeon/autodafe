@@ -46,3 +46,8 @@ TestController.prototype.some_implemented_action = function () {
 TestController.prototype.test_http = function ( params, client ) {
   client.send( 'text' );
 };
+
+
+TestController.prototype.test_client_connection = function( params, client ){
+  client.send( params );
+};
