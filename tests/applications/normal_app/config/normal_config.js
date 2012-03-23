@@ -45,6 +45,10 @@ module.exports = {
       upload_dir : 'upload'
     },
 
+    web_sockets : {
+      port : 8080
+    },
+
     db : db_root_config
   }
 }
