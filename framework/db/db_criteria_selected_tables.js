@@ -53,11 +53,9 @@ DbCriteriaSelectedTables.prototype._init = function() {
  * </code></pre>
  */
 DbCriteriaSelectedTables.prototype.add_tables = function( tables ){
-  if ( !Array.isArray( tables ) ) tables = Array.prototype.slice.call( arguments, 0 );
-
-  tables.forEach( function( table ){
+  this._get_tables_from_args( arguments ).forEach(function( table ){
     this._tables[ table ] = true;
-  }, this );
+  }, this);
 };
 
 
@@ -82,11 +80,14 @@ DbCriteriaSelectedTables.prototype.get_tables = function(){
  * </code></pre>
  */
 DbCriteriaSelectedTables.prototype.remove_tables = function( tables ){
-  if ( !Array.isArray( tables ) ) tables = Array.prototype.slice.call( arguments, 0 );
-
-  tables.forEach( function( table ){
+  this._get_tables_from_args( arguments ).forEach(function( table ){
     delete this._tables[ table ];
-  }, this );
+  }, this);
+};
+
+
+DbCriteriaSelectedTables.prototype.clean = function(){
+  this._tables = {};
 };
 
 
@@ -98,15 +99,40 @@ DbCriteriaSelectedTables.prototype.remove_tables = function( tables ){
  * <pre><code class="javascript">
  * tables.merge_with( new DbCriteriaSelectedTables( 'table2', 'table3', 'table4' ); )
  * tables.merge_with( 'table2', 'table3', 'table4' );                           // делает тоже самое
- * tables.merge_with( ['table2', 'table3', 'table4'] );                           // делает тоже самое
+ * tables.merge_with( ['table2', 'table3', 'table4'] );                         // делает тоже самое
  * </code></pre>
  */
 DbCriteriaSelectedTables.prototype.merge_with = function( tables ){
-  if ( this.constructor.is_instantiate( tables ) ) tables = tables.get_tables();
-  else if ( !Array.isArray( tables ) ) tables = Array.prototype.slice.call( arguments, 0 );
+  if ( !tables ) return this;
 
-  var new_tables = new DbCriteriaSelectedTables( this.get_tables() );
-  new_tables.add_tables( tables );
+  if ( this._tables['*'] ) {
+    this.clean();
+    this.add_tables.apply( this, arguments );
+  }
 
-  return new_tables;
+  else if ( tables.toString() != '*' )
+    this.add_tables.apply( this, arguments );
+
+  return this
+};
+
+
+DbCriteriaSelectedTables.prototype.toString = function(){
+  return this.get_tables().join(', ')
+};
+
+
+DbCriteriaSelectedTables.prototype._get_tables_from_args = function( args ){
+  var tables = args[0];
+
+  if ( this.constructor.is_instantiate( tables ) ) return tables.get_tables();
+
+  if ( !Array.isArray( tables ) ) tables = Array.prototype.slice.call( args, 0 );
+
+  var separated_tables = [];
+  tables.forEach( function( table ){
+    separated_tables.push.apply( separated_tables, table.replace(/\s/g, '').split(',') );
+  } );
+
+  return separated_tables;
 };

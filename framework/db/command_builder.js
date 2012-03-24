@@ -25,7 +25,7 @@ CommandBuilder.prototype._init = function( params ) {
 
 
 CommandBuilder.prototype.create_find_command = function( table, criteria, alias ) {
-  var select = Array.isArray( criteria.select ) ? criteria.select.join(',') : criteria.select;
+  var select = criteria.select;
 
   alias = criteria.alias ? criteria.alias : alias || 't';
   alias = this.db_schema.quote_table_name( alias );

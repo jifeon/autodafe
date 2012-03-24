@@ -2,7 +2,7 @@ var vows        = require( 'autodafe/node_modules/vows' );
 var assert      = require( 'assert' );
 var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 
-var DbCriteria = global.autodafe.db.Criteria;
+var DbCriteria  = autodafe.db.Criteria;
 
 vows.describe( 'db criteria' ).addBatch({
 
@@ -10,8 +10,7 @@ vows.describe( 'db criteria' ).addBatch({
     var criteria1 = new DbCriteria;
     var criteria2 = criteria1.clone();
 
-    [
-      'select',
+    [ 'select',
       'distinct',
       'condition',
       'params',
@@ -25,6 +24,9 @@ vows.describe( 'db criteria' ).addBatch({
     ].forEach( function( par ) {
       assert.equal( criteria1[ par ], criteria2[ par ] );
     } );
+
+    criteria1.selected_tables.add_tables('a');
+    assert.equal( criteria2.select, '*' );
 
     criteria1.select = 'a';
     assert.equal( criteria2.select, '*' );
@@ -42,7 +44,7 @@ vows.describe( 'db criteria' ).addBatch({
 
         criteria1.merge_with( criteria2 );
 
-        assert.equal( criteria1.select, 'a' );
+        assert.equal( criteria1.select.toString(), 'a' );
       },
 
       'equal selects should be left as is' : function(){
@@ -66,7 +68,7 @@ vows.describe( 'db criteria' ).addBatch({
 
         criteria1.merge_with( criteria2 );
 
-        assert.deepEqual( criteria1.select, [ 'a', 'b', 'c', 'd', 'e', 'f' ] );
+        assert.deepEqual( criteria1.select, 'a, b, c, d, e, f' );
       }
     },
     'conditions' : {

@@ -1,23 +1,28 @@
+var DbCriteriaSelectedTables = require('autodafe/framework/db/db_criteria_selected_tables');
+
 module.exports = DbCriteria.inherits( autodafe.AutodafePart );
 
 
-/**
- * Класс, представляющий собой критерии SQL запроса
- *
- * @param params см. {@link DbCriteria._init}
- */
 function DbCriteria( params ) {
   this._init( params );
 }
 
 
-/**
- * Инициализация DbCriteria
- *
- * @param {Object} params
- */
 DbCriteria.prototype._init = function( params ) {
+  DbCriteria.parent._init.call( this, params );
+
+  this.selected_tables = null;
+
+  this._.select.set = function( value, descriptor ){
+    this.selected_tables = new DbCriteriaSelectedTables( value );
+  }
+
+  this._.select.get = function(){
+    return this.selected_tables.toString();
+  }
+
   this.select     = '*';
+
   this.distinct   = false;
   this.condition  = '';
   this.params     = {};
@@ -40,7 +45,7 @@ DbCriteria.prototype._init = function( params ) {
 
 DbCriteria.prototype.clone = function () {
   return new this.constructor({
-    select    : this.select,
+    select    : this.selected_tables,
     distinct  : this.distinct,
     condition : this.condition,
     params    : this.params,
@@ -58,16 +63,10 @@ DbCriteria.prototype.clone = function () {
 DbCriteria.prototype.merge_with = function( criteria, use_and ) {
   var and = use_and || use_and == undefined ? 'AND' : 'OR';
 
-  if ( criteria instanceof Object ) criteria = new this.constructor( criteria );
-  if ( this.select !== criteria.select ) {
-    if ( this.select == '*' )
-      this.select = criteria.select;
-    else if ( criteria.select != '*' ) {
-      var select1 = typeof this.select == "string"      ? this.select.replace( /\s/g, '' ).split(',')     : this.select;
-      var select2 = typeof criteria.select == "string"  ? criteria.select.replace( /\s/g, '' ).split(',') : criteria.select;
-      this.select = select1.merge( select2 );
-    }
-  }
+  if ( !this.constructor.is_instantiate( criteria ) )
+    criteria = new this.constructor( criteria );
+
+  this.selected_tables.merge_with( criteria.selected_tables );
 
   if ( this.condition !== criteria.condition ) {
     if ( this.condition === '' )

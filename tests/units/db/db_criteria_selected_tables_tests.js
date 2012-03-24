@@ -26,10 +26,9 @@ vows.describe( 'db select statement' ).addBatch({
     
     '.merge_with()' : function( st ){
       var new_st    = new DbCriteriaSelectedTables( 'table2', 'table3', 'table4' );
-      var merged_st = st.merge_with( new_st );
-      assert.deepEqual( st.get_tables(),        ['table1', 'table3'] );
+      st.merge_with( new_st );
       assert.deepEqual( new_st.get_tables(),    ['table2', 'table3', 'table4'] );
-      assert.deepEqual( merged_st.get_tables().sort(), ['table1', 'table2', 'table3', 'table4'] );
+      assert.deepEqual( st.get_tables().sort(), ['table1', 'table2', 'table3', 'table4'] );
     }
   },
 
@@ -53,11 +52,8 @@ vows.describe( 'db select statement' ).addBatch({
     },
 
     '.merge_with()' : function( st ){
-      var merged_st  = st.merge_with( [ 'table2', 'table3', 'table4' ] );
-      var merged_st2 = st.merge_with( 'table2', 'table3', 'table4' );
-      assert.deepEqual( st.get_tables(),         ['table1', 'table3'] );
-      assert.deepEqual( merged_st.get_tables().sort(),  ['table1', 'table2', 'table3', 'table4'] );
-      assert.deepEqual( merged_st2.get_tables().sort(), ['table1', 'table2', 'table3', 'table4'] );
+      st.merge_with( 'table2', 'table3', 'table4' );
+      assert.deepEqual( st.get_tables().sort(),  ['table1', 'table2', 'table3', 'table4'] );
     }
   }
 }).export( module );
