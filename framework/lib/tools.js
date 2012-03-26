@@ -91,25 +91,10 @@ Object.reset = function( obj ) {
   return null;
 }
 
-// todo: вернуть после написания тестов
-//var InheritingProxyHandler = require( './proxy_handlers/inheriting_proxy_handler' );
-
 Function.prototype.inherits = function( super_class ) {
   require('util').inherits( this, super_class );
 
   this.parent = super_class.prototype;
-
-//  this.prototype.__defineGetter__( 'super_', function() {
-//    if ( this.__super__ ) return this.__super__;
-
-//    var handler = new InheritingProxyHandler( {
-//      target  : Object.getPrototypeOf( this ),
-//      context : this
-//    } );
-//
-//    this.__super__ = handler.get_proxy();
-//    return this.__super__;
-//  } );
 
   return this;
 }
