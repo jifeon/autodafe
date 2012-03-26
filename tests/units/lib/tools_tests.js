@@ -68,29 +68,6 @@ function clone_test( deep ){
 
 
 vows.describe( 'tools' ).addBatch({
-  'Array' : {
-
-    topic : [ 1,2,3,2 ],
-
-    //todo: delete
-    '.diff' : {
-      'argument to diff is not an array' : function( ar ){
-        assert.throws( function() {
-          ar.diff(3);
-        }, TypeError );
-      },
-      'normal work' : function( ar ){
-        assert.deepEqual( ar.diff( [2]        ), [1,3]  );
-        assert.deepEqual( ar.diff( []         ), ar     );
-        assert.deepEqual( ar.diff( [4]        ), ar     );
-        assert.deepEqual( ar.diff( [1,2]      ), [3]    );
-        assert.deepEqual( ar.diff( [1,2,3]    ), []     );
-        assert.deepEqual( ar.diff( [4,4,2,2]  ), [1,3]  );
-      }
-    }
-  },
-
-
   'Object' : {
 
     '.merge' : {

@@ -1,16 +1,4 @@
 //todo: delete
-Array.prototype.diff = function( ar ) {
-  "use strict";
-
-  if ( !Array.isArray( ar ) ) throw new TypeError;
-
-  return this.filter( function( el ) {
-    return ar.indexOf( el ) == -1;
-  } );
-};
-
-
-//todo: delete
 Array.prototype.unique = function () {
   "use strict";
 
