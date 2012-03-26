@@ -87,22 +87,6 @@ vows.describe( 'tools' ).addBatch({
         assert.deepEqual( ar.diff( [1,2,3]    ), []     );
         assert.deepEqual( ar.diff( [4,4,2,2]  ), [1,3]  );
       }
-    },
-
-    //todo: delete
-    '.merge' : {
-      'argument to merge is not an array' : function( ar ){
-        assert.throws( function() {
-          ar.merge(3);
-        }, TypeError );
-      },
-      'normal work' : function( ar ){
-        assert.deepEqual( ar.merge( [2]       ), [1,2,3]      );
-        assert.deepEqual( ar.merge( [2,3,4]   ), [1,2,3,4]    );
-        assert.deepEqual( ar.merge( []        ), [1,2,3]      );
-        assert.deepEqual( ar.merge( [5]       ), [1,2,3,5]    );
-        assert.deepEqual( ar.merge( [5,7,5,1] ), [1,2,3,5,7]  );
-      }
     }
   },
 

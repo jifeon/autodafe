@@ -11,18 +11,6 @@ Array.prototype.diff = function( ar ) {
 
 
 //todo: delete
-Array.prototype.merge = function( ar ) {
-  "use strict";
-
-  if ( !Array.isArray( ar ) ) throw new TypeError;
-
-  var new_ar = this.slice( 0 );
-  this.push.apply( new_ar, ar.diff( this ) );
-  return new_ar.unique();
-};
-
-
-//todo: delete
 Array.prototype.unique = function () {
   "use strict";
 
