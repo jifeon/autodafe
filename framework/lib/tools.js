@@ -1,13 +1,3 @@
-//todo: delete
-Array.prototype.unique = function () {
-  "use strict";
-
-  return this.filter( function( el, i ) {
-    return this.indexOf( el ) == i;
-  }, this );
-};
-
-
 Object.merge = function( obj1, obj2 ) {
   obj1 = obj1 || {};
   obj2 = obj2 || {};
