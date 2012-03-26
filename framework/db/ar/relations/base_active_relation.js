@@ -1,5 +1,5 @@
-var AppModule   = global.autodafe.AppModule;
-var DbCriteria  = global.autodafe.db.Criteria;
+var AppModule                 = autodafe.AppModule;
+var DbCriteriaSelectedTables  = require('autodafe/framework/db/db_criteria_selected_tables');
 
 module.exports = BaseActiveRelation.inherits( AppModule );
 
@@ -17,10 +17,8 @@ BaseActiveRelation.prototype._init = function( params ) {
   this._.name       = params.name;
 
   var Model = global.autodafe.Model;
-//  console.log( params.model.class_name );
-//  console.log( params.model instanceof Model );
-  // todo: вернуть проверку после ProxyHandler.get_proxy
-  if ( !/*Model.is_instantiate(*/ params.model /*)*/ ) throw new Error(
+
+  if ( !Model.is_instantiate( params.model ) ) throw new Error(
     'Please specify correct model in %s.init'.format( this.class_name )
   );
   this._.model = params.model;
@@ -29,6 +27,16 @@ BaseActiveRelation.prototype._init = function( params ) {
     'Please specify `foreign_key` in %s.init'.format( this.class_name )
   );
   this._.foreign_key  = params.foreign_key;
+
+  this.selected_tables = null;
+
+  this._.select.set = function( value, descriptor ){
+    this.selected_tables = new DbCriteriaSelectedTables( value );
+  }
+
+  this._.select.get = function(){
+    return this.selected_tables.toString();
+  }
 
   this.select         = '*';
   this.condition      = '';
@@ -69,15 +77,7 @@ BaseActiveRelation.prototype.copy = function () {
 
 
 BaseActiveRelation.prototype.merge_with = function( criteria/*, from_scope*/ ) {
-  if ( criteria.select && this.select != criteria.select ) {
-    if ( this.select == '*' )
-      this.select = criteria.select;
-    else if ( criteria.select != '*' ) {
-      var select1 = typeof this.select == "string"      ? this.select.replace( /\s/g, '' ).split(',')     : this.select;
-      var select2 = typeof criteria.select == "string"  ? criteria.select.replace( /\s/g, '' ).split(',') : criteria.select;
-      this.select = select1.merge( select2 );
-    }
-  }
+  this.selected_tables.merge_with( criteria.selected_tables );
 
   if ( criteria.condition && this.condition !== criteria.condition ) {
     if ( this.condition === '' )
@@ -114,6 +114,6 @@ BaseActiveRelation.prototype.merge_with = function( criteria/*, from_scope*/ ) {
     if ( this.having === '' )
       this.having = criteria.having;
     else if ( criteria.having !== '' )
-      this.having = "(" + this.having + ") " + and + " (" + criteria.having + ")";
+      this.having = "(" + this.having + ") AND (" + criteria.having + ")";
   }
 }

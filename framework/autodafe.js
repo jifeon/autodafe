@@ -147,4 +147,4 @@ Autodafe.prototype._on_exit = function () {
     this._applications[ name ].stop();
 };
 
-module.exports = new Autodafe;
+var autodafe = module.exports = new Autodafe;
