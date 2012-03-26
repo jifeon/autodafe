@@ -83,15 +83,15 @@ DbSchema.prototype._init = function( params ) {
   this._table_names = {};
 };
 
+
 /**
  * Ищет инициализированную таблицу с именем name, если не находит, пытается ее создать, после чего
  * асинхронно вызывает callback.
  *
  * @param {String} name Имя таблицы в базе данных
  * @param {Function} callback Принимает два параметра: ошибку в случае неудачи, и схему таблицы
- * @param {Object} context контекст в котором будет вызван callback
+ * @param {Object} [context=null] контекст в котором будет вызван callback
  */
-
 DbSchema.prototype.get_table = function( name, callback, context ) {
   var table = this._tables[ name ];
 
@@ -109,31 +109,29 @@ DbSchema.prototype.get_table = function( name, callback, context ) {
     } );
 };
 
+
 /**
- * Ищет все таблицы для конкретной базы schema.
+ * Ищет все таблицы для заданной базы данных.
  *
- * Если schema равна null, то для текущей, к которой выполнено подключение, после чего вызывает callback.
- *
- * @param {String} schema Имя базы данных.
+ * @param {String} [schema=''] Имя базы данных. По умолчанию будет использована выбранная база данных
  * @param {Function} callback Принимает ошибку при неудаче и объект, ключи которого - названия таблиц,
  * а значения - экземпляры {@link DbTableSchema}
  */
-
 DbSchema.prototype.get_tables = function ( schema, callback ) {
+  var self = this;
   this.get_table_names( schema, function( e, names ) {
     if ( e ) return callback( e );
 
-    var tables = {};
+    var listener = self.app.tools.create_async_listener( names.length, callback, null, {
+      error_in_callback : true
+    } );
 
-    names.for_each( this.get_table, this, function( e, table ) {
-      if ( e ) return callback( e );
-
-      tables[ table.name ] = table;
-
-      if ( Object.keys( tables ).length == names.length ) callback( null, tables );
+    names.forEach( function( name ){
+      self.get_table( name, listener.listen( name ) )
     } );
   });
 };
+
 
 /**
  * Берет из кеша или ищет названия всех таблицы для конкретной базы schema.

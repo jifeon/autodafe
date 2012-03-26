@@ -8,31 +8,6 @@ Array.prototype.unique = function () {
 };
 
 
-//todo: delete
-Array.prototype.for_each = function ( fun/*, thisp*/ ) {
-  "use strict";
-
-  if (this === void 0 || this === null)
-    throw new TypeError();
-
-  var t   = Object(this);
-  var len = t.length >>> 0;
-  if (typeof fun !== "function") throw new TypeError();
-
-  var thisp = arguments[1];
-  var args  = this.slice.call( arguments, 2 );
-  args.unshift( null );
-
-  for (var i = 0; i < len; i++)
-  {
-    if ( i in t ){
-      args[0] = t[i];
-      if ( fun.apply( thisp || t[i], args ) === false ) break;
-    }
-  }
-};
-
-
 Object.merge = function( obj1, obj2 ) {
   obj1 = obj1 || {};
   obj2 = obj2 || {};
@@ -342,6 +317,6 @@ exports.next_tick = function( result, error, emitter, action ){
 };
 
 var Listener = require('./listener');
-exports.create_async_listener = function( count, callback, params, do_not_fire ) {
-  return new Listener( count, callback, params, do_not_fire );
+exports.create_async_listener = function( count, callback, params, options ) {
+  return new Listener( count, callback, params, options );
 };
