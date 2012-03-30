@@ -223,7 +223,7 @@ Controller.prototype.create_url = function ( path_to_action, params ) {
  * @returns {Widget}
  */
 Controller.prototype.create_widget = function( widget_name, params ){
-  if ( params.controller ) params.controller = this.name;
+  if ( params && !params.controller ) params.controller = this.name;
   return this.app.components.create_widget( widget_name, params );
 }
 
