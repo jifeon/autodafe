@@ -55,6 +55,16 @@ vows.describe( 'db select statement' ).addBatch({
       st.merge_with( 'table2', 'table3', 'table4' );
       assert.deepEqual( st.get_tables().sort(),  ['table1', 'table2', 'table3', 'table4'] );
     }
+  },
+
+  'select with spaces' : {
+    topic : function(){
+      return new DbCriteriaSelectedTables( 'table as alias' );
+    },
+
+    'should save spaces' : function( st ){
+      assert.equal( st.toString(), 'table as alias' );
+    }
   }
 }).export( module );
 

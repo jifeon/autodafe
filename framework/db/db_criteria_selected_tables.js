@@ -131,7 +131,7 @@ DbCriteriaSelectedTables.prototype._get_tables_from_args = function( args ){
 
   var separated_tables = [];
   tables.forEach( function( table ){
-    separated_tables.push.apply( separated_tables, table.replace(/\s/g, '').split(',') );
+    separated_tables.push.apply( separated_tables, table.split(/\s*,\s*/) );
   } );
 
   return separated_tables;
