@@ -85,6 +85,6 @@ WebSocketsClient.prototype.broadcast = function ( action, data ) {
 
 
 WebSocketsClient.prototype.get_client_by_id = function ( id ) {
-  return this.connection._io.sockets.socket[ id ];
+  return this.connection.io.sockets.socket[ id ];
 };
 

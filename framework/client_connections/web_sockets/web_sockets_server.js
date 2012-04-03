@@ -1,5 +1,4 @@
 var io                = require('socket.io');
-var http              = require('http');
 var ClientConnection  = require('../client_connection');
 var WebSocketsClient  = require('./web_sockets_client');
 
@@ -10,26 +9,37 @@ function WebSocketsServer( config ) {
 }
 
 
+WebSocketsServer.prototype.ios = {};
+
+
 WebSocketsServer.prototype._init = function ( params ) {
   WebSocketsServer.parent._init.call( this, params );
 
-  this._io      = null;
-  this._server  = null;
+  this._.io               = null;
+  this._.port             = params.port            || 8080;
+  this._.connection_name  = params.connection_name || this.app.name;
 
-  this._.port   = params.port || 8080;
+  var self = this;
+  this.app.on( 'components_are_loaded', function(){
+    if ( self.app.http ) self.app.http.set_root_folder(
+      'SocketIO',
+      require('path').join( autodafe.base_dir, '..', 'node_modules/socket.io/node_modules/socket.io-client/dist' ) );
+  } );
 };
 
 
 WebSocketsServer.prototype._run = function () {
+  if ( !this.ios[ this.port ] ) {
+    var server  = this.get_server( this.port );
+    if ( !server ) return this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
 
-  this._server  = this.get_server( this.port );
-  if ( !this._server ) return this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
+    this.ios[ this.port ] = io.listen( server );
+  }
 
-  this._io = io.listen( this._server );
-  this._io.set('log level', 2);
+  this._.io = this.ios[ this.port ];
 
   var self = this;
-  this._io.sockets.on( 'connection', function( client ) {
+  this.io.of( '/' + this.connection_name ).on( 'connection', function( client ) {
     new WebSocketsClient({
       app        : self.app,
       ws_client  : client,
@@ -37,14 +47,5 @@ WebSocketsServer.prototype._run = function () {
     });
   } );
 
-  this.log( 'WebSockets server started at port ' + this.port, 'info' );
-};
-
-
-WebSocketsServer.prototype.close = function () {
-  try{
-    if ( this._server ) this._server.close();
-  } catch( e ) {
-    this.log( e, 'warning' );
-  }
+  this.log( 'WebSockets server for `%s` started at port %s'.format( this.connection_name, this.port ), 'info' );
 };

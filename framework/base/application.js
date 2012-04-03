@@ -93,7 +93,7 @@ function Application( config ) {
  * @name Application#run
  * @description Запуск приложения
  *
- * Вызывается во время запуска приложения, до того как {@link Application.is_running} вставлен в true. В это время уже
+ * Вызывается во время запуска приложения, после того как {@link Application.is_running} вставлен в true. В это время уже
  * инициализировано ядро приложения и все его компоненты. На это событие обычно вешаются обработчики открывающие
  * приложение для внешнего использования: так, например, во время этого события {@link WebSocketsServer} и
  * {@link HTTPServer} начинают слушать порты, на которые они повешаны, чтобы приходящие запросы уходили уже к полностью
@@ -793,8 +793,8 @@ Application.prototype.__run = function ( callback ) {
   callback = callback || autodafe.AppModule.prototype.default_callback;
 
   this.log( 'Running application' );
-  this.emit( 'run' );
   this._.is_running = true;
+  this.emit( 'run' );
 
   process.nextTick( callback.bind( null, null, this ) );
   return true;

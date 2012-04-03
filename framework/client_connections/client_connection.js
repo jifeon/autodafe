@@ -68,8 +68,9 @@ function ClientConnection( params ) {
 ClientConnection.prototype._init = function ( params ) {
   ClientConnection.parent._init.call( this, params );
 
-  this.app.on( 'run',  this._run.bind( this ) );
-  this.app.on( 'stop', this.close.bind( this ) );
+  if ( this.app.is_running ) process.nextTick( this._run.bind( this ) );
+  else this.app.once( 'run',  this._run.bind( this ) );
+  this.app.once( 'stop', this.close.bind( this ) );
 };
 
 
