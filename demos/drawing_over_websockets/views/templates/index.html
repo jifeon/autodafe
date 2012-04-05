@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
-  <script type="text/javascript" src="/js/socket.io.js"></script>
+  <script type="text/javascript" src="/SocketIO/socket.io.js"></script>
   <script type="text/javascript" src="/js/draw_desk.js"></script>
 
   <title>Draw desk</title>
@@ -16,7 +16,7 @@
   <script type="text/javascript">
     var draw_desk = new DrawDesk({
       canvas : document.getElementById('draw_place'),
-      socket : io.connect( window.location.host, { port: 8080 } )
+      socket : io.connect( 'http://' + window.location.hostname + ':8080/drawing' )
     });
   </script>
 </body>

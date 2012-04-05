@@ -26,14 +26,14 @@ vows.describe( 'web sockets server' ).addBatch({
       },
 
       'should create WebSocketsClient' : {
-        topic : function( ws_server ){
+        topic : function( ws_server, app ){
           var self = this;
 
           ws_server.on( 'connect_client', function( client ){
             self.callback( null, client );
           } );
 
-          var socket = SocketIOClient.connect( 'http://localhost:' + ws_server.port );
+          var socket = SocketIOClient.connect( 'http://localhost:' + ws_server.port + '/' + app.name );
 
           socket.on('error', function( e ) {
             self.callback( e );
