@@ -37,6 +37,12 @@ Autodafe.prototype._init = function() {
   Autodafe.parent._init.call( this );
 
   global.autodafe       = this;
+
+  /**
+   * Директория, в которой расположен фреймворк
+   *
+   * @type {String}
+   */
   this.base_dir         = __dirname;
 
   this.AutodafePart     = AutodafePart;
