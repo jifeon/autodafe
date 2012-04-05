@@ -85,3 +85,8 @@ UserIdentity.prototype.manage = function ( model, params ) {
 
   return handler.get_proxy();
 };
+
+
+UserIdentity.prototype.is_online = function(){
+  return !!this.sessions.length;
+};
