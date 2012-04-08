@@ -45,8 +45,6 @@ ComponentsManager._system_components = {
   'users'              : require( '../users/users_manager' ),
   'db'                 : require( '../db/db_controller' ),
   'log_router'         : require( '../logging/log_router' ),
-// отключен потому что делает совсем не то что от него надо #282
-//  'tests'              : require( '../tests/test_component' ),
   'mail'               : require( '../mailing/mailer' ),
   'http'               : require( '../client_connections/http/http_server' )
 };
@@ -171,6 +169,17 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
   catch(e){}
 
   return this._user_components[ name ];
+};
+
+
+/**
+ * Добавляет пользовательский компонент
+ *
+ * @param {String} name имя компонента
+ * @param {String|Function} component путь до файла, где описан компонент или конструктор компонента
+ */
+ComponentsManager.prototype.add_user_component = function( name, component ){
+  this._user_components[ name ] = component;
 };
 
 
