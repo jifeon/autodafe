@@ -1,3 +1,5 @@
+var Response = require('autodafe/framework/client_connections/response');
+
 module.exports = Controller.inherits( autodafe.AppModule );
 
 /**
@@ -67,6 +69,8 @@ Controller.prototype._init = function ( params ) {
 
   this._url_function_for_dust     = this._url_function_for_dust.bind( this );
   this._widget_function_for_dust  = this._widget_function_for_dust.bind( this );
+  this._dust_if                   = this._dust_if.bind( this );
+  this._dust_if_not               = this._dust_if_not.bind( this );
 };
 
 
@@ -186,17 +190,33 @@ Controller.prototype.render = function ( view, params, callback ) {
  */
 Controller.prototype.send_response = function ( view, client, params, callback ) {
   if ( typeof callback != 'function' ) callback = this.default_callback;
-  params   = params   || {};
 
-  params.url    = this._url_function_for_dust;
-  params.widget = this._widget_function_for_dust;
+  this.respond( view, params )
+    .to( client )
+    .on( 'error', callback )
+    .on( 'data', callback.bind( null, null ) );
+};
 
-  this.render( view, params, function( e, data ) {
-    if ( e ) callback( e );
-    var action = params.ws_client_action || '';
-    client.send( data, action );
-    callback( null, data );
-  } );
+
+Controller.prototype.global_view_params = function( response, client ){
+  return {};
+};
+
+
+Controller.prototype.respond = function( view, params ){
+  params = params || {};
+
+  params['if']      = this._dust_if;
+  params['if_not']  = this._dust_if_not;
+  params['url']     = this._url_function_for_dust;
+  params['widget']  = this._widget_function_for_dust;
+
+  return new Response({
+    view        : view,
+    params      : params,
+    controller  : this,
+    app         : this.app
+  });
 };
 
 
@@ -308,4 +328,40 @@ Controller.prototype._widget_function_for_dust = function( chunk, context, bodie
       chunk.end( data );
     }, params )
   } );
+};
+
+
+Controller.prototype._dust_if = function ( chunk, context, bodies, params ) {
+  var condition = true;
+
+  for ( var param in params ) {
+    var value = params[ param ];
+    if ( typeof value == 'function' ) value = this.app.tools.get_dust_chunk_body_content( chunk, context, value );
+    if ( context.get( param ) != value ) {
+      condition = false;
+      break;
+    }
+  }
+
+  if ( condition ) return chunk.render( bodies.block, context );
+  else if ( bodies[ 'else' ] ) return chunk.render( bodies[ 'else' ], context );
+  else return chunk;
+};
+
+
+Controller.prototype._dust_if_not = function ( chunk, context, bodies, params ) {
+  var condition = true;
+
+  for ( var param in params ) {
+    var value = params[ param ];
+    if ( typeof value == 'function' ) value = this.app.tools.get_dust_chunk_body_content( chunk, context, value );
+    if ( context.get( param ) != value ) {
+      condition = false;
+      break;
+    }
+  }
+
+  if ( !condition ) return chunk.render( bodies.block, context );
+  else if ( bodies[ 'else' ] ) return chunk.render( bodies[ 'else' ], context );
+  else return chunk;
 };
