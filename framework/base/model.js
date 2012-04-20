@@ -1,7 +1,6 @@
-var AppModule = global.autodafe.AppModule;
-var Validator = require('./validator');
+var crypto    = require( 'crypto' );
 
-module.exports = Model.inherits( AppModule );
+module.exports = Model.inherits( autodafe.AppModule );
 
 function Model( params ) {
   this._init( params );
@@ -11,16 +10,28 @@ function Model( params ) {
 Model.prototype._init = function ( params ) {
   Model.parent._init.call( this, params );
 
+  this._attributes          = {};
+  this._safe_attributes     = null;
+  this._attr_description    = null;
+  this._errors              = {};
+  this._alternative_errors  = {};
+  this._filters             = {};
+
   this.models = this.app.models;
 
-  this._attributes = {};
-  this._.validator = new Validator( params );
   this._.is_new    = params.is_new == undefined ? true : params.is_new;
   this._.is_inited = true;
 };
 
 
-Model.prototype.attributes_description = function () {
+Model.prototype.native_filters = {
+  md5 : function( v ){
+    return v && crypto.createHash('md5').update( v ).digest("hex");
+  }
+}
+
+
+Model.prototype.attributes = function(){
   return {};
 };
 
@@ -28,6 +39,8 @@ Model.prototype.attributes_description = function () {
 Model.prototype.set_attribute = function ( name, value ) {
   if ( this.hasOwnProperty( name ) ) this[ name ] = value;
   else this._attributes[ name ] = value;
+
+  return this;
 };
 
 
@@ -59,25 +72,36 @@ Model.prototype.get_attributes = function( names ) {
 
 
 Model.prototype.set_attributes = function ( attributes ) {
-  if ( !Object.isObject( attributes ) )
-    throw new Error( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ) );
+  if ( !Object.isObject( attributes ) ) {
+    this.l( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ), 'warning' );
+    return this;
+  }
 
   var attribute_names = this.get_safe_attributes_names();
 
   for ( var name in attributes ) {
-    if ( attribute_names.indexOf( name ) != -1 ) this.set_attribute( name, attributes[ name ] );
+    var filters = this._filters[ name ];
+    if ( filters ) {
+      if ( typeof filters == 'string'   ) filters = this.native_filters[ filters ];
+      if ( typeof filters != 'function' ) filters = null;
+    }
+
+    if ( ~attribute_names.indexOf( name ) )
+      this.set_attribute( name, filters ? filters( attributes[ name ] ) : attributes[ name ] );
     else {
       this.log( '%s.set_attributes try to set unsafe parameter "%s"'.format( this.class_name, name ), 'warning' );
       this.emit( 'set_unsafe_attribute', name, attributes[ name ] );
     }
   }
+
+  return this;
 };
 
 
 Model.prototype.save = function ( attributes, scenario ) {
   scenario = scenario || this.is_new ? 'create' : 'update';
 
-  return this.validate( this.attributes_description(), scenario );
+  return this.validate( null, scenario );
 };
 
 
@@ -87,7 +111,83 @@ Model.prototype.remove = function () {
 
 
 Model.prototype.get_safe_attributes_names = function () {
-  return [];
+  if ( !this._safe_attributes ) this._process_attributes();
+
+  this.get_safe_attributes_names = function(){
+    return this._safe_attributes;
+  }
+
+  return this.get_safe_attributes_names();
+};
+
+
+Model.prototype.get_attributes_description = function(){
+  if ( !this._attr_description ) this._process_attributes();
+
+  this.get_attributes_description = function(){
+    return this._attr_description;
+  }
+
+  return this.get_attributes_description();
+};
+
+
+Model.prototype._process_attributes = function(){
+  var attributes = this.app.tools.to_object( this.attributes(), 2 );
+  this._safe_attributes = [];
+
+  for ( var attr in attributes ) {
+    var description = attributes[ attr ];
+
+    // check for safe attribute
+    if ( description['safe'] ) {
+      this._safe_attributes.push( attr );
+      delete description['safe'];
+    }
+
+    // check for alternative errors
+    if ( description['errors'] ) {
+      this._alternative_errors[ attr ] = description['errors'];
+      delete description['errors'];
+    }
+
+    // check for filters
+    if ( description['filters'] ) {
+      this._filters[ attr ] = description['filters'];
+      delete description['filters'];
+    }
+
+    // check for cloning attributes
+    for ( var rule in description ) {
+
+      var clone_from = null;
+      if ( rule == 'clone' ) clone_from = description[ rule ];   // { clone : 'user.email' }
+      if ( !clone_from )     clone_from = rule;                  // { 'user.email' : true }
+
+      var matches = /(\w+)\.(\w+)/.exec( clone_from );           // 1st pocket - model, 2 - attribute for clone
+      if ( !matches ) continue;
+
+      var model = this.models[ matches[1] ];
+      if ( !model ) {
+        this.log( 'Model `%s` for cloning attribute `%s` is not found'.format( matches[1], matches[2] ), 'warning' );
+        continue;
+      }
+
+      var cloned_description = model.get_attributes_description()[ matches[2] ];
+      if ( !cloned_description ) {
+        this.log( 'Description for attribute `%s` in model `%s` is not found'.format( matches[2], matches[1] ), 'warning' );
+        continue;
+      }
+
+      for ( var cloned_rule in cloned_description )
+        description[ cloned_rule ] = cloned_description[ cloned_rule ];
+
+      delete description[ rule ];
+      break;
+    }
+  }
+
+  this._attr_description = attributes;
 };
 
 
@@ -96,25 +196,24 @@ Model.prototype.equals = function ( model ) {
 };
 
 
-Model.prototype.validate = function ( rules, scenario ){
-  this.validator.splice_errors();
+Model.prototype.validate = function ( attributes, scenario ){
+  attributes   = attributes || this.get_attributes_description();
+  this._errors = {};
 
-  rules = rules || this.attributes_description();
+  for( var attribute in attributes ){
 
-  for( var attribute in rules ){
+    var rules   = attributes[ attribute ];
+    var errors  = this._alternative_errors[ attribute ] || {};
 
-    rules[ attribute ].forEach( function( rule ) {
+    for ( var rule in rules ) {
+      var error = this.app.validator[ rule ](
+        attribute,
+        this.get_attribute( attribute ),
+        rules[ rule ],
+        errors[ rule ] );
 
-      if ( !Object.isObject( rule ) )
-        return this.validator[ rule ]( attribute, this.get_attribute( attribute ) );
-
-      if ( rule.on && rule.on != scenario ) return;
-
-      for( var rule_name in rule ){
-        if ( rule_name == 'on' ) continue;
-        this.validator[ rule_name ]( attribute, this.get_attribute( attribute ), rule[ rule_name ] );
-      }
-    }, this );
+      if ( error ) this._errors[ attribute ] = error;
+    }
   }
 
   return !this.has_errors();
@@ -122,10 +221,10 @@ Model.prototype.validate = function ( rules, scenario ){
 
 
 Model.prototype.has_errors = function () {
-  return ( this.validator.errors.length == 0 ) ? false : this.validator.errors.length;
+  return !!Object.keys( this._errors ).length;
 }
 
 
 Model.prototype.get_errors = function(){
-  return this.validator.splice_errors();
+  return this._errors;
 }

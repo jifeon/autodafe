@@ -261,6 +261,33 @@ vows.describe( 'tools' ).addBatch({
 
   'create_async_listener' : function(){
     throw 'no tests';
+  },
+
+  'to_object' : function(){
+    assert.deepEqual( tools.to_object( [
+      'required',
+      { 'a' : 42,
+        'b' : 'some text' }
+    ]), {
+      required : true,
+      a        : 42,
+      b        : {
+        some : true,
+        text : true
+      }
+    } );
+
+    assert.deepEqual( tools.to_object( {
+      'email' : 'user.email',
+      'pass'  : 'user.pass'
+    }), {
+      'email' : {
+        'user.email' : true
+      },
+      'pass'  : {
+        'user.pass' : true
+      }
+    } );
   }
 
 }).export( module );

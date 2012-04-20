@@ -12,7 +12,7 @@ var active_relations  = {
 module.exports = ActiveRecord.inherits( autodafe.Model );
 
 
-//todo: описать созжание и использование
+//todo: описать создание и использование
 
 /**
  * Класс описывающий особый тип моделей, которые сохраняют информацию в базу данных

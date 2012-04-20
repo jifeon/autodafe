@@ -17,13 +17,13 @@ Comment.prototype.get_safe_attributes_names = function () {
 };
 
 
-Comment.prototype.attributes_description = function(){
+Comment.prototype.attributes = function(){
   return {
     'user_id'     : [ 'required' ],
     'post_id'     : [ 'required' ],
     'text'    : [
       'required',
-      { lesser : 1024 }
+      { max_length : 1024 }
     ]
   };
 }

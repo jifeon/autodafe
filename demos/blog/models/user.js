@@ -16,16 +16,12 @@ User.prototype.get_safe_attributes_names = function () {
 };
 
 
-User.prototype.attributes_description = function(){
+User.prototype.attributes = function(){
   return {
     login : [
       'required',
-      { 'lesser'  : 30,
-        'greater' : 4 }
+      { range_length : [4, 30] }
     ],
-    pass : [
-      'required',
-      'md5'
-    ]
+    pass : 'required md5'
   };
 }

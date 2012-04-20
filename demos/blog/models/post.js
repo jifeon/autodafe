@@ -27,18 +27,18 @@ Post.prototype.get_safe_attributes_names = function () {
 };
 
 
-Post.prototype.attributes_description = function(){
+Post.prototype.attributes = function(){
   return {
     user_id : [
       'required'
     ],
     name : [
       'required',
-      { 'lesser'  : 256 }
+      { "max_length"  : 256 }
     ],
     description : [
       'required',
-      { 'lesser'  : 4096 }
+      { "max_length"  : 4096 }
     ]
   };
 }

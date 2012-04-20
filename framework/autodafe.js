@@ -51,6 +51,7 @@ Autodafe.prototype._init = function() {
   this.Widget           = require( './components/widget.js' );
   this.Controller       = require( './base/controller.js' );
   this.Model            = require( './base/model.js' );
+  this.FormModel        = require( './base/models/form_model.js' );
   this.db               = {};
   this.db.Expression    = require('./db/db_expression.js');
   this.db.Criteria      = require('./db/db_criteria.js');

@@ -7,6 +7,7 @@ var Logger                = require('../logging/logger');
 var ComponentsManager     = require('../components/components_manager');
 var ModelsManager         = require('./models/models_manager');
 var ProxyHandler          = require('../lib/proxy_handlers/proxy_handler.js');
+var Validator             = require('./models/validator');
 
 module.exports = Application.inherits( autodafe.AutodafePart );
 
@@ -308,6 +309,10 @@ Application.prototype._init = function ( config ) {
    * @type {ComponentsManager}
    */
   this.components     = null;
+
+  this.validator      = new Validator({
+    app : this
+  });
 
   /**
    * Менеджер моделей
