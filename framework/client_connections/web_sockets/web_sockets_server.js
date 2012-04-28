@@ -34,6 +34,7 @@ WebSocketsServer.prototype._run = function () {
     if ( !server ) return this.log( 'WebSockets server not running at port ' + this.port, 'warning' );
 
     this.ios[ this.port ] = io.listen( server );
+    this.ios[ this.port ].set('log level', 2);
   }
 
   this._.io = this.ios[ this.port ];
