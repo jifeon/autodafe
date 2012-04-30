@@ -51,6 +51,11 @@ Model.prototype.attributes = function(){
 };
 
 
+Model.prototype.is_attribute = function( attr ){
+  return ~this._attributes.indexOf( attr );
+};
+
+
 Model.prototype.create_attribute = function( attr, description ){
   if ( !description ) return false;
 
@@ -82,40 +87,25 @@ Model.prototype.create_attribute = function( attr, description ){
 };
 
 
-Model.prototype.remove_attribute = function(){
-  
-};
+Model.prototype.remove_attribute = function( attr ){
+  if ( !this.is_attribute( attr ) ) return this;
 
+  delete this._errors[ attr ];
+  this._attributes.splice( this._attributes.indexOf( attr ), 1 );
+  this._keys.splice( this._keys.indexOf( attr ), 1 );
+  delete this._[ attr ];
 
-Model.prototype.set_attribute = function ( name, value, do_filters ) {
-  var descriptor = this._[name];
-  descriptor.value = do_filters !== false
-    ? this._filter( value, descriptor.params['prefilters'] )
-    : value;
+  return this;
 };
 
 
 Model.prototype.get_attribute = function ( name, do_filters ) {
+  if ( !this.is_attribute( name ) ) return undefined;
+
   var descriptor = this._[name];
   var value      = descriptor.value;
   if ( do_filters !== false ) value = this._filter( descriptor.value, descriptor.params['postfilters'] );
   return value === undefined ? null : value;
-};
-
-
-Model.prototype._filter = function( value, filters ){
-  if ( !filters ) return value;
-  if ( !Array.isArray( filters ) ) filters = [filters];
-  filters.forEach(function( filter ){
-    if ( typeof filter == 'string'   ) filter = this.native_filters[ filter ];
-    if ( typeof filter == 'function' ) value = filter( value );
-  }, this);
-
-  return value;
-};
-
-
-Model.prototype.clean_attributes = function () {
 };
 
 
@@ -130,6 +120,18 @@ Model.prototype.get_attributes = function( names, do_filters ) {
   }, this );
 
   return attrs;
+};
+
+
+Model.prototype.set_attribute = function ( name, value, do_filters ) {
+  if ( !this.is_attribute( name ) ) return this;
+
+  var descriptor = this._[name];
+  descriptor.value = do_filters !== false
+    ? this._filter( value, descriptor.params['prefilters'] )
+    : value;
+
+  return this;
 };
 
 
@@ -150,8 +152,34 @@ Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
 };
 
 
+Model.prototype.clean_attributes = function () {
+  this._attributes.forEach(function( attr ){
+    this[attr] = null;
+  }, this);
+
+  return this;
+};
+
+
+Model.prototype._filter = function( value, filters ){
+  if ( !filters ) return value;
+  if ( !Array.isArray( filters ) ) filters = [filters];
+  filters.forEach(function( filter ){
+    if ( typeof filter == 'string'   ) filter = this.native_filters[ filter ];
+    if ( typeof filter == 'function' ) value = filter( value );
+  }, this);
+
+  return value;
+};
+
+
 Model.prototype.is_safe_attribute = function( name ){
-  return this._[ name ].params['safe'];
+  return this.is_attribute( name ) && this._[ name ].params['safe'];
+};
+
+
+Model.prototype.is_key_attribute = function( name ){
+  return ~this._keys.indexOf( name );
 };
 
 
@@ -183,30 +211,6 @@ Model.prototype.forced_save = function( callback, attributes ){
 };
 
 
-Model.prototype.validate = function ( callback, attributes ){
-  if ( typeof attributes == 'string' ) attributes = attributes.split(/\s*,\s*/);
-  if ( !Array.isArray( attributes ) )  attributes = this._attributes;
-
-  this._errors = {};
-
-  var self     = this;
-  var emitter  = new process.EventEmitter;
-
-  var listener = this.app.tools.create_async_listener( attributes.length, function( result ){
-    callback && callback( result.error || null, !self.has_errors() );
-    if ( result.error ) emitter.emit( 'error', result.error );
-    if ( self.has_errors() ) emitter.emit( 'not_valid', self.get_errors() );
-    else emitter.emit( 'success', self );
-  });
-
-  attributes.forEach( function( attr ){
-    this.validate_attribute( attr, listener.listen( 'error' ) );
-  }, this );
-
-  return emitter;
-}
-
-
 Model.prototype.remove = function ( callback ) {
   var self    = this;
   var emitter = new process.EventEmitter;
@@ -220,39 +224,29 @@ Model.prototype.remove = function ( callback ) {
 };
 
 
-Model.prototype.equals = function ( model ) {
-  if ( this.constructor != model.constructor ) return false;
+Model.prototype.validate = function ( callback, attributes ){
+  if ( typeof attributes == 'string' ) attributes = attributes.split(/\s*,\s*/);
+  if ( !Array.isArray( attributes ) )  attributes = this._attributes;
 
-  if ( !this._keys.length ) {
-    this.log( 'Model `%s` does not have keys, so it can\'t be compared'.format( this.class_name ), 'warning' );
-    return false;
-  }
+  this._errors = {};
 
-  for ( var i = 0, i_ln = this._keys.length; i < i_ln; i++ ) {
-    var key = this._keys[i];
-    if ( this[key] != model[key] ) return false;
-  }
+  var self     = this;
+  var emitter  = new process.EventEmitter;
 
-  return true;
-};
+  var listener = this.app.tools.create_async_listener( attributes.length, function( result ){
+    callback && callback( result.error || null, !self.has_errors() );
 
+    if ( result.error )      emitter.emit( 'error',     result.error );
+    if ( self.has_errors() ) emitter.emit( 'not_valid', self.get_errors() );
+    else                     emitter.emit( 'success',   self );
+  });
 
-Model.prototype.get_id = function(){
-  switch ( this._keys.length ) {
-    case 0:
-      return null;
+  attributes.forEach( function( attr ){
+    this.validate_attribute( attr, listener.listen( 'error' ) );
+  }, this );
 
-    case 1:
-      return this[ this._keys[0] ];
-
-    default:
-      var result = {};
-      this._keys.forEach( function( key ){
-        result[ key ] = this[ key ];
-      }, this );
-      return result;
-  }
-};
+  return emitter;
+}
 
 
 Model.prototype.validate_attribute = function( name, callback ){
@@ -290,6 +284,41 @@ Model.prototype.has_errors = function () {
 Model.prototype.get_errors = function(){
   return this._errors;
 }
+
+
+Model.prototype.equals = function ( model ) {
+  if ( this.constructor != model.constructor ) return false;
+
+  if ( !this._keys.length ) {
+    this.log( 'Model `%s` does not have keys, so it can\'t be compared'.format( this.class_name ), 'warning' );
+    return false;
+  }
+
+  for ( var i = 0, i_ln = this._keys.length; i < i_ln; i++ ) {
+    var key = this._keys[i];
+    if ( this[key] != model[key] ) return false;
+  }
+
+  return true;
+};
+
+
+Model.prototype.get_id = function(){
+  switch ( this._keys.length ) {
+    case 0:
+      return null;
+
+    case 1:
+      return this[ this._keys[0] ];
+
+    default:
+      var result = {};
+      this._keys.forEach( function( key ){
+        result[ key ] = this[ key ];
+      }, this );
+      return result;
+  }
+};
 
 
 //Model.prototype._check_for_cloning_description = function( description ){

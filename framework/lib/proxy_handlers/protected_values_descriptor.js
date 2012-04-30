@@ -31,7 +31,8 @@ ProtectedValuesDescriptor.prototype.set = function( value, descriptor ) {
 
 ProtectedValuesDescriptor.prototype['delete'] = function () {
   this.reset( true );
-  this.value = undefined;
+  this.value  = undefined;
+  this.params = {};
 
   return true;
 };
