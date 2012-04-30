@@ -318,8 +318,7 @@ Application.prototype._init = function ( config ) {
    * Менеджер моделей
    *
    * Это Proxy объект для {@link ModelsManager}. Через данное свойство можно получить доступ к моделям приложения, а
-   * именно можно создать модель и получить доступ к методам модели без ее явного создания. Инструкция по написанию
-   * моделей здесь: {@link Model}.
+   * именно можно создать модель и получить доступ к методам модели без ее явного создания.
    *
    * @type {Proxy}
    * @example примеры использования свойства models
@@ -327,20 +326,16 @@ Application.prototype._init = function ( config ) {
    * Допустим, что в папке {@link Application.path_to_models} у нас лежит файл post.js, который содержит правильно
    * описанную модель ({@link Model}) Post.
    *
-   * Сначала отметим что создавать модели просто пользуясь конструктором - неправильно, потому что в этом случае будет
-   * неправильно работать механизм задания атрибутов, и как следствие будут возникать конфликты работы остального
-   * приложения с данной моделью:
+   * Модели можно создавать, пользуясь конструктором
    *
    * <pre><code class="javascript">
-   * var Post = require('post');   //
-   * var post = new Post({         //        ТАК
-   *   app : application           //   НЕ ПРАВИЛЬНО !!!
-   * });                           //
+   * var Post = require('post');
+   * var post = new Post({
+   *   app : application
+   * });
    * </code></pre>
    *
-   * На самом деле при создании модели не просто создается экземпляр класса модели, но и специальный Proxy объект
-   * (хэндлер {@link ModelProxyHandler}), с которым и ведется дальнейша работа. Рассмотрим пример создания и сохранения
-   * новой модели:
+   * но это гораздо удобнее делать пользуясь свойством Application.models
    *
    * <pre><code class="javascript">
    * var post    = new application.models.post;    // создаем новую модель
@@ -357,16 +352,6 @@ Application.prototype._init = function ( config ) {
    * var post = new application.models.post({
    *   author : 'Andrew'
    * });
-   * </code></pre>
-   *
-   * Возможна также ситуация, когда у нас уже есть конструктор модели, которая лежит в отличном от стандартного месте,
-   * и мы хотим получить "правильную" модель.
-   *
-   * <pre><code class="javascript">
-   * var Post = require('post');
-   * var post = application.models.implement_model( Post, {
-   *   author : 'Andrew'
-   * } );
    * </code></pre>
    *
    * Допустим у нашей модели есть некий статичный метод, назовем его find, который находит и создает другие модели по
@@ -389,13 +374,12 @@ Application.prototype._init = function ( config ) {
    * application.models.post instanceof Post;          // false - и не экземпляр
    * application.models.post instanceof Function;      // true  - это прокси функции
    *
-   * var post = new application.models.post;           // создающей прокси от экземпляров классов моделей
-   * post instanceof Post;                             // true, хотя на самом деле это Proxy
-   *                                                   // над экземпляром класса Post
+   * var post = new application.models.post;
+   * post instanceof Post;                             // true
    * </code></pre>
    *
+   * @see Model
    * @see ModelsManager
-   * @see ModelProxyHandler
    * @see ModelConstructorProxyHandler
    *
    */

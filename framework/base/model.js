@@ -2,33 +2,48 @@ var crypto    = require( 'crypto' );
 
 module.exports = Model.inherits( autodafe.AppModule );
 
+/**
+ *
+ * @param params
+ * @constructor
+ * @extends AppModule
+ */
 function Model( params ) {
   this._init( params );
+}
+
+
+Model.prototype.native_filters = {
+  md5 : function( v ){
+    return crypto.createHash('md5').update( v ).digest("hex");
+  },
+  trim : function( v ){
+    return typeof v == 'string' ? v.trim() : v;
+  }
 }
 
 
 Model.prototype._init = function ( params ) {
   Model.parent._init.call( this, params );
 
-  this._attributes          = {};
-  this._safe_attributes     = null;
-  this._attr_description    = null;
   this._errors              = {};
-  this._alternative_errors  = {};
-  this._filters             = {};
+  this._attributes          = [];
+  this._keys                = [];
 
-  this.models = this.app.models;
+  this.models    = this.app.models;
+  this.is_inited = true;
 
-  this._.is_new    = params.is_new == undefined ? true : params.is_new;
-  this._.is_inited = true;
+  this._process_attributes();
 };
 
 
-Model.prototype.native_filters = {
-  md5 : function( v ){
-    return v && crypto.createHash('md5').update( v ).digest("hex");
+Model.prototype._process_attributes = function(){
+  var descriptions = this.app.tools.to_object( this.attributes(), 1 );
+
+  for ( var attr in descriptions ) {
+    this.create_attribute( attr, descriptions[attr] );
   }
-}
+};
 
 
 Model.prototype.attributes = function(){
@@ -36,73 +51,155 @@ Model.prototype.attributes = function(){
 };
 
 
-Model.prototype.set_attribute = function ( name, value ) {
-  if ( this.hasOwnProperty( name ) ) this[ name ] = value;
-  else this._attributes[ name ] = value;
+Model.prototype.create_attribute = function( attr, description ){
+  if ( !description ) return false;
 
-  return this;
-};
-
-
-Model.prototype.get_attribute = function ( name ) {
-  var attribute = this._attributes[ name ] != undefined ? this._attributes[ name ] : this[ name ];
-
-  return typeof attribute == 'function' ? attribute.bind( this )  : attribute;
-};
-
-
-Model.prototype._clean_attributes = function () {
-  this._attributes = {};
-};
-
-
-Model.prototype.get_attributes = function( names ) {
-  if ( names instanceof Array ) {
-
-    var attrs = {};
-
-    names.forEach( function( name ){
-      attrs[ name ] = this.get_attribute( name );
-    }, this );
-
-    return attrs;
+  this._[ attr ].get = function( descriptor ){
+    return this.get_attribute( descriptor.name );
   }
-  else return Object.not_deep_clone( this._attributes );
+
+  this._[ attr ].set = function( value, descriptor ){
+    this.set_attribute( descriptor.name, value );
+  }
+
+  description = this.app.tools.to_object( description, 1 );
+
+  // check for safe attribute, alternative errors and filters
+  [ 'safe', 'errors', 'prefilters', 'postfilters' ].forEach(function( rule ){
+    if ( description[ rule ] ) {
+      this._[ attr ].params[ rule ] = description[ rule ];
+      delete description[ rule ];
+    }
+  }, this);
+
+  if ( description['key'] ) {
+    this._keys.push( attr );
+    delete description['key'];
+  }
+
+  this._[ attr ].params.validation_rules = description;
+  this._attributes.push( attr );
 };
 
 
-Model.prototype.set_attributes = function ( attributes ) {
+Model.prototype.set_attribute = function ( name, value, do_filters ) {
+  var descriptor = this._[name];
+  descriptor.value = do_filters !== false
+    ? this._filter( value, descriptor.params['prefilters'] )
+    : value;
+};
+
+
+Model.prototype._filter = function( value, filters ){
+  if ( !filters ) return value;
+  if ( !Array.isArray( filters ) ) filters = [filters];
+  filters.forEach(function( filter ){
+    if ( typeof filter == 'string'   ) filter = this.native_filters[ filter ];
+    if ( typeof filter == 'function' ) value = filter( value );
+  }, this);
+
+  return value;
+};
+
+
+Model.prototype.get_attribute = function ( name, do_filters ) {
+  var descriptor = this._[name];
+  var value      = descriptor.value;
+  if ( do_filters !== false ) value = this._filter( descriptor.value, descriptor.params['postfilters'] );
+  return value === undefined ? null : value;
+};
+
+
+Model.prototype.clean_attributes = function () {
+};
+
+
+Model.prototype.get_attributes = function( names, do_filters ) {
+  if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
+  if ( !Array.isArray( names ) )  names = this._attributes;
+
+  var attrs = {};
+
+  names.forEach( function( name ){
+    attrs[ name ] = this.get_attribute( name, do_filters );
+  }, this );
+
+  return attrs;
+};
+
+
+Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
   if ( !Object.isObject( attributes ) ) {
     this.l( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ), 'warning' );
     return this;
   }
 
-  var attribute_names = this.get_safe_attributes_names();
-
-  for ( var name in attributes ) {
-    var filters = this._filters[ name ];
-    if ( filters ) {
-      if ( typeof filters == 'string'   ) filters = this.native_filters[ filters ];
-      if ( typeof filters != 'function' ) filters = null;
-    }
-
-    if ( ~attribute_names.indexOf( name ) )
-      this.set_attribute( name, filters ? filters( attributes[ name ] ) : attributes[ name ] );
-    else {
-      this.log( '%s.set_attributes try to set unsafe parameter "%s"'.format( this.class_name, name ), 'warning' );
-      this.emit( 'set_unsafe_attribute', name, attributes[ name ] );
-    }
+  for ( var attr in attributes ) {
+    if ( forced || this.is_safe_attribute( attr ) )
+      this.set_attribute( attr, attributes[ attr ], do_filters );
+    else
+      this.log( '`%s.set_attributes` try to set the unsafe attribute `%s`'.format( this.class_name, attr ), 'warning' );
   }
 
   return this;
 };
 
 
-Model.prototype.save = function ( attributes, scenario ) {
-  scenario = scenario || this.is_new ? 'create' : 'update';
-
-  return this.validate( null, scenario );
+Model.prototype.is_safe_attribute = function( name ){
+  return this._[ name ].params['safe'];
 };
+
+
+Model.prototype.save = function ( callback, attributes ) {
+  var emitter = new process.EventEmitter;
+  var self    = this;
+
+  this.validate(function( e ){
+    if ( e ) return callback( e );
+    if ( self.has_errors() ) return callback( null, self );
+
+    self.forced_save( callback, attributes ).re_emit( 'error', 'success', emitter );
+  }).re_emit( 'error', 'not_valid', emitter );
+
+  return emitter;
+};
+
+
+Model.prototype.forced_save = function( callback, attributes ){
+  var self    = this;
+  var emitter = new process.EventEmitter;
+
+  process.nextTick(function(){
+    callback( null );
+    emitter.emit( 'success', self );
+  });
+
+  return emitter;
+};
+
+
+Model.prototype.validate = function ( callback, attributes ){
+  if ( typeof attributes == 'string' ) attributes = attributes.split(/\s*,\s*/);
+  if ( !Array.isArray( attributes ) )  attributes = this._attributes;
+
+  this._errors = {};
+
+  var self     = this;
+  var emitter  = new process.EventEmitter;
+
+  var listener = this.app.tools.create_async_listener( attributes.length, function( result ){
+    callback && callback( result.error || null, !self.has_errors() );
+    if ( result.error ) emitter.emit( 'error', result.error );
+    if ( self.has_errors() ) emitter.emit( 'not_valid', self.get_errors() );
+    else emitter.emit( 'success', self );
+  });
+
+  attributes.forEach( function( attr ){
+    this.validate_attribute( attr, listener.listen( 'error' ) );
+  }, this );
+
+  return emitter;
+}
 
 
 Model.prototype.remove = function () {
@@ -132,92 +229,66 @@ Model.prototype.get_attributes_description = function(){
 };
 
 
-Model.prototype._process_attributes = function(){
-  var attributes = this.app.tools.to_object( this.attributes(), 2 );
-  this._safe_attributes = [];
-
-  for ( var attr in attributes ) {
-    var description = attributes[ attr ];
-
-    // check for safe attribute
-    if ( description['safe'] ) {
-      this._safe_attributes.push( attr );
-      delete description['safe'];
-    }
-
-    // check for alternative errors
-    if ( description['errors'] ) {
-      this._alternative_errors[ attr ] = description['errors'];
-      delete description['errors'];
-    }
-
-    // check for filters
-    if ( description['filters'] ) {
-      this._filters[ attr ] = description['filters'];
-      delete description['filters'];
-    }
-
-    // check for cloning attributes
-    for ( var rule in description ) {
-
-      var clone_from = null;
-      if ( rule == 'clone' ) clone_from = description[ rule ];   // { clone : 'user.email' }
-      if ( !clone_from )     clone_from = rule;                  // { 'user.email' : true }
-
-      var matches = /(\w+)\.(\w+)/.exec( clone_from );           // 1st pocket - model, 2 - attribute for clone
-      if ( !matches ) continue;
-
-      var model = this.models[ matches[1] ];
-      if ( !model ) {
-        this.log( 'Model `%s` for cloning attribute `%s` is not found'.format( matches[1], matches[2] ), 'warning' );
-        continue;
-      }
-
-      var cloned_description = model.get_attributes_description()[ matches[2] ];
-      if ( !cloned_description ) {
-        this.log( 'Description for attribute `%s` in model `%s` is not found'.format( matches[2], matches[1] ), 'warning' );
-        continue;
-      }
-
-      for ( var cloned_rule in cloned_description )
-        description[ cloned_rule ] = cloned_description[ cloned_rule ];
-
-      delete description[ rule ];
-      break;
-    }
-  }
-
-  this._attr_description = attributes;
-};
-
-
 Model.prototype.equals = function ( model ) {
-  return this == model;
+  if ( this.constructor != model.constructor ) return false;
+
+  if ( !this._keys.length ) {
+    this.log( 'Model `%s` does not have keys, so it can\'t be compared'.format( this.class_name ), 'warning' );
+    return false;
+  }
+
+  for ( var i = 0, i_ln = this._keys.length; i < i_ln; i++ ) {
+    var key = this._keys[i];
+    if ( this[key] != model[key] ) return false;
+  }
+
+  return true;
 };
 
 
-Model.prototype.validate = function ( attributes, scenario ){
-  attributes   = attributes || this.get_attributes_description();
-  this._errors = {};
+Model.prototype.get_id = function(){
+  switch ( this._keys.length ) {
+    case 0:
+      return null;
 
-  for( var attribute in attributes ){
+    case 1:
+      return this[ this._keys[0] ];
 
-    var rules   = attributes[ attribute ];
-    var errors  = this._alternative_errors[ attribute ] || {};
+    default:
+      var result = {};
+      this._keys.forEach( function( key ){
+        result[ key ] = this[ key ];
+      }, this );
+      return result;
+  }
+};
 
-    for ( var rule in rules ) {
-      var error = this.app.validator[ rule ](
-        attribute,
-        this.get_attribute( attribute ),
-        rules[ rule ],
-        errors[ rule ] );
 
-      if ( error ) this._errors[ attribute ] = error;
-    }
+Model.prototype.validate_attribute = function( name, callback ){
+  var rules   = this._[name].params.validation_rules;
+  var errors  = this._[name].params.errors || {};
+
+  for ( var rule in rules ) {
+    if ( typeof this.app.validator[ rule ] != 'function' )
+      return callback( new Error(
+        '`{rule}` is undefined rule in description of attribute `{model}.{attr}`'.format({
+          '{rule}'  : rule,
+          '{model}' : this.class_name,
+          '{attr}'  : name
+        })
+      ));
+
+    var error = this.app.validator[ rule ](
+      name,
+      this.get_attribute( name, false ),
+      rules[ rule ],
+      errors[ rule ] );
+
+    if ( error ) this._errors[ name ] = error;
   }
 
-  return !this.has_errors();
-}
+  callback();
+};
 
 
 Model.prototype.has_errors = function () {
@@ -228,3 +299,34 @@ Model.prototype.has_errors = function () {
 Model.prototype.get_errors = function(){
   return this._errors;
 }
+
+
+//Model.prototype._check_for_cloning_description = function( description ){
+//  for ( var rule in description ) {
+//
+//    var clone_from = null;
+//    if ( rule == 'clone' ) clone_from = description[ rule ];   // { clone : 'user.email' }
+//    if ( !clone_from )     clone_from = rule;                  // { 'user.email' : true }
+//
+//    var matches = /(\w+)\.(\w+)/.exec( clone_from );           // 1st pocket - model, 2 - attribute for clone
+//    if ( !matches ) continue;
+//
+//    var model = this.models[ matches[1] ];
+//    if ( !model ) {
+//      this.log( 'Model `%s` for cloning attribute `%s` is not found'.format( matches[1], matches[2] ), 'warning' );
+//      continue;
+//    }
+//
+//    var cloned_description = model.get_attributes_description()[ matches[2] ];
+//    if ( !cloned_description ) {
+//      this.log( 'Description for attribute `%s` in model `%s` is not found'.format( matches[2], matches[1] ), 'warning' );
+//      continue;
+//    }
+//
+//    for ( var cloned_rule in cloned_description )
+//      description[ cloned_rule ] = cloned_description[ cloned_rule ];
+//
+//    delete description[ rule ];
+//    break;
+//  }
+//};

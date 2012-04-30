@@ -6,8 +6,6 @@ var Model     = autodafe.Model;
 
 vows.describe( 'model' )
 .addBatch( tests_tools.prepare_base() )
-.addBatch( tests_tools.prepare_tables(
-  'users' ) )
 .addBatch({
   'get model application' : {
     topic : function(){
@@ -86,7 +84,7 @@ vows.describe( 'model' )
           assert.isTrue( model.has_errors() );
 
           var errors = model.get_errors();
-          assert.deepEqal( Object.keys( errors ), ['login', 'email', 'password'] );
+          assert.deepEqual( Object.keys( errors ), ['login', 'password', 'email'] );
 
           for ( var field in errors ) {
             //все ошибки по поводу незаданности полей
@@ -103,26 +101,24 @@ vows.describe( 'model' )
 
       'all fields are wrong, but not empty' : {
         topic : function( model ){
-          return model.set_attributes({
+          var callback = this.callback;
+          model.set_attributes({
             login     : 'ab',
             password  : 'qwer',
             email     : 'wrong@format'
-          }).validate();
+          }).validate()
+            .on( 'error', function( e ){ callback( e ); } )
+            .on( 'success', function(){ callback( new Error('Model is not valid') ); } )
+            .on( 'not_valid', function( errors ){ callback( null, errors ); } )
+
         },
 
-        events : {
-          'error' : function( e ){
-            throw e;
-          },
-          'success' : function(){
-            throw new Error('Model is not valid');
-          },
-          'not_valid' : function( errors ){
-            assert.deepEqal( Object.keys( errors ), ['login', 'email', 'password'] );
-            assert.include( errors['login'],    'between'   );
-            assert.include( errors['email'],    'email'     );
-            assert.include( errors['password'], 'at least'  );
-          }
+        'not_valid' : function( e, errors ){
+          assert.isNull(e);
+          assert.deepEqual( Object.keys( errors ), ['login', 'password', 'email'] );
+          assert.include( errors['login'],    'between'   );
+          assert.include( errors['email'],    'email'     );
+          assert.include( errors['password'], 'at least'  );
         }
       }
     },
@@ -180,44 +176,38 @@ vows.describe( 'model' )
 
     'saving' : {
       topic : function( app ){
-        var model = new app.models.model4;
-        return model.set_attributes({
+        var callback  = this.callback;
+        var model     = new app.models.model4;
+        model.set_attributes({
           username : 'user',
           email    : 'user@host.com',
           password : 'password'
-        }).save();
+        }).save()
+          .on( 'error',     function( e )     { callback( e ); } )
+          .on( 'success',   function()        { callback( null, model ); } )
+          .on( 'not_valid', function( errors ){ callback( new Error('Model is valid') ); } );
       },
 
-      events : {
-        'error' : function( e ){
-          throw e;
+      'check' : function( e, model ){
+        assert.isNull(e);
+        assert.isFalse( model.has_errors() );
+        assert.isEmpty( model.get_errors() );
+      },
+
+      'find_all' : {
+        topic : function( app ){
+          app.models.model4.find_all( this.callback );
         },
-        'not_valid' : function( errors ){
-          throw new Error('Model should be valid');
-        },
-        'success' : {
-          'check' : function(){
-            var model = this.context.topics[1];
-            assert.isFalse( model.has_errors() );
-            assert.isEmpty( model.get_errors() );
-          },
 
-          'find_all' : {
-            topic : function( app ){
-              app.models.model4.find_all( this.callback );
-            },
+        'check results' : function( e, users ){
+          assert.isNull(e);
+          assert.isArray(users);
+          assert.lengthOf( users, 1 );
 
-            'check results' : function( e, users ){
-              assert.isNull(e);
-              assert.isArray(users);
-              assert.lengthOf( users, 1 );
-
-              var user = users[0];
-              assert.equal( user.username,  'user' );
-              assert.equal( user.email,     'user@host.com' );
-              assert.equal( user.password,  'password' );
-            }
-          }
+          var user = users[0];
+          assert.equal( user.username,  'user' );
+          assert.equal( user.email,     'user@host.com' );
+          assert.equal( user.password,  'password' );
         }
       }
     },
@@ -230,41 +220,41 @@ vows.describe( 'model' )
 
       var model = new app.models.model5;
       model.set_attributes( params );
-      assert.equal( model.login,            'user'  );
+      assert.equal( model.username,         'user'  );
       assert.equal( model.password,         '8578edf8458ce06fbc5bb76a58c5ca4');
-      assert.equal( model._.login.value,    'user'  );
+      assert.equal( model._.username.value, 'user'  );
       assert.equal( model._.password.value, 'qwerty');
     },
 
     'identification and comparing' : function( app ){
       var m1 = new app.models.model4;
       var m2 = new app.models.model4;
-      assert.isFalse( m1.equal( m2 ) );
+      assert.isFalse( m1.equals( m2 ) );
 
       var m3 = new app.models.model5;
       var m4 = new app.models.model5;
-      assert.isTrue( m3.equal( m4 ) );
+      assert.isTrue( m3.equals( m4 ) );
 
       var m5 = new app.models.model2;
-      assert.isFalse( m4.equal( m5 ) );
+      assert.isFalse( m4.equals( m5 ) );
 
       m3.email = 'qwe@ert.com';
-      assert.isFalse( m3.equal( m4 ) );
+      assert.isFalse( m3.equals( m4 ) );
 
       m4.email = 'qwe@ert.com';
-      assert.isTrue( m3.equal( m4 ) );
+      assert.isTrue( m3.equals( m4 ) );
 
       assert.equal( m3.get_id(), 'qwe@ert.com' );
-      assert.equal( m5.get_id(), '' );
+      assert.isNull( m5.get_id() );
 
       var m6 = new app.models.model3;
       assert.deepEqual( m6.get_id(), {
-        login : '',
-        email : ''
+        login : null,
+        email : null
       } );
 
       var m7 = new app.models.model3;
-      assert.isTrue( m6.equal( m7 ) );
+      assert.isTrue( m6.equals( m7 ) );
 
       m6.set_attributes({
         email : 'asd@fgh.com',
@@ -275,10 +265,10 @@ vows.describe( 'model' )
         email : 'asd@fgh.com',
         login : 'login1'
       });
-      assert.isFalse( m6.equal( m7 ) );
+      assert.isFalse( m6.equals( m7 ) );
 
       m7.login = 'login';
-      assert.isTrue( m6.equal( m7 ) );
+      assert.isTrue( m6.equals( m7 ) );
     },
 
     //basic tests
@@ -306,7 +296,7 @@ vows.describe( 'model' )
       }
     },
 
-    'model2' : {
+    'model' : {
       topic : function( app ){
         return new app.models.model2;
       },

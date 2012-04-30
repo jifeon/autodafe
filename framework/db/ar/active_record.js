@@ -44,6 +44,8 @@ ActiveRecord.prototype._init = function( params ) {
    */
   this._.is_inited      = false;
 
+  this._.is_new         = params.is_new == undefined ? true : params.is_new;
+
   /**
    * Имя таблицы, к которой привязана запись
    *
@@ -622,7 +624,7 @@ ActiveRecord.prototype.refresh = function() {
     .on( 'success', function( record ) {
       if ( !record ) return emitter.emit( 'error', new Error( 'Can\'t find reflection of record in data base' ) );
 
-      self._clean_attributes();
+      self.clean_attributes();
       self.table.get_column_names().forEach( function( name ) {
         self.set_attribute( name, record[ name ] );
       } );

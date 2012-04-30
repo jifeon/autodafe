@@ -148,7 +148,7 @@ Autodafe.prototype._on_exit = function () {
   }
 
   if ( !silent && !some_log_is_shown ) console.log(
-    'If you don\'t look any log messages, preload and configure `log_router` component. ' +
+    'If you not see any log messages, preload and configure a `log_router` component. ' +
     'To hide this message run the main script with `--silent` option' );
 
   for ( name in this._applications )

@@ -36,10 +36,10 @@ Model4.prototype.attributes = function( params ) {
 Model4.prototype.forced_save = function( callback ){
   callback = callback || this.default_callback;
 
-  var emitter = new process.EventEmitter; // emitter который будем возвращать
+  var emitter = new process.EventEmitter;
   var self    = this;
   this.app.db
-  .create_command('INSERT INTO users (login, password, email) VALUES (:login, :password, :email)')
+  .create_command('INSERT INTO users (username, password, email) VALUES (:username, :password, :email)')
   .bind_values( this.get_attributes() )
   .execute( function(e, result){
 

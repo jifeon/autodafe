@@ -1,6 +1,5 @@
 var AppModule           = global.autodafe.AppModule;
 var Model               = global.autodafe.Model;
-var ModelProxyHandler            = require('./model_proxy_handler');
 var ModelConstructorProxyHandler = require('./model_constructor_proxy_handler');
 var path                = require('path');
 var fs                  = require('fs');
@@ -98,11 +97,7 @@ ModelsManager.prototype._get_model_proxy = function ( constructor, params ) {
 
 
 ModelsManager.prototype.implement_model = function ( constructor, params ) {
-  var handler = new ModelProxyHandler({
-    target : this._get_instance( constructor, params )
-  });
-
-  return handler.get_proxy();
+  return this._get_instance( constructor, params );
 };
 
 
