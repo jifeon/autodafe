@@ -82,6 +82,11 @@ Model.prototype.create_attribute = function( attr, description ){
 };
 
 
+Model.prototype.remove_attribute = function(){
+  
+};
+
+
 Model.prototype.set_attribute = function ( name, value, do_filters ) {
   var descriptor = this._[name];
   descriptor.value = do_filters !== false
@@ -212,28 +217,6 @@ Model.prototype.remove = function ( callback ) {
   });
 
   return emitter;
-};
-
-
-Model.prototype.get_safe_attributes_names = function () {
-  if ( !this._safe_attributes ) this._process_attributes();
-
-  this.get_safe_attributes_names = function(){
-    return this._safe_attributes;
-  }
-
-  return this.get_safe_attributes_names();
-};
-
-
-Model.prototype.get_attributes_description = function(){
-  if ( !this._attr_description ) this._process_attributes();
-
-  this.get_attributes_description = function(){
-    return this._attr_description;
-  }
-
-  return this.get_attributes_description();
 };
 
 

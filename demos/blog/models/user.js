@@ -11,17 +11,12 @@ User.prototype.get_table_name = function(){
 }
 
 
-User.prototype.get_safe_attributes_names = function () {
-  return ['login', 'pass'];
-};
-
-
 User.prototype.attributes = function(){
   return {
     login : [
-      'required',
+      'safe required',
       { range_length : [4, 30] }
     ],
-    pass : 'required md5'
+    pass : 'safe required md5'
   };
 }

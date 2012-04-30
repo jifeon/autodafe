@@ -12,17 +12,11 @@ Comment.prototype.get_table_name = function () {
 };
 
 
-Comment.prototype.get_safe_attributes_names = function () {
-  return [ 'text' ];
-};
-
-
 Comment.prototype.attributes = function(){
   return {
-    'user_id'     : [ 'required' ],
-    'post_id'     : [ 'required' ],
-    'text'    : [
-      'required',
+    'user_id post_id' : 'required',
+    'text'            : [
+      'safe required',
       { max_length : 1024 }
     ]
   };

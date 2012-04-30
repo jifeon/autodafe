@@ -22,22 +22,15 @@ Post.prototype.relations = function () {
 };
 
 
-Post.prototype.get_safe_attributes_names = function () {
-  return ['name', 'description'];
-};
-
-
 Post.prototype.attributes = function(){
   return {
-    user_id : [
-      'required'
-    ],
+    user_id : 'required',
     name : [
-      'required',
+      'safe required',
       { "max_length"  : 256 }
     ],
     description : [
-      'required',
+      'safe required',
       { "max_length"  : 4096 }
     ]
   };
