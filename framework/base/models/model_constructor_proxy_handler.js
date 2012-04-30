@@ -27,7 +27,9 @@ ModelConstructorProxyHandler.prototype.get = function ( receiver, name ) {
 
   if ( name == 'constructor' ) return this._instance.constructor;
 
-  return this._instance[ name ];
+  return typeof this._instance[ name ] == 'function'
+    ? this._instance[ name ].bind( this._instance )
+    : this._instance[ name ];
 };
 
 
