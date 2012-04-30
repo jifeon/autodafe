@@ -303,15 +303,15 @@ vows.describe( 'model' )
 
       '.get_attributes() and .set_attributes()' : function( model ){
         model.set_attributes({
-          login : 'login',
-          email : 'email',
-          password : 'password'
+          login     : 'login',
+          email     : 'email',
+          password  : 'password'
         });
 
         assert.deepEqual( model.get_attributes(), {
-          login : 'login',
-          email : 'email',
-          password : null
+          login     : 'login',
+          email     : 'email',
+          password  : null
         } );
 
         model.set_attributes({
@@ -321,9 +321,9 @@ vows.describe( 'model' )
         }, true, true );
 
         assert.deepEqual( model.get_attributes(), {
-          login : 'login',
-          email : 'email',
-          password : 'password'
+          login     : 'login',
+          email     : 'email',
+          password  : 'password'
         } );
 
         assert.deepEqual( model.get_attributes( [ 'login', 'email' ] ), {
@@ -336,6 +336,10 @@ vows.describe( 'model' )
           email : 'email'
         } );
       }
+    },
+
+    teardown : function( app ){
+      app.stop();
     }
   }
 

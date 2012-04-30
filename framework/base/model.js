@@ -26,12 +26,12 @@ Model.prototype.native_filters = {
 Model.prototype._init = function ( params ) {
   Model.parent._init.call( this, params );
 
-  this._errors              = {};
-  this._attributes          = [];
-  this._keys                = [];
+  this._errors      = {};
+  this._attributes  = [];
+  this._keys        = [];
 
-  this.models    = this.app.models;
-  this.is_inited = true;
+  this.models       = this.app.models;
+  this.is_inited    = true;
 
   this._process_attributes();
 };
@@ -90,6 +90,14 @@ Model.prototype.set_attribute = function ( name, value, do_filters ) {
 };
 
 
+Model.prototype.get_attribute = function ( name, do_filters ) {
+  var descriptor = this._[name];
+  var value      = descriptor.value;
+  if ( do_filters !== false ) value = this._filter( descriptor.value, descriptor.params['postfilters'] );
+  return value === undefined ? null : value;
+};
+
+
 Model.prototype._filter = function( value, filters ){
   if ( !filters ) return value;
   if ( !Array.isArray( filters ) ) filters = [filters];
@@ -99,14 +107,6 @@ Model.prototype._filter = function( value, filters ){
   }, this);
 
   return value;
-};
-
-
-Model.prototype.get_attribute = function ( name, do_filters ) {
-  var descriptor = this._[name];
-  var value      = descriptor.value;
-  if ( do_filters !== false ) value = this._filter( descriptor.value, descriptor.params['postfilters'] );
-  return value === undefined ? null : value;
 };
 
 
@@ -170,7 +170,7 @@ Model.prototype.forced_save = function( callback, attributes ){
   var emitter = new process.EventEmitter;
 
   process.nextTick(function(){
-    callback( null );
+    callback && callback( null );
     emitter.emit( 'success', self );
   });
 
@@ -202,8 +202,16 @@ Model.prototype.validate = function ( callback, attributes ){
 }
 
 
-Model.prototype.remove = function () {
-  return true;
+Model.prototype.remove = function ( callback ) {
+  var self    = this;
+  var emitter = new process.EventEmitter;
+
+  process.nextTick(function(){
+    callback && callback( null );
+    emitter.emit( 'success', self );
+  });
+
+  return emitter;
 };
 
 

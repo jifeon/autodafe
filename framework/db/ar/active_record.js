@@ -696,20 +696,16 @@ ActiveRecord.prototype.query = function ( criteria, all ) {
 ActiveRecord.prototype.populate_record = function( attributes ) {
   if ( !attributes ) return null;
 
-  var record = this.instantiate();
+  var record = new this.constructor({
+    app    : this.app,
+    is_new : false
+  });
 
   for ( var name in attributes ) {
     record[ name ] = attributes[ name ];
   }
 
   return record;
-};
-
-
-ActiveRecord.prototype.instantiate = function () {
-  return new this.app.models.implement_model( this.constructor, {
-    is_new : false
-  } );
 };
 
 

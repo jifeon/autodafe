@@ -96,11 +96,6 @@ ModelsManager.prototype._get_model_proxy = function ( constructor, params ) {
 };
 
 
-ModelsManager.prototype.implement_model = function ( constructor, params ) {
-  return this._get_instance( constructor, params );
-};
-
-
 ModelsManager.prototype._get_instance = function ( constructor, params ) {
   params     = params || {};
   params.app = this.app;
