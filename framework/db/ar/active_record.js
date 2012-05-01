@@ -460,12 +460,12 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
 
 
 /**
- * Валидирует и сохраняет AR
+ * Сохраняет AR
  *
  * Для новой записи будет выполнен {@link ActiveRecord.insert}, для существующей {@link ActiveRecord.update}
  *
+ * @param {Function} [callback] функция, которая будет выполнена после сохранения
  * @param {String[]} [attributes] массив названий сохраняемых атрибутов
- * @param {String} [scenario] название сценария использующегося при сохранении, используется в валидации todo: пример
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error ), validation_error( String[] )
  * @example save new record
  * <pre><code class="javascript">
@@ -492,10 +492,7 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
  *   } )
  * </code></pre>
  */
-ActiveRecord.prototype.save = function( attributes, scenario ) {
-  if ( !ActiveRecord.parent.save.call( this, attributes, scenario ) )
-    return this.app.tools.next_tick( this.get_errors(), null, null, 'validation_error' );
-
+ActiveRecord.prototype.forced_save = function( callback, attributes ) {
   return this.is_new ? this.insert( attributes ) : this.update( attributes );
 }
 

@@ -13,10 +13,13 @@ User.prototype.get_table_name = function(){
 
 User.prototype.attributes = function(){
   return {
-    login : [
-      'safe required',
-      { range_length : [4, 30] }
-    ],
-    pass : 'safe required md5'
+    login : {
+     'safe required' : true,
+      range_length   : [4, 30],
+      prefilters     : 'trim' },
+
+    pass : {
+     'safe required' : true,
+      postfilters    : 'md5' }
   };
 }

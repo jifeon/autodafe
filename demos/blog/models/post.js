@@ -25,13 +25,13 @@ Post.prototype.relations = function () {
 Post.prototype.attributes = function(){
   return {
     user_id : 'required',
-    name : [
-      'safe required',
-      { "max_length"  : 256 }
-    ],
-    description : [
-      'safe required',
-      { "max_length"  : 4096 }
-    ]
+
+    name : {
+     'safe required'  : true,
+      max_length      : 256   },
+
+    description : {
+     'safe required'  : true,
+      max_length      : 4096   }
   };
 }

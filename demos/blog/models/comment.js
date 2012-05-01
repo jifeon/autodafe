@@ -14,11 +14,11 @@ Comment.prototype.get_table_name = function () {
 
 Comment.prototype.attributes = function(){
   return {
-    'user_id post_id' : 'required',
-    'text'            : [
-      'safe required',
-      { max_length : 1024 }
-    ]
+    'user_id' : 'required',
+    'post_id' : 'required',
+    'text'    : {
+     'safe required'  : true,
+      max_length      : 1024   }
   };
 }
 
