@@ -26,6 +26,15 @@ vows.describe( 'model' )
           email     : null,
           password  : null
         });
+
+        assert.deepEqual( model.get_attributes_names(), ['login', 'email', 'password'] );
+      },
+
+      '.is_attribute' : function( model ){
+        assert.ok( model.is_attribute( 'login' ) );
+        assert.isFalse( model.is_attribute( 'not_attr' ) );
+        model.set_attribute( 'not_attr', 5, false );
+        assert.isFalse( model.is_attribute( 'not_attr' ) );
       },
 
       'using attributes' : function( model ){
@@ -39,6 +48,30 @@ vows.describe( 'model' )
         assert.isUndefined( model.guest );
         var other_model = new this.context.topics[1].models.model1({guest : true});
         assert.isTrue( other_model.guest );
+      },
+
+      '.remove_attribute' : function( model ){
+        model.remove_attribute( 'login' );
+        assert.isFalse( model.is_attribute( 'login' ) );
+        assert.isUndefined( model.login );
+      },
+
+      '.clean_attributes' : function( model ){
+        model.email     = 'email';
+        model.password  = 'password';
+
+        model.clean_attributes( 'password' );
+        assert.deepEqual( model.get_attributes(), {
+          email     : 'email',
+          password  : null
+        });
+
+        model.password  = 'password';
+        model.clean_attributes();
+        assert.deepEqual( model.get_attributes(), {
+          email     : null,
+          password  : null
+        });
       }
     },
 
@@ -63,6 +96,9 @@ vows.describe( 'model' )
           email     : 'jifeon@autodafe.ws',
           password  : null
         });
+
+        assert.ok( model.is_safe_attribute( 'login' ) );
+        assert.isFalse( model.is_safe_attribute( 'password' ) );
       }
     },
 
@@ -158,7 +194,7 @@ vows.describe( 'model' )
           model.set_attributes({
             password : 'qw',
             email    : '@not.email'
-          }).validate( this.callback );
+          }, true, true ).validate( this.callback );
         },
 
         'alternative errors' : function(e, valid){
@@ -182,7 +218,7 @@ vows.describe( 'model' )
           username : 'user',
           email    : 'user@host.com',
           password : 'password'
-        }).save()
+        }, true, true ).save()
           .on( 'error',     function( e )     { callback( e ); } )
           .on( 'success',   function()        { callback( null, model ); } )
           .on( 'not_valid', function( errors ){ callback( new Error('Model is valid') ); } );
@@ -223,6 +259,12 @@ vows.describe( 'model' )
       assert.equal( model.username,         'user'  );
       assert.equal( model.password,         '8578edf8458ce06fbc5bb76a58c5ca4');
       assert.equal( model._.username.value, 'user'  );
+      assert.equal( model._.password.value, 'qwerty');
+
+      model.set_attributes( params, false );
+      assert.equal( model.username,         ' user '  );
+      assert.equal( model.password,         '8578edf8458ce06fbc5bb76a58c5ca4');
+      assert.equal( model._.username.value, ' user '  );
       assert.equal( model._.password.value, 'qwerty');
     },
 
@@ -269,6 +311,9 @@ vows.describe( 'model' )
 
       m7.login = 'login';
       assert.isTrue( m6.equals( m7 ) );
+
+      assert.ok( m6.is_key_attribute( 'login' ) );
+      assert.isFalse( m6.is_key_attribute( 'password' ) );
     },
 
     //basic tests

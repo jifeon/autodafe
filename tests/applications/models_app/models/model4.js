@@ -17,7 +17,7 @@ Model4.prototype.attributes = function( params ) {
         required : '{field} required'
       }},
 
-    password  : ['safe required', {
+    password  : ['required', {
       min_length : 6,
       errors     : {
         min_length : 'Field {field} should have {length} ch.'
@@ -33,19 +33,27 @@ Model4.prototype.attributes = function( params ) {
 };
 
 
-Model4.prototype.forced_save = function( callback ){
-  callback = callback || this.default_callback;
-
+Model4.prototype.forced_save = function( callback, attributes ){
   var emitter = new process.EventEmitter;
   var self    = this;
-  this.app.db
-  .create_command('INSERT INTO users (username, password, email) VALUES (:username, :password, :email)')
-  .bind_values( this.get_attributes() )
-  .execute( function(e, result){
 
-    emitter.emit( e ? 'error' : 'success', e || self );
-    return callback( e, self );
-  } );
+  var fields        = this.get_attributes_names( attributes );
+  var replacements  = fields.map(function( field ){
+    return ':' + field;
+  });
+
+  // INSERT INTO users (username, password, email) VALUES (:username, :password, :email)
+  var sql = 'INSERT INTO users ({fields}) VALUES ({replacements})'.format({
+    '{fields}'       : fields.join(', '),
+    '{replacements}' : replacements.join(', ')
+  });
+
+  this.app.db.create_command( sql ).bind_values( this.get_attributes( attributes ) )
+    .execute( function(e, result){
+
+      emitter.emit( e ? 'error' : 'success', e || self );
+      callback && callback( e, self );
+    } );
 
   return emitter;
 }
@@ -62,7 +70,7 @@ Model4.prototype.find_all = function( callback ){
     result.fetch_obj(function( attributes ){
       var user = new self.models.model4;
 
-      user.set_attributes( attributes, true, false );
+      user.set_attributes( attributes, false, true );
       users.push( user );
     });
 

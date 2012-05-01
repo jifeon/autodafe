@@ -51,8 +51,16 @@ Model.prototype.attributes = function(){
 };
 
 
+Model.prototype.get_attributes_names = function( names ){
+  if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
+  if ( !Array.isArray( names ) )  return this._attributes.slice(0);
+
+  return names.filter( this.is_attribute.bind( this ) );
+};
+
+
 Model.prototype.is_attribute = function( attr ){
-  return ~this._attributes.indexOf( attr );
+  return !!~this._attributes.indexOf( attr );
 };
 
 
@@ -104,7 +112,7 @@ Model.prototype.get_attribute = function ( name, do_filters ) {
 
   var descriptor = this._[name];
   var value      = descriptor.value;
-  if ( do_filters !== false ) value = this._filter( descriptor.value, descriptor.params['postfilters'] );
+  if ( do_filters !== false ) value = this.filter( descriptor.value, descriptor.params['postfilters'] );
   return value === undefined ? null : value;
 };
 
@@ -128,7 +136,7 @@ Model.prototype.set_attribute = function ( name, value, do_filters ) {
 
   var descriptor = this._[name];
   descriptor.value = do_filters !== false
-    ? this._filter( value, descriptor.params['prefilters'] )
+    ? this.filter( value, descriptor.params['prefilters'] )
     : value;
 
   return this;
@@ -152,8 +160,11 @@ Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
 };
 
 
-Model.prototype.clean_attributes = function () {
-  this._attributes.forEach(function( attr ){
+Model.prototype.clean_attributes = function ( names ) {
+  if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
+  if ( !Array.isArray( names ) )  names = this._attributes;
+
+  names.forEach(function( attr ){
     this[attr] = null;
   }, this);
 
@@ -161,7 +172,7 @@ Model.prototype.clean_attributes = function () {
 };
 
 
-Model.prototype._filter = function( value, filters ){
+Model.prototype.filter = function( value, filters ){
   if ( !filters ) return value;
   if ( !Array.isArray( filters ) ) filters = [filters];
   filters.forEach(function( filter ){
@@ -174,12 +185,12 @@ Model.prototype._filter = function( value, filters ){
 
 
 Model.prototype.is_safe_attribute = function( name ){
-  return this.is_attribute( name ) && this._[ name ].params['safe'];
+  return this.is_attribute( name ) && !!this._[ name ].params['safe'];
 };
 
 
 Model.prototype.is_key_attribute = function( name ){
-  return ~this._keys.indexOf( name );
+  return !!~this._keys.indexOf( name );
 };
 
 
@@ -188,8 +199,8 @@ Model.prototype.save = function ( callback, attributes ) {
   var self    = this;
 
   this.validate(function( e ){
-    if ( e ) return callback( e );
-    if ( self.has_errors() ) return callback( null, self );
+    if ( e ) return callback && callback( e );
+    if ( self.has_errors() ) return callback && callback( null, self );
 
     self.forced_save( callback, attributes ).re_emit( 'error', 'success', emitter );
   }).re_emit( 'error', 'not_valid', emitter );
