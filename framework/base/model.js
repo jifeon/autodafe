@@ -1,10 +1,13 @@
-var crypto    = require( 'crypto' );
+var crypto     = require( 'crypto' );
 
-module.exports = Model.inherits( autodafe.AppModule );
+module.exports = Model.inherits( global.autodafe.AppModule );
 
 /**
+ * Базовый класс для всех моделей в приложении, обеспечивает удобную работы с атрибутам - специальными свойствами
+ * модели. Имеет инструменты для множественного задание и фильтрации атрибутов, валидации, сравнения и сохранения
+ * моделей.
  *
- * @param params
+ * @param {Object} params параметры для инициализации модели
  * @constructor
  * @extends AppModule
  */
@@ -13,6 +16,15 @@ function Model( params ) {
 }
 
 
+/**
+ * Набор фильтров, которые можно употреблять в секциях prefilters и postfilters в описании атрибутов (cм.
+ * {@link Model.attributes})
+ *
+ * @type {Object}
+ * @static
+ * @property {Function} md5 Преобразует значение атрибута в md5 хэш
+ * @property {Function} trim Удаляет у атрибута крайние пробелы
+ */
 Model.prototype.native_filters = {
   md5 : function( v ){
     return crypto.createHash('md5').update( v ).digest("hex");
@@ -23,20 +35,71 @@ Model.prototype.native_filters = {
 }
 
 
+/**
+ * Инициализирует модель
+ *
+ * @param {Object} params параметры для инициализации, описаны в {@link Model}
+ * @private
+ */
 Model.prototype._init = function ( params ) {
   Model.parent._init.call( this, params );
 
+  /**
+   * Объект хранящий ошибки валидации модели в виде {'название атрибута' : 'текст ошибки'}
+   *
+   * @type {Object}
+   * @private
+   * @see Model.get_errors
+   * @see Model.has_errors
+   * @see Model.validate
+   * @see Model.validate_attribute
+   */
   this._errors      = {};
+
+  /**
+   * Имена всех атрибутов модели
+   *
+   * @type {String[]}
+   * @private
+   * @see Model.get_attributes_names
+   */
   this._attributes  = [];
+
+  /**
+   * Имена всех ключевых атрибутов
+   *
+   * @type {String[]}
+   * @private
+   * @see Model.is_key_attribute
+   * @see Model.equals
+   * @see Model.get_id
+   */
   this._keys        = [];
 
+  /**
+   * Алиас для {@link Application.models}, прокси для {@link ModelsManager}
+   *
+   * @type {Proxy}
+   */
   this.models       = this.app.models;
+
+  /**
+   * Признак того, что модель инициализирована. Может использоваться при асинхронной загрузке моделей. Подробнее см. в
+   * {@link ModelsManager.load_models}
+   *
+   * @type {Boolean}
+   */
   this.is_inited    = true;
 
   this._process_attributes();
 };
 
 
+/**
+ * Создает атрибуты ({@link Model.create_attribute}) по их описаниям, полученным из {@link Model.attributes}
+ *
+ * @private
+ */
 Model.prototype._process_attributes = function(){
   var descriptions = this.app.tools.to_object( this.attributes(), 1 );
 
@@ -46,11 +109,58 @@ Model.prototype._process_attributes = function(){
 };
 
 
+/**
+ * Функция возвращающая описание атрибутов. Должна быть переопределена в наследуемых классах.
+ *
+ * @return {Object}
+ * @example Описание атрибутов
+ * <pre><code class="javascript">
+ * User.prototype.attributes = function( params ) {
+ *   return {
+ *     id       : 'key number',
+ *     login : {
+ *       safe         : true,
+ *       required     : true,
+ *       range_length : [4, 20],
+ *       prefilters   : 'trim',
+ *       errors       : {
+ *         required   : '{field} required'
+ *       }},
+ *
+ *     password  : ['safe required', {
+ *       min_length  : 6,
+ *       postfilters : ['md5', function(v){ return v.slice(1); }],
+ *       errors      : {
+ *         min_length : 'Field {field} should have {length} ch.'
+ *       }
+ *     }],
+ *     email     : {
+ *       'safe required email' : true,
+ *       errors : {
+ *         email : 'Please enter email instead of "{value}"'
+ *       }
+ *     }
+ *   };
+ * };
+ * </code></pre>
+ */
 Model.prototype.attributes = function(){
   return {};
 };
 
 
+/**
+ * Возвращает имена атрибутов
+ *
+ * @param {String[]|String} [names] Если параметр указан - вернет пересечение между атрибутами и указанными именами
+ * @return {String[]}
+ * @example Пример использования
+ * <pre><code class="javascript">
+ * model.get_attributes();                             // [ 'login', 'email', 'password' ]
+ * model.get_attributes( 'login, email, site' );       // [ 'login', 'email' ]
+ * model.get_attributes( ['login', 'email', 'site'] ); // [ 'login', 'email' ]
+ * </code></pre>
+ */
 Model.prototype.get_attributes_names = function( names ){
   if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
   if ( !Array.isArray( names ) )  return this._attributes.slice(0);
@@ -59,11 +169,25 @@ Model.prototype.get_attributes_names = function( names ){
 };
 
 
+/**
+ * Проверяет является ли указанная строка названием атрибута
+ *
+ * @param {String} attr предпологаемое название атрибута
+ * @return {Boolean}
+ */
 Model.prototype.is_attribute = function( attr ){
   return !!~this._attributes.indexOf( attr );
 };
 
 
+/**
+ * Создает атрибут по описанию
+ *
+ * @param {String} attr имя атрибута
+ * @param {Boolean|Object} description описание атрибута
+ * @return {Boolean} Создан ли атрибут
+ * @see Model.attributes
+ */
 Model.prototype.create_attribute = function( attr, description ){
   if ( !description ) return false;
 
@@ -92,9 +216,17 @@ Model.prototype.create_attribute = function( attr, description ){
 
   this._[ attr ].params.validation_rules = description;
   this._attributes.push( attr );
+
+  return true;
 };
 
 
+/**
+ * Удаляет атрибут
+ *
+ * @param {String} attr название атрибута
+ * @return {Model}
+ */
 Model.prototype.remove_attribute = function( attr ){
   if ( !this.is_attribute( attr ) ) return this;
 
@@ -107,6 +239,13 @@ Model.prototype.remove_attribute = function( attr ){
 };
 
 
+/**
+ * Возвращает значение атрибута
+ *
+ * @param {String} name имя атрибута
+ * @param {Boolean} [do_filters=true] Применять ли фильтры из секции postfilters в описании атрибутов
+ * @return {*}
+ */
 Model.prototype.get_attribute = function ( name, do_filters ) {
   if ( !this.is_attribute( name ) ) return undefined;
 
@@ -117,6 +256,19 @@ Model.prototype.get_attribute = function ( name, do_filters ) {
 };
 
 
+/**
+ * Возвращает значение нескольких атрибутов
+ *
+ * @param {String[]|String} [names] Имена атрибутов, значения которых надо вернуть
+ * @param {Boolean} [do_filters=true] Применять ли фильтры из секции postfilters в описании атрибутов
+ * @return {Object} Объект в виде {'название атрибута' : 'его значение'}
+ * @example Пример использования
+ * <pre><code class="javascript">
+ * model.get_attributes();                  // { login: 'user', email : 'email', pass : 'pass' }
+ * model.get_attributes( 'login, email' );  // { login: 'user', email : 'email' }
+ * model.get_attributes( [ 'login' ] );     // { login: 'user' }
+ * </code></pre>
+ */
 Model.prototype.get_attributes = function( names, do_filters ) {
   if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
   if ( !Array.isArray( names ) )  names = this._attributes;
@@ -131,6 +283,14 @@ Model.prototype.get_attributes = function( names, do_filters ) {
 };
 
 
+/**
+ * Задание значения атрибута
+ *
+ * @param {String} name имя атрибута
+ * @param {*} value значение атрибута
+ * @param {Boolean} [do_filters=true] Применять ли фильтры из секции prefilters в описании атрибутов
+ * @return {Model}
+ */
 Model.prototype.set_attribute = function ( name, value, do_filters ) {
   if ( !this.is_attribute( name ) ) return this;
 
@@ -143,6 +303,15 @@ Model.prototype.set_attribute = function ( name, value, do_filters ) {
 };
 
 
+/**
+ * Задание атрибутов скопом. Заданы бубт только те атрибуты, которые помечены в описании как безопасные (safe)
+ *
+ * @param {Object} attributes Атрибуты, которые необходимо задать в виде {'название атрибута' : 'его значение'}
+ * @param {Boolean} [do_filters=true]  Применять ли фильтры из секции postfilters в описании атрибутов
+ * @param {Boolean} [forced=false] Если выставить в true будут заданы даже небезопасные атрибуты
+ * @return {Model}
+ * @see Model.attributes
+ */
 Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
   if ( !Object.isObject( attributes ) ) {
     this.l( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ), 'warning' );
@@ -160,6 +329,18 @@ Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
 };
 
 
+/**
+ * Сбрасывает значение всех атрибутов в null
+ *
+ * @param {String[]|String} [names] имена атрибутов, значение которых надо сбросить
+ * @return {*}
+ * @example Пример использования
+ * <pre><code class="javascript">
+ * model.clean_attributes();
+ * model.clean_attributes( 'login, email' );
+ * model.clean_attributes( [ 'login', 'email' ] );
+ * </code></pre>
+ */
 Model.prototype.clean_attributes = function ( names ) {
   if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
   if ( !Array.isArray( names ) )  names = this._attributes;
@@ -172,6 +353,18 @@ Model.prototype.clean_attributes = function ( names ) {
 };
 
 
+/**
+ * Применяет фильтры из {@link Model.native_filters} или переданные в виде функций к значению
+ *
+ * @param {*} value То что преобразуется
+ * @param {Array|Function|String} filters Фильтры
+ * @return {*}
+ * @example Пример использования
+ * <pre><code class="javascript">
+ * model.filter( ' text ', 'trim' );
+ * model.filter( 'pass', [ 'md5', function( v ){ return v.slice(2); } ] );
+ * </code></pre>
+ */
 Model.prototype.filter = function( value, filters ){
   if ( !filters ) return value;
   if ( !Array.isArray( filters ) ) filters = [filters];
@@ -184,16 +377,61 @@ Model.prototype.filter = function( value, filters ){
 };
 
 
+/**
+ * Проверяет, является ли атрибут безопасным (safe)
+ *
+ * @param {String} name название атрибута
+ * @return {Boolean}
+ */
 Model.prototype.is_safe_attribute = function( name ){
   return this.is_attribute( name ) && !!this._[ name ].params['safe'];
 };
 
 
+/**
+ * Проверяет, является ли атрибут ключевым (key)
+ *
+ * @param {String} name название атрибута
+ * @return {Boolean}
+ */
 Model.prototype.is_key_attribute = function( name ){
   return !!~this._keys.indexOf( name );
 };
 
 
+/**
+ * Выполняет валидацию модели и ее последущее сохранение
+ *
+ * @param {Function} [callback] функция, которая выполнится после сохранения модели
+ * @param {Error} [callback.error] Системная ошибка возникшая во время валидации или сохранения
+ * @param {Error} [callback.model] Сама модель
+ * @param {String[]|String} [attributes] если указано, то будут сохранены только эти атрибуты
+ * @return {EventEmitter} События: "success" - при успешном сохранении, "error" - при возникновении системной ошибки,
+ * "not_valid" - при ошибки валидации
+ * @see Model.validate
+ * @see Model.forced_save
+ * @example Пример использования
+ * Используя callback
+ * <pre><code class="javascript">
+ * model.save( function(e, model){
+ * if (e) { обработка системной ошибки }
+ *
+ * if ( model.has_errors() ) {
+ *   var errors = user.get_errors();
+ *   // обрабатываем ошибки валидации
+ * }
+ * else {
+ *   // модель сохранена нормально
+ * }
+ * });
+ * </code></pre>
+ *
+ * Используя EventEmitter
+ * model.save()
+ * .on('error',     function(e) { обработка системной ошибки })
+ * .on('not_valid', function(errors) { обработка ошибок валидации })
+ * .on('success',   function() { все прошло гладко });
+ */
 Model.prototype.save = function ( callback, attributes ) {
   var emitter = new process.EventEmitter;
   var self    = this;
@@ -209,6 +447,16 @@ Model.prototype.save = function ( callback, attributes ) {
 };
 
 
+/**
+ * Сохранение модели, этот метод необходимо переопределить в наследуемых классах
+ *
+ * @param {Function} [callback] функция, которая выполнится после сохранения модели
+ * @param {Error} [callback.error] Системная ошибка возникшая во время сохранения
+ * @param {Error} [callback.model] Сама модель
+ * @param {String[]|String} [attributes] если указано, то будут сохранены только эти атрибуты
+ * @return {EventEmitter} События: "success" - при успешном сохранении, "error" - при возникновении системной ошибки
+ * @see model.save
+ */
 Model.prototype.forced_save = function( callback, attributes ){
   var self    = this;
   var emitter = new process.EventEmitter;
@@ -222,6 +470,13 @@ Model.prototype.forced_save = function( callback, attributes ){
 };
 
 
+/**
+ * Удаление модели, этот метод необходимо переопределить в наследуемых классах
+ *
+ * @param {Function} [callback] функция, которая выполнится после удаления модели
+ * @param {Error} [callback.error] Системная ошибка возникшая во время удаления
+ * @return {EventEmitter} События: "success" - при успешном удалении, "error" - при возникновении системной ошибки
+ */
 Model.prototype.remove = function ( callback ) {
   var self    = this;
   var emitter = new process.EventEmitter;
@@ -235,6 +490,16 @@ Model.prototype.remove = function ( callback ) {
 };
 
 
+/**
+ * Валидация модели. Правила валидации описываются в методе {@link Model.attributes}
+ *
+ * @param {Function} [callback] функция, которая выполнится после валидации модели
+ * @param {Error} [callback.error] Системная ошибка возникшая во время валидации
+ * @param {Error} [callback.model] Сама модель
+ * @param {String[]|String} [attributes] Если передан, то будут валидированы только эти атрибуты
+ * @return {EventEmitter}
+ * @see Model.save
+ */
 Model.prototype.validate = function ( callback, attributes ){
   if ( typeof attributes == 'string' ) attributes = attributes.split(/\s*,\s*/);
   if ( !Array.isArray( attributes ) )  attributes = this._attributes;
@@ -260,6 +525,15 @@ Model.prototype.validate = function ( callback, attributes ){
 }
 
 
+/**
+ * Валидация отдельно взятого атрибута. Правила валидации описываются в методе {@link Model.attributes}
+ *
+ * @param {String} name имя валидируемого атрибута
+ * @param {Function} callback функция которая вызывается после валидации атрибута
+ * @param {Error} [callback.error] Системная ошибка возникшая во время валидации
+ * @param {Error} [callback.validation_error] Ошибка валидации; если атрибут валиден, то null
+ * @return {*}
+ */
 Model.prototype.validate_attribute = function( name, callback ){
   var rules   = this._[name].params.validation_rules;
   var errors  = this._[name].params.errors || {};
@@ -283,20 +557,38 @@ Model.prototype.validate_attribute = function( name, callback ){
     if ( error ) this._errors[ name ] = error;
   }
 
-  callback();
+  callback( null, error || null );
 };
 
 
+/**
+ * Метод показывает, есть ли ошибки валидации
+ *
+ * @return {Boolean}
+ */
 Model.prototype.has_errors = function () {
   return !!Object.keys( this._errors ).length;
 }
 
 
+/**
+ * Возвращает ошибки валидации
+ *
+ * @return {Object} В виде {'название атрибута' : 'текст ошибки'}
+ */
 Model.prototype.get_errors = function(){
   return this._errors;
 }
 
 
+/**
+ * Сравнение двух моделей. Две модели равны, только если они относятся к одному классу и имеют одинаковые значения
+ * ключевых атрибутов. Модели, не имеющие ключевых атрибуто неравны
+ *
+ * @param {Model} model сравниваемая модель
+ * @return {Boolean}
+ * @see Model.get_id
+ */
 Model.prototype.equals = function ( model ) {
   if ( this.constructor != model.constructor ) return false;
 
@@ -314,6 +606,13 @@ Model.prototype.equals = function ( model ) {
 };
 
 
+/**
+ * Возвращает идентификатор модели. Если у модели нет ключевых атрибутов - это null, если у модели один ключевой
+ * атрибут - это его значение, иначе это объект ключи которого - названия ключевых атрибутов модели, а значения - это
+ * значения этих атрибутов
+ *
+ * @return {*}
+ */
 Model.prototype.get_id = function(){
   switch ( this._keys.length ) {
     case 0:
