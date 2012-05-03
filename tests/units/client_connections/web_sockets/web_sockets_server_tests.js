@@ -2,7 +2,7 @@ var vows        = require( 'autodafe/node_modules/vows' );
 var assert      = require( 'assert' );
 var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 
-var SocketIOClient   = require('socket.io-client');
+var SocketIOClient   = require('socket.io/node_modules/socket.io-client');
 var WebSocketsServer = require('autodafe/framework/client_connections/web_sockets/web_sockets_server');
 var WebSocketsClient = require('autodafe/framework/client_connections/web_sockets/web_sockets_client');
 
