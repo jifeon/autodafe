@@ -51,6 +51,7 @@ Autodafe.prototype._init = function() {
   this.Widget           = require( './components/widget.js' );
   this.Controller       = require( './base/controller.js' );
   this.Model            = require( './base/model.js' );
+  this.FormModel        = require( './base/models/form_model.js' );
   this.db               = {};
   this.db.Expression    = require('./db/db_expression.js');
   this.db.Criteria      = require('./db/db_criteria.js');
@@ -147,7 +148,7 @@ Autodafe.prototype._on_exit = function () {
   }
 
   if ( !silent && !some_log_is_shown ) console.log(
-    'If you don\'t look any log messages, preload and configure `log_router` component. ' +
+    'If you not see any log messages, preload and configure a `log_router` component. ' +
     'To hide this message run the main script with `--silent` option' );
 
   for ( name in this._applications )

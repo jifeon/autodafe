@@ -12,7 +12,7 @@ var active_relations  = {
 module.exports = ActiveRecord.inherits( autodafe.Model );
 
 
-//todo: описать созжание и использование
+//todo: описать создание и использование
 
 /**
  * Класс описывающий особый тип моделей, которые сохраняют информацию в базу данных
@@ -43,6 +43,8 @@ ActiveRecord.prototype._init = function( params ) {
    * @type {Boolean}
    */
   this._.is_inited      = false;
+
+  this._.is_new         = params.is_new == undefined ? true : params.is_new;
 
   /**
    * Имя таблицы, к которой привязана запись
@@ -78,26 +80,43 @@ ActiveRecord.prototype._init = function( params ) {
    *
    * @type {Object}
    */
-  this._related         = {};
+  this._related         = [];
   this._alias           = 't';
   this._criteria        = null;
 
-  var self = this;
+  this._bind_with_table();
 
-  this.db_connection.db_schema.get_table( this.table_name, function( err, table ) {
-    if ( err ) {
-      err.message = 'Error while loading table `%s`. '.format( this.table_name ) + err.message;
-      throw err;
+  this.app.on( 'models_are_loaded', this._init_relations.bind(this) );
+};
+
+
+ActiveRecord.prototype._bind_with_table = function(){
+  this.db_connection.db_schema.get_table( this.table_name, function( e, table ) {
+    if ( e ) {
+      e.message = 'Error while loading table `%s`. '.format( this.table_name ) + e.message;
+      throw e;
     }
 
     this._.table      = table;
     this._.is_inited  = true;
+
     this.emit( 'ready' );
   }, this );
+};
 
-  this.app.on( 'models_are_loaded', function() {
-    self._init_relations();
-  } );
+
+ActiveRecord.prototype._process_attributes = function( inited ){
+  if ( !inited ) return this.on('ready', this._process_attributes.bind( this, true ));
+
+  var descriptions = this.app.tools.to_object( this.attributes(), 1 );
+
+  this.table.get_column_names().forEach( function( column_name ) {
+    if ( !descriptions[ column_name ] ) descriptions[ column_name ] = true;
+  }, this );
+
+  for ( var attr in descriptions ) {
+    this.create_attribute( attr, descriptions[attr] );
+  }
 };
 
 
@@ -152,28 +171,6 @@ ActiveRecord.prototype._init_relations = function () {
 
 
 /**
- * Возвращает значение атрибута
- *
- * Именем атрибута может быть как название колонки в базе данных, отношение, так и переменные определенные в методе
- * _init унаследованного класса
- *
- * @param {String} name имя атрибута
- * @returns {mixed} значение атрибута
- */
-ActiveRecord.prototype.get_attribute = function ( name ) {
-  var attr = this._related[ name ] === undefined
-    ? ActiveRecord.parent.get_attribute.call( this, name )
-    : this._related[ name ];
-
-  return attr !== undefined
-    ? attr
-    : this.table.has_column( name )
-      ? null
-      : undefined;
-};
-
-
-/**
  * Функция возвращающая отношение данного AR с другими
  *
  * Должна быть переопределена в наследуемых классах
@@ -203,22 +200,24 @@ ActiveRecord.prototype.get_relations = function () {
  * @param {Boolean} index перечисляемое ли отношение добавляется
  */
 ActiveRecord.prototype.add_related_record = function ( name, record, index ) {
-  var related = this._related;
+  if (!~this._related.indexOf( name )) this._related.push( name );
 
-  if ( !index ) related[ name ] = related[ name ] || record;
+  if ( !index ) this._[ name ] = this[ name ] || record;
   else {
-    related[ name ] = related[ name ] || [];
+    this._[ name ] = this[ name ] || [];
     if ( record instanceof ActiveRecord ) {
-      if ( index === true ) related[ name ].push( record );
-      else related[ index ] = record;
+      if ( index === true ) this[ name ].push( record );
+      else this[ name ][ index ] = record;
     }
   }
 };
 
 
 ActiveRecord.prototype.substitute_related_records = function ( callback ) {
-  for( var relation_name in this._related )
-    this._related[ relation_name ] = callback( this._related[ relation_name ] );
+  var self = this;
+  this._related.forEach(function( name ){
+    this._[name] = callback( this[ name ] );
+  });
 };
 
 
@@ -228,7 +227,8 @@ ActiveRecord.prototype.substitute_related_records = function ( callback ) {
  * @param {String} name имя отношения
  */
 ActiveRecord.prototype.clean_related_records = function ( name ) {
-  delete this._related[ name ];
+  this._related.splice( this._related.indexOf( name ), 1 );
+  delete this._[ name ];
 };
 
 
@@ -253,11 +253,11 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     '%s does not have relation `%s`'.format( this.class_name, name )
   );
 
-  if ( this._related[ name ] != null && !refresh && Object.isEmpty( params ) )
-    return this.app.tools.next_tick( this._related[ name ] );
+  if ( this[ name ] != null && !refresh && Object.isEmpty( params ) )
+    return this.app.tools.next_tick( this[ name ] );
 
   this.log( 'Load relation `%s`'.format( name ), 'trace' );
-  
+
   var relation        = relations[ name ];
   if ( this.is_new && ( relation instanceof active_relations[ 'has_one' ] || relation instanceof active_relations[ 'has_many' ] ) )
     return this.app.tools.next_tick( relation instanceof active_relations[ 'has_one' ] ? null : [] );
@@ -265,11 +265,11 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   var saved_relation  = null;
   var With = {};
   if ( !Object.isEmpty( params ) ) {
-    saved_relation = this._related[ name ] == null ? null : this._related[ name ];
+    saved_relation = this[ name ] == null ? null : this[ name ];
     With[ name ] = params;
   }
   else With = name;
-  delete this._related[ name ];
+  delete this._[ name ];
 
   var finder = new ActiveFinder({
     app   : this.app,
@@ -283,18 +283,18 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
   finder.lazy_find( this, function( err ){
     if ( err ) return self.app.tools.next_tick( null, err, emitter );
 
-    if( self._related[ name ] == null )
-      self._related[ name ] = relation instanceof active_relations[ 'has_many' ]
+    if( self[ name ] == null )
+      self._[ name ] = relation instanceof active_relations[ 'has_many' ]
         ? []
         : relation instanceof active_relations[ 'stat' ]
           ? relation.defaultValue
           : null;
 
-    var result = self._related[ name ];
+    var result = self[ name ];
 
     if ( !Object.isEmpty( params ) )
-      if( saved_relation != null ) self._related[ name ] = saved_relation;
-      else                  delete self._related[ name ];
+      if( saved_relation != null ) self._[ name ] = saved_relation;
+      else                  delete self._[ name ];
 
     self.app.tools.next_tick( result, null, emitter );
   } );
@@ -350,35 +350,6 @@ ActiveRecord.prototype.get_db_criteria = function ( create_if_null ) {
   if ( !this._criteria && create_if_null ) this._criteria = new DbCriteria;
 
   return this._criteria;
-};
-
-
-ActiveRecord.prototype.get_attributes = function( names ) {
-  var attributes = Object.not_deep_clone( this._attributes );
-
-  this.table.get_column_names().forEach( function( column_name ) {
-
-    if ( this.hasOwnProperty( column_name ) )
-      attributes[ column_name ] = this[ column_name ];
-
-    if ( attributes[ column_name ] == undefined )
-      attributes[ column_name ] = null;
-
-  }, this );
-
-
-  if ( names instanceof Array ) {
-
-    var attrs = {};
-
-    names.forEach( function( name ){
-      attrs[ name ] = attributes[ name ] != undefined ? attributes[ name ] : null;
-    });
-
-    return attrs;
-  }
-
-  return attributes;
 };
 
 
@@ -489,12 +460,12 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
 
 
 /**
- * Валидирует и сохраняет AR
+ * Сохраняет AR
  *
  * Для новой записи будет выполнен {@link ActiveRecord.insert}, для существующей {@link ActiveRecord.update}
  *
+ * @param {Function} [callback] функция, которая будет выполнена после сохранения
  * @param {String[]} [attributes] массив названий сохраняемых атрибутов
- * @param {String} [scenario] название сценария использующегося при сохранении, используется в валидации todo: пример
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error ), validation_error( String[] )
  * @example save new record
  * <pre><code class="javascript">
@@ -521,10 +492,7 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
  *   } )
  * </code></pre>
  */
-ActiveRecord.prototype.save = function( attributes, scenario ) {
-  if ( !ActiveRecord.parent.save.call( this, attributes, scenario ) )
-    return this.app.tools.next_tick( this.get_errors(), null, null, 'validation_error' );
-
+ActiveRecord.prototype.forced_save = function( callback, attributes ) {
   return this.is_new ? this.insert( attributes ) : this.update( attributes );
 }
 
@@ -622,7 +590,7 @@ ActiveRecord.prototype.refresh = function() {
     .on( 'success', function( record ) {
       if ( !record ) return emitter.emit( 'error', new Error( 'Can\'t find reflection of record in data base' ) );
 
-      self._clean_attributes();
+      self.clean_attributes();
       self.table.get_column_names().forEach( function( name ) {
         self.set_attribute( name, record[ name ] );
       } );
@@ -694,20 +662,16 @@ ActiveRecord.prototype.query = function ( criteria, all ) {
 ActiveRecord.prototype.populate_record = function( attributes ) {
   if ( !attributes ) return null;
 
-  var record = this.instantiate();
+  var record = new this.constructor({
+    app    : this.app,
+    is_new : false
+  });
 
   for ( var name in attributes ) {
     record[ name ] = attributes[ name ];
   }
 
   return record;
-};
-
-
-ActiveRecord.prototype.instantiate = function () {
-  return new this.app.models.implement_model( this.constructor, {
-    is_new : false
-  } );
 };
 
 

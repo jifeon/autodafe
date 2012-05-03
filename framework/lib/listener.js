@@ -16,7 +16,9 @@ function Listener( count, callback, params, options ) {
 }
 
 
-Listener.prototype.fire = function () {
+Listener.prototype.fire = function ( deferred ) {
+  if ( !deferred ) return process.nextTick( this.fire.bind( this, true ));
+
   if ( this.fired ) return false;
 
   this.fired = true;

@@ -217,7 +217,10 @@ section#content header {
 .error {
   color : #d90028;
   background-color: #ffd0d9;
+}
 
+aside .error {
+  background-color: transparent;
 }
 
 .message_in_content {

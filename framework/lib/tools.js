@@ -295,3 +295,32 @@ var Listener = require('./listener');
 exports.create_async_listener = function( count, callback, params, options ) {
   return new Listener( count, callback, params, options );
 };
+
+
+exports.to_object = function( obj, deep, current_deep ){
+  var result  = {};
+  current_deep = current_deep || 0;
+  if ( deep <= current_deep ) return obj;
+
+  if ( typeof obj == 'string' ) obj = [obj];
+
+  if ( Object.isObject( obj ) )
+    for ( var key in obj ) {
+      var transformed = this.to_object( obj[ key ], deep, current_deep+1 );
+      key.split(/\s+/).forEach(function( item ){
+        result[ item ] = transformed;
+      });
+    }
+
+  else if ( Array.isArray( obj ) ) obj.forEach(function( item ){
+    if ( Object.isObject( item ) || Array.isArray( item ) )
+      result = Object.merge( result, exports.to_object( item, deep, current_deep+1 ) );
+    else if ( typeof item == 'string' ) item.split(/\s+/).forEach(function( item ){
+      result[ item ] = true;
+    });
+  });
+
+  else result = obj;
+
+  return result;
+}

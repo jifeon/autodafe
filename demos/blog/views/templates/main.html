@@ -40,10 +40,12 @@
     <p>
       <label for="login">login</label><br>
       <input type="text" id="login" name="login">
+      <span class="error">{errors.login.login}</span>
     </p>
     <p>
       <label for="pass">password</label><br>
       <input type="password" id="pass" name="pass">
+      <span class="error">{errors.login.pass}</span>
     </p>
     <input type="submit">
   </form>
@@ -52,10 +54,12 @@
     <p>
       <label for="reg_login">login</label><br>
       <input type="text" id="reg_login" name="login">
+      <span class="error">{errors.reg.login}</span>
     </p>
     <p>
       <label for="reg_pass">password</label><br>
       <input type="password" id="reg_pass" name="pass">
+      <span class="error">{errors.reg.pass}</span>
     </p>
     <input type="submit">
   </form>

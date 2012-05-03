@@ -19,7 +19,7 @@ function SiteController( params ) {
  * @param {Client} client клиент совершающий действие
  */
 SiteController.prototype.index = function ( params, client ) {
-  this.send_response( 'index.html', client, {
+  this.respond( 'index.html', {
     name : this.app.get_param( 'your_name' )
-  } );
+  } ).to( client );
 };

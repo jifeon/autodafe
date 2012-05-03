@@ -9,8 +9,6 @@ var Application       = require( 'autodafe/framework/base/application' );
 var Router            = require( 'autodafe/framework/base/routing/router' );
 var Logger            = require( 'autodafe/framework/logging/logger' );
 var ComponentsManager = require( 'autodafe/framework/components/components_manager' );
-var LogRouter         = require( 'autodafe/framework/logging/log_router' );
-var TestComponent     = require( 'autodafe/framework/tests/test_component' );
 var TestModel         = require( 'autodafe/tests/applications/normal_app/models/test_model.js' );
 var Client            = require( 'autodafe/framework/client_connections/client' );
 var Session           = require( 'autodafe/framework/base/session' );
@@ -160,29 +158,6 @@ vows.describe( 'application' ).addBatch({
 
         'should pass params' : function( test_model ){
           assert.equal( test_model.test(), 54 );
-        }
-      },
-
-      '.get_model()' : {
-        topic : function( app ){
-          return app.models.implement_model( TestModel, {
-            param : 48
-          } );
-        },
-
-        'should be instance of model class' : function( test_model ){
-          assert.instanceOf( test_model, TestModel );
-        },
-
-        'should invoke methods' : function( test_model ){
-          assert.equal( test_model.test(), 48 );
-        },
-
-        'should not be cached' : function( test_model ){
-          var new_model = test_model.app.models.implement_model( TestModel );
-
-          assert.notEqual( new_model,       test_model );
-          assert.notEqual( new_model.me(),  test_model.me() );
         }
       }
     },

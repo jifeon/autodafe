@@ -18,20 +18,18 @@ function SiteController( params ) {
 
 
 /**
- * Метод для отправки view клиенту. Перегружает Controller.send_response, добавляет в параметры, передаваемые в view
- * ссылку на модель пользователя user, если пользоваетель гость, user будет равен null
+ * Возвращает параметры которые доступны во всех шаблонах
  *
- * @param {String} view название вьюшки, которую будем рендерить
- * @param {Client} client клиент которому будет отправлена view
- * @param {Object} params параметры для передачи в вью
+ * @param {Response} response
+ * @param {Client} client
+ * @return {Object}
  */
-SiteController.prototype.send_response = function ( view, client, params ) {
-  params = params || {};
-
+SiteController.prototype.global_view_params = function( response, client ){
   var ui = this.app.users.get_by_client( client );
-  if ( !ui.is_guest() ) params.user = ui.model;
 
-  SiteController.parent.send_response.call( this, view, client, params );
+  return {
+    user : ui && ui.model
+  }
 };
 
 
@@ -68,10 +66,10 @@ SiteController.prototype.connect_client = function ( client ){
  *
  * @param {Object} params параметры пришедшие с запросом
  * @param {Client} client клиент совершающий действие
- * @param {String} error ошибка которая может передасться из других действий для того чтобы показать главную страницу
- * с ошибкой
+ * @param {Object} errors ошибки, которые могут передасться из других действий для того чтобы показать главную страницу
+ * с ошибками
  */
-SiteController.prototype.index = function ( params, client, error ) {
+SiteController.prototype.index = function ( params, client, errors ) {
   params = params || {};
 
   var pages = this.create_widget( 'pages', {
@@ -83,7 +81,7 @@ SiteController.prototype.index = function ( params, client, error ) {
 
   // ищем 10 топиков для показа их на странице и общее кол-во топиков
   var listener = this.app.tools.create_async_listener(
-    2, this.show_index.bind( this, client, error, pages )
+    2, this.show_index.bind( this, client, errors, pages )
   );
 
   this.models.post.find_all({
@@ -98,18 +96,18 @@ SiteController.prototype.index = function ( params, client, error ) {
 };
 
 
-SiteController.prototype.show_index = function ( client, error, pages, params ) {
+SiteController.prototype.show_index = function ( client, errors, pages, params ) {
   // ошибку шлем клиенту, отобразится как 500 ошибка
   if( params.error ) return client.send_error( params.error );
 
   pages.count = params.count;
 
   // если все хорошо - рендерим вьюшку и отсылаем клиенту
-  this.send_response( 'posts_list.html', client, {
-    posts : params.posts,
-    error : error ? error : '',
-    pages : pages
-  } )
+  this.respond( 'posts_list.html', {
+    posts   : params.posts,
+    errors  : errors ? errors : '',
+    pages   : pages
+  } ).to( client );
 };
 
 
@@ -123,7 +121,6 @@ SiteController.prototype.show_index = function ( client, error, pages, params ) 
  */
 SiteController.prototype.register = function ( params, client ) {
   var self = this;
-  params.pass = crypto.createHash('md5').update( params.pass ).digest("hex");
 
   // проверяем существует ли указанный логин
   this.models.user.exists( 'login=:login', {
@@ -132,20 +129,19 @@ SiteController.prototype.register = function ( params, client ) {
     .on( 'error', client.send_error.bind( client ) )  // 500 ошибка
     .on( 'success', function( user_exists ) {
       // если логин уже занят - отправляем главную страницу с показом ошибки
-      if( user_exists ) return self.index( null, client, 'This login already in use' );
+      if( user_exists ) return self.index( null, client, {
+        reg : { login : 'This login already in use' }
+      } );
 
       // если нет создаем модель пользователя
       var user = new self.models.user;
 
-      // задаем ей параметры ( зададутся только параметры указанные в User.get_safe_attributes )
-      user.set_attributes( params );
-
-      // сохраняем
-      user.save()
+      // задаем ей параметры и сохраняем
+      user.set_attributes( params ).save()
         .on( 'error', client.send_error.bind( client ) )      // 500 ошибка
-        .on( 'validation_error', function( errors ){
+        .on( 'not_valid', function( errors ){
           // не пройдена валидация
-          self.index( null, client, errors.join('<br/>') );
+          self.index( null, client, { reg : errors } );
         } )
 
         .on( 'success', function(  ) {
@@ -174,7 +170,9 @@ SiteController.prototype.login = function ( params, client ) {
     crypto.createHash('md5').update( params.pass ).digest("hex"),
     client,
     client.redirect.bind( client, '/' ),                                  // успешно авторизован - редирект на главную
-    this.index.bind( this, null, client, 'Wrong email or/and password' )  // показ ошибки на главной
+    this.index.bind( this, null, client, {
+      login : {login : 'Wrong login or/and password'}
+    } )  // показ ошибки на главной
   );
 };
 
@@ -243,7 +241,7 @@ SiteController.prototype.create_topic = function ( params, client ) {
   post.user_id = ui.model.id;
   post.save()
     .on( 'error', client.send_error.bind( client ) )
-    .on( 'validation_error', function( errors ){
+    .on( 'not_valid', function( errors ){
       params.error = errors.join('<br/>');
       self.send_response( 'new_post.html', client, params );
     } )
@@ -283,7 +281,7 @@ SiteController.prototype.comment = function ( params, client ) {
       comment.user_id = ui.model.id;
       comment.save()
         .on( 'error', client.send_error.bind( client ) )
-        .on( 'validation_error', function( errors ){
+        .on( 'not_valid', function( errors ){
           self.send_response( 'topic.html', client, {
             topic : topic,
             error : errors.join('<br/>'),

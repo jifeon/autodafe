@@ -97,9 +97,10 @@ UsersManager.prototype.get_by_client = function ( client ) {
 };
 
 
+//todo: delete
 UsersManager.prototype.get_by_model = function ( model ) {
   if ( !model ) return null;
-  return this.get_by_model_id( model.id );
+  return this.get_by_model_id( model.get_attribute('id') );
 };
 
 
@@ -129,7 +130,7 @@ UsersManager.prototype.authorize_session = function ( session, model ) {
     });
 
     ui.set_model( model );
-    this._users.by_model_id[ model.id ] = ui;
+    this._users.by_model_id[ model.get_attribute('id') ] = ui;
   }
 
   ui.register_session( session );

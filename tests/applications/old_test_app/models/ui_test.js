@@ -11,8 +11,10 @@ function UITest( params ) {
   });
 }
 
-UITest.prototype.get_safe_attributes_names = function(){
-  return [ 'p1', 'p2' ];
+UITest.prototype.attributes = function(){
+  return {
+    'p1 p2' : 'safe'
+  };
 }
 
 UITest.user_rights = {

@@ -10,9 +10,11 @@ Post.prototype.get_table_name = function(){
 }
 
 
-Post.prototype.get_safe_attributes_names = function(){
-  return [ 'title' ];
-}
+Post.prototype.attributes = function(){
+  return {
+    title : 'safe'
+  }
+};
 
 
 Post.prototype.relations = function(){

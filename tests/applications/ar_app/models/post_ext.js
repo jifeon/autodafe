@@ -20,9 +20,11 @@ PostExt.prototype.get_table_name = function(){
 }
 
 
-PostExt.prototype.get_safe_attributes_names = function(){
-  return [ 'title' ];
-}
+PostExt.prototype.attributes = function(){
+  return {
+    title : 'safe'
+  }
+};
 
 
 PostExt.prototype.relations = function () {

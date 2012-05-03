@@ -49,6 +49,11 @@ UserIdentity.prototype.is_guest = function () {
 };
 
 
+UserIdentity.prototype.is_authorized = function(){
+  return !this.is_guest();
+};
+
+
 UserIdentity.prototype.set_model = function ( model ) {
   if ( this.is_guest() ) {
     this.log( 'Try to set model for guests UserIdentity', 'error' );

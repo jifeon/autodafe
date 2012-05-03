@@ -11,21 +11,15 @@ User.prototype.get_table_name = function(){
 }
 
 
-User.prototype.get_safe_attributes_names = function () {
-  return ['login', 'pass'];
-};
-
-
-User.prototype.attributes_description = function(){
+User.prototype.attributes = function(){
   return {
-    login : [
-      'required',
-      { 'lesser'  : 30,
-        'greater' : 4 }
-    ],
-    pass : [
-      'required',
-      'md5'
-    ]
+    login : {
+     'safe required' : true,
+      range_length   : [4, 30],
+      prefilters     : 'trim' },
+
+    pass : {
+     'safe required' : true,
+      postfilters    : 'md5' }
   };
 }

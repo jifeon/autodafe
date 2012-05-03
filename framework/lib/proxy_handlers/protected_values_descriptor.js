@@ -12,6 +12,7 @@ ProtectedValuesDescriptor.prototype._init = function( params ) {
   this.name   = params.name;
   this.target = params.target;
   this.value  = params.value;
+  this.params = params.params || {};
 
   if ( typeof params.get == "function" ) this.get = params.get;
   if ( typeof params.set == "function" ) this.set = params.set;
@@ -30,7 +31,8 @@ ProtectedValuesDescriptor.prototype.set = function( value, descriptor ) {
 
 ProtectedValuesDescriptor.prototype['delete'] = function () {
   this.reset( true );
-  this.value = undefined;
+  this.value  = undefined;
+  this.params = {};
 
   return true;
 };
