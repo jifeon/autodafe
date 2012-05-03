@@ -427,10 +427,12 @@ Model.prototype.is_key_attribute = function( name ){
  * </code></pre>
  *
  * Используя EventEmitter
+ * <pre><code class="javascript">
  * model.save()
  * .on('error',     function(e) { обработка системной ошибки })
  * .on('not_valid', function(errors) { обработка ошибок валидации })
  * .on('success',   function() { все прошло гладко });
+ * </code></pre>
  */
 Model.prototype.save = function ( callback, attributes ) {
   var emitter = new process.EventEmitter;
