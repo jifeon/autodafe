@@ -19,7 +19,7 @@ Response.prototype._init = function( params ) {
 
 
 Response.prototype.to = function( client ){
-  var params = Object.merge( this.params, this.controller.global_view_params( this, client ) );
+  var params = Object.merge( this.controller.global_view_params( this, client ), this.params );
 
   var self = this;
   this.controller.render( this.view, params, function( e, data ){
