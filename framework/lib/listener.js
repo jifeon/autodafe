@@ -63,7 +63,7 @@ Listener.prototype.get_emitter = function ( name ) {
 
 
 Listener.prototype.register = function ( name, value ) {
-  if ( name ) this.params[ name ] = value;
+  if ( name != null ) this.params[ name ] = value;
 
   this.count--;
   this.check_count();

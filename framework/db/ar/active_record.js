@@ -83,10 +83,21 @@ ActiveRecord.prototype._init = function( params ) {
   this._related         = [];
   this._alias           = 't';
   this._criteria        = null;
+  this._relations       = {};
 
   this._bind_with_table();
 
   this.app.on( 'models_are_loaded', this._init_relations.bind(this) );
+
+  var relations = this.relations();
+
+  this.load = {};
+  var self = this;
+  for ( var relation_name in relations ) {
+    Object.defineProperty( this.load, relation_name, {
+      get : self.get_related.bind( self, relation_name, true )
+    } );
+  }
 };
 
 
