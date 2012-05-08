@@ -314,7 +314,7 @@ Model.prototype.set_attribute = function ( name, value, do_filters ) {
  */
 Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
   if ( !Object.isObject( attributes ) ) {
-    this.l( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ), 'warning' );
+    this.log( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ), 'warning' );
     return this;
   }
 
