@@ -83,17 +83,18 @@ StatElement.prototype._query_one_many = function( callback ) {
       var table_name = table.foreign_keys[fk][0];
       var pk         = table.foreign_keys[fk][1];
 
-      if( schema.compare_table_names( pk_table.raw_name, table_name ) )
-        map[ pk ] = fk;
-      else throw new Error(
+      if( !schema.compare_table_names( pk_table.raw_name, table_name ) )
+      self.log(
         'The relation `{relation}` in active record class `{class}` is specified with a foreign key `{key}` \
-         that does not point to the parent table `{table}`.'.format({
+         that point to the parent table `{parent_table}` instead of `{table}`.'.format({
           '{relation}'  : relation.name,
           '{class}'     : parent.model.class_name,
           '{table}'     : pk_table.name,
+          '{parent_table}' : table_name,
           '{key}'       : fk
-        })
-      );
+        }), 'warning');
+
+      map[ pk ] = fk;
     }
 
     else  // fk constraints undefined

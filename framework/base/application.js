@@ -314,6 +314,8 @@ Application.prototype._init = function ( config ) {
     app : this
   });
 
+  this.params        = this._config.params || {};
+
   /**
    * Менеджер моделей
    *
