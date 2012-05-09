@@ -75,6 +75,20 @@ UserIdentity.prototype.get_roles = function ( model, attribute, params ) {
 
 
 UserIdentity.prototype.manage = function ( model, params ) {
+  var EE   = process.EventEmitter;
+  var self = this;
+  if ( model instanceof EE && model.constructor == EE ) {
+    var emitter = new EE;
+
+    model
+      .on('success', function( result ){
+        emitter.emit('success', self.manage( result, params ));
+      })
+      .re_emit('error', emitter);
+
+    return emitter;
+  }
+
   if ( Array.isArray( model ) ) return model.map( function( model ) {
     return this.manage( model, params );
   }, this );
