@@ -1,6 +1,6 @@
 var path                  = require('path');
 var fs                    = require('fs');
-var dust                  = require('dust.js');
+var dust                  = require('dustjs-linkedin');
 var Session               = require('./session');
 var Router                = require('./routing/router');
 var Logger                = require('../logging/logger');
@@ -456,21 +456,14 @@ Application.prototype._init_core = function () {
 };
 
 
-//todo: полное описание
 /**
  * Загружает шаблоны
  *
  * @param {String} [view_path=''] путь, начиная от {@link Application.path_to_views}, где будут рекурсивно собираться
  * шаблоны
- * @param {String[]} [conflict_names=[]] повторяющиеся имена шаблонов, собираются для того, чтобы вывести сообщение о
- * том, чтобы данные шаблоны подключали по полному пути
- * @param {Object} [loaded_views={}] хэш загруженных вьюшек для выявления конфликтных названий
  */
-Application.prototype.load_views = function ( view_path, conflict_names, loaded_views ) {
+Application.prototype.load_views = function ( view_path ) {
   if ( !view_path && this.views_loaded && this._config.cache_views !== false ) return true;
-
-  conflict_names     = conflict_names || [];
-  loaded_views       = loaded_views   || {};
 
   var full_view_path = path.join( this.path_to_views, view_path );
   var stats          = null;
@@ -483,7 +476,7 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
   }
 
   if ( stats && stats.isDirectory() ) fs.readdirSync( full_view_path ).forEach( function( file ) {
-    this.load_views( path.join( view_path, file ), conflict_names, loaded_views );
+    this.load_views( path.join( view_path, file ) );
   }, this );
 
   else if ( stats && stats.isFile() && this._views_mtime[ view_path ] != stats.mtime.getTime() ) {
@@ -495,41 +488,9 @@ Application.prototype.load_views = function ( view_path, conflict_names, loaded_
 
     this._views_mtime[ view_path ] = stats.mtime.getTime();
     dust.loadSource( compiled );
-
-    var cached          = dust.cache[ view_path ];
-    var full_file_name  = path.basename( view_path );
-
-    if ( loaded_views[ full_file_name ] ) {
-      conflict_names.push( full_file_name );
-      dust.cache.__defineGetter__( full_file_name, function() {
-        throw new Error( 'Ambiguous file name: `%s`. Use full path to render it'.format( full_file_name ) );
-      } );
-      dust.cache.__defineSetter__( full_file_name, function() {} );
-    }
-    else {
-      dust.cache[ full_file_name ]    = cached;
-      loaded_views[ full_file_name ]  = true;
-    }
-
-    var file_name = path.basename( view_path, path.extname( view_path ) );
-
-    if ( loaded_views[ file_name ] ) {
-      dust.cache.__defineGetter__( file_name, function() {
-        throw new Error( 'Ambiguous abbreviation name: `%s`. Use name with extension or full path to render it'.format( file_name ) );
-      } );
-      dust.cache.__defineSetter__( file_name, function() {} );
-    }
-    else {
-      dust.cache[ file_name ]   = cached;
-      loaded_views[ file_name ] = true;
-    }
   }
 
   if ( !view_path ) {
-    if ( conflict_names.length ) this.log(
-      'You have few views with same name. Include them by full path. List of names of that views: `%s`'
-        .format( conflict_names.join(', ') ), 'warning'
-    );
     this.views_loaded = true;
     if ( stats ) this.log( 'Views are loaded', 'info' );
     this.emit( 'views_are_loaded' );

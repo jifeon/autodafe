@@ -20,9 +20,10 @@ function Controller( params ) {
 
 
 /**
+ * @see <a href="https://github.com/vybs/dustjs">LinkedIn dust</a>
  * @see <a href="http://akdubya.github.com/dustjs/">dust</a>
  */
-Controller.prototype.dust = require('dust.js');
+Controller.prototype.dust = require('dustjs-linkedin');
 
 
 /**

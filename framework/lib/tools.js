@@ -246,7 +246,7 @@ process.EventEmitter.prototype.re_emit = function() {
   return this;
 }
 
-var dust = exports.dust = require('dust.js');
+var dust = exports.dust = require('dustjs-linkedin');
 dust.filters.n = function( value ){
   return isFinite( value ) ? Number( value ) : 0;
 }
@@ -259,6 +259,10 @@ dust.filters.b = function( value ){
 dust.optimizers.format = function( ctx, node ) {
   return node
 };
+
+dust.helpers.cd = function(chunk, context, bodies, params){
+  var a = 7;
+}
 
 
 exports.get_dust_chunk_body_content = function( chunk, context, body ){

@@ -27,7 +27,7 @@
     "colors"                : ">=0.3.0",
     "emailjs"               : ">=0.1.8",
     "mysql"                 : ">=0.9.0",
-    "dust.js"               : ">=0.1.0",
+    "dustjs-linkedin"       : ">=0.4.0",
     "formidable"            : ">=1.0.2",
     "http-auth"             : ">=1.1.9"
   },
