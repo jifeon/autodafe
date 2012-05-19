@@ -260,10 +260,6 @@ dust.optimizers.format = function( ctx, node ) {
   return node
 };
 
-dust.helpers.cd = function(chunk, context, bodies, params){
-  var a = 7;
-}
-
 
 exports.get_dust_chunk_body_content = function( chunk, context, body ){
   var result = '';
