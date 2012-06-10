@@ -485,7 +485,7 @@ ActiveRecord.prototype.set_primary_key = function( primary_key ) {
  * post.content = "Description";
  * post.save()
  *   .on( 'error', function(e){} )
- *   .on( 'validation_error', function( errors ){} )
+ *   .on( 'not_valid', function( errors ){} )
  *   .on( 'success', function( result ){
  *     console.log( post.id == result.insert_id ); // primary key будет присвоен автоматически после сохранения
  *   } );

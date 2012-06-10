@@ -538,7 +538,7 @@ Model.prototype.validate = function ( callback, attributes ){
  * @param {String} name имя валидируемого атрибута
  * @param {Function} callback функция которая вызывается после валидации атрибута
  * @param {Error} [callback.error] Системная ошибка возникшая во время валидации
- * @param {Error} [callback.validation_error] Ошибка валидации; если атрибут валиден, то null
+ * @param {Error} [callback.not_valid] Ошибка валидации; если атрибут валиден, то null
  * @return {*}
  */
 Model.prototype.validate_attribute = function( name, callback ){
