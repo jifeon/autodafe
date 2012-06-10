@@ -438,6 +438,11 @@ Model.prototype.save = function ( callback, attributes ) {
   var emitter = new process.EventEmitter;
   var self    = this;
 
+  if ( typeof callback != 'function' ) {
+    attributes = callback;
+    callback   = null;
+  }
+
   this.validate(function( e ){
     if ( e ) return callback && callback( e );
     if ( self.has_errors() ) return callback && callback( null, self );
