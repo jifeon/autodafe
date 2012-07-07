@@ -153,7 +153,7 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
     var components_path = this.app.path_to_components;
 
     this._user_components = {};
-    if ( path.existsSync( components_path ) ) {
+    if ( fs.existsSync( components_path ) ) {
       this.log( 'Collecting user components in ' + components_path );
       this._collect_components_in_path( components_path, this._user_components );
     }
@@ -260,7 +260,7 @@ ComponentsManager.prototype.get_system_widget = function ( name ) {
     var widgets_path = path.join( __dirname, 'widgets' );
 
     this._system_widgets = {};
-    if ( path.existsSync( widgets_path ) ) {
+    if ( fs.existsSync( widgets_path ) ) {
       this.log( 'Collecting system widgets' );
       this._collect_components_in_path( widgets_path, this._system_widgets );
     }
