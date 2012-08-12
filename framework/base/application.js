@@ -272,7 +272,7 @@ Application.prototype._init = function ( config ) {
   /**
    * Признак того, что приложение запущенно
    *
-   * Выставляется в true если был вызов run. Повторно приложение запуститься не может. Свойство доступно только для
+   * Выставляется в true если был вызов {@link Application.run}. Свойство доступно только для
    * чтения.
    *
    * @type {Boolean}
@@ -828,4 +828,7 @@ Application.prototype.get_session = function ( id, client ) {
 Application.prototype.stop = function () {
   this.log( 'Stop application' );
   this.emit( 'stop' );
+  this._.is_running = false;
+  this.run = Application.prototype.run;
+  this.log( 'Application has stopped', 'info' );
 };

@@ -2,7 +2,7 @@ var vows        = require( 'autodafe/node_modules/vows' );
 var assert      = require( 'assert' );
 var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 
-var Query       = require('autodafe/framework/client_connections/query');
+var Request     = require('autodafe/framework/client_connections/request');
 
 
 function route_test( url, test_action, test_params, waited_params, query_params ) {
@@ -17,7 +17,7 @@ function route_test( url, test_action, test_params, waited_params, query_params 
         params  : test_params
       }, query_params );
 
-      var query  = new Query( query_params );
+      var query  = new Request( query_params );
       var good   = app.router.get_controller( 'good' );
       var action = null;
       var params = null;
@@ -40,7 +40,7 @@ function route_error_test( url, params ){
   return {
     topic : function( app ) { return app; },
     'should throw error 404' : function( app ){
-      var query  = new Query( {
+      var query  = new Request( {
         app     : app,
         url     : url,
         params  : params || null
@@ -95,8 +95,8 @@ vows.describe( 'components manager' ).addBatch({
       'good.action with string in path' : route_test( '/action/text', 'action', null, { text : 'text' } ),
       'good.action with params'         : route_test( '/action',      'action', action_params ),
       'good.action with params in path' : route_test( '/action/42',   'action', { text : 'text' }, action_params ),
-      'good.remove by delete query'     : route_test( '/remove',      'remove', null, {}, { connection_type : 'delete' } ),
-      'good.remove by post query'       : route_test( '/remove',      'remove', null, {}, { connection_type : 'post' } ),
+      'good.remove by delete query'     : route_test( '/remove',      'remove', null, {}, { type : 'delete' } ),
+      'good.remove by post query'       : route_test( '/remove',      'remove', null, {}, { type : 'post' } ),
       'good.domain_index'               : route_test( '/',            'domain_index', action_params, null, { host : 'domain.com' } ),
       'good.domain_action'              : route_test( '/action/42/text', 'domain_action', null, action_params, { host : 'domain.com:3000' } ),
 
@@ -167,7 +167,7 @@ vows.describe( 'components manager' ).addBatch({
         params = act_params;
       } );
 
-      app.router.route( new Query({
+      app.router.route( new Request({
         action : '/new_action/text',
         app    : app
       }) );

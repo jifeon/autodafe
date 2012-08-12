@@ -1,7 +1,7 @@
-var Query            = require('./query');
-var ClientConnection = require( './client_connection' );
+var Request          = global.autodafe.cc.Request;
+var ClientConnection = global.autodafe.cc.ClientConnection;
 
-module.exports = Client.inherits( autodafe.AppModule );
+module.exports = Client.inherits( global.autodafe.AppModule );
 
 
 /**
@@ -35,7 +35,7 @@ function Client( params ) {
 /**
  * @event
  * @name Client#receive_request
- * @param {Query} query
+ * @param {Request} query
  * @description Получен запрос
  */
 
@@ -54,6 +54,17 @@ function Client( params ) {
  * @param {Error|String}
  * @description Клиенту отправлена ошибка
  */
+
+
+/**
+ * Конструктор для создания запросов от данного клиента
+ *
+ * @type {Function}
+ * @see Request
+ * @see HTTPRequest
+ * @see WSRequest
+ */
+Client.prototype.request_contructor = global.autodafe.cc.Request;
 
 
 /**
@@ -156,15 +167,15 @@ Client.prototype._after_connect = function () {
  * Создает запрос
  *
  * @param {Object} [params={}] параметры для запроса, которые будут расширены ссылкой на приложение и клиент. Описание
- * параметров см. в {@link Query._init}
- * @returns {Query}
+ * параметров см. в {@link Request}
+ * @returns {Request}
  */
-Client.prototype.create_query = function ( params ) {
+Client.prototype.create_request = function ( params ) {
   params        = params || {};
   params.app    = this.app;
   params.client = this;
 
-  return new Query( params );
+  return new this.request_contructor( params );
 };
 
 
@@ -185,7 +196,7 @@ Client.prototype.disconnect = function () {
  *
  * Пытается передать запрос в {@link Router}, при ошибке вызывает {@link Client.send_error}
  *
- * @param {Query} query
+ * @param {Request} query
  * @see Client.create_query
  */
 Client.prototype.receive = function ( query ) {

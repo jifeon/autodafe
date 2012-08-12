@@ -50,3 +50,9 @@ WebSocketsServer.prototype._run = function () {
 
   this.log( 'WebSockets server for `%s` started at port %s'.format( this.connection_name, this.port ), 'info' );
 };
+
+
+WebSocketsServer.prototype.close = function(){
+  this.io.server.close();
+  this.log( 'WebSockets server for `%s` started at port %s has stoped'.format( this.connection_name, this.port ), 'info' );
+}

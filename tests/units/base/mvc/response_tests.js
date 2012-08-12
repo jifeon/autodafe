@@ -19,7 +19,7 @@ vows.describe( 'controller' ).addBatch({
         topic : function( controller ){
           var connection = app.create_connection();
           var client     = connection.create_client();
-          var query      = client.create_query({
+          var query      = client.create_request({
             action : 'test2.index'
           });
           return controller.create_response_for( query );

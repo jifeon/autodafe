@@ -151,7 +151,11 @@ HTTPServer.prototype._create_http_client = function ( request, response ) {
  */
 HTTPServer.prototype.close = function() {
   try{
-    if ( this._server ) this._server.close();
+    if ( this._server ) {
+      this._server.close();
+      this.log( 'HTTP server port closed', 'info' );
+    }
+    else this.log( 'No HTTP server to stop', 'warning' );
   } catch( e ) {
     this.log( e, 'warning' );
   }

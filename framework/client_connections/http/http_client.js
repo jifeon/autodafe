@@ -1,4 +1,3 @@
-var Client          = require('../client');
 var cookie          = require('../../lib/cookie');
 var formidable      = require('formidable');
 var content_types   = require('./content-types');
@@ -6,11 +5,21 @@ var fs              = require('fs');
 var path            = require('path');
 
 
-module.exports = HTTPClient.inherits( Client );
+module.exports = HTTPClient.inherits( global.autodafe.cc.Client );
 
+/**
+ *
+ *
+ * @param params
+ * @extends Client
+ * @constructor
+ */
 function HTTPClient( params ) {
   this._init( params );
 }
+
+
+HTTPClient.prototype.request_contructor = global.autodafe.cc.http.Request;
 
 
 HTTPClient.prototype.errors = {
@@ -45,13 +54,11 @@ HTTPClient.prototype._init = function( params ) {
 
 
 HTTPClient.prototype.receive = function () {
-  var query = this.create_query( {
-    url             : this.request.url,
-    host            : this.request.headers.host,
-    connection_type : this.request.method.toLowerCase()
+  var query = this.create_request({
+    request : this.request
   });
 
-  if ( query.connection_type == 'post' ) this._receive_post( query );
+  if ( query.method == 'post' ) this._receive_post( query );
   else this._receive_get( query );
 };
 
@@ -183,7 +190,11 @@ HTTPClient.prototype.send_error = function ( e, number ) {
   this.response.statusCode = e.number;
 
   try {
-    var query = this.create_query({ action : '/' + e.number });
+    var query = this.create_request({
+      action  : '/' + e.number,
+      request : this.request
+    });
+
     this.app.router.route( query );
   }
   catch( err ) {

@@ -5,7 +5,7 @@ var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 var Client            = require( 'autodafe/framework/client_connections/client' );
 var ClientConnection  = require( 'autodafe/framework/client_connections/client_connection' );
 var Session           = require( 'autodafe/framework/base/session' );
-var Query             = require( 'autodafe/framework/client_connections/query' );
+var Request           = require( 'autodafe/framework/client_connections/request' );
 
 vows.describe( 'client connection' ).addBatch({
   "Application" : {
@@ -83,13 +83,13 @@ vows.describe( 'client connection' ).addBatch({
 
         '.create_query()' : {
           topic : function( client ){
-            return client.create_query();
+            return client.create_request();
           },
 
           'should create query with `app` and `client` properties' : function( query ){
             var client = this.context.topics[1];
 
-            assert.instanceOf( query, Query );
+            assert.instanceOf( query, Request );
             assert.equal( query.app, client.app );
             assert.equal( query.client, client );
           },

@@ -188,6 +188,7 @@ Controller.prototype.render = function ( view, params, callback ) {
  * @param {Function} [callback={@link AppModule.default_callback}] функция, которая будет вызвана при окончаниии генерации шаблона
  * @param {Error} callback.error Ошибка, которая может возникнуть при генерации шаблона
  * @param {String} callback.text текст шаблона
+ * @deprecated
  */
 Controller.prototype.send_response = function ( view, client, params, callback ) {
   if ( typeof callback != 'function' ) callback = this.default_callback;

@@ -35,7 +35,7 @@ function ClientConnection( params ) {
 /**
  * @event
  * @name ClientConnection#receive_request
- * @param {Query} query запрос
+ * @param {Request} query запрос
  * @param {Client} client клиент от которого получен запрос
  * @description Получен запрос
  */

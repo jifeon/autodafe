@@ -243,10 +243,10 @@ Router.prototype.add_controller = function ( controller, name ) {
 /**
  * Перенаправляет запрос
  *
- * @param {Query} query запрос
+ * @param {Request} query запрос
  * @throws {Error} 404 если не найден подходящий маршрут
  * @throws {Error} 404 если не найден контроллер по наиболее релевантному маршруту
- * @throws {Error} 404 если возникла ошибка при вызове действия контроллера (см. {@link Controller.run_action})
+ * @throws {Error} 500 если возникла ошибка при вызове действия контроллера (см. {@link Controller.run_action})
  */
 Router.prototype.route = function( query ) {
   var error;
@@ -258,8 +258,8 @@ Router.prototype.route = function( query ) {
       'File not found and route not specified in section router.rules of configuration file or ' +
       'specified for other protocol or query type than `{current_ct}`').format( {
         '{route_rule}' : query.action,
-        '{current_ct}' : query.connection_type
-      } )
+        '{current_ct}' : query.type
+      })
     );
     error.number = 404;
     throw error;
@@ -279,7 +279,7 @@ Router.prototype.route = function( query ) {
     return controller.run_action( route.action, query.params, query.client );
   }
   catch ( e ) {
-    e.number = 404;
+    e.number = 500;
     throw e;
   }
 };

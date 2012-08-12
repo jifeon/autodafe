@@ -79,7 +79,7 @@ Route.prototype._parse_path = function ( route_path ) {
 
 
 Route.prototype.is_suitable_for = function ( query, extend_params_on_success ) {
-  if ( !this.is_allowed_con_type( query.connection_type ) ) return false;
+  if ( !this.is_allowed_con_type( query.type ) ) return false;
   if ( !this.check_filters( query.parsed_url ) ) return false;
 
   var matches = this.rule.exec( query.action );

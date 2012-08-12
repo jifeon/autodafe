@@ -6,8 +6,8 @@ Autodafe.inherits( AutodafePart );
 /**
  * Класс управляющий приложениями.
  *
- * Позволяет создавать приложения на основе конфигурации для них. По завершениею процесса закрывает все приложения.
- * ( {@link Application.close} )
+ * Позволяет создавать приложения на основе конфигурации для них. По завершению процесса останавливает все приложения.
+ * ( {@link Application.stop} )
  *
  * @constructor
  * @extends AutodafePart
@@ -52,6 +52,22 @@ Autodafe.prototype._init = function() {
   this.Controller       = require( './base/controller.js' );
   this.Model            = require( './base/model.js' );
   this.FormModel        = require( './base/models/form_model.js' );
+
+  this.cc                   = {};
+  this.cc.Client            = require( './client_connections/client.js' );
+  this.cc.ClientConnection  = require( './client_connections/client_connection.js' );
+  this.cc.Request           = require( './client_connections/request.js' );
+  this.cc.Response          = require( './client_connections/response.js' );
+  this.cc.AsyncListener     = require( './client_connections/async_listener.js' );
+  this.cc.http              = {};
+  this.cc.http.Client       = require( './client_connections/http/http_client.js' );
+  this.cc.http.Server       = require( './client_connections/http/http_server.js' );
+  this.cc.http.Request      = require( './client_connections/http/http_request.js' );
+  this.cc.ws                = {};
+  this.cc.ws.Client         = require( './client_connections/web_sockets/web_sockets_client.js' );
+  this.cc.ws.Server         = require( './client_connections/web_sockets/web_sockets_server.js' );
+  this.cc.ws.Request        = require( './client_connections/web_sockets/web_sockets_request.js' );
+
   this.db               = {};
   this.db.Expression    = require('./db/db_expression.js');
   this.db.Criteria      = require('./db/db_criteria.js');
@@ -131,7 +147,7 @@ Autodafe.prototype.get_application = function ( name ) {
  * Проверяет были ли выведены сообщения в консоль хоть из одного приложения, если нет - показывает сообщение, что
  * нужно настроить логгер
  *
- * Выолняет для всех приложений {@link Application.close}
+ * Выолняет для всех запущенных приложений {@link Application.close}
  *
  * @private
  */
@@ -151,8 +167,10 @@ Autodafe.prototype._on_exit = function () {
     'If you not see any log messages, preload and configure a `log_router` component. ' +
     'To hide this message run the main script with `--silent` option' );
 
-  for ( name in this._applications )
-    this._applications[ name ].stop();
+  for ( name in this._applications ) {
+    var app = this._applications[ name ];
+    if ( app.is_running ) app.stop();
+  }
 };
 
 var autodafe = module.exports = new Autodafe;
