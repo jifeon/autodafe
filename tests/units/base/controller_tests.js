@@ -118,7 +118,6 @@ vows.describe( 'controller' ).addBatch({
 //
 //      '.before_action should change arguments for action if it returns array' : function( controller ){
 //        var action_args;
-//        var after_action_args;
 //
 //        controller.once( 'test', function( args ) {
 //          action_args = args;
@@ -260,6 +259,65 @@ vows.describe( 'controller' ).addBatch({
 //              'should throw to handle_error' : function( e, res ){
 //                assert.isError( e );
 //              }
+//            }
+//          }
+//        },
+//
+//        'custom actions' : {
+//          topic : function( response, controller ){
+//            var self  = this;
+//            var async = response.new_async_tool();
+//            var emitter  = new process.EventEmitter;
+//
+//            process.nextTick( function(){
+//              emitter.emit('custom', 'action');
+//            });
+//
+//            async.add_emitter( emitter );
+//
+//            response.handle_error = this.callback;
+//            async.success( this.callback );
+//            controller.behavior_for( 'custom', function( response, request, param ){
+//              self.callback( null, param );
+//            } );
+//          },
+//
+//          'should throw to handle_error' : function( e, res ){
+//            assert.isNull( e );
+//            assert.equal( res, 'action' );
+//          },
+//
+//          'unique in emitter' : {
+//            topic : function( res, response, controller ){
+//              var self  = this;
+//              var async = response.new_async_tool();
+//              var emitter  = new process.EventEmitter;
+//
+//              process.nextTick( function(){
+//                emitter.emit('custom', 'action');
+//              });
+//
+//              async
+//                .add_emitter( emitter )
+//                .success( this.callback )
+//                .error( this.callback );
+//
+//              controller.behavior_for( 'custom', function( response, request, param ){
+//                self.callback( null );
+//              } );
+//
+//              response.behavior_for( 'custom', function( response, request, param ){
+//                self.callback( null );
+//              } );
+//
+//              async.behavior_for( 'custom', function( response, request, param ){
+//                self.callback( null, param );
+//              } );
+//            },
+//
+//            'should throw to handle_error' : function( e, res ){
+//              assert.isNull( e );
+//              assert.equal( res, 'action' );
 //            }
 //          }
 //        }

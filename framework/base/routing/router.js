@@ -243,29 +243,35 @@ Router.prototype.add_controller = function ( controller, name ) {
 /**
  * Перенаправляет запрос
  *
- * @param {Request} query запрос
+ * @param {Request} request запрос
  * @throws {Error} 404 если не найден подходящий маршрут
  * @throws {Error} 404 если не найден контроллер по наиболее релевантному маршруту
  * @throws {Error} 500 если возникла ошибка при вызове действия контроллера (см. {@link Controller.run_action})
  */
-Router.prototype.route = function( query ) {
-  var error;
+Router.prototype.route = function( request ) {
+  var error, route;
 
-  if ( !this._routes.some( function( route ){
-    return route.is_suitable_for( query, true );
-  } ) ) {
-    error = new Error( ('Route to `{route_rule}` failed. ' +
-      'File not found and route not specified in section router.rules of configuration file or ' +
-      'specified for other protocol or query type than `{current_ct}`').format( {
-        '{route_rule}' : query.action,
-        '{current_ct}' : query.type
-      })
+  this._routes.some( function( r ){
+    var request_params = r.is_suitable_for( request );
+    if ( !request_params ) return false;
+
+    route = r;
+    Object.merge( request.params, request_params );
+    return true;
+  });
+
+
+  if ( !route ) {
+    error = new Error(
+      'Route to `{route_rule}` failed. File not found and route not specified in section router.rules of configuration\
+       file or specified for other protocol or request type than `{current_ct}`'.format({
+        '{route_rule}' : request.action,
+        '{current_ct}' : request.type    })
     );
     error.number = 404;
     throw error;
   }
 
-  var route       = query.route;
   var controller  = this._controllers[ route.controller ];
   if ( !controller ) {
     error = new Error( 'Controller "%s" is not found'.format( route.controller ) );
@@ -276,7 +282,7 @@ Router.prototype.route = function( query ) {
   this.log( 'Route to `%s`'.format( route.path ), 'trace' );
 
   try {
-    return controller.run_action( route.action, query.params, query.client );
+    return controller.run_action( route.action, request );
   }
   catch ( e ) {
     e.number = 500;

@@ -14,11 +14,6 @@ Test.prototype.before_action = function ( action ) {
 };
 
 
-Test.prototype.after_action = function () {
-  this.emit( 'after_action', arguments );
-};
-
-
 Test.prototype.connect_client = function ( client ) {
   this.emit( 'connect_client', client );
 };

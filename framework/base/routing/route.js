@@ -78,20 +78,19 @@ Route.prototype._parse_path = function ( route_path ) {
 };
 
 
-Route.prototype.is_suitable_for = function ( query, extend_params_on_success ) {
-  if ( !this.is_allowed_con_type( query.type ) ) return false;
-  if ( !this.check_filters( query.parsed_url ) ) return false;
+Route.prototype.is_suitable_for = function ( request ) {
+  if ( !this.is_allowed_con_type( request.type ) ) return false;
+  if ( request instanceof global.autodafe.cc.http.Request && !this.check_filters( request.parsed_url ) ) return false;
 
-  var matches = this.rule.exec( query.action );
-  if ( matches && extend_params_on_success ) {
-    query.route = this;
+  var matches = this.rule.exec( request.action );
+  if ( !matches ) return false;
 
-    this.rule_params.forEach( function( param, i ){
-      query.params[ param ] = decodeURI( matches[ i+1 ] );
-    } );
-  }
+  var params = {};
+  this.rule_params.forEach( function( param, i ){
+    params[ param ] = decodeURI( matches[ i+1 ] );
+  } );
 
-  return matches;
+  return params;
 };
 
 

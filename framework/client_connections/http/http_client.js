@@ -191,7 +191,7 @@ HTTPClient.prototype.send_error = function ( e, number ) {
 
   try {
     var query = this.create_request({
-      action  : '/' + e.number,
+      action  : e.number,
       request : this.request
     });
 

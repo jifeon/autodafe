@@ -1,6 +1,4 @@
-var Response = require('autodafe/framework/client_connections/response');
-
-module.exports = Controller.inherits( autodafe.AppModule );
+module.exports = Controller.inherits( global.autodafe.AppModule );
 
 /**
  * Базовый класс для всех контроллеров в приожении.
@@ -78,30 +76,17 @@ Controller.prototype._init = function ( params ) {
 /**
  * Выполняется перед действием
  *
- * Метод выполняется непосредственно перед выполнением действия. Предпологается что этот метод будет переопределен в
+ * Метод выполняется непосредственно перед выполнением действия. Предполагается, что этот метод будет переопределен в
  * наследуемых классах.
  *
  * @param {String} action название действия, перед которым выполняется метод
- * @param {Object} params параметры, которые предназначены для этого действия
- * @param {Client} client клиент от которого пришел запрос
- * @returns {Boolean|Array|undefined} Если метод вернет false - ни само действие, ни {@link Controller.after_action}
- * вызваны не будут. Если метод вернет массив - то элементы этого массива будут переданы в действие и
- * {@link Controller.after_action} в качестве аргументов. В любом другом случае действие выполниться с аргументами по
- * умолчанию: params, client
+ * @param {Response} response заготовка ответа на запрос вызвавший действие
+ * @param {Request} request запрос, вызвавший действие
+ * @returns {Boolean|Array|undefined} Если метод вернет false, действие вызвано не будет. Если метод вернет массив, то
+ * элементы этого массива будут переданы в действие в качестве аргументов. В любом другом случае действие выполнится с
+ * аргументами по умолчанию: response, request
  */
-Controller.prototype.before_action  = function ( action, params, client ) { return undefined; };
-
-
-/**
- * Выполняется после действия
- *
- * Метод выполняется сразу после выполнением действия с аргументами которые были переданы действию. С добавленным
- * первым аргументов. Подробнее в {@link Controller.before_action} Для использования - переопределите метод в
- * наследуемом классе.
- *
- * @param {String} action выолненное действие
- */
-Controller.prototype.after_action   = function ( action /*, params, client*/ ) {};
+Controller.prototype.before_action  = function ( action, response, request ) { return undefined; };
 
 
 /**
@@ -124,35 +109,29 @@ Controller.prototype.connect_client = function ( client ) { return undefined; };
 /**
  * Запускает действие
  *
- * Проверяет, существует ли действие, после чего запускает {@link Controller.before_action}, сам метод и
- * {@link Controller.after_action}
+ * Проверяет, существует ли действие, после чего запускает {@link Controller.before_action} и сам метод
  *
  * @param {String} [action={@link Controller.default_action}] вызываемое действие
- * @param {Object} [params={}] параметры к действию
- * @param {Client} [client] клиент вызвавший действие
- * @throws {Error} если указано неправильное имя действия
- * @returns результат выполненного действия
+ * @param {Request} [request] запрос, вызвавший действие
+ * @throws {Error} если указанное имя действия не соответствует названию метода контроллера
+ * @returns {*|Boolean} результат выполненного действия
  */
-Controller.prototype.run_action = function ( action, params, client ) {
+Controller.prototype.run_action = function ( action, request ) {
   action = action || this.default_action;
 
   if ( typeof this[ action ] != 'function' )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
-  params = params || {};
-  var before_action_result = this.before_action( action, params, client );
+  var response = this.create_response();
+
+  var before_action_result = this.before_action( action, response, request );
   if ( before_action_result === false ) return false;
 
   var args = before_action_result instanceof Array
     ? before_action_result
-    : [ params, client ];
+    : [ response, request ];
 
-  var res = this[ action ].apply( this, args );
-
-  args.unshift( action );
-  this.after_action.apply( this, args );
-
-  return res;
+  return this[ action ].apply(this, args);
 };
 
 
@@ -203,6 +182,14 @@ Controller.prototype.send_response = function ( view, client, params, callback )
 Controller.prototype.global_view_params = function( response, client ){
   return {};
 };
+
+
+Controller.prototype.create_response = function( action ){
+  return new global.autodafe.cc.Response({
+    controller  : this,
+    app         : this.app
+  });
+}
 
 
 Controller.prototype.respond = function( view, params ){
