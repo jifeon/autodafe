@@ -1,6 +1,6 @@
 var http = require( 'http' );
 
-module.exports = ClientConnection.inherits( autodafe.Component );
+module.exports = ClientConnection.inherits( global.autodafe.Component );
 
 /**
  * Базовый класс для компонентов выполняющих подключение к приложению
@@ -93,6 +93,21 @@ ClientConnection.prototype.get_server = function ( port ) {
 
   return server;
 };
+
+
+/**
+ * Создает клиента
+ *
+ * Для наследуемых классов этот метод переопределен для соответствующих клиентов
+ *
+ * @returns {Client}
+ */
+ClientConnection.prototype.create_client = function(){
+  return new global.autodafe.cc.Client({
+    app        : this.app,
+    connection : this
+  });
+}
 
 
 /**

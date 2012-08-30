@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = Response.inherits( global.autodafe.AppModule );
 
 function Response( params ) {
@@ -8,24 +10,67 @@ function Response( params ) {
 Response.prototype._init = function( params ) {
   Response.parent._init.call( this, params );
 
-//  if ( !autodafe.Controller.is_instantiate( params.controller ) )
-//    throw new Error( '`controller` should be instance of Controller in Response._init' );
-//  this.controller = params.controller;
-//
-
-  this.view       = params.view;
-  this.params     = params.params || {};
-  this.client     = params.client;
   this.controller = params.controller;
+  this.params     = {};
 
-  this._emitter_count = 0;
-  this._sent          = false;
+  if ( !params.request ) this.log(
+    '`request` is undefined in Response constructor. An error will be thrown if you try send this response',
+    'warning' );
+  this.request        = params.request;
 
-  this.system_error     = this.controller.handle_system_error.bind( this.controller, this );
-  this.validation_error = this.controller.handle_validation_errors.bind( this.controller, this );
+  this._path_to_view  = path.join( this.controller.views_path, params.view + this.controller.views_ext );
+
+//  this._emitter_count = 0;
+//  this._sent          = false;
+
+//  this.system_error     = this.controller.handle_system_error.bind( this.controller, this );
+//  this.validation_error = this.controller.handle_validation_errors.bind( this.controller, this );
 
   this.params.cd  = this.controller.views_folder;
 };
+
+
+Response.prototype.view_name = function( name ){
+  if ( !name ) return path.basename( this._path_to_view, path.extname( this._path_to_view ));
+
+  this._path_to_view = path.join( path.dirname( this._path_to_view ), name + this.view_extension());
+  return this;
+}
+
+
+Response.prototype.view_extension = function( ext ){
+  if ( !ext ) return path.extname( this._path_to_view );
+
+  if ( ext.charAt(0) != '.' ) ext = '.' + ext;
+  this._path_to_view = path.join( path.dirname( this._path_to_view ), this.view_name() + ext);
+  return this;
+}
+
+
+Response.prototype.view_file_name = function( name ){
+  if ( !name ) return this.view_name() + this.view_extension();
+
+  this._path_to_view = path.join( path.dirname( this._path_to_view ), name);
+  return this;
+}
+
+
+Response.prototype.view_path = function( p ){
+  if ( !p ) return this._path_to_view;
+
+  this._path_to_view = path.resolve( this.app.path_to_views, p );
+  return this;
+}
+
+
+Response.prototype.new_async_tool = function(){
+  return new global.autodafe.cc.AsyncListener({
+    app      : this.app,
+    response : this
+  });
+}
+
+
 
 
 Response.prototype.send = function( params ){

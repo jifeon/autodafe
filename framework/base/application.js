@@ -832,3 +832,34 @@ Application.prototype.stop = function () {
   this.run = Application.prototype.run;
   this.log( 'Application has stopped', 'info' );
 };
+
+
+/**
+ * Создает подключение к приложение
+ *
+ * Подключение можно создавать автоматически, если указать необходимые настройки в конфигурационном файле приложения,
+ * например в секциях config.components.http и config.components.web_sockets Данный метод удобно использовать в
+ * приложениях, которые создают множество различных подключений. Также при помощи метода можно создать внутреннее
+ * подключение, которое довольно удобно использовать в тестах.
+ *
+ * @param {String} [type="internal"] тип подключения; может быть "http", "ws" и "internal"
+ * @param {Object} [params] параметры для создаваемого подключения
+ * @returns {ClientConnection} в зависимости от типа подключения может возвращать {@link HTTPServer} и
+ * {@link WebSocketsServer}
+ */
+Application.prototype.create_connection = function( type, params ){
+  if ( !params )      params = {};
+  if ( !params.name ) params.name = type || 'internal';
+  params.app = this;
+
+  switch( type ) {
+    case 'http':
+      return new global.autodafe.cc.http.Server( params );
+
+    case 'ws':
+      return new global.autodafe.cc.ws.Server( params );
+
+    default:
+      return new global.autodafe.cc.ClientConnection( params );
+  }
+}

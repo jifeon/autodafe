@@ -1,4 +1,5 @@
 var vows        = require( 'autodafe/node_modules/vows' );
+var path        = require( 'path' );
 var assert      = require( 'assert' );
 var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 
@@ -90,135 +91,154 @@ vows.describe( 'controller' ).addBatch({
           args = _args;
         });
 
-        controller.run_action('test');
+        var connection = this.context.topics[1].create_connection();
+        var client     = connection.create_client();
+        var request    = client.create_request();
+        controller.run_action('test', request);
 
         assert.instanceOf( args[0], global.autodafe.cc.Response );
         assert.instanceOf( args[1], global.autodafe.cc.Request );
       },
 
-//      '.before_action should stop action running if it returns false' : function( controller ){
-//        var test_action_has_run = false;
-//
-//        controller.before_action = function(){
-//          return false;
-//        }
-//
-//        controller.once( 'test', function() {
-//          test_action_has_run = true;
-//        } );
-//
-//        controller.run_action( 'test' );
-//        assert.isFalse( test_action_has_run );
-//
-//        controller.before_action = controller.constructor.prototype.before_action;
-//
-//        controller.run_action( 'test' );
-//        assert.isTrue( test_action_has_run );
-//      },
-//
-//      '.before_action should change arguments for action if it returns array' : function( controller ){
-//        var action_args;
-//
-//        controller.once( 'test', function( args ) {
-//          action_args = args;
-//        } );
-//
-//        controller.before_action = function(){
-//          return [ 1, 2 ];
-//        }
-//
-//        controller.run_action( 'test' );
-//
-//        assert.deepEqual( Array.prototype.slice.call( action_args, 0 ), [ 1, 2 ] );
-//
-//        controller.before_action = controller.constructor.prototype.before_action;
-//      },
-//
-//      '.render' : {
-//        topic : function( controller ){
-//          controller.render( 'test.json', { message : 'ok' }, this.callback );
-//        },
-//
-//        'json' : function( err, data ) {
-//          assert.isNull( err );
-//
-//          var a;
-//          assert.doesNotThrow( function() {
-//            eval( 'a = ' + data );
-//          } );
-//          assert.deepEqual( a, {
-//            test : 'ok'
-//          } );
-//        }
-//      },
-//
-//      '.action' : {
-//        topic : function( controller, app ){
-//          var connection = app.create_connection();
-//          var client     = connection.create_client();
-//          var query      = client.create_request({
-//            action : 'test.redirect_action'
-//          });
-//
-//          var emitter = new process.EventEmitter;
-//          controller.on( 'test', emitter.emit.bind( emitter, 'success' ) );
-//
-//          client.receive( query );
-//          return emitter;
-//        },
-//
-//        'should change response' : function( args ){
-//          var response = args[0];
-//          assert.equal( response.view_name(),       'test'            );
-//          assert.equal( response.view_file_name(),  'test.html'       );
-//          assert.equal( response.view_extension(),  'html'            );
-//          assert.equal( response.view_path(),       'test.html'       );
-//          assert.equal( response.full_view_path(),  'views/test.html' );
-//        }
-//      },
-//
-//      'async tools' : {
-//        topic : function( controller ){
-//          var connection = app.create_connection();
-//          var client     = connection.create_client();
-//          var query      = client.create_request({
-//            action : 'test.redirect_action'
-//          });
-//          return controller.create_response_for( query );
-//        },
-//
-//        'normal work' : {
-//          topic : function( response ){
-//            var self  = this;
-//            var async = response.new_async_tool();
-//
-//            var emitter  = new process.EventEmitter;
-//            var emitter2 = new process.EventEmitter;
-//
-//            process.nextTick( function(){
-//              emitter.emit('success', 'emitter');
-//              process.nextTick( function(){
-//                emitter2.emit('success', 'emitter2');
-//              });
-//            });
-//
-//            async.add_emitter( emitter );
-//            async.stack <<= emitter2;
-//
-//            (function( cb ){
-//              process.nextTick( cb.bind( null, null, 'callback' ) );
-//            })( async.new_callback() );
-//
-//            async.success( function(){ self.callback( null, arguments )});
-//          },
-//
-//          'async.success' : function( args ){
-//            assert.deepEqual( args, ['emitter', 'emitter2', 'callback']);
-//          }
-//        },
-//
-//        'error handling' : {
-//          'in emitter' : {
+      '.before_action should stop action running if it returns false' : function( controller ){
+        var test_action_has_run = false;
+
+        controller.before_action = function(){
+          return false;
+        }
+
+        controller.once( 'test', function() {
+          test_action_has_run = true;
+        } );
+
+        controller.run_action( 'test' );
+        assert.isFalse( test_action_has_run );
+
+        controller.before_action = controller.constructor.prototype.before_action;
+
+        controller.run_action( 'test' );
+        assert.isTrue( test_action_has_run );
+      },
+
+      '.before_action should change arguments for action if it returns array' : function( controller ){
+        var action_args;
+
+        controller.once( 'test', function( args ) {
+          action_args = args;
+        } );
+
+        controller.before_action = function(){
+          return [ 1, 2 ];
+        }
+
+        controller.run_action( 'test' );
+
+        assert.deepEqual( Array.prototype.slice.call( action_args, 0 ), [ 1, 2 ] );
+
+        controller.before_action = controller.constructor.prototype.before_action;
+      },
+
+      '.render' : {
+        topic : function( controller ){
+          controller.render( 'test.json', { message : 'ok' }, this.callback );
+        },
+
+        'json' : function( err, data ) {
+          assert.isNull( err );
+
+          var a;
+          assert.doesNotThrow( function() {
+            eval( 'a = ' + data );
+          } );
+          assert.deepEqual( a, {
+            test : 'ok'
+          } );
+        }
+      },
+
+      '.action' : {
+        topic : function( controller, app ){
+          var connection = app.create_connection();
+          var client     = connection.create_client();
+          var request    = client.create_request({
+            action : 'redirect'
+          });
+
+          var emitter = new process.EventEmitter;
+          controller.on( 'test', emitter.emit.bind( emitter, 'success' ) );
+
+          client.receive( request );
+          return emitter;
+        },
+
+        'should change response' : function( args ){
+          var response = args[0];
+          assert.equal( response.view_name(),       'test'            );
+          assert.equal( response.view_file_name(),  'test.html'       );
+          assert.equal( response.view_extension(),  '.html'           );
+          assert.equal( response.view_path(), path.join( response.controller.views_path, 'test.html' ));
+        }
+      },
+
+      'async tools' : {
+        topic : function( controller ){
+          return controller.create_response('redirect_action');
+        },
+
+        'normal work' : {
+          topic : function( response ){
+            var self  = this;
+            var async = response.new_async_tool();
+
+            var emitter  = new process.EventEmitter;
+            var emitter2 = new process.EventEmitter;
+
+            process.nextTick( function(){
+              emitter.emit('success', 'emitter');
+              process.nextTick( function(){
+                emitter2.emit('success', 'emitter2');
+              });
+            });
+
+            async.handle_emitter( emitter );
+            async.stack <<= emitter2;
+
+            (function( cb ){
+              process.nextTick( cb.bind( null, null, 'callback' ) );
+            })( async.get_callback() );
+
+            async.success( function(){ self.callback( null, Array.prototype.slice.call(arguments, 0))});
+          },
+
+          'async.success' : function( args ){
+            assert.deepEqual( args, ['emitter', 'emitter2', 'callback']);
+          }
+        },
+
+        'error handling' : {
+          'in emitter' : {
+            topic : function( response, controller ){
+              var self  = this;
+              var async = response.new_async_tool();
+              var emitter  = new process.EventEmitter;
+
+              process.nextTick( function(){
+                emitter.emit('error', new Error);
+              });
+
+              async.handle_emitter( emitter );
+
+              response.handle_error = this.callback;
+              async.success( function(){ self.callback( null )});
+            },
+
+            'should throw to handle_error' : function( e, res ){
+              console.log( e );
+              assert.isError( e );
+            }
+          },
+
+//          'unique in emitter' : {
 //            topic : function( response, controller ){
 //              var self  = this;
 //              var async = response.new_async_tool();
@@ -228,40 +248,20 @@ vows.describe( 'controller' ).addBatch({
 //                emitter.emit('error', new Error);
 //              });
 //
-//              async.add_emitter( emitter );
+//              async
+//                .handle_emitter( emitter )
+//                .success( function(){ self.callback( null )})
+////                .error( this.callback );
 //
-//              response.handle_error = this.callback;
-//              async.success( function(){ self.callback( null )});
+//              response.handle_error = function(){ self.callback( null )};
 //            },
 //
-//            'should throw to handle_error' : function( e, res ){
+//            'should throw' : function( e, res ){
+//              console.log( e );
 //              assert.isError( e );
-//            },
-//
-//            'unique in emitter' : {
-//              topic : function( res, response, controller ){
-//                var self  = this;
-//                var async = response.new_async_tool();
-//                var emitter  = new process.EventEmitter;
-//
-//                process.nextTick( function(){
-//                  emitter.emit('error', new Error);
-//                });
-//
-//                async
-//                  .add_emitter( emitter )
-//                  .success( function(){ self.callback( null )})
-//                  .error( this.callback );
-//
-//                response.handle_error = function(){ self.callback( null )};
-//              },
-//
-//              'should throw to handle_error' : function( e, res ){
-//                assert.isError( e );
-//              }
 //            }
 //          }
-//        },
+        },
 //
 //        'custom actions' : {
 //          topic : function( response, controller ){
@@ -273,7 +273,7 @@ vows.describe( 'controller' ).addBatch({
 //              emitter.emit('custom', 'action');
 //            });
 //
-//            async.add_emitter( emitter );
+//            async.handle_emitter( emitter );
 //
 //            response.handle_error = this.callback;
 //            async.success( this.callback );
@@ -298,7 +298,7 @@ vows.describe( 'controller' ).addBatch({
 //              });
 //
 //              async
-//                .add_emitter( emitter )
+//                .handle_emitter( emitter )
 //                .success( this.callback )
 //                .error( this.callback );
 //
@@ -321,7 +321,7 @@ vows.describe( 'controller' ).addBatch({
 //            }
 //          }
 //        }
-//      },
+      },
 //
 //      '.connect_client' : function(){
 //        throw 'no test';

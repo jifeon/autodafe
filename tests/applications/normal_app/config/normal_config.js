@@ -20,7 +20,8 @@ module.exports = {
   router : {
     rules : {
       'test'                   : 'test.test',
-      'test_client_connection' : 'test.test_client_connection'
+      'test_client_connection' : 'test.test_client_connection',
+      'redirect'               : 'test.redirect_action'
     }
   },
 

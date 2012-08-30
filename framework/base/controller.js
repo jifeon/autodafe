@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = Controller.inherits( global.autodafe.AppModule );
 
 /**
@@ -57,6 +59,36 @@ Controller.prototype._init = function ( params ) {
    * @default "index"
    */
   this.default_action = 'index';
+
+  /**
+   * Директория, в которой лежат представления для данного контроллера
+   *
+   * Можно указать не просто имя директории, но и относительный путь, начиная от {@link Application.path_to_views}
+   *
+   * @type {String}
+   * @default "."
+   */
+  this.views_folder   = '.';
+
+  /**
+   * Абсолютный путь до директории, в которой данный контроллер по умолчанию ищет представления
+   *
+   * Свойство доступно только для чтения
+   *
+   * @field
+   * @name views_path
+   * @type {String}
+   */
+  this._.views_path.get = function(){
+    return path.join( this.app.path_to_views, this.views_folder );
+  }
+
+  /**
+   * Расширение представлений, используемое по умолчанию для данного контроллера
+   *
+   * @type {String}
+   */
+  this.views_ext      = '.html';
 
   /**
    * Ссылка на {@link Application.models} Доступно только для чтения
@@ -122,7 +154,7 @@ Controller.prototype.run_action = function ( action, request ) {
   if ( typeof this[ action ] != 'function' )
     throw new Error( 'Unspecified action "%s" in Controller "%s"'.format( action, this.name ) );
 
-  var response = this.create_response();
+  var response = this.create_response( action, request );
 
   var before_action_result = this.before_action( action, response, request );
   if ( before_action_result === false ) return false;
@@ -133,6 +165,34 @@ Controller.prototype.run_action = function ( action, request ) {
 
   return this[ action ].apply(this, args);
 };
+
+
+/**
+ * Вызывает действие, при этом меняет все пути в {@link Response}
+ *
+ * Метод удобно использовать для перенаправления действия. Все аргументы, кроме первого попадут в вызываемое
+ * действие в том же порядке, что они попали в этот метод
+ *
+ * @param {String} action имя действия, которое необходимо вызвать
+ * @param {Response} response
+ * @return {*} Возвращает то, что вернуло вызванное действие
+ * @example
+ *
+ * <pre><code class="javascript">
+ * Site.prototype.one = function( response ){
+ *   this.action( 'two', response );
+ * }
+ *
+ * Site.prototype.two = function( response ){
+ *   response.view_name();  // вернет 'two' как если бы действие было вызвано изначально
+ * }
+ * </code></pre>
+ */
+Controller.prototype.action = function( action, response ){
+  response.controller = this;
+  response.view_name( action );
+  return this[ action ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+}
 
 
 /**
@@ -184,10 +244,12 @@ Controller.prototype.global_view_params = function( response, client ){
 };
 
 
-Controller.prototype.create_response = function( action ){
+Controller.prototype.create_response = function( action, request ){
   return new global.autodafe.cc.Response({
     controller  : this,
-    app         : this.app
+    app         : this.app,
+    view        : action,
+    request     : request
   });
 }
 

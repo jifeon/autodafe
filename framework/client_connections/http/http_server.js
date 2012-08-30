@@ -1,9 +1,7 @@
-var ClientConnection = require('../client_connection');
-var HTTPClient       = require('./http_client');
-var path             = require('path');
-var auth             = require('http-auth');
+var path = require('path');
+var auth = require('http-auth');
 
-module.exports = HTTPServer.inherits( ClientConnection );
+module.exports = HTTPServer.inherits( global.autodafe.cc.ClientConnection );
 
 
 /**
@@ -113,8 +111,8 @@ HTTPServer.prototype._run = function () {
 
   var self = this;
   this._server.on( 'request', function( request, response ) {
-    if ( basic_auth ) basic_auth.apply( request, response, self._create_http_client.bind( self, request, response ) );
-    else self._create_http_client( request, response );
+    if ( basic_auth ) basic_auth.apply( request, response, self.create_client.bind( self, request, response ) );
+    else self.create_client( request, response );
   } );
 
   this._server.on( 'close', function( errno ) {
@@ -126,16 +124,16 @@ HTTPServer.prototype._run = function () {
 
 
 /**
- * Создает {@link HTTPClient}
+ * Создает http клиента
  *
- * @private
  * @param {http.ServerRequest} request
  * @param {http.ServerResponse} response
  * @see <a href="http://nodejs.org/docs/latest/api/http.html#http.ServerRequest">http.ServerRequest in node docs</a>
  * @see <a href="http://nodejs.org/docs/latest/api/http.html#http.ServerResponse">http.ServerResponse in node docs</a>
+ * @returns {HTTPClient}
  */
-HTTPServer.prototype._create_http_client = function ( request, response ) {
-  new HTTPClient({
+HTTPServer.prototype.create_client = function ( request, response ) {
+  return new global.autodafe.cc.http.Client({
     app         : this.app,
     connection  : this,
     request     : request,

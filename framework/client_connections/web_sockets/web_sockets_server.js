@@ -1,8 +1,6 @@
-var io                = require('socket.io');
-var ClientConnection  = require('../client_connection');
-var WebSocketsClient  = require('./web_sockets_client');
+var io = require('socket.io');
 
-module.exports = WebSocketsServer.inherits( ClientConnection );
+module.exports = WebSocketsServer.inherits( global.autodafe.cc.ClientConnection );
 
 function WebSocketsServer( config ) {
   this._init( config );
@@ -40,16 +38,25 @@ WebSocketsServer.prototype._run = function () {
   this._.io = this.ios[ this.port ];
 
   var self = this;
-  this.io.of( '/' + this.connection_name ).on( 'connection', function( client ) {
-    new WebSocketsClient({
-      app        : self.app,
-      ws_client  : client,
-      connection : self
-    });
-  } );
+  this.io.of( '/' + this.connection_name ).on( 'connection', this.create_client.bind( this ) );
 
   this.log( 'WebSockets server for `%s` started at port %s'.format( this.connection_name, this.port ), 'info' );
 };
+
+
+/**
+ * Создает WebSockets клиента
+ *
+ * @param io_client
+ * @returns {WebSocketsClient}
+ */
+WebSocketsServer.prototype.create_client = function( io_client ){
+  return new global.autodafe.cc.ws.Client({
+    app        : this.app,
+    ws_client  : io_client,
+    connection : this
+  });
+}
 
 
 WebSocketsServer.prototype.close = function(){

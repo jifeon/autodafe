@@ -1,33 +1,34 @@
-module.exports = Listener.inherits( global.autodafe.AppModule );
+module.exports = AsyncListener.inherits( global.autodafe.lib.Listener );
 
-function Listener( params ) {
+function AsyncListener( params ) {
   this._init( params );
 }
 
 
-Listener.__current_stack = null;
-Listener.__emitter       = null;
+AsyncListener.__current_stack = null;
+AsyncListener.__emitter       = null;
 
 
 process.EventEmitter.prototype.valueOf = function(){
-  Listener.__emitter = this;
+  AsyncListener.__emitter = this;
   return Object.prototype.valueOf.call( this );
 }
 
 
-Listener.prototype._init = function( params ) {
-  Listener.parent._init.call( this, params );
+AsyncListener.prototype._init = function( params ) {
+  AsyncListener.parent._init.call( this, params );
 
   this.response       = params.response;
-  this.callback       = null;
-  this.emitter        = new process.EventEmitter;
-  this.async_listener = this.app.tools.create_async_listener( 0, this.finish.bind( this ), null, {
-    do_not_fire: true
-  } );
 
+  this._init_stack();
+  this._init_behaviors();
+};
+
+
+AsyncListener.prototype._init_stack = function(){
   this.__stack = {
     valueOf : function(){
-      Listener.__current_stack = this;
+      AsyncListener.__current_stack = this;
       return 0;
     }
   };
@@ -38,46 +39,43 @@ Listener.prototype._init = function( params ) {
     },
 
     set : function(){
-      if ( !Listener.__emitter || Listener.__current_stack != this.__stack ) return false;
+      if ( !AsyncListener.__emitter || AsyncListener.__current_stack != this.__stack ) return false;
 
-      var emitter        = Listener.__emitter;
-      Listener.__emitter = null;
+      var emitter = AsyncListener.__emitter;
+      AsyncListener.__emitter = null;
       this.handle_emitter( emitter );
     }
   } );
+}
+
+
+AsyncListener.prototype._init_behaviors = function(){
+  Object.merge( this.behaviors, this.response.behaviors );
+  var self = this;
+
+  this.on( 'error', function( e ){
+    self.handle_error(e);
+  });
+  this.on( 'success', function(){
+    self.handle_success.apply( self, arguments );
+  } );
+}
+
+
+AsyncListener.prototype.handle_error = function( e ){
+  this.response.handle_error(e);
+}
+
+
+AsyncListener.prototype.handle_success = function(){}
+
+
+
+AsyncListener.prototype.success = function( cb ){
+  this.handle_success = cb;
 };
 
 
-Listener.prototype.handle_emitter = function( emitter ){
-  this.async_listener.count++;
-  emitter
-    .re_emit( 'success', 'error', this.async_listener.get_emitter( this.async_listener.count - 1 ) )
-    .on('not_valid', this.response.validation_error );
-};
-
-
-Listener.prototype.success = function( callback ){
-  this.callback = callback;
-};
-
-
-Listener.prototype.finish = function( params ){
-  if ( params.error ) {
-    this.response.system_error( params.error );
-    return false;
-  }
-
-  var result = null;
-  if ( this.callback ) {
-
-    var args = [];
-    for ( var n in params ) {
-      args[ n ] = params[n];
-    }
-
-    result = this.callback.apply( null, args );
-  }
-  else result = this.response.controller.handle_success( params );
-
-  this.emitter.emit( 'success', result );
-};
+AsyncListener.prototype.error = function( f ){
+  this.handle_error = f;
+}

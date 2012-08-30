@@ -196,17 +196,17 @@ Client.prototype.disconnect = function () {
  *
  * Пытается передать запрос в {@link Router}, при ошибке вызывает {@link Client.send_error}
  *
- * @param {Request} query
+ * @param {Request} request
  * @see Client.create_query
  */
-Client.prototype.receive = function ( query ) {
+Client.prototype.receive = function ( request ) {
   this.log( 'Message has been received from %s. Session id - `%s`'.format( this.class_name, this.get_session_id() ) );
 
-  this.emit( 'receive_request', query );
-  this.connection.emit( 'receive_request', query, this );
+  this.emit( 'receive_request', request );
+  this.connection.emit( 'receive_request', request, this );
 
   try {
-    this.app.router.route( query );
+    this.app.router.route( request );
   }
   catch ( e ) {
     this.send_error( e );

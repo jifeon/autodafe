@@ -53,20 +53,24 @@ Autodafe.prototype._init = function() {
   this.Model            = require( './base/model.js' );
   this.FormModel        = require( './base/models/form_model.js' );
 
+  this.lib              = {};
+  this.lib.tools        = tools;
+  this.lib.Listener     = require('./lib/listener2.js');
+
   this.cc                   = {};
-  this.cc.Client            = require( './client_connections/client.js' );
-  this.cc.ClientConnection  = require( './client_connections/client_connection.js' );
   this.cc.Request           = require( './client_connections/request.js' );
+  this.cc.ClientConnection  = require( './client_connections/client_connection.js' );
+  this.cc.Client            = require( './client_connections/client.js' );
   this.cc.Response          = require( './client_connections/response.js' );
   this.cc.AsyncListener     = require( './client_connections/async_listener.js' );
   this.cc.http              = {};
-  this.cc.http.Client       = require( './client_connections/http/http_client.js' );
-  this.cc.http.Server       = require( './client_connections/http/http_server.js' );
   this.cc.http.Request      = require( './client_connections/http/http_request.js' );
+  this.cc.http.Server       = require( './client_connections/http/http_server.js' );
+  this.cc.http.Client       = require( './client_connections/http/http_client.js' );
   this.cc.ws                = {};
-  this.cc.ws.Client         = require( './client_connections/web_sockets/web_sockets_client.js' );
-  this.cc.ws.Server         = require( './client_connections/web_sockets/web_sockets_server.js' );
   this.cc.ws.Request        = require( './client_connections/web_sockets/web_sockets_request.js' );
+  this.cc.ws.Server         = require( './client_connections/web_sockets/web_sockets_server.js' );
+  this.cc.ws.Client         = require( './client_connections/web_sockets/web_sockets_client.js' );
 
   this.db               = {};
   this.db.Expression    = require('./db/db_expression.js');
