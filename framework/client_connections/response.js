@@ -18,16 +18,33 @@ Response.prototype._init = function( params ) {
     'warning' );
   this.request        = params.request;
 
-  this._path_to_view  = path.join( this.controller.views_path, params.view + this.controller.views_ext );
+  this._path_to_view   = path.join( this.controller.views_path, params.view + this.controller.views_ext );
+  this.async_listener  = null;
+  this._params_names  = [];
+  this._global_params_merged = false;
 
 //  this._emitter_count = 0;
 //  this._sent          = false;
 
-//  this.system_error     = this.controller.handle_system_error.bind( this.controller, this );
-//  this.validation_error = this.controller.handle_validation_errors.bind( this.controller, this );
+//  this.params.cd  = this.controller.views_folder;
 
-  this.params.cd  = this.controller.views_folder;
+  this._init_async_listener();
 };
+
+
+Response.prototype._init_async_listener = function(){
+  this.async_listener = new global.autodafe.cc.AsyncListener({
+    app       : this.app,
+    response  : this
+  });
+
+  this.async_listener.success( this._try_send.bind( this ) );
+
+  for ( var action in this.controller.behaviors ){
+    var behavior = this.controller.behaviors[ action ];
+    this.async_listener.behavior_for(action, behavior.bind( null, this, this.request ));
+  }
+}
 
 
 Response.prototype.view_name = function( name ){
@@ -65,43 +82,72 @@ Response.prototype.view_path = function( p ){
 
 Response.prototype.new_async_tool = function(){
   return new global.autodafe.cc.AsyncListener({
-    app      : this.app,
-    response : this
+    app       : this.app,
+    response  : this,
+    behaviors : this.async_listener.behaviors
   });
 }
 
 
+Response.prototype.handle_error = function( e ){
+  this.controller.handle_error(e, this, this.request);
+}
+
+
+Response.prototype.behavior_for = function( action, cb ){
+  this.async_listener.behavior_for( action, cb );
+}
 
 
 Response.prototype.send = function( params ){
-  if ( params instanceof Error ) return this.client.send_error( params );
-
+  if ( this._sent ) return false;
   this._sent = true;
+
+  if ( params instanceof Error ) return this.request.client.send_error( params );
   this.merge_params( params );
 
-  var self = this;
-  process.nextTick(function(){
-    if ( !self._emitter_count ) {
-      self.controller.respond( self.view, self.params ).to( self.client );
-    }
-  });
-
+  if ( !this._params_names.length ) this.forced_send();
   return this;
 };
 
 
-Response.prototype.after = function( ee ){
-  this._process_emitter( ee );
-};
+Response.prototype._try_send = function(){
+  for ( var i = 0, i_ln = arguments.length; i<i_ln; i++ )
+    this.params[ this._params_names[i] ] = arguments[i];
+
+  this._params_names = [];
+
+  if ( this._sent ) this.forced_send();
+}
+
+
+Response.prototype.forced_send = function(){
+  var self      = this;
+  var view_name = path.relative( this.app.path_to_views, this.view_path() );
+
+  this.controller.render( view_name, this.params, function( e, data ){
+    if ( e ) return self.request.client.send_error( e );
+
+    self.request.client.send( data );
+  });
+
+  return this;
+}
 
 
 Response.prototype.merge_params = function( params ){
-  var EE    = process.EventEmitter;
+  if ( !this._global_params_merged ) {
+    this._global_params_merged = true;
+    this.merge_params( this.controller.global_view_params( this, this.request ));
+  }
+
+  var EE = process.EventEmitter;
 
   for ( var name in params ) {
     var value = params[ name ];
-    if ( value instanceof EE && value.constructor == EE && !this.params[ name ] ) {
-      this._process_emitter( value, name );
+    if ( value.constructor == EE ) {
+      this.async_listener.handle_emitter( value );
+      this._params_names.push( name );
     }
 
     this.params[ name ] = value;
@@ -111,27 +157,12 @@ Response.prototype.merge_params = function( params ){
 };
 
 
-Response.prototype.create_listener = function(){
-  return this.controller.create_listener( this );
-};
+Response.prototype.callback_for = function( name ){
+  this._params_names.push( name );
+  return this.async_listener.get_callback();
+}
 
 
 Response.prototype.redirect = function( uri ){
-  return this.client.redirect( uri );
-};
-
-
-Response.prototype._process_emitter = function( emitter, name ){
-  var self = this;
-
-  this._emitter_count++;
-  emitter
-    .on('error',     this.system_error )
-    .on('not_valid', this.validation_error )
-    .on('success', function( result ){
-      if ( name ) self.params[ name ] = result;
-      if ( !--self._emitter_count && self._sent ) {
-        self.controller.respond( self.view, self.params ).to( self.client );
-      }
-    } );
+  return this.request.client.redirect( uri );
 };

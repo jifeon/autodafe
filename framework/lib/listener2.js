@@ -9,6 +9,7 @@ function Listener() {
 
 Listener.prototype._init = function(){
   this.behaviors = {};
+  this.emitters  = {};
   this.count     = 0;
   this.args      = [];
   this.arg_num   = 0;
@@ -26,6 +27,9 @@ Listener.prototype.handle_emitter = function( emitter ){
   for ( var action in this.behaviors ){
     emitter.on( action, this._run_behavior.bind( this, action, n ) );
   }
+
+  this.emitters[ n ] = emitter;
+  return this;
 }
 
 
@@ -40,6 +44,12 @@ Listener.prototype.get_callback = function(){
 
 Listener.prototype.behavior_for = function( action, cb ){
   this.behaviors[ action ] = cb;
+
+  for ( var n in this.emitters ){
+    this.emitters[n].on( action, this._run_behavior.bind( this, action, n ) );
+  }
+
+  return this;
 }
 
 
@@ -80,9 +90,11 @@ Listener.prototype._run_behavior = function( action, n ){
 
 
 Listener.prototype.reset = function(){
-  this.count = 0;
-  this.arg_0 = this.arg_num;
-  this.args  = [];
+  this.count    = 0;
+  this.arg_0    = this.arg_num;
+  this.args     = [];
+  this.emitters = {};
+  return this;
 }
 
 

@@ -98,6 +98,8 @@ Controller.prototype._init = function ( params ) {
    */
   this._.models       = this.app.models;
 
+  this.behaviors      = {};
+
   this._url_function_for_dust     = this._url_function_for_dust.bind( this );
   this._widget_function_for_dust  = this._widget_function_for_dust.bind( this );
   this._dust_if                   = this._dust_if.bind( this );
@@ -296,6 +298,18 @@ Controller.prototype.create_url = function ( path_to_action, params ) {
 Controller.prototype.create_widget = function( widget_name, params ){
   if ( params && !params.controller ) params.controller = this.name;
   return this.app.components.create_widget( widget_name, params );
+}
+
+
+Controller.prototype.handle_error = function( e, response, request ){
+  response.send( e );
+}
+
+
+Controller.prototype.behavior_for = function( action, cb ){
+  this.behaviors[ action ] = cb;
+  this.emit( 'new_behavior', action, cb );
+  return this;
 }
 
 

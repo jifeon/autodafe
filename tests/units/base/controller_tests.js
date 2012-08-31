@@ -7,16 +7,14 @@ function check_query( action ){
   return function( app ){
     var connection = app.create_connection();
     var client     = connection.create_client();
-    var query      = client.create_request({
+    var request    = client.create_request({
       action : action
     });
 
-    var emitter = new process.EventEmitter;
-    client.on( 'send',       emitter.emit.bind( emitter, 'success' ));
-    client.on( 'send_error', emitter.emit.bind( emitter, 'error' ));
+    client.on( 'send', this.callback.bind( null, null ) );
+    client.on( 'send_error', this.callback );
 
-    client.receive( query );
-    return emitter;
+    client.receive( request );
   }
 }
 
@@ -180,65 +178,43 @@ vows.describe( 'controller' ).addBatch({
         }
       },
 
-      'async tools' : {
-        topic : function( controller ){
-          return controller.create_response('redirect_action');
-        },
-
-        'normal work' : {
-          topic : function( response ){
-            var self  = this;
-            var async = response.new_async_tool();
-
-            var emitter  = new process.EventEmitter;
-            var emitter2 = new process.EventEmitter;
-
-            process.nextTick( function(){
-              emitter.emit('success', 'emitter');
-              process.nextTick( function(){
-                emitter2.emit('success', 'emitter2');
-              });
-            });
-
-            async.handle_emitter( emitter );
-            async.stack <<= emitter2;
-
-            (function( cb ){
-              process.nextTick( cb.bind( null, null, 'callback' ) );
-            })( async.get_callback() );
-
-            async.success( function(){ self.callback( null, Array.prototype.slice.call(arguments, 0))});
-          },
-
-          'async.success' : function( args ){
-            assert.deepEqual( args, ['emitter', 'emitter2', 'callback']);
-          }
-        },
-
-        'error handling' : {
-          'in emitter' : {
-            topic : function( response, controller ){
-              var self  = this;
-              var async = response.new_async_tool();
-              var emitter  = new process.EventEmitter;
-
-              process.nextTick( function(){
-                emitter.emit('error', new Error);
-              });
-
-              async.handle_emitter( emitter );
-
-              response.handle_error = this.callback;
-              async.success( function(){ self.callback( null )});
-            },
-
-            'should throw to handle_error' : function( e, res ){
-              console.log( e );
-              assert.isError( e );
-            }
-          },
-
-//          'unique in emitter' : {
+//      'async tools' : {
+//        topic : function( controller ){
+//          return controller.create_response('redirect_action');
+//        },
+//
+//        'normal work' : {
+//          topic : function( response ){
+//            var self  = this;
+//            var async = response.new_async_tool();
+//
+//            var emitter  = new process.EventEmitter;
+//            var emitter2 = new process.EventEmitter;
+//
+//            process.nextTick( function(){
+//              emitter.emit('success', 'emitter');
+//              process.nextTick( function(){
+//                emitter2.emit('success', 'emitter2');
+//              });
+//            });
+//
+//            async.handle_emitter( emitter );
+//            async.stack <<= emitter2;
+//
+//            (function( cb ){
+//              process.nextTick( cb.bind( null, null, 'callback' ) );
+//            })( async.get_callback() );
+//
+//            async.success( function(){ self.callback( null, Array.prototype.slice.call(arguments, 0))});
+//          },
+//
+//          'async.success' : function( args ){
+//            assert.deepEqual( args, ['emitter', 'emitter2', 'callback']);
+//          }
+//        },
+//
+//        'error handling' : {
+//          'in emitter' : {
 //            topic : function( response, controller ){
 //              var self  = this;
 //              var async = response.new_async_tool();
@@ -248,23 +224,45 @@ vows.describe( 'controller' ).addBatch({
 //                emitter.emit('error', new Error);
 //              });
 //
+//              async.handle_emitter( emitter );
+//
+//              response.handle_error = this.callback;
+//              async.success( function(){ self.callback( null )});
+//            },
+//
+//            'should throw to handle_error' : function( e, res ){
+//              assert.isError( e );
+//            }
+//          },
+//
+//          'unique in emitter' : {
+//            topic : function( r, controller ){
+//              var response  = controller.create_response('redirect_action');
+//              var self      = this;
+//              var async     = response.new_async_tool();
+//              var emitter   = new process.EventEmitter;
+//
+//              process.nextTick( function(){
+//                emitter.emit('error', new Error);
+//              });
+//
 //              async
 //                .handle_emitter( emitter )
 //                .success( function(){ self.callback( null )})
-////                .error( this.callback );
+//                .error( this.callback );
 //
 //              response.handle_error = function(){ self.callback( null )};
 //            },
 //
 //            'should throw' : function( e, res ){
-//              console.log( e );
 //              assert.isError( e );
 //            }
 //          }
-        },
+//        },
 //
 //        'custom actions' : {
-//          topic : function( response, controller ){
+//          topic : function( r, controller ){
+//            var response  = controller.create_response('redirect_action');
 //            var self  = this;
 //            var async = response.new_async_tool();
 //            var emitter  = new process.EventEmitter;
@@ -288,7 +286,8 @@ vows.describe( 'controller' ).addBatch({
 //          },
 //
 //          'unique in emitter' : {
-//            topic : function( res, response, controller ){
+//            topic : function( res, r, controller ){
+//              var response  = controller.create_response('redirect_action');
 //              var self  = this;
 //              var async = response.new_async_tool();
 //              var emitter  = new process.EventEmitter;
@@ -306,11 +305,11 @@ vows.describe( 'controller' ).addBatch({
 //                self.callback( null );
 //              } );
 //
-//              response.behavior_for( 'custom', function( response, request, param ){
+//              response.behavior_for( 'custom', function( param ){
 //                self.callback( null );
 //              } );
 //
-//              async.behavior_for( 'custom', function( response, request, param ){
+//              async.behavior_for( 'custom', function( param ){
 //                self.callback( null, param );
 //              } );
 //            },
@@ -321,7 +320,7 @@ vows.describe( 'controller' ).addBatch({
 //            }
 //          }
 //        }
-      },
+//      },
 //
 //      '.connect_client' : function(){
 //        throw 'no test';
@@ -336,24 +335,24 @@ vows.describe( 'controller' ).addBatch({
 //      }
     },
 
-//    'default workflow' : {
-//      topic : check_query('test2.index'),
-//
-//      'should work' : function( e, result ){
-//        assert.isNull( e );
-//        assert.equal( result, 'Test' );
-//      }
-//    },
-//
-//    'pass params to view' : {
-//      topic : check_query('test2.test_params'),
-//
-//      'should work' : function( e, result ){
-//        assert.isNull( e );
-//        assert.equal( result, 'global - simple - 1:2:3' );
-//      }
-//    },
-//
+    'default workflow' : {
+      topic : check_query('test2'),
+
+      'should work' : function( e, result ){
+        assert.isNull( e );
+        assert.equal( result, 'Test' );
+      }
+    },
+
+    'pass params to view' : {
+      topic : check_query('test_params'),
+
+      'should work' : function( e, result ){
+        assert.isNull( e );
+        assert.equal( result, 'global - simple - 1:2:3' );
+      }
+    },
+
 //    'pass asynchronous params to view' : {
 //      topic : check_query('test2.async_params'),
 //

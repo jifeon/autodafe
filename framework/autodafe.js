@@ -45,6 +45,10 @@ Autodafe.prototype._init = function() {
    */
   this.base_dir         = __dirname;
 
+  this.lib              = {};
+  this.lib.tools        = tools;
+  this.lib.Listener     = require('./lib/listener2.js');
+
   this.AutodafePart     = AutodafePart;
   this.AppModule        = require( './base/app_module.js' );
   this.Component        = require( './components/component.js' );
@@ -52,10 +56,6 @@ Autodafe.prototype._init = function() {
   this.Controller       = require( './base/controller.js' );
   this.Model            = require( './base/model.js' );
   this.FormModel        = require( './base/models/form_model.js' );
-
-  this.lib              = {};
-  this.lib.tools        = tools;
-  this.lib.Listener     = require('./lib/listener2.js');
 
   this.cc                   = {};
   this.cc.Request           = require( './client_connections/request.js' );

@@ -21,7 +21,10 @@ module.exports = {
     rules : {
       'test'                   : 'test.test',
       'test_client_connection' : 'test.test_client_connection',
-      'redirect'               : 'test.redirect_action'
+      'redirect'               : 'test.redirect_action',
+      'test2'                  : 'test2.index',
+      'test_params'            : 'test2.test_params',
+      'test_async'             : 'test2.async_params'
     }
   },
 
