@@ -44,7 +44,7 @@ Test2.prototype.async_params = function( response ){
     process.nextTick( cb.bind( null, null, 'simple' ) );
   })( response.callback_for('simple'));
 
-  response.send({
+  response.view_name('test_params').send({
     ar : emitter
   });
 }

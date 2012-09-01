@@ -178,161 +178,161 @@ vows.describe( 'controller' ).addBatch({
         }
       },
 
-//      'async tools' : {
-//        topic : function( controller ){
-//          return controller.create_response('redirect_action');
-//        },
-//
-//        'normal work' : {
-//          topic : function( response ){
-//            var self  = this;
-//            var async = response.new_async_tool();
-//
-//            var emitter  = new process.EventEmitter;
-//            var emitter2 = new process.EventEmitter;
-//
-//            process.nextTick( function(){
-//              emitter.emit('success', 'emitter');
-//              process.nextTick( function(){
-//                emitter2.emit('success', 'emitter2');
-//              });
-//            });
-//
-//            async.handle_emitter( emitter );
-//            async.stack <<= emitter2;
-//
-//            (function( cb ){
-//              process.nextTick( cb.bind( null, null, 'callback' ) );
-//            })( async.get_callback() );
-//
-//            async.success( function(){ self.callback( null, Array.prototype.slice.call(arguments, 0))});
-//          },
-//
-//          'async.success' : function( args ){
-//            assert.deepEqual( args, ['emitter', 'emitter2', 'callback']);
-//          }
-//        },
-//
-//        'error handling' : {
-//          'in emitter' : {
-//            topic : function( response, controller ){
-//              var self  = this;
-//              var async = response.new_async_tool();
-//              var emitter  = new process.EventEmitter;
-//
-//              process.nextTick( function(){
-//                emitter.emit('error', new Error);
-//              });
-//
-//              async.handle_emitter( emitter );
-//
-//              response.handle_error = this.callback;
-//              async.success( function(){ self.callback( null )});
-//            },
-//
-//            'should throw to handle_error' : function( e, res ){
-//              assert.isError( e );
-//            }
-//          },
-//
-//          'unique in emitter' : {
-//            topic : function( r, controller ){
-//              var response  = controller.create_response('redirect_action');
-//              var self      = this;
-//              var async     = response.new_async_tool();
-//              var emitter   = new process.EventEmitter;
-//
-//              process.nextTick( function(){
-//                emitter.emit('error', new Error);
-//              });
-//
-//              async
-//                .handle_emitter( emitter )
-//                .success( function(){ self.callback( null )})
-//                .error( this.callback );
-//
-//              response.handle_error = function(){ self.callback( null )};
-//            },
-//
-//            'should throw' : function( e, res ){
-//              assert.isError( e );
-//            }
-//          }
-//        },
-//
-//        'custom actions' : {
-//          topic : function( r, controller ){
-//            var response  = controller.create_response('redirect_action');
-//            var self  = this;
-//            var async = response.new_async_tool();
-//            var emitter  = new process.EventEmitter;
-//
-//            process.nextTick( function(){
-//              emitter.emit('custom', 'action');
-//            });
-//
-//            async.handle_emitter( emitter );
-//
-//            response.handle_error = this.callback;
-//            async.success( this.callback );
-//            controller.behavior_for( 'custom', function( response, request, param ){
-//              self.callback( null, param );
-//            } );
-//          },
-//
-//          'should throw to handle_error' : function( e, res ){
-//            assert.isNull( e );
-//            assert.equal( res, 'action' );
-//          },
-//
-//          'unique in emitter' : {
-//            topic : function( res, r, controller ){
-//              var response  = controller.create_response('redirect_action');
-//              var self  = this;
-//              var async = response.new_async_tool();
-//              var emitter  = new process.EventEmitter;
-//
-//              process.nextTick( function(){
-//                emitter.emit('custom', 'action');
-//              });
-//
-//              async
-//                .handle_emitter( emitter )
-//                .success( this.callback )
-//                .error( this.callback );
-//
-//              controller.behavior_for( 'custom', function( response, request, param ){
-//                self.callback( null );
-//              } );
-//
-//              response.behavior_for( 'custom', function( param ){
-//                self.callback( null );
-//              } );
-//
-//              async.behavior_for( 'custom', function( param ){
-//                self.callback( null, param );
-//              } );
-//            },
-//
-//            'should throw to handle_error' : function( e, res ){
-//              assert.isNull( e );
-//              assert.equal( res, 'action' );
-//            }
-//          }
-//        }
-//      },
-//
-//      '.connect_client' : function(){
-//        throw 'no test';
-//      },
-//
-//      '.create_url' : function(){
-//        throw 'no test';
-//      },
-//
-//      '.create_widget' : function(){
-//        throw 'no test';
-//      }
+      'async tools' : {
+        topic : function( controller ){
+          return controller.create_response('redirect_action');
+        },
+
+        'normal work' : {
+          topic : function( response ){
+            var self  = this;
+            var async = response.new_async_tool();
+
+            var emitter  = new process.EventEmitter;
+            var emitter2 = new process.EventEmitter;
+
+            process.nextTick( function(){
+              emitter.emit('success', 'emitter');
+              process.nextTick( function(){
+                emitter2.emit('success', 'emitter2');
+              });
+            });
+
+            async.handle_emitter( emitter );
+            async.stack <<= emitter2;
+
+            (function( cb ){
+              process.nextTick( cb.bind( null, null, 'callback' ) );
+            })( async.get_callback() );
+
+            async.success( function(){ self.callback( null, Array.prototype.slice.call(arguments, 0))});
+          },
+
+          'async.success' : function( args ){
+            assert.deepEqual( args, ['emitter', 'emitter2', 'callback']);
+          }
+        },
+
+        'error handling' : {
+          'in emitter' : {
+            topic : function( response, controller ){
+              var self  = this;
+              var async = response.new_async_tool();
+              var emitter  = new process.EventEmitter;
+
+              process.nextTick( function(){
+                emitter.emit('error', new Error);
+              });
+
+              async.handle_emitter( emitter );
+
+              response.handle_error = this.callback;
+              async.success( function(){ self.callback( null )});
+            },
+
+            'should throw to handle_error' : function( e, res ){
+              assert.isError( e );
+            }
+          },
+
+          'unique in emitter' : {
+            topic : function( r, controller ){
+              var response  = controller.create_response('redirect_action');
+              var self      = this;
+              var async     = response.new_async_tool();
+              var emitter   = new process.EventEmitter;
+
+              process.nextTick( function(){
+                emitter.emit('error', new Error);
+              });
+
+              async
+                .handle_emitter( emitter )
+                .success( function(){ self.callback( null )})
+                .error( this.callback );
+
+              response.handle_error = function(){ self.callback( null )};
+            },
+
+            'should throw' : function( e, res ){
+              assert.isError( e );
+            }
+          }
+        },
+
+        'custom actions' : {
+          topic : function( r, controller ){
+            var response  = controller.create_response('redirect_action');
+            var self  = this;
+            var async = response.new_async_tool();
+            var emitter  = new process.EventEmitter;
+
+            process.nextTick( function(){
+              emitter.emit('custom', 'action');
+            });
+
+            async.handle_emitter( emitter );
+
+            response.handle_error = this.callback;
+            async.success( this.callback );
+            controller.behavior_for( 'custom', function( response, request, param ){
+              self.callback( null, param );
+            } );
+          },
+
+          'should throw to handle_error' : function( e, res ){
+            assert.isNull( e );
+            assert.equal( res, 'action' );
+          },
+
+          'unique in emitter' : {
+            topic : function( res, r, controller ){
+              var response  = controller.create_response('redirect_action');
+              var self  = this;
+              var async = response.new_async_tool();
+              var emitter  = new process.EventEmitter;
+
+              process.nextTick( function(){
+                emitter.emit('custom', 'action');
+              });
+
+              async
+                .handle_emitter( emitter )
+                .success( this.callback )
+                .error( this.callback );
+
+              controller.behavior_for( 'custom', function( response, request, param ){
+                self.callback( null );
+              } );
+
+              response.behavior_for( 'custom', function( param ){
+                self.callback( null );
+              } );
+
+              async.behavior_for( 'custom', function( param ){
+                self.callback( null, param );
+              } );
+            },
+
+            'should throw to handle_error' : function( e, res ){
+              assert.isNull( e );
+              assert.equal( res, 'action' );
+            }
+          }
+        }
+      },
+
+      '.connect_client' : function(){
+        throw 'no test';
+      },
+
+      '.create_url' : function(){
+        throw 'no test';
+      },
+
+      '.create_widget' : function(){
+        throw 'no test';
+      }
     },
 
     'default workflow' : {
@@ -353,14 +353,14 @@ vows.describe( 'controller' ).addBatch({
       }
     },
 
-//    'pass asynchronous params to view' : {
-//      topic : check_query('test2.async_params'),
-//
-//      'should work' : function( e, result ){
-//        assert.isNull( e );
-//        assert.equal( result, 'global - simple - 1:2:3' );
-//      }
-//    }
+    'pass asynchronous params to view' : {
+      topic : check_query('async_params'),
+
+      'should work' : function( e, result ){
+        assert.isNull( e );
+        assert.equal( result, 'global - simple - 1:2:3' );
+      }
+    },
 
     tearDown : function( app ){
       app.stop();
