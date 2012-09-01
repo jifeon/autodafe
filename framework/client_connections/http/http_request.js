@@ -23,7 +23,6 @@ function HTTPRequest( params ) {
  *
  * @private
  * @param {Object} params см. {@link HTTPRequest}
- *
  */
 HTTPRequest.prototype._init = function( params ) {
   HTTPRequest.parent._init.call( this, params );
@@ -41,7 +40,6 @@ HTTPRequest.prototype._init = function( params ) {
    * HTTP метод "post", "delete", "get" или "update"
    *
    * @type {String}
-   * @default "get"
    */
   this.method     = this.original_request.method.toLocaleLowerCase();
 

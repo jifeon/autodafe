@@ -6,8 +6,8 @@ Autodafe.inherits( AutodafePart );
 /**
  * Класс управляющий приложениями.
  *
- * Позволяет создавать приложения на основе конфигурации для них. По завершению процесса останавливает все приложения.
- * ( {@link Application.stop} )
+ * Позволяет создавать приложения на основе конфигурации для них. По завершению процесса останавливает все приложения
+ * ({@link Application.stop}).
  *
  * @constructor
  * @extends AutodafePart
@@ -17,11 +17,43 @@ Autodafe.inherits( AutodafePart );
  * @property {Function} Widget конструктор {@link Widget}
  * @property {Function} Controller конструктор {@link Controller}
  * @property {Function} Model конструктор {@link Model}
- * @property {Object} db сборка ссылок на конструкторы часто используемых модулей из компонента для работы с базой
+ * @property {Object}   lib Ссылки на инструменты из библиотеки Autodafe
+ * @property {Object}   lib.tools см. {@link Application.tools}
+ * @property {Function} lib.Listener конструктор {@link AsyncListener}
+ * @property {Object}   cc (ClientConnection) сборка ссылок на конструкторы классов обеспечивающих клиентские подключения
+ * к приложению
+ * @property {Function} cc.Request конструктор {@link Request}
+ * @property {Function} cc.ClientConnection конструктор {@link ClientConnection}
+ * @property {Function} cc.Client конструктор {@link Client}
+ * @property {Function} cc.Response конструктор {@link Response}
+ * @property {Function} cc.AsyncListener конструктор {@link AsyncListener}
+ * @property {Object}   cc.http Конструкторы классов, отвечающих за HTTP соединения
+ * @property {Function} cc.http.Request конструктор {@link HTTPRequest}
+ * @property {Function} cc.http.Server конструктор {@link HTTPServer}
+ * @property {Function} cc.http.Client конструктор {@link HTTPClient}
+ * @property {Object}   cc.ws Конструкторы классов, отвечающих за подключения по WebSockets
+ * @property {Function} cc.ws.Request конструктор {@link WSRequest}
+ * @property {Function} cc.ws.Server конструктор {@link WebSocketServer}
+ * @property {Function} cc.ws.Client конструктор {@link WebSocketsClient}
+ * @property {Object}   db сборка ссылок на конструкторы часто используемых модулей из компонента для работы с базой
  * данных
  * @property {Function} db.Expression конструктор {@link DbExpression}
  * @property {Function} db.Criteria конструктор {@link DbCriteria}
  * @property {Function} db.ActiveRecord конструктор {@link ActiveRecord}
+ *
+ * @example Класс содержит ссылки на часто используемые классы, что позволяет в некоторых ситуациях не использовать
+ * require
+ *
+ * <pre><code class="javascript">
+ * var db_expression = new global.autodafe.db.Expression('NOW()');
+ * // вместо
+ * var DbExpression = require('autodafe/framework/db/db_expression');
+ * var db_expression = new DbExpression('NOW()');
+ *
+ * // Другой пример с наследованием контроллера
+ * Site.inherits( global.autodafe.Controller );
+ * function Site(){ ... }
+ * </code></pre>
  */
 function Autodafe() {
   this._init();

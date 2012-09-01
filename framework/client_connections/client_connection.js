@@ -35,7 +35,7 @@ function ClientConnection( params ) {
 /**
  * @event
  * @name ClientConnection#receive_request
- * @param {Request} query запрос
+ * @param {Request} request Полученный запрос
  * @param {Client} client клиент от которого получен запрос
  * @description Получен запрос
  */
@@ -101,6 +101,8 @@ ClientConnection.prototype.get_server = function ( port ) {
  * Для наследуемых классов этот метод переопределен для соответствующих клиентов
  *
  * @returns {Client}
+ * @see HTTPServer
+ * @see WebSocketsServer
  */
 ClientConnection.prototype.create_client = function(){
   return new global.autodafe.cc.Client({

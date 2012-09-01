@@ -35,7 +35,7 @@ function Client( params ) {
 /**
  * @event
  * @name Client#receive_request
- * @param {Request} query
+ * @param {Request} request Полученный запрос
  * @description Получен запрос
  */
 

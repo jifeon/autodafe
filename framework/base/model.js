@@ -400,14 +400,15 @@ Model.prototype.is_key_attribute = function( name ){
 
 
 /**
- * Выполняет валидацию модели и ее последущее сохранение
+ * Выполняет валидацию модели и ее последующее сохранение
  *
- * @param {Function} [callback] функция, которая выполнится после сохранения модели
+ * @param {Function} [callback] функция, которая выполнится после сохранения модели. Если никакой функции выполнять не
+ * надо, вместо первого параметра можно использовать второй attributes (см. примеры).
  * @param {Error} [callback.error] Системная ошибка возникшая во время валидации или сохранения
  * @param {Error} [callback.model] Сама модель
  * @param {String[]|String} [attributes] если указано, то будут сохранены только эти атрибуты
  * @return {EventEmitter} События: "success" - при успешном сохранении, "error" - при возникновении системной ошибки,
- * "not_valid" - при ошибки валидации
+ * "not_valid" - при ошибке валидации
  * @see Model.validate
  * @see Model.forced_save
  * @example Пример использования
@@ -433,6 +434,9 @@ Model.prototype.is_key_attribute = function( name ){
  * .on('not_valid', function(errors) { обработка ошибок валидации })
  * .on('success',   function() { все прошло гладко });
  * </code></pre>
+ *
+ * Сохраняем определенные атрибуты (callback указывать необязательно)
+ * model.save('name, description');
  */
 Model.prototype.save = function ( callback, attributes ) {
   var emitter = new process.EventEmitter;

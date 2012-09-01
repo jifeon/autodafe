@@ -310,10 +310,22 @@ Application.prototype._init = function ( config ) {
    */
   this.components     = null;
 
+  /**
+   * Валидатор
+   *
+   * @type {Validator}
+   */
   this.validator      = new Validator({
     app : this
   });
 
+  /**
+   * Содержит параметры приложения
+   *
+   * Параметры приложения задаются в конфигурационном файле, в секции params
+   *
+   * @type {Object}
+   */
   this.params        = this._config.params || {};
 
   /**
@@ -661,6 +673,8 @@ Application.prototype.register_component = function ( component ) {
  *
  * @param {String} name имя параметра
  * @returns параметр приложения
+ * @deprecated Будет удалено в 0.5
+ * @see Application.params
  * @example Пример использования
  *
  * допустим в конфигурационном файле секция params выглядит так:
@@ -686,6 +700,8 @@ Application.prototype.register_component = function ( component ) {
  * </code></pre>
  */
 Application.prototype.get_param = function ( name ) {
+  this.log( 'method `Application.get_param` is deprecated and will be removed in v0.5. Use `Application.params` instead', 'warning' );
+  
   return this._config.params[ name ] === undefined ? null : this._config.params[ name ];
 };
 
@@ -821,7 +837,8 @@ Application.prototype.get_session = function ( id, client ) {
 /**
  * Останавливает приложение
  *
- * Обычно на это реагируют сервера созданные в компонентах и они освобождают заданные порты.
+ * К примеру на это реагируют сервера созданные в компонентах и они освобождают заданные порты. После остановки
+ * приложения его можно в любой момент запустить, используя {@link Application.run}
  *
  * @see Application#event:stop
  */
