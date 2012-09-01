@@ -69,10 +69,6 @@ vows.describe( 'controller' ).addBatch({
           assert.equal( response.view_path(), path.join( app.base_dir, 'components/test/index.html'));
         }
       }
-    },
-
-    tearDown : function( app ){
-      app.stop();
     }
   }
 }).export( module );

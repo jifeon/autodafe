@@ -10,6 +10,7 @@ module.exports = Request.inherits( global.autodafe.AppModule );
  * @extends AppModule
  * @param {Object} params параметры для инициализации
  * @param {Client} [params.client] клиент инициирующий запрос
+ * @param {String} [params.type="internal"] тип подключения клиента
  * @param {String} [params.action=""] действие вызываемое запросом
  * @param {Object} [params.params={}] параметры запроса
  */
@@ -42,7 +43,7 @@ Request.prototype._init = function( params ) {
    * @default "internal"
    * @see Router._init
    */
-  this.type   = 'internal';
+  this.type   = params.type || 'internal';
 
   /**
    * Действие, вызываемое запросом

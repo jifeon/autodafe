@@ -2,22 +2,29 @@ var vows        = require( 'autodafe/node_modules/vows' );
 var assert      = require( 'assert' );
 var tests_tools = require( 'autodafe/tests/tools/tests_tools' );
 
-var Request     = require('autodafe/framework/client_connections/request');
+var Request     = require('autodafe/framework/client_connections/http/http_request');
 
 
 function route_test( url, test_action, test_params, waited_params, query_params ) {
   waited_params = waited_params || test_params;
+  query_params  = query_params  || {};
 
   return {
     topic : function( app ) { return app; },
     'test' : function( app ){
-      query_params = Object.merge( {
-        app     : app,
-        url     : url,
-        params  : test_params
-      }, query_params );
+      var fake_request = {
+        method  : query_params.type || 'get',
+        headers : {
+          host : query_params.host || 'localhost'
+        },
+        url : url
+      };
 
-      var query  = new Request( query_params );
+      var request = new Request({
+        app     : app,
+        request : fake_request,
+        params  : test_params
+      });
       var good   = app.router.get_controller( 'good' );
       var action = null;
       var params = null;
@@ -27,7 +34,7 @@ function route_test( url, test_action, test_params, waited_params, query_params 
         params = act_params;
       } );
 
-      app.router.route( query );
+      app.router.route( request );
 
       assert.equal( action, test_action );
       assert.deepEqual( params, waited_params );
@@ -36,24 +43,24 @@ function route_test( url, test_action, test_params, waited_params, query_params 
 }
 
 
-function route_error_test( url, params ){
+function route_error_test( url, params, num ){
   return {
     topic : function( app ) { return app; },
     'should throw error 404' : function( app ){
-      var query  = new Request( {
+      var request = new global.autodafe.cc.Request( {
         app     : app,
-        url     : url,
+        action  : url,
         params  : params || null
       } );
 
       var error = null;
       try {
-        app.router.route( query );
+        app.router.route( request );
       }
       catch(e) { error = e; }
 
       assert.isError( error );
-      assert.equal( error.number, 404 );
+      assert.equal( error.number, num || 404 );
     }
   }
 }
@@ -101,7 +108,7 @@ vows.describe( 'components manager' ).addBatch({
       'good.domain_action'              : route_test( '/action/42/text', 'domain_action', null, action_params, { host : 'domain.com:3000' } ),
 
       'good.do without param'           : route_error_test( '/do' ),
-      'good.bad_action'                 : route_error_test( '/bad_action_in_good' ),
+      'good.bad_action'                 : route_error_test( '/bad_action_in_good', null, 500 ),
       'no_controller.action'            : route_error_test( '/bad_action' )
     },
 
@@ -167,7 +174,7 @@ vows.describe( 'components manager' ).addBatch({
         params = act_params;
       } );
 
-      app.router.route( new Request({
+      app.router.route( new global.autodafe.cc.Request({
         action : '/new_action/text',
         app    : app
       }) );

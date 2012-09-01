@@ -4,6 +4,7 @@ var path      = require('path');
 
 module.exports.normal_config = require('autodafe/tests/applications/normal_app/config/normal_config');
 
+
 module.exports.create_normal_application = function( callback, options ){
   var app = Autodafe.get_application( 'normal_app' );
   if ( app ) {
@@ -16,6 +17,7 @@ module.exports.create_normal_application = function( callback, options ){
 
   Autodafe.create_application( this.normal_config ).run( callback );
 }
+
 
 var app_count = 0;
 module.exports.get_new_app = function( app_config, options ) {

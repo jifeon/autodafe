@@ -43,9 +43,6 @@ function merge_with_bad_args(){
     assert.throws( function() {
       Object.merge( [], [] );
     }, TypeError );
-    assert.throws( function() {
-      Object.merge( false, {} );
-    }, TypeError );
   }
 }
 
@@ -53,7 +50,7 @@ function clone_test( deep ){
   return {
 
     topic : function(){
-      return Object.clone( complex_obj );
+      return Object[deep ? 'clone' : 'not_deep_clone']( complex_obj );
     },
 
     'should copy object' : function( cloned ){

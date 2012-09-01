@@ -360,10 +360,7 @@ vows.describe( 'controller' ).addBatch({
         assert.isNull( e );
         assert.equal( result, 'global - simple - 1:2:3' );
       }
-    },
-
-    tearDown : function( app ){
-      app.stop();
     }
+
   }
 }).export( module );

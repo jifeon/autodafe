@@ -1,21 +1,21 @@
-module.exports = GoodController.inherits( autodafe.Controller );
+module.exports = Good.inherits( global.autodafe.Controller );
 
-function GoodController( params ) {
+function Good( params ) {
   this._init( params );
 }
 
 
-GoodController.prototype.before_action = function ( action, params ) {
-  this.emit( 'action', action, params );
+Good.prototype.before_action = function ( action, response, request ) {
+  this.emit( 'action', action, request.params );
 };
 
 
-GoodController.prototype.index          = function () {};
-GoodController.prototype.action         = function () {};
-GoodController.prototype.remove         = function () {};
-GoodController.prototype.domain_index   = function () {};
-GoodController.prototype.domain_action  = function () {};
+Good.prototype.index          = function () {};
+Good.prototype.action         = function () {};
+Good.prototype.remove         = function () {};
+Good.prototype.domain_index   = function () {};
+Good.prototype.domain_action  = function () {};
 
-GoodController.prototype.bad_action = function () {
+Good.prototype.bad_action = function () {
   throw new Error;
 };

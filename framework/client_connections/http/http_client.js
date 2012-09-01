@@ -54,12 +54,12 @@ HTTPClient.prototype._init = function( params ) {
 
 
 HTTPClient.prototype.receive = function () {
-  var query = this.create_request({
+  var request = this.create_request({
     request : this.request
   });
 
-  if ( query.method == 'post' ) this._receive_post( query );
-  else this._receive_get( query );
+  if ( request.method == 'post' ) this._receive_post( request );
+  else this._receive_get( request );
 };
 
 

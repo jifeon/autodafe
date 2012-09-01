@@ -109,7 +109,8 @@ String.prototype.format = function() {
   var obj = arguments[0];
   if ( Object.isObject( obj ) ) {
     var res = this;
-    for ( var str in obj ) res = res.replace( str, obj[ str ] );
+    var re  = new RegExp( '(' + Object.keys( obj).join('|') + ')', 'g' );
+    res = res.replace( re, function($a, $1){ return obj[$1] })
     return res;
   }
 

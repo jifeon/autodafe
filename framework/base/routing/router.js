@@ -256,7 +256,7 @@ Router.prototype.route = function( request ) {
     if ( !request_params ) return false;
 
     route = r;
-    Object.merge( request.params, request_params );
+    request.params = Object.merge( request.params, request_params );
     return true;
   });
 

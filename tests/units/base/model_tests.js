@@ -383,10 +383,6 @@ vows.describe( 'model' )
           email : 'email'
         } );
       }
-    },
-
-    teardown : function( app ){
-      app.stop();
     }
   }
 

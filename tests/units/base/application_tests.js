@@ -329,13 +329,23 @@ vows.describe( 'application' ).addBatch({
       }
     },
 
-    '.stop() should just emit stop event' : function( app ){
-      var stop_emitted = false;
-      app.on( 'stop', function(){
-        stop_emitted = true;
-      } );
-      app.stop();
-      assert.isTrue( stop_emitted );
+    '.stop()' : {
+      topic : function(){
+        tests_tools.get_new_app(null, {
+          run : true,
+          run_callback : this.callback
+        });
+      },
+
+      'should just emit stop event' : function(app) {
+
+        var stop_emitted = false;
+        app.on( 'stop', function(){
+          stop_emitted = true;
+        } );
+        app.stop();
+        assert.isTrue( stop_emitted );
+      }
     }
   },
 

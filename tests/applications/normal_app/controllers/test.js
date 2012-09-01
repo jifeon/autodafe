@@ -1,4 +1,4 @@
-module.exports = Test.inherits( autodafe.Controller );
+module.exports = Test.inherits( global.autodafe.Controller );
 
 function Test( params ) {
   this._init( params );
@@ -38,13 +38,13 @@ Test.prototype.some_implemented_action = function () {
 };
 
 
-Test.prototype.test_http = function ( response ) {
-  response.client.send( 'text' );
+Test.prototype.test_http = function ( response, request ) {
+  request.client.send( 'text' );
 };
 
 
 Test.prototype.test_client_connection = function( response, request ){
-  response.client.send( request.params );
+  request.client.send( request.params );
 };
 
 
