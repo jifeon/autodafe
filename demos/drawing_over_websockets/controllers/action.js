@@ -1,17 +1,16 @@
-var Controller  = global.autodafe.Controller;
+module.exports = Action.inherits( global.autodafe.Controller );
 
-module.exports = ActionController.inherits( Controller );
 
-function ActionController( params ) {
+function Action( params ) {
   this._init( params );
 }
 
 
-ActionController.prototype.index = function ( params, client ) {
-  this.send_response( 'index.html', client );
+Action.prototype.index = function ( response ) {
+  response.send();
 };
 
 
-ActionController.prototype.line = function ( params, client ) {
-  client.broadcast( 'line', params );
+Action.prototype.line = function ( response, request ) {
+  request.client.broadcast( 'line', request.params );
 };
