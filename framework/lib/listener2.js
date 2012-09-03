@@ -92,7 +92,7 @@ Listener.__current_stack = null;
 Listener.__emitter       = null;
 
 
-// когда эмиттер учавствует в операции <code>listener.stack <<= emitter;</code>, он помещается в Listener.__emitter, для
+// когда эмиттер участвует в операции <code>listener.stack <<= emitter;</code>, он помещается в Listener.__emitter, для
 // последующего Listener.handle_emitter
 process.EventEmitter.prototype.valueOf = function(){
   Listener.__emitter = this;

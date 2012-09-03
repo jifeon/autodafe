@@ -1,4 +1,5 @@
-module.exports = SiteController.inherits( autodafe.Controller ); // наследуем от Controller
+// наследуем наш контроллер от Controller
+module.exports = Site.inherits( global.autodafe.Controller );
 
 /**
  * Единственный в данном приложении контроллер, который и отвечает за логику работы приложения
@@ -7,7 +8,7 @@ module.exports = SiteController.inherits( autodafe.Controller ); // наслед
  * @extends Controller
  * @param {Object} params
  */
-function SiteController( params ) {
+function Site( params ) {
   this._init( params );
 }
 
@@ -15,11 +16,12 @@ function SiteController( params ) {
 /**
  * Главная страница сайта. Этот метод указан в секции router.rules конфигурационного файла для корня сайта
  *
- * @param {Object} params параметры пришедшие с запросом
- * @param {Client} client клиент совершающий действие
+ * @param {Response} response ответ клиенту сделавшему запрос
+ * @param {Request} request сам запрос
  */
-SiteController.prototype.index = function ( params, client ) {
-  this.respond( 'index.html', {
-    name : this.app.get_param( 'your_name' )
-  } ).to( client );
+Site.prototype.index = function ( response, request ) {
+  // метод response.send сам найдет представлением с таким же именем как и название действия - index.html
+  response.send({
+    name : this.app.params.your_name
+  });
 };
