@@ -33,7 +33,7 @@ Response.prototype._init = function( params ) {
 
 
 Response.prototype._init_async_listener = function(){
-  this.async_listener = new global.autodafe.cc.AsyncListener({
+  this.async_listener = new global.autodafe.cc.Listener({
     app       : this.app,
     response  : this
   });
@@ -81,7 +81,7 @@ Response.prototype.view_path = function( p ){
 
 
 Response.prototype.new_async_tool = function(){
-  return new global.autodafe.cc.AsyncListener({
+  return new global.autodafe.cc.Listener({
     app       : this.app,
     response  : this,
     behaviors : this.async_listener.behaviors

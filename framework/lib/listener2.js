@@ -9,6 +9,9 @@ module.exports = Listener.inherits( process.EventEmitter );
  *
  * @constructor
  * @extends process.EventEmitter
+ * @param {Object} [params] Параметры для инициализации Listener
+ * @param {Object} [params.behaviors] Поведения для нестандартных событий эмиттеров. см. {@link Listener.behaviors};
+ * после инициализации поведения следует добавлять через метод {@link Listener.behavior_for}
  * @example Обычное использование
  *
  * <pre><code class="javascript">
@@ -44,8 +47,8 @@ module.exports = Listener.inherits( process.EventEmitter );
  * listener.behavior_for( 'stop', function(reason){  } );
  * </code></pre>
  */
-function Listener() {
-  this._init();
+function Listener( params ) {
+  this._init( params );
 }
 
 
@@ -103,9 +106,10 @@ process.EventEmitter.prototype.valueOf = function(){
 /**
  * Инициализация Listener
  *
+ * @param {Object} params см. конструктор {@link Listener}
  * @private
  */
-Listener.prototype._init = function(){
+Listener.prototype._init = function( params ){
   /**
    * Хранилище поведений
    *
@@ -114,8 +118,9 @@ Listener.prototype._init = function(){
    * действий, значения - функции обработчики
    *
    * @type {Object}
+   * @default {}
    */
-  this.behaviors = {};
+  this.behaviors = params.behaviors || {};
 
   /**
    * Хранилище эмиттеров
