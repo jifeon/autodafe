@@ -186,7 +186,7 @@ vows.describe( 'controller' ).addBatch({
         'normal work' : {
           topic : function( response ){
             var self  = this;
-            var async = response.new_async_tool();
+            var async = response.create_listener();
 
             var emitter  = new process.EventEmitter;
             var emitter2 = new process.EventEmitter;
@@ -217,7 +217,7 @@ vows.describe( 'controller' ).addBatch({
           'in emitter' : {
             topic : function( response, controller ){
               var self  = this;
-              var async = response.new_async_tool();
+              var async = response.create_listener();
               var emitter  = new process.EventEmitter;
 
               process.nextTick( function(){
@@ -239,7 +239,7 @@ vows.describe( 'controller' ).addBatch({
             topic : function( r, controller ){
               var response  = controller.create_response('redirect_action');
               var self      = this;
-              var async     = response.new_async_tool();
+              var async     = response.create_listener();
               var emitter   = new process.EventEmitter;
 
               process.nextTick( function(){
@@ -264,7 +264,7 @@ vows.describe( 'controller' ).addBatch({
           topic : function( r, controller ){
             var response  = controller.create_response('redirect_action');
             var self  = this;
-            var async = response.new_async_tool();
+            var async = response.create_listener();
             var emitter  = new process.EventEmitter;
 
             process.nextTick( function(){
@@ -289,7 +289,7 @@ vows.describe( 'controller' ).addBatch({
             topic : function( res, r, controller ){
               var response  = controller.create_response('redirect_action');
               var self  = this;
-              var async = response.new_async_tool();
+              var async = response.create_listener();
               var emitter  = new process.EventEmitter;
 
               process.nextTick( function(){

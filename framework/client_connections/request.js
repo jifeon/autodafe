@@ -48,6 +48,8 @@ Request.prototype._init = function( params ) {
   /**
    * Действие, вызываемое запросом
    *
+   * При маршрутизации запроса будет сравниваться с ключами config.router.rules
+   *
    * @type {String}
    */
   this.action = params.action || '';
