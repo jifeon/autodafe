@@ -7,11 +7,12 @@ module.exports = Controller.inherits( global.autodafe.AppModule );
  *
  * Контроллеры реализуют логику выполнения запросов в приложении. У контроллеров есть специальные методы - действия.
  * Они вызываются из роутера, куда попадают все запросы к приложению. Из действий контроллеров можно легко получить
- * доступ к любому из компонентов, а также отрисовать представление и отослать его необходимым клиентам.
+ * доступ к любому из компонентов, а также компоновать представление и отослать его необходимым клиентам.
  *
  * @constructor
  * @extends AppModule
- * @param {Object} params см. {@link Controller._init}
+ * @param {Object} params параметры для инициализации
+ * @param {String} params.name имя контроллера
  * todo: example
  */
 function Controller( params ) {
@@ -30,8 +31,8 @@ Controller.prototype.dust = require('dustjs-linkedin');
  * Инициализация контроллера
  *
  * @private
- * @param {Object} params параметры для инициализации контроллера, см. также {@link AppModule._init}
- * @param {String} params.name имя контроллера
+ * @param params см. конструктор {@link Controller}
+ *
  */
 Controller.prototype._init = function ( params ) {
   Controller.parent._init.call( this, params );
@@ -53,7 +54,7 @@ Controller.prototype._init = function ( params ) {
    * Действие по умолчанию
    *
    * В различных ситуация когда вызывается действие контроллера без явного указания действия, выполняется это действие.
-   * Вы можете заменить это свойство в наследуемых контроллерах.
+   * Можно заменять это свойство в наследуемых контроллерах.
    *
    * @type {String}
    * @default "index"
@@ -91,19 +92,31 @@ Controller.prototype._init = function ( params ) {
   this.views_ext      = '.html';
 
   /**
-   * Ссылка на {@link Application.models} Доступно только для чтения
+   * Ссылка на {@link Application.models}
    *
    * @type {Proxy}
    * @see ModelsManager
    */
-  this._.models       = this.app.models;
+  this.models         = this.app.models;
 
+  /**
+   * Глобальные обработчики действий эмиттеров из экземпляров {@link Response}
+   *
+   * @type {Object}
+   */
   this.behaviors      = {};
 
-  this._url_function_for_dust     = this._url_function_for_dust.bind( this );
-  this._widget_function_for_dust  = this._widget_function_for_dust.bind( this );
-  this._dust_if                   = this._dust_if.bind( this );
-  this._dust_if_not               = this._dust_if_not.bind( this );
+  /**
+   * Специальные функции для dust
+   *
+   * @type {Object}
+   */
+  this.views_functions = {
+    'url'     : this._url_function_for_dust.bind( this ),
+    'widget'  : this._widget_function_for_dust.bind( this ),
+    'if'      : this._dust_if.bind( this ),
+    'if_not'  : this._dust_if_not.bind( this )
+  };
 };
 
 
@@ -198,13 +211,12 @@ Controller.prototype.action = function( action, response ){
 
 
 /**
- * Рендерит вью
+ * Компанует представление
  *
- * Компанует текст вьюшки используя библиотеку <a href="http://akdubya.github.com/dustjs/">dust</a> Перед генерацией
- * текста пытается обновить вьюшки, см. {@link Application.load_views}
+ * Компанует текст представления используя библиотеку <a href="http://akdubya.github.com/dustjs/">dust</a> Перед
+ * генерацией текста пытается обновить кэш представлений, см. {@link Application.load_views}
  *
- * @param {String} view путь к вью начиная от директории {@link Application.path_to_views}, либо название файла, если
- * его имя уникально в этой директории
+ * @param {String} view путь к вью начиная от директории {@link Application.path_to_views}
  * @param {Object} [params={}] параметры для вью
  * @param {Function} [callback] функция, которая будет вызвана при окончаниии генерации шаблона
  * @param {Error} callback.error Ошибка, которая может возникнуть при генерации шаблона
@@ -217,35 +229,24 @@ Controller.prototype.render = function ( view, params, callback ) {
 
 
 /**
- * Отсылает вью клиенту
+ * Глобальные параметры для всех шаблонов, отправляемых этим контроллером
  *
- * Компанует текст вьюшки используя библиотеку <a href="http://akdubya.github.com/dustjs/">dust</a> и отсылает его
- * через транспорт привязанный к указанному клиенту
- *
- * @param {String} view путь к вью начиная от директории {@link Application.path_to_views}, либо название файла, если
- * его имя уникально в этой директории
- * @param {Client} client клиент, которому надо отослать ответ
- * @param {Object} [params={}] параметры для вью
- * @param {Function} [callback={@link AppModule.default_callback}] функция, которая будет вызвана при окончаниии генерации шаблона
- * @param {Error} callback.error Ошибка, которая может возникнуть при генерации шаблона
- * @param {String} callback.text текст шаблона
- * @deprecated
+ * @param {Response} response
+ * @param {Request} request
+ * @return {Object}
  */
-Controller.prototype.send_response = function ( view, client, params, callback ) {
-  if ( typeof callback != 'function' ) callback = this.default_callback;
-
-  this.respond( view, params )
-    .to( client )
-    .on( 'error', callback )
-    .on( 'data', callback.bind( null, null ) );
-};
-
-
-Controller.prototype.global_view_params = function( response, client ){
+Controller.prototype.global_view_params = function( response, request ){
   return {};
 };
 
 
+/**
+ * Создает {@link Response}
+ *
+ * @param {String} action действие для которого создается response
+ * @param {Request} request запрос, который вызвал действие
+ * @return {Response}
+ */
 Controller.prototype.create_response = function( action, request ){
   return new global.autodafe.cc.Response({
     controller  : this,
@@ -254,23 +255,6 @@ Controller.prototype.create_response = function( action, request ){
     request     : request
   });
 }
-
-
-Controller.prototype.respond = function( view, params ){
-  params = params || {};
-
-  params['if']      = this._dust_if;
-  params['if_not']  = this._dust_if_not;
-  params['url']     = this._url_function_for_dust;
-  params['widget']  = this._widget_function_for_dust;
-
-  return new Response({
-    view        : view,
-    params      : params,
-    controller  : this,
-    app         : this.app
-  });
-};
 
 
 /**
@@ -301,11 +285,25 @@ Controller.prototype.create_widget = function( widget_name, params ){
 }
 
 
+/**
+ * Глобальная обработка ошибок из экземпляров {@link Response}
+ *
+ * @param {Error} e
+ * @param {Response} response
+ * @param {Request} request
+ */
 Controller.prototype.handle_error = function( e, response, request ){
   response.send( e );
 }
 
 
+/**
+ * Добавляет глобальнй обработчик для действий эмиттеров, используемых в экземплярах {@link Response}
+ *
+ * @param {String} action действие
+ * @param {Function} cb обработчик
+ * @return {Controller} this
+ */
 Controller.prototype.behavior_for = function( action, cb ){
   this.behaviors[ action ] = cb;
   this.emit( 'new_behavior', action, cb );
@@ -396,6 +394,17 @@ Controller.prototype._widget_function_for_dust = function( chunk, context, bodie
 };
 
 
+/**
+ * "If" function for dust
+ *
+ * @deprecated
+ * @param chunk
+ * @param context
+ * @param bodies
+ * @param params
+ * @return {*}
+ * @private
+ */
 Controller.prototype._dust_if = function ( chunk, context, bodies, params ) {
   var condition = true;
 
@@ -414,6 +423,17 @@ Controller.prototype._dust_if = function ( chunk, context, bodies, params ) {
 };
 
 
+/**
+ * "If not" function for dust
+ *
+ * @deprecated
+ * @param chunk
+ * @param context
+ * @param bodies
+ * @param params
+ * @return {*}
+ * @private
+ */
 Controller.prototype._dust_if_not = function ( chunk, context, bodies, params ) {
   var condition = true;
 

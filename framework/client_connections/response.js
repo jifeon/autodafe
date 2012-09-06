@@ -26,6 +26,13 @@ function Response( params ) {
 
 
 /**
+ * @event
+ * @name sent
+ * @description Ответ отослан
+ */
+
+
+/**
  * Инициализация
  *
  * @param params см. конструктор {@link Response}
@@ -276,6 +283,7 @@ Response.prototype.forced_send = function(){
     if ( e ) return self.request.client.send_error( e );
 
     self.request.client.send( data );
+    self.emit('sent');
   });
 
   return this;
@@ -293,6 +301,8 @@ Response.prototype.forced_send = function(){
 Response.prototype.merge_params = function( params ){
   if ( !this._global_params_merged ) {
     this._global_params_merged = true;
+
+    this.params = Object.merge( this.controller.views_functions, this.params );
     this.merge_params( this.controller.global_view_params( this, this.request ));
   }
 
