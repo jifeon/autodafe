@@ -92,6 +92,7 @@ Model.prototype._init = function ( params ) {
   this.is_inited    = true;
 
   this._process_attributes();
+  this._after_init( Object.not_deep_clone(params) );
 };
 
 
@@ -107,6 +108,12 @@ Model.prototype._process_attributes = function(){
     this.create_attribute( attr, descriptions[attr] );
   }
 };
+
+
+Model.prototype._after_init = function( params ){
+  delete params.app;
+  this.set_attributes( params );
+}
 
 
 /**

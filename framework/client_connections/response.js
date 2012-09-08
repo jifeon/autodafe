@@ -136,7 +136,7 @@ Response.prototype._init_listener = function(){
 
   for ( var action in this.controller.behaviors ){
     var behavior = this.controller.behaviors[ action ];
-    this._listener.behavior_for(action, behavior.bind( null, this, this.request ));
+    this._listener.behavior_for(action, behavior.bind( this.controller, this, this.request ));
   }
 }
 
@@ -243,11 +243,14 @@ Response.prototype.behavior_for = function( action, cb ){
  * @param {Object} [params] параметры для отправляемого представления
  * @return {Response} this
  */
-Response.prototype.send = function( params ){
+Response.prototype.send = function( params/*, error_number*/ ){
   if ( this._sent ) return this;
   this._sent = true;
 
-  if ( params instanceof Error ) return this.request.client.send_error( params );
+  if ( params instanceof Error ) {
+    var client = this.request.client;
+    return client.send_error.apply( client, arguments );
+  }
   this.merge_params( params );
 
   if ( !this._params_names.length ) this.forced_send();
@@ -310,7 +313,7 @@ Response.prototype.merge_params = function( params ){
 
   for ( var name in params ) {
     var value = params[ name ];
-    if ( value.constructor == EE ) {
+    if ( value && value.constructor == EE ) {
       this._listener.handle_emitter( value );
       this._params_names.push( name );
     }
@@ -335,13 +338,3 @@ Response.prototype.callback_for = function( name ){
   this._params_names.push( name );
   return this._listener.get_callback();
 }
-
-
-/**
- * @deprecated
- * @param uri
- * @return {*}
- */
-Response.prototype.redirect = function( uri ){
-  return this.request.client.redirect( uri );
-};

@@ -69,3 +69,13 @@ HTTPRequest.prototype._init = function( params ) {
   if ( !params.action ) this.action = this.parsed_url.pathname;
   if ( !params.params ) this.params = this.parsed_url.query;
 };
+
+
+/**
+ * HTTP редирект
+ *
+ * @param uri
+ */
+HTTPRequest.prototype.redirect = function( uri ){
+  this.client.redirect( uri );
+};

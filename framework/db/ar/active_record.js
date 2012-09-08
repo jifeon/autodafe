@@ -131,6 +131,11 @@ ActiveRecord.prototype._process_attributes = function( inited ){
 };
 
 
+ActiveRecord.prototype._after_init = function( params ){
+  this.on('ready', ActiveRecord.parent._after_init.bind( this, params ));
+}
+
+
 /**
  * Возвращает имя таблицы, к которой привязана запись
  *

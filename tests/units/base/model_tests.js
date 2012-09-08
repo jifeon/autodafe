@@ -52,6 +52,11 @@ vows.describe( 'model' )
         assert.isTrue( other_model.guest );
       },
 
+      'params 2' : function( model ){
+        var other_model = new this.context.topics[1].models.model2({login : 'jifeon'});
+        assert.equal( other_model.login, 'jifeon' );
+      },
+
       '.remove_attribute' : function( model ){
         model.remove_attribute( 'login' );
         assert.isFalse( model.is_attribute( 'login' ) );
