@@ -132,6 +132,7 @@ ActiveRecord.prototype._process_attributes = function( inited ){
 
 
 ActiveRecord.prototype._after_init = function( params ){
+  delete params.is_new;
   this.on('ready', ActiveRecord.parent._after_init.bind( this, params ));
 }
 

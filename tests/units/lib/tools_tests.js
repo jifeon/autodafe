@@ -256,10 +256,6 @@ vows.describe( 'tools' ).addBatch({
     throw 'no tests';
   },
 
-  'create_async_listener' : function(){
-    throw 'no tests';
-  },
-
   'to_object' : function(){
     assert.deepEqual( tools.to_object( [
       'required',

@@ -120,7 +120,7 @@ Listener.prototype._init = function( params ){
    * @type {Object}
    * @default {}
    */
-  this.behaviors = params.behaviors || {};
+  this.behaviors = params && params.behaviors || {};
 
   /**
    * Хранилище эмиттеров
@@ -131,7 +131,7 @@ Listener.prototype._init = function( params ){
    * @type {Object}
    * @private
    */
-  this._emitters  = {};
+  this._emitters = {};
 
   /**
    * Количество асинхронных операций на выполнении
@@ -387,8 +387,11 @@ Listener.prototype._check_arg_num = function( n ){
  * Метод можно переопределять в наследуемых классах. Также этот метод можно задать через {@link Listener.error}
  *
  * @param {Error} e
+ * @throws {Error} e
  */
-Listener.prototype.handle_error = function( e ){}
+Listener.prototype.handle_error = function( e ){
+  throw e;
+}
 
 
 /**
@@ -421,4 +424,18 @@ Listener.prototype.success = function( f ){
 Listener.prototype.error = function( f ){
   this.handle_error = f;
   return this;
+}
+
+
+/**
+ * Делает переданную функцию обработчик как для ошибок, так и успешного завершения
+ *
+ * @param {Function} f
+ * @param {Error|null} f.error Первым аргументом функции является возможная ошибка
+ * @param {*} f.result Второй и последующие аргументы соответствуют добавленным асинхронным действиям.
+ * см. {@link Listener._args}
+ */
+Listener.prototype.callback = function( f ){
+  this.success( f.bind( null, null ) );
+  this.error( f );
 }

@@ -513,9 +513,9 @@ Model.prototype.remove = function ( callback ) {
  *
  * @param {Function} [callback] функция, которая выполнится после валидации модели
  * @param {Error} [callback.error] Системная ошибка возникшая во время валидации
- * @param {Error} [callback.model] Сама модель
+ * @param {Error} [callback.valid] Валидна ли модель
  * @param {String[]|String} [attributes] Если передан, то будут валидированы только эти атрибуты
- * @return {EventEmitter}
+ * @return {EventEmitter} Возможны действия 'success', 'error', 'not_valid'
  * @see Model.save
  */
 Model.prototype.validate = function ( callback, attributes ){
@@ -524,20 +524,26 @@ Model.prototype.validate = function ( callback, attributes ){
 
   this._errors = {};
 
+
   var self     = this;
   var emitter  = new process.EventEmitter;
-
-  var listener = this.app.tools.create_async_listener( attributes.length, function( result ){
-    callback && callback( result.error || null, !self.has_errors() );
-
-    if ( result.error )      emitter.emit( 'error',     result.error );
-    if ( self.has_errors() ) emitter.emit( 'not_valid', self.get_errors() );
-    else                     emitter.emit( 'success',   self );
-  });
+  var listener = new global.autodafe.lib.Listener;
 
   attributes.forEach( function( attr ){
-    this.validate_attribute( attr, listener.listen( 'error' ) );
+    this.validate_attribute( attr, listener.get_callback());
   }, this );
+
+  listener
+    .error( function( e ){
+      callback && callback( e );
+      emitter.emit('error', e);
+    })
+    .success( function(){
+      callback && callback( null, !self.has_errors() );
+
+      if ( self.has_errors() ) emitter.emit('not_valid', self.get_errors())
+      else                     emitter.emit('success', self);
+    })
 
   return emitter;
 }
@@ -548,8 +554,8 @@ Model.prototype.validate = function ( callback, attributes ){
  *
  * @param {String} name имя валидируемого атрибута
  * @param {Function} callback функция которая вызывается после валидации атрибута
- * @param {Error} [callback.error] Системная ошибка возникшая во время валидации
- * @param {Error} [callback.not_valid] Ошибка валидации; если атрибут валиден, то null
+ * @param {Error|null} [callback.error] Системная ошибка возникшая во время валидации
+ * @param {Error|null} [callback.validation_error] Ошибка валидации; если атрибут валиден, то null
  * @return {*}
  */
 Model.prototype.validate_attribute = function( name, callback ){
@@ -575,7 +581,7 @@ Model.prototype.validate_attribute = function( name, callback ){
     if ( error ) this._errors[ name ] = error;
   }
 
-  callback( null, error || null );
+  process.nextTick( callback.bind( null, null, error || null ));
 };
 
 
