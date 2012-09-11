@@ -989,7 +989,7 @@ ActiveRecord.prototype.exists = function( condition, params ) {
  * @returns {events.EventEmitter} success( {@link MysqlResult} ), error( Error )
  * @example update_by_pk
  * <pre><code class="javascript">
- * this.models.post.update_by_pk( 2, { text : 'new text' }, 'user_id=5' )
+ * this.models.post.update_by_pk( 2, { text : 'new text' } )
  * </code></pre>
  */
 ActiveRecord.prototype.update_by_pk = function( pk, attributes, condition, params ) {

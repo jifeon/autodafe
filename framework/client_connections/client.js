@@ -256,13 +256,19 @@ Client.prototype.get_session_id = function () {
  * Возвращает cookie
  *
  * Нужно переопределить для наследуемых клиентов, если они работают с cookie
+ *
+ * @param {String} name название cookie
  */
-Client.prototype.get_cookie = function () {};
+Client.prototype.get_cookie = function ( name ) {};
 
 
 /**
  * Задает cookie
  *
  * Нужно переопределить для наследуемых клиентов, если они работают с cookie
+ *
+ * @param {String} name Имя cookie
+ * @param {String} value Значение для записи
+ * @param {Number} days Сколько дней хранить
  */
-Client.prototype.set_cookie = function () {};
+Client.prototype.set_cookie = function ( name, value, days ) {};
