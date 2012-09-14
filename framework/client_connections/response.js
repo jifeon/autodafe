@@ -55,7 +55,9 @@ Response.prototype._init = function( params ) {
    *
    * @type {Object}
    */
-  this.params         = {};
+  this.params         = {
+    cd : this.controller.views_folder
+  };
 
   if ( !params.request ) this.log(
     '`request` is undefined in Response constructor. An error will be thrown if you try send this response',
