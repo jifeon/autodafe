@@ -21,7 +21,35 @@ module.exports = Application.inherits( autodafe.AutodafePart );
  *
  * @constructor
  * @extends AutodafePart
- * @param {Object} config см. {@link Application._init}
+ * @param {Object} config конфиг для приложения
+ * @param {String} config.name имя приложения
+ * @param {String} config.base_dir Корневая директория приложения, в ней по умолчанию ищутся директории с моделями,
+ * контроллерами, вьюшками,компонентами, а также относительно нее задаются другие пути в конфигурационном файле
+ * @param {Object} [config.params={}] Параметры приложения, которые доступны в любом месте приложения через функцияю
+ * {@link Application.get_param}
+ * @param {String} [config.default_controller="action"] Контроллер использующийся по умолчанию там где не указан явно.
+ * При подключении к приложению по любому из протоколов, у этого контроллера вызывается действие
+ * {@link Controller.connect_client}, где можно например произвести авторизацию клиента. Имя контроллера должно
+ * совпадать с названием файла, в котором он описан.
+ * @param {String} [config.views_folder="views"] путь от base_dir до места где будут искаться шаблоны
+ * @param {String} [config.models_folder="models"] путь от base_dir до моделей
+ * @param {String} [config.controllers_folder="controllers"] путь от base_dir до контроллеров
+ * @param {String} [config.components_folder="components"] путь от base_dir до пользовательских компонентов
+ * @param {Number} [config.session_live_time=60000] время, которое живет сессия без клиентов в мс
+ * @param {Boolean} [config.cache_views=true] Если значение true - вьюшки подгружаются один раз при создании
+ * приложения и больше никогда не проверяются на изменения, если false - измененные вьюшки перезагружаются каждый раз
+ * при обращении к ним
+ * @param {Object} [config.router={}] Настройки компонента отвечающего за перенаправление запросов и генерацию УРЛ,
+ * подробнее в {@link Router._init}
+ * @param {String[]} [config.preload_components=[]] Компоненты, загружаемые до инициализации ядра приложения.
+ * Системные компоненты, которые стоит указывать в этой секции, если они используются (т е указаны в params.components):
+ * log_router - чтобы видеть в логе этапы инициализации ядра, db - для инициализации моделей, которые используют доступ
+ * к базе данных
+ * @param {Object} [config.components={}] Настройка подключаемых компонентов. Здесь указываются как компаненты autodafe,
+ * так и пользовательские. Ключами всегда является название подключаемого компонентка ( для пользовательских компонентов
+ * это название файла ), а значениями - настройки для компонента. Если для компонента не надо передавать настройки,
+ * нужно просто указать true. Список системных компонентов можно посмотреть в
+ * {@link ComponentsManager._system_components}
  */
 function Application( config ) {
   this._init( config );
@@ -156,35 +184,7 @@ Application.prototype.tools = require('../lib/tools');
  * Инициализация Application
  *
  * @private
- * @param {Object} config конфиг для приложения
- * @param {String} config.name имя приложения
- * @param {String} config.base_dir Корневая директория приложения, в ней по умолчанию ищутся директории с моделями,
- * контроллерами, вьюшками,компонентами, а также относительно нее задаются другие пути в конфигурационном файле
- * @param {Object} [config.params={}] Параметры приложения, которые доступны в любом месте приложения через функцияю
- * {@link Application.get_param}
- * @param {String} [config.default_controller="action"] Контроллер использующийся по умолчанию там где не указан явно.
- * При подключении к приложению по любому из протоколов, у этого контроллера вызывается действие
- * {@link Controller.connect_client}, где можно например произвести авторизацию клиента. Имя контроллера должно
- * совпадать с названием файла, в котором он описан.
- * @param {String} [config.views_folder="views"] путь от base_dir до места где будут искаться шаблоны
- * @param {String} [config.models_folder="models"] путь от base_dir до моделей
- * @param {String} [config.controllers_folder="controllers"] путь от base_dir до контроллеров
- * @param {String} [config.components_folder="components"] путь от base_dir до пользовательских компонентов
- * @param {Number} [config.session_live_time=60000] время, которое живет сессия без клиентов в мс
- * @param {Boolean} [config.cache_views=true] Если значение true - вьюшки подгружаются один раз при создании
- * приложения и больше никогда не проверяются на изменения, если false - измененные вьюшки перезагружаются каждый раз
- * при обращении к ним
- * @param {Object} [config.router={}] Настройки компонента отвечающего за перенаправление запросов и генерацию УРЛ,
- * подробнее в {@link Router._init}
- * @param {String[]} [config.preload_components=[]] Компоненты, загружаемые до инициализации ядра приложения.
- * Системные компоненты, которые стоит указывать в этой секции, если они используются (т е указаны в params.components):
- * log_router - чтобы видеть в логе этапы инициализации ядра, db - для инициализации моделей, которые используют доступ
- * к базе данных
- * @param {Object} [config.components={}] Настройка подключаемых компонентов. Здесь указываются как компаненты autodafe,
- * так и пользовательские. Ключами всегда является название подключаемого компонентка ( для пользовательских компонентов
- * это название файла ), а значениями - настройки для компонента. Если для компонента не надо передавать настройки,
- * нужно просто указать true. Список системных компонентов можно посмотреть в
- * {@link ComponentsManager._system_components}
+ * @param {Object} config см. {@link Application}
  */
 Application.prototype._init = function ( config ) {
   this.setMaxListeners( 1000 );
