@@ -205,7 +205,8 @@ Controller.prototype.run_action = function ( action, request ) {
  */
 Controller.prototype.action = function( action, response ){
   response.controller = this;
-  response.view_name( action );
+  response.merge_params({cd : this.views_folder});
+  response.view_path( path.join( this.views_folder, action + this.views_ext ));
   return this[ action ].apply( this, Array.prototype.slice.call( arguments, 1 ));
 }
 

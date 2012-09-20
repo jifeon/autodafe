@@ -74,6 +74,11 @@ UserIdentity.prototype.get_roles = function ( model, attribute, params ) {
 };
 
 
+UserIdentity.prototype.is = function( role, model, attribute, params ){
+  return ~this.get_roles( model, attribute, params).indexOf( role );
+}
+
+
 UserIdentity.prototype.manage = function ( model, params ) {
   var EE   = process.EventEmitter;
   var self = this;
