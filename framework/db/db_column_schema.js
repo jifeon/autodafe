@@ -193,8 +193,6 @@ DbColumnSchema.prototype.typecast = function( value ) {
   if ( this.__get_type( value ) == this.type || value == null || value instanceof Error || value instanceof Date )
     return value;
 
-  if ( !value ) return this.type == 'string' ? '' : null;
-
   switch ( this.type ) {
     case 'string':  return String( value );
     case 'integer':
