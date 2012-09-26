@@ -32,7 +32,7 @@ DbFixtureManager.prototype.get_fixtures = function () {
   var fs = require('fs');
   var dir = this.fixtures_dir;
   var f_name, fixture;
-  path.exists( dir, function( exists ) {
+  fs.exists( dir, function( exists ) {
     if( !exists ){
       self.log('Fixtures dir does not exist', 'warning');
       self.emit( 'get_fixtures', false );

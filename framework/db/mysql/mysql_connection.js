@@ -46,6 +46,13 @@ MysqlConnection.prototype._init = function( params ) {
   this.on( 'connect', function() {
     this.query = this.__query;
   });
+
+  this.app.on( 'stop', function(){
+    clearInterval( self._ping_interval );
+    self._connection.end(function(e){
+      if (e) self.app.log( e );
+    })
+  });
 };
 
 

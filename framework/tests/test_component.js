@@ -26,7 +26,7 @@ TestComponent.prototype.run = function () {
     test_path = path.resolve( this.app.base_dir, test_path );
 
     var test_path_origin = test_path;
-    if ( !path.existsSync( test_path ) && !path.existsSync( test_path += '.js' ) ) {
+    if ( !fs.existsSync( test_path ) && !fs.existsSync( test_path += '.js' ) ) {
       return this.log(
         'Path "%s" does not exist. Check your configuration file ( tests.paths )'.format( test_path_origin ),
         'error' );
