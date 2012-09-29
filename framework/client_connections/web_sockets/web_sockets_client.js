@@ -68,7 +68,10 @@ WebSocketsClient.prototype.get_cookie = function ( cookie_name ) {
 
 WebSocketsClient.prototype.send = function ( data, action  ) {
   WebSocketsClient.parent.send.call( this, data );
-  if( !action ) action = JSON.parse(data).action;
+
+  var json_data = JSON.parse( data );
+  if( !action ) action = json_data.action;
+  if( json_data.broadcast ) this.broadcast( action, data);
   this.ws_client.emit( action, data );
 };
 
@@ -79,6 +82,7 @@ WebSocketsClient.prototype.broadcast = function ( action, data ) {
   this.emit( 'broadcast', data );
   this.connection.emit( 'broadcast', data, this );
 
+  if( !action ) action = JSON.parse(data).action;
   this.ws_client.broadcast.emit( action, data );
 };
 
