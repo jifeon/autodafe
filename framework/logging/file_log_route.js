@@ -39,7 +39,7 @@ FileLogRoute.prototype.process_logs = function () {
   var file_emitter = new process.EventEmitter;
   var self         = this;
 
-  path.exists( this._log_file_path, function( exists ) {
+  fs.exists( this._log_file_path, function( exists ) {
     if ( exists ) {
       fs.stat( self._log_file_path, function( e, stats ) {
         if ( e ) return self._on_error( e );
@@ -77,7 +77,7 @@ FileLogRoute.prototype._rotate_files = function ( f, file_emitter ) {
   var self        = this;
   var rotate_file = this._log_file_path + ( f ? '.' + f : '' );
 
-  path.exists( rotate_file, function( exists ) {
+  fs.exists( rotate_file, function( exists ) {
     if ( !exists ) return self._rotate_files( f - 1, file_emitter );
 
     var next = function( e ) {
