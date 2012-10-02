@@ -1,6 +1,4 @@
-var AppModule   = global.autodafe.AppModule;
-
-module.exports = Route.inherits( AppModule );
+module.exports = Route.inherits( global.autodafe.AppModule );
 
 function Route( params ) {
   this._init( params );

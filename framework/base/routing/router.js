@@ -106,8 +106,20 @@ Router.prototype._init = function ( params ) {
    * Регулярное выражение пути до действия контроллера
    *
    * Карманы: 3 - название контроллера или undefined, 4 - название действия или undefined
+   *
+   * @private
+   * @type {RegExp}
    */
   this._route_path_re  = /^(((\w+)\.)?(\w+))?$/;
+
+  /**
+   * Регулярное выражение для параметров, которые должны быть сгруппированы
+   *
+   * @type {RegExp}
+   * @private
+   * @see Router.group_params
+   */
+  this._groupped_param_re = /^(\w+)\[(\w+)\]$/;
 
   this._collect_controllers();
   this._parse_route_paths( params.rules );
@@ -257,8 +269,9 @@ Router.prototype.route = function( request ) {
 
     route = r;
     request.params = Object.merge( request.params, request_params );
+    request.params = this.group_params( request.params );
     return true;
-  });
+  }, this);
 
 
   if ( !route ) {
@@ -289,6 +302,50 @@ Router.prototype.route = function( request ) {
     throw e;
   }
 };
+
+
+/**
+ * Группировка параметров
+ *
+ * @param {Object} params см. пример
+ * @return {Object}
+ * @example Пример использования
+ *
+ * <pre><code class="javascript">
+ * var params = {
+ *   'user[name]' : 'jifeon',
+ *   'user[pass]' : 'secret',
+ *   'remember'   : true
+ * }
+ *
+ * console.log( router.group_params( params ));
+ * </code></pre>
+ * Выведет
+ * <pre><code class="javascript">
+ * {
+ *   'user' : {
+ *     'name' : 'jifeon',
+ *     'pass' : 'secret'
+ *   },
+ *   'remember' : true
+ * }
+ * </code></pre>
+ */
+Router.prototype.group_params = function( params ){
+  var new_params = {};
+  for ( var param in params ){
+    var matches = param.match( this._groupped_param_re );
+    if ( !matches ) new_params[param] = params[param];
+    else {
+      var group = matches[1];
+      if ( !new_params[group] ) new_params[group] = {};
+      new_params[group][matches[2]] = params[param];
+    }
+  }
+
+  console.log( new_params );
+  return new_params;
+}
 
 
 /**
