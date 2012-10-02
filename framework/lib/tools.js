@@ -248,6 +248,8 @@ process.EventEmitter.prototype.re_emit = function() {
 }
 
 var dust = exports.dust = require('dustjs-linkedin');
+require('dustjs-helpers');
+
 dust.filters.n = function( value ){
   return isFinite( value ) ? Number( value ) : 0;
 }
