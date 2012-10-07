@@ -269,6 +269,6 @@ Client.prototype.get_cookie = function ( name ) {};
  *
  * @param {String} name Имя cookie
  * @param {String} value Значение для записи
- * @param {Number} days Сколько дней хранить
+ * @param {Number} [days] Сколько дней хранить
  */
 Client.prototype.set_cookie = function ( name, value, days ) {};

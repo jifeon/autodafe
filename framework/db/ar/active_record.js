@@ -119,10 +119,14 @@ ActiveRecord.prototype._bind_with_table = function(){
 ActiveRecord.prototype._process_attributes = function( inited ){
   if ( !inited ) return this.on('ready', this._process_attributes.bind( this, true ));
 
+  var self         = this;
   var descriptions = this.app.tools.to_object( this.attributes(), 1 );
 
   this.table.get_column_names().forEach( function( column_name ) {
-    if ( !descriptions[ column_name ] ) descriptions[ column_name ] = true;
+    if ( !descriptions[ column_name ] ) {
+      descriptions[ column_name ] = {};
+      if ( self.table.get_column( column_name).is_primary_key ) descriptions[ column_name ].key = true;
+    }
   }, this );
 
   for ( var attr in descriptions ) {

@@ -122,6 +122,11 @@ String.prototype.format = function() {
 };
 
 
+String.prototype.md5 = function(){
+  return require('crypto').createHash('md5').update( this.toString() ).digest("hex");
+}
+
+
 String.unique = function(){
   var idx = [], itoh = '0123456789ABCDEF'.split('');
 

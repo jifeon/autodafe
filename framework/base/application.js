@@ -407,11 +407,12 @@ Application.prototype._init = function ( config ) {
    * Контроллер, в который перенаправляются действия по умолчанию.
    *
    * @type {String}
+   * @default "site"
    * @see Controller
    * @see Router
    * @see Client._call_controller
    */
-  this.default_controller     = this._config.default_controller || 'action';
+  this.default_controller     = this._config.default_controller || 'site';
 
   /**
    * Местоположение моделей

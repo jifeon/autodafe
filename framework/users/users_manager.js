@@ -30,10 +30,20 @@ UsersManager.prototype._init = function( params ) {
     users_manager : this
   });
 
+  this.user_model = params.model;
+
   var self = this;
   this.app.on( 'new_session', function( session ) {
     self._register_guest_session( session );
-  } );
+  });
+
+  this.app.http && this.app.http.on( 'receive_request', function( request ){
+    request.user = self.get_by_request( request );
+  });
+
+  this.app.ws && this.app.ws.on( 'receive_request', function( request ){
+    request.user = self.get_by_request( request );
+  });
 };
 
 
@@ -83,7 +93,7 @@ UsersManager.prototype._register_guest_session = function ( session ) {
 
   session.once( 'close', function() {
     delete users.by_session_id[ session.id ];
-  } );
+  });
 };
 
 
@@ -97,6 +107,11 @@ UsersManager.prototype.get_by_client = function ( client ) {
 };
 
 
+UsersManager.prototype.get_by_request = function( request ){
+  return this.get_by_client( request.client );
+}
+
+
 //todo: delete
 UsersManager.prototype.get_by_model = function ( model ) {
   if ( !model ) return null;
@@ -107,6 +122,73 @@ UsersManager.prototype.get_by_model = function ( model ) {
 UsersManager.prototype.get_by_model_id = function ( id ) {
   return this._users.by_model_id[ id ] || null;
 };
+
+
+UsersManager.prototype.login = function( model, request, cookie_days ){
+  request.user = this.authorize_session( request.client.session, model );
+
+  var id = model.get_id();
+  if ( typeof cookie_days != 'undefined' && id != null && typeof model.cookie_hash == 'function' ) {
+    request.client.set_cookie( 'autodafe_id', JSON.stringify( id ), cookie_days);
+    request.client.set_cookie( 'autodafe_hash', model.cookie_hash(), cookie_days);
+  }
+}
+
+
+UsersManager.prototype.logout = function( request ){
+  this.logout_session( request.client.session );
+  request.user = this.guests;
+  request.client.set_cookie( 'autodafe_id', '');
+  request.client.set_cookie( 'autodafe_hash', '');
+}
+
+
+UsersManager.prototype.login_by_cookie = function( client ){
+  var ui = this.get_by_client( client );
+  if ( ui.is_authorized() ) return;
+
+  var id = client.get_cookie( 'autodafe_id' );
+  if ( !id ) return;
+
+  try{
+    id = JSON.parse(id);
+  }
+  catch (e){
+    this.log( 'Authorization by cookie failed. Bad id', 'warning' );
+    return;
+  }
+
+  var emitter = new process.EventEmitter;
+
+  var model = this.app.models[ this.user_model ];
+  if ( !model ) {
+    this.log( 'Authorization by cookie failed. You must specify exiting `components.users.model` in config file', 'warning' );
+    return;
+  }
+
+  var self = this;
+  model.find_by_pk( id )
+    .on( 'error', function( e ){
+      self.log( 'Authorization by cookie failed. System error while user search', 'warning' );
+      process.nextTick( emitter.emit.bind( emitter, 'error', e ));
+    } )
+    .on( 'success', function( user ){
+      if ( !user )
+        self.log( 'Authorization by cookie failed. User not found', 'warning' );
+
+      else if ( typeof user.cookie_hash != 'function' || user.cookie_hash() != client.get_cookie('autodafe_hash'))
+        self.log( 'Authorization by cookie failed. Wrong cookie hash', 'warning' );
+
+      else {
+        self.authorize_session( client.session, user );
+        self.log( 'User authorized', 'info' );
+      }
+
+      process.nextTick( emitter.emit.bind( emitter, 'success' ));
+    })
+
+  return emitter;
+}
 
 
 UsersManager.prototype.authorize_session = function ( session, model ) {
@@ -141,6 +223,8 @@ UsersManager.prototype.authorize_session = function ( session, model ) {
   if ( !guests_ui ) session.once( 'close', function() {
     delete self._users.by_session_id[ session.id ];
   } );
+
+  return ui;
 };
 
 
