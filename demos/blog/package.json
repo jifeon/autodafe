@@ -1,0 +1,14 @@
+{
+  "name"          : "autodafe demo blog",
+  "description"   : "mvc framework for node with mysql orm, web sockets support, logging, routing, user roles etc",
+  "keywords"      : [ "blog", "autodafe" ],
+  "homepage"      : "http://autodafe.ws/article/Blog",
+  "version"       : "0.0.2",
+  "author"        : "Andrey Balakirev <balakirev.andrey@gmail.com>",
+  "contributors"  : [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
+  "dependencies"  : {
+    "twitter-bootstrap"     : ">=2.1.1",
+    "less"                  : ">=1.2.2"
+  },
+  "engines"       : { "node": ">=0.8.0" }
+}

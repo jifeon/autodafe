@@ -19,23 +19,6 @@ var config = module.exports = {
   base_dir            : require('path').join( __dirname, '..' ),
 
   /**
-   * Контроллер использующийся по умолчанию там где не указан явно. Важно: при подключении к приложению по любому из
-   * протоколов, у этого контроллера вызывается действие connect_client, где можно например произвести авторизацию
-   * клиента по куки. Имя контроллера должно совпадать с названием файла, в котором он описан.
-   *
-   * @type {String}
-   */
-  default_controller  : 'site',
-
-  /**
-   * Здесь переопределена стандартная директория нахождения вьюшек, чтобы в папку views можно было также сложить
-   * клиентские скрипты и стили и они не обрабатывались бы шаблонизатором
-   *
-   * @type {String}
-   */
-  views_folder        : 'views/templates',
-
-  /**
    * Если значение true - вьюшки подгружаются один раз при создании приложения и больше никогда не проверяются на
    * изменения, если false - измененные вьюшки перезагружаются каждый раз при обращении к ним
    *
@@ -64,22 +47,22 @@ var config = module.exports = {
       'page/<page:\\d+>'      : 'site.index',
 
       // запрос на регистрацию пользователя
-      'register'              : 'site.register        | post',
+      'register'              : 'user.register        | post',
 
       // запрос на логин пользователя
-      'login'                 : 'site.login           | post',
+      'login'                 : 'user.login           | post',
 
       // запрос на логаут пользователя
-      'logout'                : 'site.logout',
+      'logout'                : 'user.logout',
 
       // запрос на создание нового топика
-      'new_topic'             : 'site.create_topic',
+      'new_topic'             : 'post.create',
 
       // просмотр топика, примутся УРЛ вида /topic/2
-      'topic/<topic_id:\\d+>' : 'site.view_topic',
+      'topic/<topic_id:\\d+>' : 'post.view',
 
       // запрос на добавления комментария
-      'comment'               : 'site.comment         | post'
+      'comment'               : 'comment.create       | post'
     }
   },
 
@@ -105,7 +88,9 @@ var config = module.exports = {
     my_tools : true,
 
     // компонент управляющий правами пользователей
-    users    : true,
+    users    : {
+      model : 'user'
+    },
 
     // http сервер
     http                : {
@@ -113,8 +98,9 @@ var config = module.exports = {
 
       // здесь указываются директории в которых ищутся файлы
       root_folders    : {
-        js       : 'views/js',
-        css      : 'views/css'
+        js        : 'static/js',
+        css       : 'static/css',
+        bootstrap : '../../node_modules/twitter-bootstrap/'
       }
     },
 

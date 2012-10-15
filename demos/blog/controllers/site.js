@@ -1,7 +1,10 @@
-var Controller  = global.autodafe.Controller;
 var crypto      = require('crypto');
+var less        = require('less');
+var fs          = require('fs');
+var path        = require('path');
 
-module.exports = Site.inherits( Controller ); // наследуем от Controller
+// наследуем от Controller
+module.exports = Site.inherits( global.autodafe.Controller );
 
 /**
  * Единственный в данном приложении контроллер, который и отвечает за логику работы приложения
@@ -12,10 +15,37 @@ module.exports = Site.inherits( Controller ); // наследуем от Control
  */
 function Site( params ) {
   this._init( params );
+}
+
+
+Site.prototype._init = function( params ){
+  Site.parent._init.call( this, params );
 
   this.POSTS_PER_PAGE = 5;
 
   this.behavior_for( 'not_valid', this.validation_error );
+
+  this.app.on( 'views_are_loaded', this._compile_templates.bind( this ) );
+  if ( this.app.views_loaded ) this._compile_templates();
+
+}
+
+Site.prototype._compile_templates = function(){
+  var style = fs.readFileSync( path.join( this.app.base_dir, 'static/css/style.less' ), 'utf8' );
+  var parser = new less.Parser({
+    paths: [ path.join( this.app.base_dir, '../../node_modules/twitter-bootstrap/less/' ) ]//, // Specify search paths for @import directives
+//      filename: 'style.less' // Specify a filename, for better error messages
+  });
+
+  var self = this;
+  parser.parse( style, function (e, tree) {
+    var css = tree.toCSS({ compress: true }); // Minify CSS output
+    var css_file = path.join( self.app.base_dir, 'static/css/style.css' );
+    if ( fs.existsSync( css_file ) ) fs.unlinkSync( css_file );
+    var fd = fs.openSync( css_file, 'a', 0666 );
+    fs.writeSync( fd, css, null, 'utf8' );
+    fs.closeSync( fd );
+  });
 }
 
 
@@ -71,55 +101,6 @@ Site.prototype.connect_client = function ( client ){
 };
 
 
-/**
- * Авторизация пользвоателя
- *
- * @private
- * @param {String} login
- * @param {String} pass
- * @param {Client} client
- * @param {Function} [success] функция которая выполнится при успешной авторизации
- * @param {Function} [fail] функция, которая выполнится если авторизация не пройдет
- */
-Site.prototype._authorize = function ( login, pass, client, success, fail ) {
-  var emitter = new process.EventEmitter;
-
-  var self = this;
-  this.models.user.find_by_attributes( {
-    login : login,
-    pass  : pass
-  } )
-    .on( 'error', client.send_error.bind( client ) )
-    .on( 'success', function( user ){
-      if ( !user ) {
-        if (typeof fail == 'function') fail();
-        else emitter.emit('success');
-        return false;
-      }
-
-      self._login_client( client, user );
-      if ( typeof success == 'function' ) success();
-      else emitter.emit('success');
-    } );
-
-  return emitter;
-};
-
-
-Site.prototype._login_client = function ( client, user ) {
-  this.app.users.authorize_session( client.session, user );
-
-  client.set_cookie( 'blog_login',  user.login, 365 );
-  client.set_cookie( 'blog_pass',   user.pass,  365 );
-};
-
-
-Site.prototype._logout_client = function ( client ) {
-  this.app.users.logout_session( client.session );
-
-  client.set_cookie( 'blog_login',  '' );
-  client.set_cookie( 'blog_pass',   '' );
-};
 
 
 /**
@@ -155,75 +136,7 @@ Site.prototype.index = function ( response, request ) {
 };
 
 
-/**
- * Регистрация
- */
-Site.prototype.register = function ( response, request ) {
-  var self      = this;
-  var listener  = response.create_listener();
 
-  // проверяем существует ли указанный логин
-  listener.stack <<= this.models.user.exists( 'login=:login', {
-    login : request.params.login
-  });
-
-  listener.success(function( user_exists ){
-    // если логин уже занят - отправляем главную страницу с показом ошибки
-    if( user_exists ) {
-      response.merge_params({ errors : {
-        reg : { login : 'This login already in use' }
-      }});
-
-      return self.action( 'index', response, request );
-    }
-
-    // если нет - создаем модель пользователя
-    var user = new self.models.user;
-
-    // задаем ей параметры и сохраняем
-    listener.stack <<= user.set_attributes( request.params ).save();
-    listener.success( function(){
-      // логиним клиент
-      self._login_client( request.client, user );
-
-      // и редиректим его на главную
-      request.redirect('/');
-    });
-  });
-};
-
-
-/**
- * Запрос на вход пользователя
- */
-Site.prototype.login = function ( response, request ) {
-  var client  = request.client;
-  var self    = this;
-
-  // пытаемся авотризовать клиента
-  this._authorize(
-    request.params.login,
-    crypto.createHash('md5').update( request.params.pass ).digest("hex"),
-    client,
-    client.redirect.bind( client, '/' ),    // успешно авторизован - редирект на главную
-    function(){                             // показ ошибки на главной
-      response.merge_params({ errors : {
-        login : {login : 'Wrong login or/and password'}
-      }});
-
-      self.action( 'index', response, request );
-    }
-  );
-};
-
-
-/**
- * Запрос на выход пользователя
- */
-Site.prototype.logout = function ( response, request ) {
-  this._logout_client( request.client );
-  request.redirect( '/' );
-};
 
 
 /**

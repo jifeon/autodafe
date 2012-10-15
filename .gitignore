@@ -1,3 +1,4 @@
 *.log
 tests/test_app/config/db.js
 node_modules/*
+demos/blog/static/css/style,css

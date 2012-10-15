@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Autodafe demo blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="autodafe demo blog">
+  <meta name="author" content="Andrey Balakirev">
+
+  <link rel="stylesheet" type="text/css" href="/css/style.css"/>
+
+  <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script src="/js/jquery.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar navbar-fixed-top">
+  <div class="container">
+    <a class="brand" href="{#url/}"><h1>Autodafe demo blog</h1></a>
+  </div>
+</header>
+
+<section class="content container">
+  <div class="row">
+    <aside class="span3">
+      {?user}
+      <form action="{#url}create_topic{/url}">
+        <legend>Welcome!</legend>
+        <p>
+          You are logged in as <strong>{user.login}</strong>
+          <small>(<a title="logout" href="{#url}logout{/url}">logout</a>)</small>
+        </p>
+        <input type="submit" value="Create new topic">
+      </form>
+      {:else}
+      <form action="{#url}user.login{/url}" method="post">
+        <legend>Login</legend>
+        <label for="login">login</label>
+        <input type="text" id="login" name="user[login]">
+        <span class="error">{errors.login.login}</span>
+
+        <label for="pass">password</label>
+        <input type="password" id="pass" name="user[pass]">
+        <span class="error">{errors.login.pass}</span>
+        <br>
+        <input type="submit">
+      </form>
+
+      <form action="{#url}user.register{/url}" method="post">
+        <legend>Register</legend>
+
+        <label for="reg_login">login</label>
+        <input type="text" id="reg_login" name="user[login]">
+        <span class="error">{errors.reg.login}</span>
+
+        <label for="reg_pass">password</label>
+        <input type="password" id="reg_pass" name="user[pass]">
+        <span class="error">{errors.reg.pass}</span>
+        <br>
+        <input type="submit">
+      </form>
+      {/user}
+    </aside>
+
+    <section class="span9" id="content">
+      {?error}<div class="error message_in_content">
+      <strong>{error|s}</strong>
+    </div>{/error}
+      {+content/}
+    </section>
+  </div>
+
+  <hr>
+
+  <footer>
+    Powered by <a href="http://autodafe.ws">Autodafé</a>
+  </footer>
+</section>
+
+<!--<script src="/bootstrap/bootstrap-transition.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-alert.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-modal.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-dropdown.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-scrollspy.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-tab.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-tooltip.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-popover.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-button.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-collapse.js"></script>-->
+<!--<script src="/bootstrap/js/bootstrap-carousel.js"></script>-->
+<!--<script src="/bootstrap/js/bootstrap-typeahead.js"></script>-->
+<!--<script src="/bootstrap/bootstrap-affix.js"></script>-->
+
+
+</body>
+</html>
