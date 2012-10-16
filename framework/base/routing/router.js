@@ -343,7 +343,6 @@ Router.prototype.group_params = function( params ){
     }
   }
 
-  console.log( new_params );
   return new_params;
 }
 

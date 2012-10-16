@@ -21,6 +21,9 @@ UserIdentity.prototype._init = function( params ) {
   this._.users_manager  = params.users_manager;
   this._.sessions       = [];
   this._.model          = null;
+  this._.guest.get = function(){
+    return this.is_guest();
+  }
 };
 
 
@@ -34,7 +37,7 @@ UserIdentity.prototype.register_session = function ( session ) {
   var self = this;
   session.once( 'close', function() {
     self.remove_session( session );
-  } );
+  });
 };
 
 

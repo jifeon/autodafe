@@ -56,10 +56,11 @@ var config = module.exports = {
       'logout'                : 'user.logout',
 
       // запрос на создание нового топика
-      'new_topic'             : 'post.create',
+      'new_topic'             : 'site.create_topic',
+      'create_post'           : 'post.create          | post',
 
       // просмотр топика, примутся УРЛ вида /topic/2
-      'topic/<topic_id:\\d+>' : 'post.view',
+      'topic/<topic_id:\\d+>' : 'site.view_topic',
 
       // запрос на добавления комментария
       'comment'               : 'comment.create       | post'
@@ -89,7 +90,20 @@ var config = module.exports = {
 
     // компонент управляющий правами пользователей
     users    : {
-      model : 'user'
+      model : 'user',
+
+      roles : {
+        user : "user.id != null"
+      },
+
+      roles_groups : {
+        all : 'user, guest'
+      },
+
+      rights : {
+        create : 'user',
+        view   : 'all'
+      }
     },
 
     // http сервер

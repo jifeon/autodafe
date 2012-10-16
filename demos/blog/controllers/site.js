@@ -24,8 +24,6 @@ Site.prototype._init = function( params ){
   this.POSTS_PER_PAGE = 5;
   this.views_folder = 'html';
 
-  this.behavior_for( 'not_valid', this.validation_error );
-
   this.app.on( 'views_are_loaded', this._compile_templates.bind( this ) );
   if ( this.app.views_loaded ) this._compile_templates();
 
@@ -50,15 +48,6 @@ Site.prototype._compile_templates = function(){
 }
 
 
-Site.prototype.validation_error = function( response, request, errors ){
-  response.merge_params({ errors : {
-    reg : errors
-  }});
-
-  this.action( 'index', response, request);
-}
-
-
 /**
  * Возвращает параметры которые доступны во всех шаблонах
  *
@@ -67,10 +56,8 @@ Site.prototype.validation_error = function( response, request, errors ){
  * @return {Object}
  */
 Site.prototype.global_view_params = function( response, request ){
-  var ui = this.app.users.get_by_client( request.client );
-
   return {
-    user : ui && ui.model
+    user : request.user
   }
 };
 
@@ -120,33 +107,14 @@ Site.prototype.index = function ( response, request ) {
 };
 
 
-
-
-
 /**
- * Создание топика
+ * Страница создание топика
  */
 Site.prototype.create_topic = function ( response, request ) {
-  if ( request.params.name == null ) return response.send();
+  if ( !request.user.can( 'create', this.models.post ))
+    return this.action('index', response, request );
 
-  var ui    = this.app.users.get_by_client( request.client );
-  if ( ui.is_guest() ) return response.send( new Error('Only users can add comments'), 403 );
-
-  var self  = this;
-  var post  = new this.models.post( request.params );
-  post.user_id = ui.model.id;
-
-  response
-    .create_listener()
-    .handle_emitter( post.save() )
-    .success(function(){
-      request.redirect( self.create_url( 'view_topic', { topic_id : post.id }));
-    })
-    .behavior_for( 'not_valid', function( errors ){
-      response.send({
-        error : Object.values( errors ).join('<br/>')
-      });
-    })
+  response.send();
 };
 
 

@@ -1,13 +1,9 @@
 @import "bootstrap.less";
 @import "responsive.less";
 
-//header {
+header {
 //  padding   : 0 50px;
-//  font-size : 1.5em;
-//}
-
-h1 {
-  font-size : 2.3em;
+  font-size : 1.5em;
 }
 
 a {
@@ -27,13 +23,15 @@ legend{
   color   : rgb(184, 96, 60);
 }
 
+input[type="text"],
+input[type="password"],
 textarea {
-//  font-size : 1em;
-//  height: 50px;
+  .border-radius(0);
 }
 
-textarea#topic_description{
-  height : 400px;
+textarea {
+  font-size : 1em;
+  height: 50px;
 }
 
 input[type="text"]:focus,
@@ -66,6 +64,25 @@ input[type="submit"]:hover {
   margin-bottom: 0;
 }
 
+form#topic{
+  position: relative;
+  margin-right: 20px;
+
+  .control-group {
+    margin-bottom: 0;
+  }
+  
+  input[type="text"] {
+    width: 100%;
+    font-size: 1.7em;
+    height: 1.1em;
+  }
+
+  textarea {
+    width: 100%;
+    height: 400px;
+  }
+}
 
 .navbar {
   background: rgb(255, 231, 191);
@@ -83,24 +100,13 @@ section.content.container {
   .box-shadow( 0 1px 2px rgba(0,0,0,.15) );
 }
 
-
-//p {
-//  margin : 0 0 1em;
-//}
-//
-//
-//
-//strong{
-//  font-weight : bold;
-//}
-//
-//small{
-//  font-size : .8em;
-//}
-
 hr{
   border-top-color: rgb(184, 96, 60);
   border-bottom-color: rgb(255, 231, 191);
+}
+
+p.author {
+  margin-top: 20px;
 }
 
 

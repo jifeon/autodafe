@@ -1,23 +1,21 @@
 {>"{cd}/main.html"/}
 {<content}
   {?posts}{#posts}
-  <article>
-    <header>
-      <h1><a href="{#url topic_id=id}view_topic{/url}">{name}</a></h1>
-    </header>
-    {description|s|h|n2br}
-  </article>{/posts}
-  <div>{#widget}pages{/widget}</div>
+    <article>
+      <h2><a href="{#url topic_id=id}view_topic{/url}">{name}</a></h2>
+      {description|s|h|n2br}
+    </article>{/posts}
+    <div>{#widget}pages{/widget}</div>
   {:else}
-  <div class="message_in_content without_other_content">
-    There are no topics yet.
-    {?user}
-      <strong><a href="{#url}create_topic{/url}">Create one!</a></strong>
-    {:else}
-      <strong><a href="#" onclick="document.forms['login'].login.focus();">Login</a></strong> or
-      <strong><a href="#" onclick="document.forms['registration'].login.focus();">register</a></strong>
-      to create first post
-    {/user}
-  </div>
+    <div class="message_in_content without_other_content">
+      There are no topics yet.
+      {?user}
+        <strong><a href="{#url}site.create_topic{/url}">Create one!</a></strong>
+      {:else}
+        <strong><a href="#" onclick="$('#login').focus();">Login</a></strong> or
+        <strong><a href="#" onclick="$('#reg_login').focus();">register</a></strong>
+        to create first post
+      {/user}
+    </div>
   {/posts}
 {/content}

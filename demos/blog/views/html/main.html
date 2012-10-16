@@ -30,11 +30,11 @@
 <section class="content container">
   <div class="row">
     <aside class="span3">
-      {?user}
-      <form action="{#url}create_topic{/url}">
+      {^user.guest}
+      <form action="{#url}site.create_topic{/url}">
         <legend>Welcome!</legend>
         <p>
-          You are logged in as <strong>{user.login}</strong>
+          You are logged in as <strong>{user.model.login}</strong>
           <small>(<a title="logout" href="{#url}user.logout{/url}">logout</a>)</small>
         </p>
         <input type="submit" value="Create new topic">
@@ -72,7 +72,7 @@
 
         <input type="submit">
       </form>
-      {/user}
+      {/user.guest}
     </aside>
 
     <section class="span9" id="content">
@@ -92,7 +92,7 @@
   </footer>
 </section>
 
-{^user}
+{?user.guest}
 <script type="text/javascript">
   $(function(){
     var options = {
@@ -131,7 +131,7 @@
     $('#reg_form').validate( options );
   });
 </script>
-{/user}
+{/user.guest}
 
 <!--<script src="/bootstrap/bootstrap-transition.js"></script>-->
 <!--<script src="/bootstrap/bootstrap-alert.js"></script>-->
@@ -146,7 +146,6 @@
 <!--<script src="/bootstrap/js/bootstrap-carousel.js"></script>-->
 <!--<script src="/bootstrap/js/bootstrap-typeahead.js"></script>-->
 <!--<script src="/bootstrap/bootstrap-affix.js"></script>-->
-
 
 </body>
 </html>

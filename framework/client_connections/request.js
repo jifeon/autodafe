@@ -60,4 +60,7 @@ Request.prototype._init = function( params ) {
    * @type {Object}
    */
   this.params = params.params || {};
+
+
+  this.user = null;
 };

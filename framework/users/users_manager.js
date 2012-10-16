@@ -37,13 +37,15 @@ UsersManager.prototype._init = function( params ) {
     self._register_guest_session( session );
   });
 
-  this.app.http && this.app.http.on( 'receive_request', function( request ){
-    request.user = self.get_by_request( request );
-  });
+  this.app.on('ready', function(){
+    self.app.http && self.app.http.on( 'receive_request', function( request ){
+      request.user = self.get_by_request( request );
+    });
 
-  this.app.ws && this.app.ws.on( 'receive_request', function( request ){
-    request.user = self.get_by_request( request );
-  });
+    self.app.ws && self.app.ws.on( 'receive_request', function( request ){
+      request.user = self.get_by_request( request );
+    });
+  })
 };
 
 
