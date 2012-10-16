@@ -100,7 +100,7 @@ var config = module.exports = {
       root_folders    : {
         js        : 'static/js',
         css       : 'static/css',
-        bootstrap : '../../node_modules/twitter-bootstrap/'
+        bootstrap : 'node_modules/twitter-bootstrap/'
       }
     },
 

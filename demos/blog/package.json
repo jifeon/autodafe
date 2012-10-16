@@ -1,5 +1,5 @@
 {
-  "name"          : "autodafe demo blog",
+  "name"          : "autodafe-demo-blog",
   "description"   : "mvc framework for node with mysql orm, web sockets support, logging, routing, user roles etc",
   "keywords"      : [ "blog", "autodafe" ],
   "homepage"      : "http://autodafe.ws/article/Blog",

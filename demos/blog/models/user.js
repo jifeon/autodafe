@@ -23,3 +23,8 @@ User.prototype.attributes = function(){
       postfilters    : 'md5' }
   };
 }
+
+
+User.prototype.cookie_hash = function(){
+  return this.pass.md5();
+}

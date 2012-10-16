@@ -22,6 +22,7 @@ Site.prototype._init = function( params ){
   Site.parent._init.call( this, params );
 
   this.POSTS_PER_PAGE = 5;
+  this.views_folder = 'html';
 
   this.behavior_for( 'not_valid', this.validation_error );
 
@@ -33,7 +34,7 @@ Site.prototype._init = function( params ){
 Site.prototype._compile_templates = function(){
   var style = fs.readFileSync( path.join( this.app.base_dir, 'static/css/style.less' ), 'utf8' );
   var parser = new less.Parser({
-    paths: [ path.join( this.app.base_dir, '../../node_modules/twitter-bootstrap/less/' ) ]//, // Specify search paths for @import directives
+    paths: [ path.join( this.app.base_dir, 'node_modules/twitter-bootstrap/less/' ) ]//, // Specify search paths for @import directives
 //      filename: 'style.less' // Specify a filename, for better error messages
   });
 
@@ -82,25 +83,8 @@ Site.prototype.global_view_params = function( response, request ){
  * емиттер не вызовет success, при error на клиент отправится ошибка
  */
 Site.prototype.connect_client = function ( client ){
-
-  // Для начала достанем специальный объект UserIdentity привязанный к текущему пользователю
-  var ui = this.app.users.get_by_client( client );
-
-  // проверяем не авторизован ли уже наш клиент
-  if ( !ui.is_guest() ) return true;
-
-  // если не авторизован считываем параметры для авторизации из cookie
-  var login = client.get_cookie( 'blog_login' );
-  var pass  = client.get_cookie( 'blog_pass' );
-
-  // если их нет, даже не пытаемся авторизоваться
-  if ( !login || !pass ) return false;
-
-  // иначе производим авторизацию
-  return this._authorize( login, pass, client );
+  return this.app.users.login_by_cookie( client );
 };
-
-
 
 
 /**
