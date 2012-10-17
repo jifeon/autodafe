@@ -64,7 +64,7 @@ input[type="submit"]:hover {
   margin-bottom: 0;
 }
 
-form#topic{
+form#topic, form#comment{
   position: relative;
   margin-right: 20px;
 
@@ -80,8 +80,15 @@ form#topic{
 
   textarea {
     width: 100%;
-    height: 400px;
   }
+}
+
+form#topic textarea {
+  height: 400px;
+}
+
+form#comment {
+  margin-top: 40px;
 }
 
 .navbar {
@@ -107,8 +114,38 @@ hr{
 
 p.author {
   margin-top: 20px;
+
+  &:before {
+    content: '\2014 \00A0';
+  }
 }
 
+// Groups of fields with labels on top (legends)
+.legend {
+  display: block;
+  margin-top: 40px;
+  width: 100%;
+  padding: 0;
+  margin-bottom: @baseLineHeight;
+  font-size: @baseFontSize * 1.5;
+  line-height: @baseLineHeight * 2;
+  border: 0;
+  border-bottom: 1px solid #e5e5e5;
+
+// Small
+  small {
+    font-size: @baseLineHeight * .75;
+    color: @grayLight;
+  }
+}
+
+div.comment {
+  margin-bottom: 25px;
+
+  p.author {
+    margin-top: 10px;
+  }
+}
 
 //
 //footer {

@@ -130,35 +130,3 @@ Site.prototype.view_topic = function ( response, request ) {
     response.send({ topic : topic });
   });
 };
-
-
-/**
- * Добавление комментария
- */
-Site.prototype.comment = function ( response, request ) {
-  var ui        = this.app.users.get_by_client( request.client );
-  if ( ui.is_guest() ) return response.send( new Error('Only users can add comments'), 403 );
-
-  var self      = this;
-  var listener  = response.create_listener();
-  listener.stack <<= this.models.post.find_by_pk( request.params.post_id );
-  listener.success(function( topic ){
-    if ( !topic ) return response.send( new Error('Topic not found'), 404 );
-
-    var comment     = new self.models.comment( request.params );
-    comment.post_id = topic.id;
-    comment.user_id = ui.model.id;
-    listener
-      .handle_emitter( comment.save() )
-      .success( function(){
-        request.redirect( self.create_url( 'view_topic', { topic_id : topic.id }));
-      })
-      .behavior_for( 'not_valid', function( errors ){
-        response.view_name('view_topic').send({
-          topic : topic,
-          error : Object.values( errors ).join('<br/>'),
-          text  : request.params.text
-        });
-      });
-  })
-};

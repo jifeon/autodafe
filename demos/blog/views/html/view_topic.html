@@ -1,49 +1,89 @@
 {>"{cd}/main.html"/}
 {<content}
   <article>
-    <header>
-      <h2><a href="{#url topic_id=topic.id}view_topic{/url}">{topic.name}</a></h2>
-    </header>
+    <h2><a href="{#url topic_id=topic.id}site.view_topic{/url}">{topic.name}</a></h2>
     {topic.description|s|h|n2br}
-    <p class="author">Author: <strong>{topic.author.login}</strong></p>
+
+    <p class="author"><strong>{topic.author.login}</strong> <small>at {topic.date|local_date}</small></p>
   </article>
-  <hr>
+
   <section id="comments">
-    <h3>Comments</h3>
+    <div class="legend">Comments</div>
     {#topic.comments}
-    <div class="comment">
-      <strong>{commenter.login}</strong> -
-      <small>{date|local_date}</small>
-      <p>{text}</p>
-    </div>
-    {/topic.comments}
-    {^topic.comments}
-    <div class="message_in_content with_small_indents">
+
+      <div class="comment">
+        <p>{text}</p>
+        <p class="author"><strong>{commenter.login}</strong> <small>at {date|local_date}</small></p>
+      </div>
+
+    {:else}
+
       No comments.
-      {?user}
+      {^user.guest}
         <strong><a href="#" onclick="document.forms['comment'].text.focus(); return false;">Be first!</a></strong>
       {:else}
-        <strong><a href="#" onclick="document.forms['login'].login.focus();">Login</a></strong> or
-        <strong><a href="#" onclick="document.forms['registration'].login.focus();">register</a></strong>
+        <strong><a href="#" onclick="$('#login').focus();">Login</a></strong> or
+        <strong><a href="#" onclick="$('#reg_login').focus();">register</a></strong>
         to comment
-      {/user}
-    </div>
+      {/user.guest}
+
     {/topic.comments}
   </section>
-  <section id="new_comment">
-  {?user}
-    <h3>New comment</h3>
-    <form name="comment" action="{#url}comment{/url}" method="post">
-      <textarea placeholder="Comment here" name="text">{text}</textarea>
+
+
+<section id="new_comment">
+  {^user.guest}
+
+    <form id="comment" name="comment" action="{#url}comment.create{/url}" method="post">
+      <legend>New comment</legend>
+      <div class="control-group">
+        <textarea placeholder="Comment here" name="comment[text]">{text}</textarea>
+      </div>
       <input type="hidden" name="post_id" value="{topic.id}">
       <input type="submit" value="Send comment">
     </form>
+
+    <script type="text/javascript">
+      $(function(){
+        var options = {
+          rules : {
+            'text' : {
+              required      : true,
+              maxlength     : 2048 }
+          },
+          submitHandler : function( form ){
+            var validator = this;
+
+            $(form).ajaxSubmit({
+              error : function(){
+                $('#server_error').removeClass('hidden');
+              },
+              success : function( data ){
+                if ( data.errors ) validator.showErrors( data.errors );
+                else window.location = data.result;
+              },
+              dataType : 'json'
+            });
+          },
+          errorClass : 'info',
+          highlight: function(element, errorClass, validClass) {
+            $(element).parent().addClass(errorClass).removeClass(validClass);
+          },
+          unhighlight: function(element, errorClass, validClass) {
+            $(element).parent().removeClass(errorClass).addClass(validClass);
+          }
+        }
+
+        $('#comment').validate( options );
+      });
+    </script>
+
   {:else}{?topic.comments}
-    <h3>Wanna create comment?</h3>
-    <div class="message_in_content with_small_indents">
-      <strong><a href="#" onclick="document.forms['login'].login.focus();">Login</a></strong> or
-      <strong><a href="#" onclick="document.forms['registration'].login.focus();">register</a></strong>
-    </div>
-  {/topic.comments}{/user}
+
+    <div class="legend">Wanna create comment?</div>
+    <strong><a href="#" onclick="$('#login').focus();">Login</a></strong> or
+    <strong><a href="#" onclick="$('#reg_login').focus();">register</a></strong>
+
+  {/topic.comments}{/user.guest}
   </section>
 {/content}

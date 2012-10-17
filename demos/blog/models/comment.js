@@ -18,7 +18,8 @@ Comment.prototype.attributes = function(){
     'post_id' : 'required',
     'text'    : {
      'safe required'  : true,
-      max_length      : 1024   }
+      max_length      : 1024,
+      prefilters      : 'trim' }
   };
 }
 

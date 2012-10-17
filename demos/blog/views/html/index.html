@@ -9,13 +9,13 @@
   {:else}
     <div class="message_in_content without_other_content">
       There are no topics yet.
-      {?user}
+      {^user.guest}
         <strong><a href="{#url}site.create_topic{/url}">Create one!</a></strong>
       {:else}
         <strong><a href="#" onclick="$('#login').focus();">Login</a></strong> or
         <strong><a href="#" onclick="$('#reg_login').focus();">register</a></strong>
         to create first post
-      {/user}
+      {/user.guest}
     </div>
   {/posts}
 {/content}
