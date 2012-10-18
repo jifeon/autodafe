@@ -68,7 +68,7 @@ function Pages( params ) {
  * @param {Object} params параметры для инициализации, см. также {@link Widget._init} Любой параметр для Pages
  * можно задать после его создания, если на момент создания он не известен.
  * @param {Number} [params.count=0] общее количество сущностей
- * @param {Number} [params.current_page=0] текущая страница (считается от нуля)
+ * @param {Number} [params.current_page=1] текущая страница (считается от единицы)
  * @param {Number} [params.items_per_page=10] количество сущностей на странице
  * @param {String} [params.view='links'] вид, в котором выведутся страницы "links" - просто ссылки, "ul" - ссылки
  * внутри списка, "table" - ссылки внутри таблицы
@@ -112,7 +112,7 @@ Pages.prototype._init = function ( params ) {
     descriptor.value = parseInt( value );
     if ( isNaN( descriptor.value ) ) descriptor.value = 0;
   }
-  this.current_page   = params.current_page;
+  this.current_page   = params.current_page - 1;
 
   /**
    * Количество сущностей, выводимое на странице
@@ -235,10 +235,11 @@ Pages.prototype.render = function( callback ){
  * @param ar
  */
 Pages.prototype._make_link_object = function( value, i, ar ){
-  this.url_params.page = value;
+  var n = parseInt(value) + 1;
+  this.url_params.page = n;
 
   return {
-    number        : parseInt(value) + 1,
+    number        : n,
     insert_space  : i != 0 && value - ar[ i - 1 ] != 1,
     active        : value == this.current_page,
     url           : this.controller.create_url( this.action_path, this.url_params )
