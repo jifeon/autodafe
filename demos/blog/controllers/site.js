@@ -21,7 +21,7 @@ function Site( params ) {
 Site.prototype._init = function( params ){
   Site.parent._init.call( this, params );
 
-  this.POSTS_PER_PAGE = 5;
+  this.POSTS_PER_PAGE = 10;
   this.views_folder = 'html';
 
   this.app.on( 'views_are_loaded', this._compile_templates.bind( this ) );
@@ -85,7 +85,7 @@ Site.prototype.index = function ( response, request ) {
     items_per_page : this.POSTS_PER_PAGE,
     action_path    : 'site.index',
     current_page   : request.params.page,
-    view           : 'table'
+    view           : 'ul'
   } );
 
   response.merge_params({

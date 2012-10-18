@@ -1,7 +1,7 @@
 var path   = require('path');
 var fs     = require('fs');
 
-module.exports = Pages.inherits( autodafe.Widget );
+module.exports = Pages.inherits( global.autodafe.Widget );
 
 
 /**
