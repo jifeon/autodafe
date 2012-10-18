@@ -1,9 +1,9 @@
 @import "bootstrap.less";
 @import "responsive.less";
 
-header {
-//  padding   : 0 50px;
+header.navbar-fixed-top {
   font-size : 1.5em;
+  margin-bottom: 0;
 }
 
 a {
@@ -47,8 +47,7 @@ input[type="submit"] {
   border           : 0;
   background-color : rgb(184, 96, 60);
   color            : white;
-  margin-bottom: 3px;
-  clear: both;
+  clear            : both;
 }
 
 input[type="submit"]:hover {
@@ -62,6 +61,14 @@ input[type="submit"]:hover {
   -webkit-box-shadow : 4px 6px 2px rgb(255, 231, 191);
   box-shadow         : 4px 6px 2px rgb(255, 231, 191);
   margin-bottom: 0;
+}
+
+aside form {
+  width: 100%;
+
+  input {
+    width: 93%;
+  }
 }
 
 form#topic, form#comment{
@@ -157,67 +164,22 @@ div.comment {
   }
 }
 
-//
-//footer {
-//  height : 100px;
-//}
-//
-//section#content {
-//  position    : relative;
-//  margin-left : 290px;
-//  margin-right : 40px;
-//}
-//
-//section#content article {
-//  margin   : 0;
-//  padding  : 25px 0 0;
-//  position : relative;
-//}
-//
-//section#content header {
-//  font-size : 1em;
-//  padding   : 0;
-//}
-//
-//.error {
-//  color : #d90028;
-//  background-color: #ffd0d9;
-//}
-//
-//aside .error {
-//  background-color: transparent;
-//}
-//
-//.message_in_content {
-//  text-align : center;
-//  padding-right : 40px;
-//  margin-top : 45px;
-//}
-//
-//.with_small_indents {
-//  margin-top : 20px;
-//  margin-bottom : 20px;
-//}
-//
-//.without_other_content{
-//  margin-top : 200px;
-//}
-//
-//.left{
-//  float : left !important;
-//}
-//
-//.center{
-//  text-align : center;
-//}
-//
-//table.pages td{
-//  padding : 5px;
-//}
-//td.active{
-//  color : #d90028;
-//  background-color: #ffd0d9;
-//}
-//td.active a{
-//  text-decoration: none;
-//}
+
+@media (max-width: 980px) {
+  section.content.container {
+    padding-top: 10px;
+  }
+}
+
+
+@media (max-width: 767px) and (min-width: 480px) {
+  aside form#login_form, aside form#reg_form {
+    width: 47%;
+    float: left;
+    margin-right: 3%;
+  }
+
+  article {
+    clear : both;
+  }
+}

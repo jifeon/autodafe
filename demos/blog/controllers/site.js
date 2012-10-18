@@ -21,7 +21,7 @@ function Site( params ) {
 Site.prototype._init = function( params ){
   Site.parent._init.call( this, params );
 
-  this.POSTS_PER_PAGE = 10;
+  this.POSTS_PER_PAGE = 3;
   this.views_folder = 'html';
 
   this.app.on( 'views_are_loaded', this._compile_templates.bind( this ) );
@@ -32,8 +32,7 @@ Site.prototype._init = function( params ){
 Site.prototype._compile_templates = function(){
   var style = fs.readFileSync( path.join( this.app.base_dir, 'static/css/style.less' ), 'utf8' );
   var parser = new less.Parser({
-    paths: [ path.join( this.app.base_dir, 'node_modules/twitter-bootstrap/less/' ) ]//, // Specify search paths for @import directives
-//      filename: 'style.less' // Specify a filename, for better error messages
+    paths: [ path.join( this.app.base_dir, 'node_modules/twitter-bootstrap/less/' ) ]
   });
 
   var self = this;

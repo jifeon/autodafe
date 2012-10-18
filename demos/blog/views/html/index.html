@@ -5,7 +5,10 @@
       <h2><a href="{#url topic_id=id}view_topic{/url}">{name}</a></h2>
       {description|s|h|n2br}
     </article>{/posts}
+
+    {@if cond="{pages.pages_count} > 1"}
     <div class="pagination">{#widget}pages{/widget}</div>
+    {/if}
   {:else}
     <div class="message_in_content without_other_content">
       There are no topics yet.
