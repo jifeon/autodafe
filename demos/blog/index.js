@@ -1,7 +1,7 @@
 /**
  * Входной скрипт. Обычно здесь подключается конфигурационный файл, создается и запускается приложение.
  */
-var config    = require( './config/main' ),
+var config    = require( './config' ),
     autodafe  = require( '../..' );           // путь к autodafe, обычно достаточно написать require('autodafe')
                                               // если оно лежит в папке node_modules
 

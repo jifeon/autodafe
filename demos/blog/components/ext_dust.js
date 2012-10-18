@@ -1,14 +1,14 @@
-var Component = global.autodafe.Component;
-
-module.exports = MyTools.inherits( Component ); // наследуем от Component
+// наследуем от Component
+module.exports = ExtDust.inherits( global.autodafe.Component );
 
 /**
  * Пользовательский компонент расширяющий возможности dust
  *
  * @constructor
+ * @extends Component
  * @param {Object} params параметры для компонента, задаются в конфигурационном файле
  */
-function MyTools( params ) {
+function ExtDust( params ) {
   this._init( params );
 }
 
@@ -17,9 +17,9 @@ function MyTools( params ) {
  *
  * @param {Object} params
  */
-MyTools.prototype._init = function ( params ) {
+ExtDust.prototype._init = function ( params ) {
   // Вызов инициализации родительского класса
-  MyTools.parent._init.call( this, params );
+  ExtDust.parent._init.call( this, params );
 
   /**
    * Добавляем фильтр для dust преобразующий дату в читабельное значение
