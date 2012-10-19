@@ -16,7 +16,7 @@ var config = module.exports = {
    *
    * @type {String}
    */
-  base_dir            : require('path').join( __dirname, '..' ),
+  base_dir            : __dirname,
 
   /**
    * Параметры приложения, которые доступны в любом месте приложения через функцияю {@link Application.get_param}

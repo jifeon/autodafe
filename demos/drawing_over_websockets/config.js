@@ -1,10 +1,9 @@
 var config = module.exports = {
   name                : 'drawing',
-  base_dir            : require('path').join( __dirname, '..' ),
+  base_dir            : __dirname,
 
   default_controller  : 'action',
-  views_folder        : 'views/templates',
-  cache_views         : false,
+  cache_views         : true,
 
   router : {
     rules     : {
@@ -23,7 +22,7 @@ var config = module.exports = {
     http                : {
       port            : 3000,
       root_folders    : {
-        js       : 'views/js'
+        js       : 'static/js'
       }
     },
 
