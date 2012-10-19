@@ -137,6 +137,30 @@ Pages.prototype._init = function ( params ) {
   }
 
   /**
+   * Номер первой сущности на странице
+   *
+   * @field
+   * @name start_item
+   * @namespace Pages.start_item
+   * @type {Number}
+   */
+  this._.start_item.get = function(){
+    return this.current_page * this.items_per_page;
+  }
+
+  /**
+   * Номер последней сущности на странице
+   *
+   * @field
+   * @name last_item
+   * @namespace Pages.last_item
+   * @type {Number}
+   */
+  this._.last_item.get = function(){
+    return this.current_page * ( this.items_per_page + 1 ) - 1;
+  }
+
+  /**
    * Вид, в котором выведутся страницы
    *
    * "links" - просто ссылки, "ul" - ссылки внутри списка, "table" - ссылки внутри таблицы

@@ -1,13 +1,8 @@
-var crypto      = require('crypto');
-var less        = require('less');
-var fs          = require('fs');
-var path        = require('path');
-
-// наследуем от Controller
+// наследуем Site от Controller
 module.exports = Site.inherits( global.autodafe.Controller );
 
 /**
- * Единственный в данном приложении контроллер, который и отвечает за логику работы приложения
+ * Контроллер, отвечающий за отображение страниц на сайте
  *
  * @constructor
  * @extends Controller
@@ -21,29 +16,8 @@ function Site( params ) {
 Site.prototype._init = function( params ){
   Site.parent._init.call( this, params );
 
-  this.POSTS_PER_PAGE = 3;
+  // все представления для этого контроллера будут искаться в папке views/html
   this.views_folder = 'html';
-
-  this.app.on( 'views_are_loaded', this._compile_templates.bind( this ) );
-  if ( this.app.views_loaded ) this._compile_templates();
-
-}
-
-Site.prototype._compile_templates = function(){
-  var style = fs.readFileSync( path.join( this.app.base_dir, 'static/css/style.less' ), 'utf8' );
-  var parser = new less.Parser({
-    paths: [ path.join( this.app.base_dir, 'node_modules/twitter-bootstrap/less/' ) ]
-  });
-
-  var self = this;
-  parser.parse( style, function (e, tree) {
-    var css = tree.toCSS({ compress: true }); // Minify CSS output
-    var css_file = path.join( self.app.base_dir, 'static/css/style.css' );
-    if ( fs.existsSync( css_file ) ) fs.unlinkSync( css_file );
-    var fd = fs.openSync( css_file, 'a', 0666 );
-    fs.writeSync( fd, css, null, 'utf8' );
-    fs.closeSync( fd );
-  });
 }
 
 
@@ -56,17 +30,18 @@ Site.prototype._compile_templates = function(){
  */
 Site.prototype.global_view_params = function( response, request ){
   return {
+    // из всех шаблонов можно будет обратиться к UserIdentity привязанному к текущему пользователю
     user : request.user
   }
 };
 
 
 /**
- * Функция выполняется при подключении клиента, она авторизовывает пользователя по куки
+ * Функция выполняется при подключении клиента, она пытается авторизовывать пользователя по куки
  *
  * @param {Client} client подключенный клиент
- * @returns {EventEmitter|Boolean} если connect_client возвращает емиттер, то действие из запроса не будет выполнено, пока
- * емиттер не вызовет success, при error на клиент отправится ошибка
+ * @returns {EventEmitter|Boolean} если connect_client возвращает емиттер, то действие из запроса не будет выполнено,
+ * пока емиттер не вызовет success, при error на клиент отправится ошибка
  */
 Site.prototype.connect_client = function ( client ){
   return this.app.users.login_by_cookie( client );
@@ -80,27 +55,42 @@ Site.prototype.connect_client = function ( client ){
  * @param {Request} request Запрос, инициировавший действие
  */
 Site.prototype.index = function ( response, request ) {
+
+  // на странице может выводиться много топиков, они разбиваются на страницы. Для отображения страниц используется
+  // специальный виджет - pages
   var pages = this.create_widget( 'pages', {
-    items_per_page : this.POSTS_PER_PAGE,
+    // указываем максимальное количество топиков, которое может отображаться на странице. Эта информация берется
+    // из параметров приложения в конфигурационном файле
+    items_per_page : this.app.params.topics_per_page,
+    // в какое действие долны вести ссылки из пейджера
     action_path    : 'site.index',
+    // номер текущей страницы
     current_page   : request.params.page,
+    // указываем вид выводмиго пейджера в виде списка страниц, такой вид наиболее совместим с bootstrap
     view           : 'ul'
   } );
 
+  // записываем параметры для представления
   response.merge_params({
-    posts   : this.models.post.find_all({
-      offset : pages.current_page * this.POSTS_PER_PAGE,
-      limit  : this.POSTS_PER_PAGE,
+    // список топиков, который асинхронно запросится в базе данных
+    topics   : this.models.topic.find_all({
+      offset : pages.start_item,
+      limit  : pages.items_per_page,
       order  : 'date desc'
     }),
+    // виджет для вывода страниц
     pages   : pages
   });
 
-  response
-    .create_listener()
-    .handle_emitter( this.models.post.count() )
+  // для вывода пэйджера нам также надо знать общее количество топиков
+  var listener = response.create_listener();
+  listener
+    .handle_emitter( this.models.topic.count() )
     .success(function( count ){
+      // записываем число топиков в наш виджет
       pages.count = count;
+
+      // отправляем клиенту html/index.html
       response.send();
     });
 };
@@ -110,9 +100,12 @@ Site.prototype.index = function ( response, request ) {
  * Страница создание топика
  */
 Site.prototype.create_topic = function ( response, request ) {
-  if ( !request.user.can( 'create', this.models.post ))
-    return this.action('index', response, request );
+  // проверяем может ли текущий пользователь создавать топики
+  if ( !request.user.can( 'create', this.models.topic ))
+    // если нет возвращаем 403 ошибку
+    return response.send( new Error('Only user can create topics'), 403 );
 
+  // отправляем клиенту html/create_topic.html
   response.send();
 };
 
@@ -121,11 +114,15 @@ Site.prototype.create_topic = function ( response, request ) {
  * Просмотр топика
  */
 Site.prototype.view_topic = function ( response, request ) {
-  var listener = response.create_listener();
-  listener.stack <<= this.models.post.With( 'author', 'comments.commenter' ).find_by_pk( request.params.topic_id );
+  // ищем топик с указанным id
+  var listener     = response.create_listener();
+  listener.stack <<= this.models.topic.With( 'author', 'comments.commenter' ).find_by_pk( request.params.topic_id );
+
   listener.success(function( topic ){
+    // если топик не найден отправляем 404 ошибку
     if ( !topic ) return response.send( new Error('Topic not found'), 404 );
 
+    // отправляем клиенту html/view_topic.html
     response.send({ topic : topic });
   });
 };
