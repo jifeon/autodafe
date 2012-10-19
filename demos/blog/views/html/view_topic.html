@@ -20,7 +20,7 @@
 
       No comments.
       {^user.guest}
-        <strong><a href="#" onclick="document.forms['comment'].text.focus(); return false;">Be first!</a></strong>
+        <strong><a href="#" onclick="$('#comment').find('textarea').focus(); return false;">Be first!</a></strong>
       {:else}
         <strong><a href="#" onclick="$('#login').focus();">Login</a></strong> or
         <strong><a href="#" onclick="$('#reg_login').focus();">register</a></strong>

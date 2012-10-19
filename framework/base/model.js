@@ -258,7 +258,8 @@ Model.prototype.get_attribute = function ( name, do_filters ) {
 
   var descriptor = this._[name];
   var value      = descriptor.value;
-  if ( do_filters !== false ) value = this.filter( descriptor.value, descriptor.params['postfilters'] );
+  if ( do_filters !== false && descriptor.params.disable_postfilters !== true )
+    value = this.filter( descriptor.value, descriptor.params['postfilters'] );
   return value === undefined ? null : value;
 };
 
@@ -305,6 +306,7 @@ Model.prototype.set_attribute = function ( name, value, do_filters ) {
   descriptor.value = do_filters !== false
     ? this.filter( value, descriptor.params['prefilters'] )
     : value;
+  descriptor.params.disable_postfilters = false;
 
   return this;
 };

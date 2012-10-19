@@ -613,7 +613,8 @@ ActiveRecord.prototype.refresh = function() {
 
       self.clean_attributes();
       self.table.get_column_names().forEach( function( name ) {
-        self.set_attribute( name, record[ name ] );
+        self.set_attribute( name, record[ name ], false );
+        self._[name].params.disable_postfilters = true;
       } );
 
       emitter.emit( 'success' );
@@ -689,7 +690,8 @@ ActiveRecord.prototype.populate_record = function( attributes ) {
   });
 
   for ( var name in attributes ) {
-    record[ name ] = attributes[ name ];
+    record.set_attribute( name, attributes[ name ], false );
+    record._[name].params.disable_postfilters = true;
   }
 
   return record;
