@@ -62,5 +62,13 @@ Request.prototype._init = function( params ) {
   this.params = params.params || {};
 
 
+  /**
+   * Текущий пользователь
+   *
+   * Если подключен компонент users ({@link UsersManager}), то в это свойство будет записываться экземпляр
+   * {@link UserIdentity}, ассоциированный с текущим пользователем
+   *
+   * @type {UserIdentity|null}
+   */
   this.user = null;
 };

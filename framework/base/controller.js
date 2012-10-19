@@ -32,7 +32,6 @@ Controller.prototype.dust = require('dustjs-linkedin');
  *
  * @private
  * @param params см. конструктор {@link Controller}
- *
  */
 Controller.prototype._init = function ( params ) {
   Controller.parent._init.call( this, params );

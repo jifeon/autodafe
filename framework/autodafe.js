@@ -40,6 +40,12 @@ Autodafe.inherits( AutodafePart );
  * @property {Function} db.Expression конструктор {@link DbExpression}
  * @property {Function} db.Criteria конструктор {@link DbCriteria}
  * @property {Function} db.ActiveRecord конструктор {@link ActiveRecord}
+ * @property {Object}   users сборка ссылок на конструкторы часто используемых модулей из компонента для работы с
+ * пользователями
+ * @property {Function} users.UserIdentity конструктор {@link UserIdentity}
+ * @property {Function} users.RolesSet конструктор {@link RolesSet}
+ * @property {Function} users.ModelsRolesSet конструктор {@link ModelsRolesSet}
+
  *
  * @example Класс содержит ссылки на часто используемые классы, что позволяет в некоторых ситуациях не использовать
  * require
@@ -108,6 +114,11 @@ Autodafe.prototype._init = function() {
   this.db.Expression    = require('./db/db_expression.js');
   this.db.Criteria      = require('./db/db_criteria.js');
   this.db.ActiveRecord  = require('./db/ar/active_record.js');
+
+  this.users                = {};
+  this.users.UserIdentity   = require('./users/user_identity.js');
+  this.users.RolesSet       = require('./users/roles_set.js');
+  this.users.ModelsRolesSet = require('./users/models_roles_set.js');
 
   /**
    * Созданные приложения
