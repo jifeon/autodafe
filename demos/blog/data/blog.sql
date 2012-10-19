@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS `comments`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `post_id` int(10) unsigned NOT NULL,
+  `topic_id` int(10) unsigned NOT NULL,
   `text` text NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,13 +51,13 @@ LOCK TABLES `comments` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `posts`
+-- Table structure for table `topicss`
 --
 
-DROP TABLE IF EXISTS `posts`;
+DROP TABLE IF EXISTS `topics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `posts` (
+CREATE TABLE `topics` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `name` tinytext NOT NULL,
@@ -69,12 +69,12 @@ CREATE TABLE `posts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `posts`
+-- Dumping data for table `topics`
 --
 
-LOCK TABLES `posts` WRITE;
-/*!40000 ALTER TABLE `posts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `posts` ENABLE KEYS */;
+LOCK TABLES `topics` WRITE;
+/*!40000 ALTER TABLE `topics` DISABLE KEYS */;
+/*!40000 ALTER TABLE `topics` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
