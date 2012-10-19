@@ -56,7 +56,7 @@ vows.describe( 'application' ).addBatch({
 
     '.default_controller' : function( app ){
       assert.equal( app.default_controller, config.default_controller );
-      assert.equal( tests_tools.get_new_app().default_controller, 'action' );
+      assert.equal( tests_tools.get_new_app().default_controller, 'site' );
     },
 
     '.path_to_models' : function( app ){
