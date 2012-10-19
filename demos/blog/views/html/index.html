@@ -1,10 +1,10 @@
 {>"{cd}/main.html"/}
 {<content}
-  {?posts}{#posts}
+  {?topics}{#topics}
     <article>
       <h2><a href="{#url topic_id=id}view_topic{/url}">{name}</a></h2>
       {description|s|h|n2br}
-    </article>{/posts}
+    </article>{/topics}
 
     {@if cond="{pages.pages_count} > 1"}
     <div class="pagination">{#widget}pages{/widget}</div>
@@ -17,8 +17,8 @@
       {:else}
         <strong><a href="#" onclick="$('#login').focus();">Login</a></strong> or
         <strong><a href="#" onclick="$('#reg_login').focus();">register</a></strong>
-        to create first post
+        to create first topic
       {/user.guest}
     </div>
-  {/posts}
+  {/topics}
 {/content}

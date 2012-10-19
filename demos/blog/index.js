@@ -2,9 +2,6 @@
  * Входной скрипт. Обычно здесь подключается конфигурационный файл, создается и запускается приложение.
  */
 var config    = require( './config' ),
-    autodafe  = require( '../..' );           // путь к autodafe, обычно достаточно написать require('autodafe')
-                                              // если оно лежит в папке node_modules
+    autodafe  = require( 'autodafe' );
 
-autodafe.create_application( config ).run();  // внимание! как создание так и запуск приложения асинхронны
-                                              // так что после этой строки нельзя считать чтобы приложение
-                                              // уже созданно и запущено
+autodafe.create_application( config ).run();

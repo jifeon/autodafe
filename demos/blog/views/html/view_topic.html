@@ -39,7 +39,7 @@
       <div class="control-group">
         <textarea placeholder="Comment here" name="comment[text]">{text}</textarea>
       </div>
-      <input type="hidden" name="post_id" value="{topic.id}">
+      <input type="hidden" name="topic_id" value="{topic.id}">
       <input type="submit" value="Send comment">
     </form>
 
@@ -50,29 +50,7 @@
             'text' : {
               required      : true,
               maxlength     : 2048 }
-          },
-          submitHandler : function( form ){
-            var validator = this;
-
-            $(form).ajaxSubmit({
-              error : function(){
-                $('#server_error').removeClass('hidden');
-              },
-              success : function( data ){
-                if ( data.errors ) validator.showErrors( data.errors );
-                else window.location = data.result;
-              },
-              dataType : 'json'
-            });
-          },
-          errorClass : 'info',
-          highlight: function(element, errorClass, validClass) {
-            $(element).parent().addClass(errorClass).removeClass(validClass);
-          },
-          unhighlight: function(element, errorClass, validClass) {
-            $(element).parent().removeClass(errorClass).addClass(validClass);
-          }
-        }
+        } }
 
         $('#comment').validate( options );
       });

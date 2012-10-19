@@ -1,5 +1,5 @@
 {>"{cd}/main.json"/}
 {<errors}
-{ "post[name]"        : "{errors.name}",
-  "post[description]" : "{errors.description}" }
+{ "topic[name]"        : "{errors.name}",
+  "topic[description]" : "{errors.description}" }
 {/errors}
