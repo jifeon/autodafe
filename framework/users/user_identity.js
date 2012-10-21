@@ -208,7 +208,7 @@ UserIdentity.prototype.is = function( role, model, attribute, params ){
 UserIdentity.prototype.manage = function ( model, params ) {
   var EE   = process.EventEmitter;
   var self = this;
-  if ( model.constructor == EE ) {
+  if ( model && model.constructor == EE ) {
     var emitter = new EE;
 
     model
