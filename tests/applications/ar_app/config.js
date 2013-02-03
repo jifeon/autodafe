@@ -1,13 +1,14 @@
-var db_root_config = Object.merge( require( 'autodafe/tests/data/db_root_config' ), {
-  type     : 'mysql',
-  database : 'autodafe_tests'
-} );
+var _ = require('underscore');
+var db_root_config = _.defaults({
+  type    : 'mysql',
+  database: 'autodafe_tests'
+}, require('autodafe/tests/data/db_root_config'));
 
 module.exports = {
-  name      : 'ar_app',
-  base_dir  : __dirname,
+  name    : 'ar_app',
+  base_dir: __dirname,
 
-  preload_components : [ 'log_router', 'db' ],
+  preload_components: [ 'log_router', 'db' ],
 
 //  router : {
 //    rules : {
@@ -15,12 +16,12 @@ module.exports = {
 //    }
 //  },
 
-  components : {
-    log_router          : {
+  components: {
+    log_router: {
 
-      routes : {
-        console : {
-          levels : [ 'trace', 'info', 'warning', 'error' ]
+      routes: {
+        console: {
+          levels: [ 'trace', 'info', 'warning', 'error' ]
         }//,
 //        test : {
 //          levels : [ 'trace', 'info', 'warning', 'error' ]
@@ -28,6 +29,6 @@ module.exports = {
       }
     },
 
-    db : db_root_config
+    db: db_root_config
   }
-}
+};

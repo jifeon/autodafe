@@ -1,4 +1,5 @@
 var DbCriteriaSelectedTables = require('autodafe/framework/db/db_criteria_selected_tables');
+var _ = require('underscore');
 
 module.exports = DbCriteria.inherits( autodafe.AutodafePart );
 
@@ -76,7 +77,7 @@ DbCriteria.prototype.merge_with = function( criteria, use_and ) {
   }
 
   if ( this.params !== criteria.params )
-    this.params = Object.merge( this.params, criteria.params );
+    _.extend(this.params, criteria.params);
 
   if ( criteria.limit > 0 )
     this.limit = criteria.limit;

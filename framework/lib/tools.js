@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 Object.merge = function( obj1, obj2 ) {
   obj1 = obj1 || {};
   obj2 = obj2 || {};
@@ -340,7 +342,7 @@ exports.to_object = function (obj, deep, current_deep) {
 
   else if (Array.isArray(obj)) obj.forEach(function (item) {
     if (Object.isObject(item) || Array.isArray(item))
-      result = Object.merge(result, exports.to_object(item, deep, current_deep + 1));
+      _.extend(result, exports.to_object(item, deep, current_deep + 1));
     else if (typeof item == 'string') item.split(/\s+/).forEach(function (item) {
       result[ item ] = true;
     });

@@ -3,6 +3,7 @@ var formidable      = require('formidable');
 var content_types   = require('./content-types');
 var fs              = require('fs');
 var path            = require('path');
+var _               = require('underscore');
 
 
 module.exports = HTTPClient.inherits( global.autodafe.cc.Client );
@@ -73,7 +74,7 @@ HTTPClient.prototype._receive_post = function ( query ) {
     this.post_form.parse( this.request, function( e, fields, files ) {
       if ( e ) return self.send_error( e );
 
-      query.params = Object.merge( fields, files );
+      query.params = _.defaults(files, fields);
 
       if ( self.connected )    HTTPClient.parent.receive.call( self, query  );
       else self.on( 'connect', HTTPClient.parent.receive.bind( self, query  ) );
@@ -165,11 +166,11 @@ HTTPClient.prototype.send_file = function ( file_path, headers, callback ) {
 
       if ( !type ) self.log( 'Unknown file type of file `%s`'.format( file_path ), 'warning' );
 
-      headers = Object.merge( {
+      headers = _.extend({
         'Content-Type'  : type,
         'Cache-Control' : 'max-age=' + self.max_age,
         'Last-Modified' : stats.mtime.toUTCString()
-      }, headers );
+      }, headers);
 
       self.response.writeHead( 200, headers );
 

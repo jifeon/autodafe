@@ -1,4 +1,5 @@
 var AppModule = global.autodafe.AppModule;
+var _ = require('underscore');
 
 module.exports = JoinQuery.inherits( AppModule );
 
@@ -64,7 +65,7 @@ JoinQuery.prototype.join = function( element, callback ) {
 
   if( element.relation.params ) {
     if( this.params )
-      this.params = Object.merge( this.params, element.relation.params );
+      _.extend(this.params, element.relation.params);
     else
       this.params = element.relation.params;
   }

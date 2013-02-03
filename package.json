@@ -33,7 +33,8 @@
     "formidable"            : ">=1.0.2",
     "http-auth"             : ">=1.1.9",
     "node-gettext"          : ">=0.2.9",
-    "locale"                : ">=0.0.7"
+    "locale"                : ">=0.0.7",
+    "underscore"            : ">=1.4.4"
   },
   "devDependencies" : {
     "vows"                  : ">=0.5.8"

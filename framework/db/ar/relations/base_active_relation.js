@@ -87,7 +87,7 @@ BaseActiveRelation.prototype.merge_with = function( criteria/*, from_scope*/ ) {
   }
 
   if ( criteria.params && this.params !== criteria.params )
-    this.params = Object.merge( this.params, criteria.params );
+    _.extend(this.params, criteria.params);
 
   if ( criteria.order && this.order !== criteria.order ) {
     if ( this.order === '' )

@@ -1,4 +1,5 @@
-var path = require('path');
+var path  = require('path');
+var _     = require('underscore');
 
 module.exports = Response.inherits( global.autodafe.AppModule );
 
@@ -307,7 +308,7 @@ Response.prototype.merge_params = function( params ){
   if ( !this._global_params_merged ) {
     this._global_params_merged = true;
 
-    this.params = Object.merge( this.controller.views_functions, this.params );
+    this.params = _.defaults(this.controller.views_functions, this.params);
     this.params.response = this;
     this.merge_params( this.controller.global_view_params( this, this.request ));
   }

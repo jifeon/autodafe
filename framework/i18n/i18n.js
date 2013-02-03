@@ -2,6 +2,7 @@ var Gettext = require('node-gettext');
 var fs      = require('fs');
 var path    = require('path');
 var locale  = require('locale');
+var _ = require('underscore');
 
 module.exports = I18n.inherits( global.autodafe.Component );
 
@@ -16,12 +17,12 @@ I18n.prototype._init = function(params){
   this.gt      = null;
   this.locales = null;
 
-  this.discover = Object.merge({
+  this.discover = _.defaults(params.discover, {
     host    : null,
     url     : null,
     user    : null,
     cookie  : null
-  }, params.discover);
+  });
 
   this.default_locale = null;
 

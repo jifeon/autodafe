@@ -2,6 +2,7 @@ var Route       = require('./route');
 var fs          = require('fs');
 var path        = require('path');
 var qs          = require('querystring');
+var _           = require('underscore');
 
 
 module.exports = Router.inherits( autodafe.AppModule );
@@ -268,7 +269,7 @@ Router.prototype.route = function( request ) {
     if ( !request_params ) return false;
 
     route = r;
-    request.params = Object.merge( request.params, request_params );
+    _(request.params).extend(request_params);
     request.params = this.group_params( request.params );
     return true;
   }, this);
