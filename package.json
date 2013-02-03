@@ -3,7 +3,7 @@
   "description"   : "mvc framework for node with mysql orm, web sockets support, logging, routing, user roles etc",
   "keywords"      : [ "mvc", "framework", "mysql", "orm", "websockets" ],
   "homepage"      : "http://autodafe.ws",
-  "version"       : "0.5.0",
+  "version"       : "0.6.0",
   "author"        : "Andrey Balakirev <balakirev.andrey@gmail.com>",
   "contributors"  : [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
   "main"          : "./framework/autodafe",
@@ -31,7 +31,9 @@
     "dustjs-linkedin"       : ">=0.4.0",
     "dustjs-helpers"        : ">=0.0.1",
     "formidable"            : ">=1.0.2",
-    "http-auth"             : ">=1.1.9"
+    "http-auth"             : ">=1.1.9",
+    "node-gettext"          : ">=0.2.9",
+    "locale"                : ">=0.0.7"
   },
   "devDependencies" : {
     "vows"                  : ">=0.5.8"

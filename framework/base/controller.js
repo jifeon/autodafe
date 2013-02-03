@@ -113,6 +113,7 @@ Controller.prototype._init = function ( params ) {
   this.views_functions = {
     'url'     : this._url_function_for_dust.bind( this ),
     'widget'  : this._widget_function_for_dust.bind( this ),
+    't'       : this._t_function_for_dust.bind( this ),
     'if'      : this._dust_if.bind( this ),
     'if_not'  : this._dust_if_not.bind( this )
   };
@@ -336,6 +337,38 @@ Controller.prototype._url_function_for_dust = function ( chunk, context, bodies,
 
     ? chunk.tap( function( data ) {
       return self.create_url( data, params );
+    }).render( bodies.block, context ).untap()
+
+    : chunk.write( this.create_url( '', params ) );
+};
+
+
+/**
+ *
+ *
+ * При инициализации метод заменяется на замыкание, которое вызывает метод в контексте контроллера. Так сделано,
+ * чтобы не делать этого каждый раз при {@link Controller.render}
+ *
+ * @private
+ * @param chunk
+ * @param context
+ * @param bodies
+ * @param params
+ */
+Controller.prototype._t_function_for_dust = function ( chunk, context, bodies, params ) {
+  var self = this;
+
+  for ( var param in params ) {
+    var value = params[ param ];
+    if ( typeof value == 'function' )
+      params[ param ] = this.app.tools.get_dust_chunk_body_content( chunk, context, value );
+  }
+
+  var response = context.stack.head.response;
+  return bodies.block
+
+    ? chunk.tap( function( data ) {
+      return self.t( data, response );
     }).render( bodies.block, context ).untap()
 
     : chunk.write( this.create_url( '', params ) );

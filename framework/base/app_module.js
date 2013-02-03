@@ -107,7 +107,7 @@ AppModule.prototype.log = function ( message, level ) {
  * Стандартный callback
  *
  * Функция используется в местах где параметр callback необязателен, всместо него используется эта функция. Если первым
- * аргументом она получает не null и не undefined, она кидает ( throw ) этот параметр.
+ * аргументом она получает не null и не undefined, она кидает (throw) этот параметр.
  *
  * @param {Error} [e=null] Ошибка, возникшая во время выполнения функции
  * @throws {Error} параметр <code>e</code> отличен от <code>null</code>
@@ -137,8 +137,9 @@ AppModule.prototype.default_callback = function ( e ) {
  * Функция заглушка для будующего i18n
  *
  * @param {String} text текст который нужно получить на текущем языке
+ * @param {Object} params
  * @return {String}
  */
-AppModule.prototype.t = function ( text ) {
-  return text;
+AppModule.prototype.t = function ( text, response ) {
+  return this.app.i18n.get_text(text, response);
 };

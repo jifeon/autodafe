@@ -33,11 +33,11 @@ Object.recursive_merge = function( obj1, obj2 ) {
 
 
 //todo: delete
-Object.values = function( obj ) {
-  return Object.keys( obj ).map( function( v ) {
+Object.values = function (obj) {
+  return Object.keys(obj).map(function (v) {
     return obj[v];
-  } );
-}
+  });
+};
 
 
 Object.isEmpty = function( v ) {
@@ -63,41 +63,41 @@ Object.clone = function( obj ) {
 };
 
 
-Object.isObject = function( v ) {
-  return v && v instanceof this && !Array.isArray( v ) && typeof v != 'function';
-}
+Object.isObject = function (v) {
+  return v && v instanceof this && !Array.isArray(v) && typeof v != 'function';
+};
 
 
-Object.not_deep_clone = function( obj ) {
+Object.not_deep_clone = function (obj) {
 
-  if ( Array.isArray( obj ) ) return obj.slice( 0 );
+  if (Array.isArray(obj)) return obj.slice(0);
 
-  if ( !Object.isObject( obj ) ) return obj;
+  if (!Object.isObject(obj)) return obj;
 
   var result = {};
-  for ( var prop in obj )
+  for (var prop in obj)
     result[ prop ] = obj[ prop ];
 
 
   return result;
-}
+};
 
 
 //todo: delete
-Object.reset = function( obj ) {
-  if ( this.isEmpty( obj ) ) return null;
-  if ( Array.isArray( obj ) ) return obj[0];
-  if ( this.isObject( obj ) ) return obj[ this.keys( obj )[0] ];
+Object.reset = function (obj) {
+  if (this.isEmpty(obj)) return null;
+  if (Array.isArray(obj)) return obj[0];
+  if (this.isObject(obj)) return obj[ this.keys(obj)[0] ];
   return null;
-}
+};
 
-Function.prototype.inherits = function( super_class ) {
-  require('util').inherits( this, super_class );
+Function.prototype.inherits = function (super_class) {
+  require('util').inherits(this, super_class);
 
   this.parent = super_class.prototype;
 
   return this;
-}
+};
 
 
 Function.prototype.is_instantiate = function ( obj ) {
@@ -110,7 +110,9 @@ String.prototype.format = function() {
   if ( Object.isObject( obj ) ) {
     var res = this;
     var re  = new RegExp( '(' + Object.keys( obj).join('|') + ')', 'g' );
-    res = res.replace( re, function($a, $1){ return obj[$1] })
+    res = res.replace(re, function ($a, $1) {
+      return obj[$1]
+    });
     return res;
   }
 
@@ -122,101 +124,117 @@ String.prototype.format = function() {
 };
 
 
-String.prototype.md5 = function(){
-  return require('crypto').createHash('md5').update( this.toString() ).digest("hex");
-}
+String.prototype.md5 = function () {
+  return require('crypto').createHash('md5').update(this.toString()).digest("hex");
+};
 
 
-String.unique = function(){
+String.unique = function () {
   var idx = [], itoh = '0123456789ABCDEF'.split('');
 
   // Array of digits in UUID (32 digits + 4 dashes)
-  for (var i = 0; i < 36; i++) { idx[i] = 0xf & Math.random() * 0x10; }
+  for (var i = 0; i < 36; i++) {
+    idx[i] = 0xf & Math.random() * 0x10;
+  }
   // Conform to RFC 4122, section 4.4
   idx[14] = 4; // version
   idx[19] = (idx[19] & 0x3) | 0x8; // high bits of clock sequence
 
   // Convert to hex chars
-  for (var i = 0; i < 36; i++) { idx[i] = itoh[idx[i]]; }
+  for (i = 0; i < 36; i++) {
+    idx[i] = itoh[idx[i]];
+  }
 
   // Insert dashes
   idx[8] = idx[13] = idx[18] = idx[23] = '-';
 
   return idx.join('');
-}
+};
 
 
-Number.frequency_to_period = function( frequency ) {
+Number.frequency_to_period = function (frequency) {
   var result = {
-    count   : 1,
-    period  : 0
-  }
-
-  if ( typeof frequency != 'string' ) return result;
-
-  var ar = frequency.split( 'per' );
-  if ( ar.length != 2 ) return result;
-
-  var count   = parseInt( ar[0], 10 );
-  var period  = parseInt( ar[1], 10 );
-
-  if ( isNaN( count ) || isNaN( period ) ) return result;
-
-  var factors = {
-    'sec' : 1000,
-    'min' : 60000,
-    'hou' : 360000,
-    'day' : 8.64e6,
-    'wee' : 5.901e7,
-    'mon' : 2.529e8
+    count:1,
+    period:0
   };
 
-  var factor = ar[1].match( /\W(\w{3})/ );
+  if (typeof frequency != 'string') return result;
+
+  var ar = frequency.split('per');
+  if (ar.length != 2) return result;
+
+  var count = parseInt(ar[0], 10);
+  var period = parseInt(ar[1], 10);
+
+  if (isNaN(count) || isNaN(period)) return result;
+
+  var factors = {
+    'sec':1000,
+    'min':60000,
+    'hou':360000,
+    'day':8.64e6,
+    'wee':5.901e7,
+    'mon':2.529e8
+  };
+
+  var factor = ar[1].match(/\W(\w{3})/);
   factor = factors[ factor && factor[1] ];
 
-  if ( isNaN( factor ) ) factor = 1;
+  if (isNaN(factor)) factor = 1;
 
-  result.count  = count;
+  result.count = count;
   result.period = period * factor;
 
   return result;
-}
+};
 
 
-Date.prototype.format = function( format ) {
+Date.prototype.format = function (format) {
   var self = this;
-  return format.replace( /[\w]/g, function( match ) {
-    switch ( match ) {
-      case 'Y': return self.getFullYear();
-      case 'M': return two_pos( self.getMonth() + 1 );
-      case 'D': return two_pos( self.getDate() );
-      case 'h': return two_pos( self.getHours() );
-      case 'm': return two_pos( self.getMinutes() );
-      case 's': return two_pos( self.getSeconds() );
+  return format.replace(/[\w]/g, function (match) {
+    switch (match) {
+      case 'Y':
+        return self.getFullYear();
+      case 'M':
+        return two_pos(self.getMonth() + 1);
+      case 'D':
+        return two_pos(self.getDate());
+      case 'h':
+        return two_pos(self.getHours());
+      case 'm':
+        return two_pos(self.getMinutes());
+      case 's':
+        return two_pos(self.getSeconds());
       case 'x':
         var x = self.getMilliseconds();
-        return x < 100 ? '0' + two_pos( x ) : x;
+        return x < 100 ? '0' + two_pos(x) : x;
     }
-  } );
-}
+  });
+};
 
 
-Date.prototype.getUTCFormat = function( format ) {
+Date.prototype.getUTCFormat = function (format) {
   var self = this;
-  return format.replace( /[\w]/g, function( match ) {
-    switch ( match ) {
-      case 'Y': return self.getUTCFullYear();
-      case 'M': return two_pos( self.getUTCMonth() + 1 );
-      case 'D': return two_pos( self.getUTCDate() );
-      case 'h': return two_pos( self.getUTCHours() );
-      case 'm': return two_pos( self.getUTCMinutes() );
-      case 's': return two_pos( self.getUTCSeconds() );
+  return format.replace(/[\w]/g, function (match) {
+    switch (match) {
+      case 'Y':
+        return self.getUTCFullYear();
+      case 'M':
+        return two_pos(self.getUTCMonth() + 1);
+      case 'D':
+        return two_pos(self.getUTCDate());
+      case 'h':
+        return two_pos(self.getUTCHours());
+      case 'm':
+        return two_pos(self.getUTCMinutes());
+      case 's':
+        return two_pos(self.getUTCSeconds());
       case 'x':
         var x = self.getUTCMilliseconds();
-        return x < 100 ? '0' + two_pos( x ) : x;
+        return x < 100 ? '0' + two_pos(x) : x;
     }
-  } );
-}
+  });
+};
 
 var assert = require( 'assert' );
 assert.isReadOnly = function ( actual, actual_property, message ) {
@@ -242,26 +260,26 @@ assert.isError = function ( actual, message ) {
 };
 
 
-process.EventEmitter.prototype.re_emit = function() {
+process.EventEmitter.prototype.re_emit = function () {
   var emitter = arguments[ arguments.length - 1 ];
-  for ( var i = 0, i_ln = arguments.length - 1; i < i_ln; i++ ) {
+  for (var i = 0, i_ln = arguments.length - 1; i < i_ln; i++) {
     var action = arguments[i];
-    this.on( action, emitter.emit.bind( emitter, action ) );
+    this.on(action, emitter.emit.bind(emitter, action));
   }
 
   return this;
-}
+};
 
 var dust = exports.dust = require('dustjs-linkedin');
 require('dustjs-helpers');
 
-dust.filters.n = function( value ){
-  return isFinite( value ) ? Number( value ) : 0;
-}
+dust.filters.n = function (value) {
+  return isFinite(value) ? Number(value) : 0;
+};
 
-dust.filters.b = function( value ){
+dust.filters.b = function (value) {
   return value ? 'true' : 'false';
-}
+};
 
 // disable whitespace compression
 dust.optimizers.format = function( ctx, node ) {
@@ -269,19 +287,19 @@ dust.optimizers.format = function( ctx, node ) {
 };
 
 
-exports.get_dust_chunk_body_content = function( chunk, context, body ){
+exports.get_dust_chunk_body_content = function (chunk, context, body) {
   var result = '';
 
   var old_write = chunk.write;
-  chunk.write = function( text ) {
+  chunk.write = function (text) {
     result += text;
     return chunk;
-  }
-  body( chunk, context );
+  };
+  body(chunk, context);
   chunk.write = old_write;
 
   return result;
-}
+};
 
 
 function two_pos( i ) {
@@ -305,25 +323,25 @@ exports.create_async_listener = function( count, callback, params, options ) {
 };
 
 
-exports.to_object = function( obj, deep, current_deep ){
-  var result  = {};
+exports.to_object = function (obj, deep, current_deep) {
+  var result = {};
   current_deep = current_deep || 0;
-  if ( deep <= current_deep ) return obj;
+  if (deep <= current_deep) return obj;
 
-  if ( typeof obj == 'string' ) obj = [obj];
+  if (typeof obj == 'string') obj = [obj];
 
-  if ( Object.isObject( obj ) )
-    for ( var key in obj ) {
-      var transformed = this.to_object( obj[ key ], deep, current_deep+1 );
-      key.split(/\s+/).forEach(function( item ){
+  if (Object.isObject(obj))
+    for (var key in obj) {
+      var transformed = this.to_object(obj[ key ], deep, current_deep + 1);
+      key.split(/\s+/).forEach(function (item) {
         result[ item ] = transformed;
       });
     }
 
-  else if ( Array.isArray( obj ) ) obj.forEach(function( item ){
-    if ( Object.isObject( item ) || Array.isArray( item ) )
-      result = Object.merge( result, exports.to_object( item, deep, current_deep+1 ) );
-    else if ( typeof item == 'string' ) item.split(/\s+/).forEach(function( item ){
+  else if (Array.isArray(obj)) obj.forEach(function (item) {
+    if (Object.isObject(item) || Array.isArray(item))
+      result = Object.merge(result, exports.to_object(item, deep, current_deep + 1));
+    else if (typeof item == 'string') item.split(/\s+/).forEach(function (item) {
       result[ item ] = true;
     });
   });
@@ -331,4 +349,4 @@ exports.to_object = function( obj, deep, current_deep ){
   else result = obj;
 
   return result;
-}
+};

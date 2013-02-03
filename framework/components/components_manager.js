@@ -41,12 +41,13 @@ function ComponentsManager( params ) {
  * @property {Function} http {@link HTTPServer}
  */
 ComponentsManager._system_components = {
-  'web_sockets'        : require( '../client_connections/web_sockets/web_sockets_server' ),
-  'users'              : require( '../users/users_manager' ),
-  'db'                 : require( '../db/db_controller' ),
-  'log_router'         : require( '../logging/log_router' ),
-  'mail'               : require( '../mailing/mailer' ),
-  'http'               : require( '../client_connections/http/http_server' )
+  'web_sockets'        : require('../client_connections/web_sockets/web_sockets_server'),
+  'users'              : require('../users/users_manager'),
+  'db'                 : require('../db/db_controller'),
+  'log_router'         : require('../logging/log_router'),
+  'mail'               : require('../mailing/mailer'),
+  'http'               : require('../client_connections/http/http_server'),
+  'i18n'               : require('../i18n/i18n')
 };
 
 

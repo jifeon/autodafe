@@ -1,6 +1,6 @@
 var DbCommand   = require( './db_command' );
 
-module.exports = DbConnection.inherits( autodafe.AppModule );
+module.exports = DbConnection.inherits( global.autodafe.AppModule );
 
 /**
  * Базовый абстрактный класс для соединения с базой данных.

@@ -11,42 +11,6 @@ Autodafe.inherits( AutodafePart );
  *
  * @constructor
  * @extends AutodafePart
- * @property {Function} AutodafePart конструктор {@link AutodafePart}
- * @property {Function} AppModule конструктор {@link AppModule}
- * @property {Function} Component конструктор {@link Component}
- * @property {Function} Widget конструктор {@link Widget}
- * @property {Function} Controller конструктор {@link Controller}
- * @property {Function} Model конструктор {@link Model}
- * @property {Object}   lib Ссылки на инструменты из библиотеки Autodafe
- * @property {Object}   lib.tools см. {@link Application.tools}
- * @property {Function} lib.Listener конструктор {@link ListenerForResponse}
- * @property {Object}   cc (ClientConnection) сборка ссылок на конструкторы классов обеспечивающих клиентские подключения
- * к приложению
- * @property {Function} cc.Request конструктор {@link Request}
- * @property {Function} cc.ClientConnection конструктор {@link ClientConnection}
- * @property {Function} cc.Client конструктор {@link Client}
- * @property {Function} cc.Response конструктор {@link Response}
- * @property {Function} cc.Listener конструктор {@link ListenerForResponse}
- * @property {Object}   cc.http Конструкторы классов, отвечающих за HTTP соединения
- * @property {Function} cc.http.Request конструктор {@link HTTPRequest}
- * @property {Function} cc.http.Server конструктор {@link HTTPServer}
- * @property {Function} cc.http.Client конструктор {@link HTTPClient}
- * @property {Object}   cc.ws Конструкторы классов, отвечающих за подключения по WebSockets
- * @property {Function} cc.ws.Request конструктор {@link WSRequest}
- * @property {Function} cc.ws.Server конструктор {@link WebSocketServer}
- * @property {Function} cc.ws.Client конструктор {@link WebSocketsClient}
- * @property {Object}   db сборка ссылок на конструкторы часто используемых модулей из компонента для работы с базой
- * данных
- * @property {Function} db.Expression конструктор {@link DbExpression}
- * @property {Function} db.Criteria конструктор {@link DbCriteria}
- * @property {Function} db.ActiveRecord конструктор {@link ActiveRecord}
- * @property {Object}   users сборка ссылок на конструкторы часто используемых модулей из компонента для работы с
- * пользователями
- * @property {Function} users.UserIdentity конструктор {@link UserIdentity}
- * @property {Function} users.RolesSet конструктор {@link RolesSet}
- * @property {Function} users.ModelsRolesSet конструктор {@link ModelsRolesSet}
-
- *
  * @example Класс содержит ссылки на часто используемые классы, что позволяет в некоторых ситуациях не использовать
  * require
  *
@@ -78,23 +42,79 @@ Autodafe.prototype._init = function() {
 
   /**
    * Директория, в которой расположен фреймворк
-   *
    * @type {String}
    */
   this.base_dir         = __dirname;
 
+  /**
+   * Ссылки на инструменты из библиотеки Autodafe
+   * @type {Object}
+   * @property {Object}   tools см. {@link Application.tools}
+   * @property {Function} Listener конструктор {@link ListenerForResponse}
+   */
   this.lib              = {};
   this.lib.tools        = tools;
   this.lib.Listener     = require('./lib/listener2.js');
 
+  /**
+   * Конструктор {@link AutodafePart}
+   * @type {Function}
+   */
   this.AutodafePart     = AutodafePart;
+
+  /**
+   * Конструктор {@link AppModule}
+   * @type {Function}
+   */
   this.AppModule        = require( './base/app_module.js' );
+
+  /**
+   * Конструктор {@link Component}
+   * @type {Function}
+   */
   this.Component        = require( './components/component.js' );
+
+  /**
+   * Конструктор {@link Widget}
+   * @type {Function}
+   */
   this.Widget           = require( './components/widget.js' );
+
+  /**
+   * Конструктор {@link Controller}
+   * @type {Function}
+   */
   this.Controller       = require( './base/controller.js' );
+
+  /**
+   * Конструктор {@link Model}
+   * @type {Function}
+   */
   this.Model            = require( './base/model.js' );
+
+  /**
+   * Конструктор {@link AutodafePart}
+   * @type {Function}
+   */
   this.FormModel        = require( './base/models/form_model.js' );
 
+  /**
+   * Сборка ссылок на конструкторы классов обеспечивающих клиентские подключения к приложению
+   * @type {Object}
+   * @property {Function} Request конструктор {@link Request}
+   * @property {Function} ClientConnection конструктор {@link ClientConnection}
+   * @property {Function} Client конструктор {@link Client}
+   * @property {Function} Response конструктор {@link Response}
+   * @property {Function} Listener конструктор {@link ListenerForResponse}
+   * @property {Object}   http Конструкторы классов, отвечающих за HTTP соединения
+   * @property {Function} http.Request конструктор {@link HTTPRequest}
+   * @property {Function} http.Server конструктор {@link HTTPServer}
+   * @property {Function} http.Client конструктор {@link HTTPClient}
+   * @property {Object}   ws Конструкторы классов, отвечающих за подключения по WebSockets
+   * @property {Function} ws.Request конструктор {@link WSRequest}
+   * @property {Function} ws.Server конструктор {@link WebSocketServer}
+   * @property {Function} ws.Client конструктор {@link WebSocketsClient}
+   */
   this.cc                   = {};
   this.cc.Request           = require( './client_connections/request.js' );
   this.cc.ClientConnection  = require( './client_connections/client_connection.js' );
@@ -110,11 +130,25 @@ Autodafe.prototype._init = function() {
   this.cc.ws.Server         = require( './client_connections/web_sockets/web_sockets_server.js' );
   this.cc.ws.Client         = require( './client_connections/web_sockets/web_sockets_client.js' );
 
+  /**
+   * Сборка ссылок на конструкторы часто используемых модулей из компонента для работы с базой данных
+   * @type {Object}
+   * @property {Function} Expression конструктор {@link DbExpression}
+   * @property {Function} Criteria конструктор {@link DbCriteria}
+   * @property {Function} ActiveRecord конструктор {@link ActiveRecord}
+   */
   this.db               = {};
   this.db.Expression    = require('./db/db_expression.js');
   this.db.Criteria      = require('./db/db_criteria.js');
   this.db.ActiveRecord  = require('./db/ar/active_record.js');
 
+  /**
+   * Сборка ссылок на конструкторы часто используемых модулей из компонента для работы с пользователями
+   * @type {Object}
+   * @property {Function} users.UserIdentity конструктор {@link UserIdentity}
+   * @property {Function} users.RolesSet конструктор {@link RolesSet}
+   * @property {Function} users.ModelsRolesSet конструктор {@link ModelsRolesSet}
+   */
   this.users                = {};
   this.users.UserIdentity   = require('./users/user_identity.js');
   this.users.RolesSet       = require('./users/roles_set.js');
