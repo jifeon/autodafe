@@ -4,6 +4,7 @@ var ManyManyRelation  = require('./relations/many_many_relation');
 var HasManyRelation   = require('./relations/has_many_relation');
 var HasOneRelation    = require('./relations/has_one_relation');
 var BelongsToRelation = require('./relations/belongs_to_relation');
+var _ = require('underscore');
 
 module.exports = JoinElement.inherits( AppModule );
 
@@ -59,7 +60,7 @@ JoinElement.prototype._init_aliases = function () {
 
 
 JoinElement.prototype.destroy = function() {
-  if ( this.children ) Object.values( this.children ).forEach( function( child ) {
+  if ( this.children ) _.values( this.children ).forEach( function( child ) {
     child.destroy();
   } );
 
@@ -120,7 +121,7 @@ JoinElement.prototype.find = function( criteria, callback ) {
   function after_query( e ) {
     if ( e ) return callback(e);
 
-//    var children = Object.values( self.children );
+//    var children = _.values( self.children );
 
     var listener = self.app.tools.create_async_listener(
       self.stats.length/* + children.length*/, callback, null, {
@@ -211,7 +212,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
         child.run_query( query, function( err ) {
           if ( err ) return callback( err );
 
-          Object.values( child.children ).forEach( function( child ) {
+          _.values( child.children ).forEach( function( child ) {
             child.find();
           } );
 
@@ -242,7 +243,7 @@ JoinElement.prototype.lazy_find = function( base_record, callback ) {
   function after_query( e ) {
     if ( e ) return callback(e);
 
-//    var children = Object.values( this.children );
+//    var children = _.values( this.children );
     var listener = this.app.tools.create_async_listener(
       this.stats.length/* + children.length*/, callback, null, {
         error_in_callback : true,
@@ -377,8 +378,8 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, callback 
       if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition ) ) {
         var join = 'INNER JOIN ' + join_table.raw_name + ' ' + join_alias + ' ON ';
         join +=
-          '(' + Object.values( parent_condition ).join( ') AND (' ) +
-          ') AND (' + Object.values( child_condition ).join( ') AND ('  )  + ')';
+          '(' + _.values( parent_condition ).join( ') AND (' ) +
+          ') AND (' + _.values( child_condition ).join( ') AND ('  )  + ')';
 
         if( this.relation.on ) join += ' AND (' + this.relation.on + ')';
 
@@ -540,7 +541,7 @@ JoinElement.prototype.build_query = function( query, callback ) {
   var self          = this;
   var children_cnt  = 1;
 
-  Object.values( this.children ).forEach( function( child ) {
+  _.values( this.children ).forEach( function( child ) {
     if( child.relation.class_name == 'HasOneRelation' ||
         child.relation.class_name == 'BelongsToRelation' ||
         self._finder.join_all ||
@@ -616,7 +617,7 @@ JoinElement.prototype._populate_record = function( query, row ) {
     }
 
     record = this.model.populate_record( attributes );
-    Object.values( this.children ).forEach( function( child ) {
+    _.values( this.children ).forEach( function( child ) {
       record.add_related_record( child.relation.name, null, child.relation instanceof HasManyRelation );
     } );
 
@@ -625,7 +626,7 @@ JoinElement.prototype._populate_record = function( query, row ) {
 
 
   // populate child records recursively
-  Object.values( this.children ).forEach( function( child ) {
+  _.values( this.children ).forEach( function( child ) {
     if( !query.elements[ child.id ] ) return;
 
     var child_record = child._populate_record( query, row );
@@ -947,9 +948,9 @@ JoinElement.prototype._join_many_many = function( join_table, fks, parent ) {
 
   if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition )) {
     var join = this.relation.join_type + ' ' + join_table.raw_name + ' ' + join_alias;
-    join += ' ON (' + Object.values( parent_condition ).join( ') AND (' ) + ')';
+    join += ' ON (' + _.values( parent_condition ).join( ') AND (' ) + ')';
     join += ' ' + this.relation.join_type + ' ' + this.get_table_name_with_alias();
-    join += ' ON (' + Object.values( child_condition ).join( ') AND (' ) + ')';
+    join += ' ON (' + _.values( child_condition ).join( ') AND (' ) + ')';
 
     if( this.relation.on )
       join += ' and (' + this.relation.on + ')';

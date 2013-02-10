@@ -1,4 +1,5 @@
 var app_module = global.autodafe.AppModule;
+var _ = require('underscore');
 
 module.exports = StatElement.inherits( app_module );
 
@@ -164,7 +165,7 @@ StatElement.prototype._query_one_many = function( callback ) {
     } );
 
     var condition = builder.create_in_condition( table, fks, keys, table_alias + '.' );
-    var sql = [ 'SELECT ', Object.values( cols ).join(', '), ', ', relation.select, ' AS ', s, ' FROM ', table.raw_name, ' ', table_alias,
+    var sql = [ 'SELECT ', _.values( cols ).join(', '), ', ', relation.select, ' AS ', s, ' FROM ', table.raw_name, ' ', table_alias,
       where, '(', condition, ') group by ', Object.keys( cols ).join(', '), group, having, order ].join('');
 
     var command = builder.db_connection.create_command( sql );
@@ -317,9 +318,9 @@ StatElement.prototype._query_many_many = function( join_table_name, keys, callba
     if ( Object.keys( map ).length == 1 ) map = Object.reset( map );
 
 
-    var sql = [ 'SELECT ', this.relation.select, ' AS ', schema.quote_column_name('s'), ', ', Object.values( cols ).join(', '),
+    var sql = [ 'SELECT ', this.relation.select, ' AS ', schema.quote_column_name('s'), ', ', _.values( cols ).join(', '),
       ' FROM ', table.raw_name, ' ', table_alias, ' INNER JOIN ', join_table.raw_name,
-      ' ON (', Object.values( join_condition ).join( ') AND (' ), ')',
+      ' ON (', _.values( join_condition ).join( ') AND (' ), ')',
       where, ' GROUP BY ', Object.keys( cols ).join(', '), group,
       ' HAVING (', builder.create_in_condition( join_table, map, keys ), ')',
       having, order ].join('');

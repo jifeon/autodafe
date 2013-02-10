@@ -1,4 +1,5 @@
 var AutodafePart = global.autodafe.AutodafePart;
+var _ = require('underscore');
 
 module.exports = MysqlResult.inherits( AutodafePart );
 
@@ -30,7 +31,7 @@ MysqlResult.prototype.fetch_array = function ( callback, context ) {
   if ( !this.get_num_rows() || typeof callback != 'function' ) return false;
 
   this.result.every( function( row ){
-    return callback.call( context || null, Object.values( row ) ) !== false;
+    return callback.call( context || null, _.values( row ) ) !== false;
   } );
 };
 

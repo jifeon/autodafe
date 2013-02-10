@@ -20,14 +20,6 @@ _.mixin({
 });
 
 
-//todo: delete
-Object.values = function (obj) {
-  return Object.keys(obj).map(function (v) {
-    return obj[v];
-  });
-};
-
-
 Object.isEmpty = function (v) {
   if (!v) return true;
   if (v instanceof Array && !v.length) return true;

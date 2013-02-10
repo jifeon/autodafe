@@ -6,25 +6,25 @@ function DbFixtureManager( params ) {
   return this._init( params );
 }
 
-DbFixtureManager.prototype._init = function( params ){
-  DbFixtureManager.parent._init.call( this, params );
+DbFixtureManager.prototype._init = function (params) {
+  DbFixtureManager.parent._init.call(this, params);
 
   this.fixtures_dir = params.fixtures_dir || '../../tests/test_app/fixtures';
   this.fixtures_count = 0;
   this.fixtures = {};
   var self = this;
-  this.app.db.query( 'SET foreign_key_checks=0', function(){
+  this.app.db.query('SET foreign_key_checks=0', function () {
     self.get_fixtures();
   });
-  this.on( 'get_fixture', function( msg ){
-    self.log( msg );
-    if( --self.fixtures_count == 0 ){
-      self.log( 'All fixtures are loaded' );
-      self.emit( 'get_fixtures', true );
+  this.on('get_fixture', function (msg) {
+    self.log(msg);
+    if (--self.fixtures_count == 0) {
+      self.log('All fixtures are loaded');
+      self.emit('get_fixtures', true);
     }
   })
   return this;
-}
+};
 
 DbFixtureManager.prototype.get_fixtures = function () {
   var path = require( 'path' );
@@ -55,17 +55,17 @@ DbFixtureManager.prototype.get_fixtures = function () {
   });
 };
 
-DbFixtureManager.prototype.get_fixture = function( table_name ){
+DbFixtureManager.prototype.get_fixture = function (table_name) {
   var result = {};
-  var keys = Object.keys( this.fixtures[ table_name ] );
-  var values = Object.values( this.fixtures[ table_name ] );
-  for( var v = 0, ln_v = values[ 0 ].length; v < ln_v; v++ )
-    for( var k = 0, ln_k = keys.length; k < ln_k; k++ ){
-      if( !result[ v ] ) result[ v ] = {};
+  var keys = Object.keys(this.fixtures[ table_name ]);
+  var values = _.values(this.fixtures[ table_name ]);
+  for (var v = 0, ln_v = values[ 0 ].length; v < ln_v; v++)
+    for (var k = 0, ln_k = keys.length; k < ln_k; k++) {
+      if (!result[ v ]) result[ v ] = {};
       result[ v ][ keys[ k ] ] = values[ k ][ v ];
     }
   return result;
-}
+};
 
 DbFixtureManager.prototype.load_fixtures = function(){
   var self = this;

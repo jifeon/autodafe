@@ -371,7 +371,7 @@ CommandBuilder.prototype.create_in_condition = function (table, column_name, val
 
   else if (column_name instanceof Object) {// composite key: values=array(array('pk1'=>'v1','pk2'=>'v2'),array(...))
 
-    Object.values(column_name).forEach(function (name) {
+    _.values(column_name).forEach(function (name) {
       column = this.__get_exist_column(table, name);
 
       values.forEach(function (value) {
@@ -409,7 +409,7 @@ CommandBuilder.prototype._create_composite_in_condition = function (table, value
   for (var name in values[0]) key_names.push(prefix + table.get_column(name).raw_name);
 
   values = values.map(function (value) {
-    return '(' + Object.values(value).join(', ') + ')';
+    return '(' + _.values(value).join(', ') + ')';
   }).join(', ');
 
   return '(' + key_names.join(', ') + ') IN (' + values + ')';
