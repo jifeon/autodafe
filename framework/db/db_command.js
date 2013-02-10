@@ -124,7 +124,7 @@ DbCommand.prototype.set_text = function ( text ) {
 /**
  * Задает _params.
  *
- * При этом для копирования параметров используется функция Object.not_deep_clone().
+ * При этом для копирования параметров используется функция _.clone().
  * Если params неподходящего типа - бросается ошибка Error.
  * Если значения параметров неподходящего типа, ошибка бросится во время _apply_params.
  * Если _apply_params вызвана из execute ошибка передастся в callback функции execute.
@@ -139,7 +139,7 @@ DbCommand.prototype.bind_values = function ( params ) {
   }
 
   if ( _.isEmpty( params ) ) return this;
-  this._params         = Object.not_deep_clone( params );
+  this._params         = _.clone( params );
   this._params_applied = false;
 
   return this;

@@ -390,7 +390,7 @@ Router.prototype.create_url = function ( route_path, params, default_controller,
     return '#';
   }
 
-  var query_params = Object.not_deep_clone( params );
+  var query_params = _.clone( params );
   var rule  = route.get_rule( query_params );
   var query = qs.stringify( query_params );
 

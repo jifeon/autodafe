@@ -93,7 +93,7 @@ Model.prototype._init = function (params) {
   this.is_inited = true;
 
   this._process_attributes();
-  this._after_init(Object.not_deep_clone(params));
+  this._after_init(_.clone(params));
 };
 
 

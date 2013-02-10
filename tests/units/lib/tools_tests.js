@@ -2,47 +2,7 @@ var vows = require('autodafe/node_modules/vows');
 var assert = require('assert');
 var tools = require('autodafe/framework/lib/tools');
 
-var complex_obj = {
-  p1: null,
-  p2: undefined,
-  p3: {
-    p4 : {
-      p8: 12
-    },
-    p5 : 6,
-    p7 : 42,
-    p10: {},
-    ar : [ 1, {
-      p11: 100
-    } ]
-  }
-};
-
-function clone_test(deep) {
-  return {
-
-    topic: function () {
-      return Object[deep ? 'clone' : 'not_deep_clone'](complex_obj);
-    },
-
-    'should copy object': function (cloned) {
-      assert.notEqual(cloned, complex_obj);
-      assert.deepEqual(cloned, complex_obj);
-
-      cloned.p3.ar[1].p11 = 82;
-      assert.equal(complex_obj.p3.ar[1].p11, deep ? 100 : 82);
-    }
-  }
-}
-
-
 vows.describe('tools').addBatch({
-  'Object': {
-
-    '.not_deep_clone': clone_test(false)
-  },
-
-
   'String': {
 
     '.format inline': {

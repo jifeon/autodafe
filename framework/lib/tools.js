@@ -17,9 +17,9 @@ _.mixin({
     return obj;
   },
 
-  deepClone: function(obj){
+  deep_clone: function(obj){
     if (Array.isArray(obj)) return obj.map(function (item) {
-      return _.deepClone(item);
+      return _.deep_clone(item);
     });
 
     if (!_.isObject(obj)) return obj;
@@ -27,26 +27,11 @@ _.mixin({
     var result = {};
     for (var prop in obj)
       if (hasOwnProperty.call(obj, prop))
-        result[ prop ] = _.deepClone(obj[ prop ]);
+        result[ prop ] = _.deep_clone(obj[ prop ]);
 
     return result;
   }
 });
-
-
-Object.not_deep_clone = function (obj) {
-
-  if (Array.isArray(obj)) return obj.slice(0);
-
-  if (!_.isObject(obj)) return obj;
-
-  var result = {};
-  for (var prop in obj)
-    result[ prop ] = obj[ prop ];
-
-
-  return result;
-};
 
 
 //todo: delete
