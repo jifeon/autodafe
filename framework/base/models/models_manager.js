@@ -59,7 +59,7 @@ ModelsManager.prototype.load_models = function ( callback ) {
       return callback( e );
     }
 
-    if ( !Model.is_instantiate( model_constructor.prototype ) ) {
+    if (model_constructor.prototype instanceof Model == false) {
       this.log( 'File in path `%s` is not a model'.format( file_path ), 'warning' );
       continue;
     }

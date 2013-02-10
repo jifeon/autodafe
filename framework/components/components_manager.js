@@ -105,7 +105,7 @@ ComponentsManager.prototype._init = function( params ) {
  *
  * @param {String} name имя загружаемого компонента, либо путь до него начиная от {@link Application.base_dir}
  * @param {Object} [params={}] параметры для загружаемого компонента
- * @throws {Error} если не может найти файл с компонентом или найденный файл неправильного типа
+ * @throws {Error} если не может найти файл с компонентом
  */
 ComponentsManager.prototype.load = function ( name, params ) {
   if ( this._loaded[ name ] ) return false;
@@ -113,7 +113,7 @@ ComponentsManager.prototype.load = function ( name, params ) {
   this.log( 'Load component `%s`'.format( name ), 'trace' );
 
   var component_class = this.get_user_component( name ) || this.get_system_component( name );
-  if ( !component_class || !autodafe.Component.is_instantiate( component_class.prototype ) )
+  if ( !component_class || component_class.prototype instanceof autodafe.Component == false )
     throw new Error( 'Try to load unknown component `%s`'.format( name ) );
   
   if ( !Object.isObject( params ) ) params = {};
@@ -236,15 +236,15 @@ ComponentsManager.prototype.create_widget = function ( name, params ) {
 
   this.log( 'Creating widget `%s`'.format( name ), 'trace' );
 
-  var widget_class = this.get_user_component( name ) || this.get_system_widget( name );
-  if ( !widget_class || !autodafe.Widget.is_instantiate( widget_class.prototype ) )
+  var WidgetClass = this.get_user_component( name ) || this.get_system_widget( name );
+  if ( !WidgetClass || WidgetClass.prototype instanceof autodafe.Widget == false )
     throw new Error( 'Try to load unknown widget: `%s`'.format( name ) );
 
   params      = params || {};
   params.name = name;
   params.app  = this.app;
 
-  return new widget_class( params );
+  return new WidgetClass( params );
 };
 
 

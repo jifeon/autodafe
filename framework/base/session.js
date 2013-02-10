@@ -34,12 +34,6 @@ Session.prototype.add_client = function ( client ) {
     return false;
   }
 
-  var Client = require( '../client_connections/client' );
-  if ( !Client.is_instantiate( client ) )
-    throw new Error( '`client` is not instance of Client in Session.add_client' );
-
-  this.clients.push( client );
-
   var self = this;
   client.once( 'disconnect', function(){
     self.remove_client( client );

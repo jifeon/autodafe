@@ -16,10 +16,6 @@ CommandBuilder.prototype.PARAM_PREFIX = ':ap';
 CommandBuilder.prototype._init = function (params) {
   CommandBuilder.parent._init.call(this, params);
 
-  var DbSchema = require('./db_schema');
-  if (!DbSchema.is_instantiate(params.db_schema))
-    throw new Error('`db_schema` is not instance of DbSchema in CommandBuilder.init');
-
   this._.db_schema = params.db_schema;
   this._.db_connection = this.db_schema.db_connection;
 };

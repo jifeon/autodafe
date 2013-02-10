@@ -1,4 +1,4 @@
-module.exports = AppModule.inherits( global.autodafe.AutodafePart );
+module.exports = AppModule.inherits(global.autodafe.AutodafePart);
 
 /**
  * Базовый класс для модулей приложения.
@@ -34,8 +34,8 @@ module.exports = AppModule.inherits( global.autodafe.AutodafePart );
  * });
  * </code></pre>
  */
-function AppModule( params ) {
-  this._init( params );
+function AppModule(params) {
+  this._init(params);
 }
 
 
@@ -45,18 +45,11 @@ function AppModule( params ) {
  * @param {Object} params см. {@link AppModule}
  * @private
  */
-AppModule.prototype._init = function( params ) {
-  AppModule.parent._init.call( this, params );
+AppModule.prototype._init = function (params) {
+  AppModule.parent._init.call(this, params);
 
-  var Application = require( './application' );
-
-  if ( !params || !Application.is_instantiate( params.app ) ) throw new Error(
-    'Link to application is not defined or has wrong type' + ( this.class_name
-      ? ' in `%s._init`'.format( this.class_name )
-      : ' in `_init` method of class inherited from AppModule. Also class inherited from AppModule should be defined ' +
-      'as `function Name() {}` instead of `var Name = function() {}` because AppModule uses `this.constructor.name` ' +
-      'property for logging'
-    )
+  if (!params || !params.app) throw new Error(
+    'Link to application is not defined.'
   );
 
   /**
@@ -70,9 +63,9 @@ AppModule.prototype._init = function( params ) {
    */
   this._.app = params.app;
 
-  if ( !this.class_name ) this.app.log(
+  if (!this.class_name) this.app.log(
     'Class inherited from AppModule should be defined as `function Name() {}` instead of `var Name = function() {}`' +
-    ' because AppModule uses `this.constructor.name` property for logging',
+      ' because AppModule uses `this.constructor.name` property for logging',
     'warning', 'AppModule'
   );
 };
@@ -98,8 +91,8 @@ AppModule.prototype._init = function( params ) {
  * this.log( new Error( 'Something wrong' ), 'warning' );
  * </code></pre>
  */
-AppModule.prototype.log = function ( message, level ) {
-  this.app.logger.log( message, level, this.class_name );
+AppModule.prototype.log = function (message, level) {
+  this.app.logger.log(message, level, this.class_name);
 };
 
 
@@ -128,8 +121,8 @@ AppModule.prototype.log = function ( message, level ) {
  * </code></pre>
  * Теперь даже если метод не получит callback, ошибка не замолчится, а пойдет дальше по указанным правилам.
  */
-AppModule.prototype.default_callback = function ( e ) {
-  if ( e != null ) throw e;
+AppModule.prototype.default_callback = function (e) {
+  if (e != null) throw e;
 };
 
 
@@ -140,6 +133,6 @@ AppModule.prototype.default_callback = function ( e ) {
  * @param {Object} params
  * @return {String}
  */
-AppModule.prototype.t = function ( text, response ) {
+AppModule.prototype.t = function (text, response) {
   return this.app.i18n.get_text(text, response);
 };

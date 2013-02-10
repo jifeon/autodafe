@@ -16,9 +16,7 @@ BaseActiveRelation.prototype._init = function( params ) {
   );
   this._.name       = params.name;
 
-  var Model = global.autodafe.Model;
-
-  if ( !Model.is_instantiate( params.model ) ) throw new Error(
+  if (!params.model) throw new Error(
     'Please specify correct model in %s.init'.format( this.class_name )
   );
   this._.model = params.model;
@@ -30,13 +28,13 @@ BaseActiveRelation.prototype._init = function( params ) {
 
   this.selected_tables = null;
 
-  this._.select.set = function( value, descriptor ){
-    this.selected_tables = new DbCriteriaSelectedTables( value );
-  }
+  this._.select.set = function (value, descriptor) {
+    this.selected_tables = new DbCriteriaSelectedTables(value);
+  };
 
-  this._.select.get = function(){
+  this._.select.get = function () {
     return this.selected_tables.toString();
-  }
+  };
 
   this.select         = '*';
   this.condition      = '';
@@ -76,44 +74,44 @@ BaseActiveRelation.prototype.copy = function () {
 
 
 
-BaseActiveRelation.prototype.merge_with = function( criteria/*, from_scope*/ ) {
-  this.selected_tables.merge_with( criteria.selected_tables );
+BaseActiveRelation.prototype.merge_with = function (criteria/*, from_scope*/) {
+  this.selected_tables.merge_with(criteria.selected_tables);
 
-  if ( criteria.condition && this.condition !== criteria.condition ) {
-    if ( this.condition === '' )
+  if (criteria.condition && this.condition !== criteria.condition) {
+    if (this.condition === '')
       this.condition = criteria.condition;
-    else if ( criteria.condition !== '' )
-      this.condition = "(%s) and (%s)".format( this.condition, criteria.condition );
+    else if (criteria.condition !== '')
+      this.condition = "(%s) and (%s)".format(this.condition, criteria.condition);
   }
 
-  if ( criteria.params && this.params !== criteria.params )
+  if (criteria.params && this.params !== criteria.params)
     _.extend(this.params, criteria.params);
 
-  if ( criteria.order && this.order !== criteria.order ) {
-    if ( this.order === '' )
+  if (criteria.order && this.order !== criteria.order) {
+    if (this.order === '')
       this.order = criteria.order;
-    else if ( criteria.order !== '' )
+    else if (criteria.order !== '')
       this.order = criteria.order + ', ' + this.order;
   }
 
-  if ( criteria.group && this.group !== criteria.group ) {
-    if ( this.group === '' )
+  if (criteria.group && this.group !== criteria.group) {
+    if (this.group === '')
       this.group = criteria.group;
-    else if ( criteria.group !== '' )
+    else if (criteria.group !== '')
       this.group += ', ' + criteria.group;
   }
 
-  if ( criteria.join && this.join !== criteria.join ) {
-    if ( this.join === '' )
+  if (criteria.join && this.join !== criteria.join) {
+    if (this.join === '')
       this.join = criteria.join;
-    else if ( criteria.join !== '' )
+    else if (criteria.join !== '')
       this.join += ' ' + criteria.join;
   }
 
-  if ( criteria.having && this.having !== criteria.having ) {
-    if ( this.having === '' )
+  if (criteria.having && this.having !== criteria.having) {
+    if (this.having === '')
       this.having = criteria.having;
-    else if ( criteria.having !== '' )
+    else if (criteria.having !== '')
       this.having = "(" + this.having + ") AND (" + criteria.having + ")";
   }
-}
+};

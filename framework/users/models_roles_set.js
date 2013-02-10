@@ -8,7 +8,7 @@ function ModelsRolesSet( params ) {
 
 
 ModelsRolesSet.prototype._init = function( params ) {
-  if ( !RolesSet.is_instantiate( params.parent_set ) ) throw new Error(
+  if (!params.parent_set) throw new Error(
     '`parent_set` should be instance of RolesSet in ModelsRolesSet._init'
   );
   this.parent_set   = params.parent_set;

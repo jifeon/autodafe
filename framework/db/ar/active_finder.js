@@ -15,8 +15,7 @@ function ActiveFinder( params ) {
 ActiveFinder.prototype._init = function( params ) {
   ActiveFinder.parent._init.call( this, params );
   
-  var Model = global.autodafe.Model;
-  if ( !Model.is_instantiate( params.model ) ) throw new Error(
+  if (!params.model) throw new Error(
     '`model` is required in ActiveFinder.init'
   );
   this._model = params.model;

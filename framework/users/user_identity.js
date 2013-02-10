@@ -224,7 +224,7 @@ UserIdentity.prototype.manage = function ( model, params ) {
     return this.manage( model, params );
   }, this );
 
-  if ( !global.autodafe.Model.is_instantiate( model ) ) return model;
+  if (model instanceof global.autodafe.Model == false) return model;
   var Handler = model.class_name == 'ActiveRecord' ? UserIdentityARHandler : UserIdentityModelHandler;
 
   var handler = new Handler({

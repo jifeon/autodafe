@@ -125,7 +125,7 @@ DbCriteriaSelectedTables.prototype.toString = function(){
 DbCriteriaSelectedTables.prototype._get_tables_from_args = function( args ){
   var tables = args[0];
 
-  if ( this.constructor.is_instantiate( tables ) ) return tables.get_tables();
+  if (tables instanceof this.constructor) return tables.get_tables();
 
   if ( !Array.isArray( tables ) ) tables = Array.prototype.slice.call( args, 0 );
 

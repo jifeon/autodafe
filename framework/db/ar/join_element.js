@@ -16,9 +16,8 @@ function JoinElement( params ) {
 JoinElement.prototype._init = function( params ) {
   JoinElement.parent._init.call( this, params );
 
-  var ActiveFinder = require( './active_finder' );
-  if ( !ActiveFinder.is_instantiate( params.finder ) ) throw new Error(
-    '`finder` is required and should be instance of ActiveFinder in JoinElement.init'
+  if (!params.finder) throw new Error(
+    '`finder` is required in JoinElement.init'
   );
   this._finder          = params.finder;
 

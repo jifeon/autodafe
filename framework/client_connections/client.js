@@ -1,5 +1,4 @@
 var Request          = global.autodafe.cc.Request;
-var ClientConnection = global.autodafe.cc.ClientConnection;
 
 module.exports = Client.inherits( global.autodafe.AppModule );
 
@@ -76,9 +75,6 @@ Client.prototype.request_contructor = global.autodafe.cc.Request;
  */
 Client.prototype._init = function( params ) {
   Client.parent._init.call( this, params );
-
-  if ( !ClientConnection.is_instantiate( params.connection ) )
-    throw new Error( '`connection` is not instance of ClientConnection in Client._init' );
 
   /**
    * Cоединение по которому подключен клиент

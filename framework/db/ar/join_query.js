@@ -11,8 +11,7 @@ function JoinQuery( params ) {
 JoinQuery.prototype._init = function( params ) {
   JoinQuery.parent._init.call( this, params );
 
-  var JoinElement = require( './join_element' );
-  if ( !JoinElement.is_instantiate( params.join_element ) ) throw new Error(
+  if (!params.join_element) throw new Error(
     '`join_element` should be instance of JoinElement in JoinQuery.init'
   );
   this._.join_element = params.join_element;
@@ -56,15 +55,15 @@ JoinQuery.prototype._init = function( params ) {
 };
 
 
-JoinQuery.prototype.join = function( element, callback ) {
-  this.selects    .push( element.get_column_select( element.relation.select ) );
-  this.conditions .push( element.relation.condition   );
-  this.orders     .push( element.relation.order       );
-  this.groups     .push( element.relation.group       );
-  this.havings    .push( element.relation.having      );
+JoinQuery.prototype.join = function (element, callback) {
+  this.selects.push(element.get_column_select(element.relation.select));
+  this.conditions.push(element.relation.condition);
+  this.orders.push(element.relation.order);
+  this.groups.push(element.relation.group);
+  this.havings.push(element.relation.having);
 
-  if( element.relation.params ) {
-    if( this.params )
+  if (element.relation.params) {
+    if (this.params)
       _.extend(this.params, element.relation.params);
     else
       this.params = element.relation.params;
@@ -73,44 +72,44 @@ JoinQuery.prototype.join = function( element, callback ) {
   this.elements[ element.id ] = true;
 
   var self = this;
-  element.get_join_condition( function( err, join_condition ){
-    if ( err ) return callback( err );
+  element.get_join_condition(function (err, join_condition) {
+    if (err) return callback(err);
 
-    self.joins      .push( join_condition );
-    self.joins      .push( element.relation.join );
+    self.joins.push(join_condition);
+    self.joins.push(element.relation.join);
 
     callback();
-  } );
-}
+  });
+};
 
-JoinQuery.prototype.create_command = function( builder ){
+JoinQuery.prototype.create_command = function (builder) {
   var sql = ( this.distinct ? 'SELECT DISTINCT ' : 'SELECT ' ) + this.selects.join(', ') +
-            ' FROM ' + this.joins.join(' ');
+    ' FROM ' + this.joins.join(' ');
 
-  var conditions = this.conditions.filter( function( condition ) {
+  var conditions = this.conditions.filter(function (condition) {
     return !!condition;
-  } );
+  });
 
-  if ( conditions.length ) sql += ' WHERE (' + conditions.join( ') AND (' ) + ')';
+  if (conditions.length) sql += ' WHERE (' + conditions.join(') AND (') + ')';
 
-  var groups = this.groups.filter( function( group ){
+  var groups = this.groups.filter(function (group) {
     return !!group;
-  } );
+  });
 
-  if ( groups.length ) sql += ' GROUP BY ' + groups.join(', ');
+  if (groups.length) sql += ' GROUP BY ' + groups.join(', ');
 
-  var havings = this.havings.filter( function( having ){
+  var havings = this.havings.filter(function (having) {
     return !!having;
-  } );
+  });
 
-  if( havings.length ) sql += ' HAVING (' + havings.join( ') AND (' ) + ')';
+  if (havings.length) sql += ' HAVING (' + havings.join(') AND (') + ')';
 
-  var orders = this.orders.filter( function( order ){
+  var orders = this.orders.filter(function (order) {
     return !!order;
-  } );
+  });
 
-  if ( orders.length ) sql += ' ORDER BY ' + orders.join(', ');
+  if (orders.length) sql += ' ORDER BY ' + orders.join(', ');
 
-  sql = builder.apply_limit( sql, this.limit, this.offset );
-  return builder.db_connection.create_command( sql ).bind_values( this.params );
-}
+  sql = builder.apply_limit(sql, this.limit, this.offset);
+  return builder.db_connection.create_command(sql).bind_values(this.params);
+};

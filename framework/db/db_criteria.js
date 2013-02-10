@@ -64,7 +64,7 @@ DbCriteria.prototype.clone = function () {
 DbCriteria.prototype.merge_with = function (criteria, use_and) {
   var and = use_and || use_and == undefined ? 'AND' : 'OR';
 
-  if (!this.constructor.is_instantiate(criteria))
+  if (criteria instanceof this.constructor == false)
     criteria = new this.constructor(criteria);
 
   this.selected_tables.merge_with(criteria.selected_tables);

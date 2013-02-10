@@ -616,7 +616,6 @@ Application.prototype._load_components = function () {
  * функции {@link Component.get}
  *
  * @param {Component} component регистрируемый компонент
- * @throws {Error} при регистрации экземпляра класса неунаследованного от {@link Component}
  * @throws {Error} если данное имя уже занято компонентом, свойством или методом {@link Application}
  * @example Пример использования
  *
@@ -645,14 +644,11 @@ Application.prototype._load_components = function () {
  * Регистрация двух компонентов с одним именем также вызовет ошибку.
  */
 Application.prototype.register_component = function ( component ) {
-  if ( !autodafe.Component.is_instantiate( component ) )
-    throw new Error( 'Try to register `%s` as Component'.format( component && typeof component && component.class_name ) );
-
   var name = component.name;
 
   var property_descriptor = Object.getOwnPropertyDescriptor( this, name );
   if ( property_descriptor ) throw new Error(
-    autodafe.Component.is_instantiate( property_descriptor.value || this._[name].value )
+    ( property_descriptor.value || this._[name].value ) instanceof autodafe.Component
     ? 'Try to register two components with same name: %s'.format( name )
     : 'Try to register a component with name engaged for property of application: %s'.format( name )
   );

@@ -227,7 +227,7 @@ Router.prototype.add_controller = function ( controller, name ) {
     throw e;
   }
 
-  if ( !autodafe.Controller.is_instantiate( controller.prototype ) ) {
+  if (controller.prototype instanceof autodafe.Controller == false) {
     this.log( 'File in path `%s` is not a controller'.format( file_path ), 'warning' );
     return false;
   }

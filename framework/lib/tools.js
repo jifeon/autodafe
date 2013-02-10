@@ -73,11 +73,6 @@ Function.prototype.inherits = function (super_class) {
 };
 
 
-Function.prototype.is_instantiate = function (obj) {
-  return obj instanceof this;
-};
-
-
 String.prototype.format = function () {
   var obj = arguments[0];
   if (Object.isObject(obj)) {
