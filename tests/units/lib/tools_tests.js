@@ -2,19 +2,6 @@ var vows = require('autodafe/node_modules/vows');
 var assert = require('assert');
 var tools = require('autodafe/framework/lib/tools');
 
-var simple_obj = {
-  p1: 42,
-  p2: null,
-  p3: undefined,
-  p4: false,
-  p5: true,
-  p6: 'just string',
-  p7: {
-    v: 8,
-    d: 5
-  }
-};
-
 var complex_obj = {
   p1: null,
   p2: undefined,
@@ -51,60 +38,6 @@ function clone_test(deep) {
 
 vows.describe('tools').addBatch({
   'Object': {
-
-    '.recursive_merge': {
-
-      topic: complex_obj,
-
-      'should recursive merge properties': function (obj) {
-        assert.deepEqual(Object.recursive_merge(obj, {
-          p1: false,
-          p2: false,
-          p3: {
-            p4 : {
-              p9: 9
-            },
-            p5 : 4,
-            p6 : 6,
-            p10: 11
-          }
-        }), {
-          p1: false,
-          p2: false,
-          p3: {
-            p4 : {
-              p9: 9,
-              p8: 12
-            },
-            p5 : 4,
-            p7 : 42,
-            p10: 11,
-            ar : [ 1, {
-              p11: 100
-            } ],
-            p6 : 6
-          }
-        });
-      },
-
-      'should not touch original object': function (obj) {
-        assert.deepEqual(obj, {
-          p1: null,
-          p2: undefined,
-          p3: {
-            p4 : {
-              p8: 12
-            },
-            p5 : 6,
-            p7 : 42,
-            p10: {},
-            ar : [ 1, {
-              p11: 100
-            } ]
-          }
-        });
-      }
-    },
 
     '.isEmpty': function () {
       assert.isTrue(Object.isEmpty({}));

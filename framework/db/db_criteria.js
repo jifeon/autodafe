@@ -14,13 +14,13 @@ DbCriteria.prototype._init = function( params ) {
 
   this.selected_tables = null;
 
-  this._.select.set = function( value, descriptor ){
-    this.selected_tables = new DbCriteriaSelectedTables( value );
-  }
+  this._.select.set = function (value, descriptor) {
+    this.selected_tables = new DbCriteriaSelectedTables(value);
+  };
 
-  this._.select.get = function(){
+  this._.select.get = function () {
     return this.selected_tables.toString();
-  }
+  };
 
   this.select     = '*';
 
@@ -61,68 +61,68 @@ DbCriteria.prototype.clone = function () {
 };
 
 
-DbCriteria.prototype.merge_with = function( criteria, use_and ) {
+DbCriteria.prototype.merge_with = function (criteria, use_and) {
   var and = use_and || use_and == undefined ? 'AND' : 'OR';
 
-  if ( !this.constructor.is_instantiate( criteria ) )
-    criteria = new this.constructor( criteria );
+  if (!this.constructor.is_instantiate(criteria))
+    criteria = new this.constructor(criteria);
 
-  this.selected_tables.merge_with( criteria.selected_tables );
+  this.selected_tables.merge_with(criteria.selected_tables);
 
-  if ( this.condition !== criteria.condition ) {
-    if ( this.condition === '' )
+  if (this.condition !== criteria.condition) {
+    if (this.condition === '')
       this.condition = criteria.condition;
-    else if ( criteria.condition !== '' )
+    else if (criteria.condition !== '')
       this.condition = "(" + this.condition + ") " + and + " (" + criteria.condition + ")";
   }
 
-  if ( this.params !== criteria.params )
+  if (this.params !== criteria.params)
     _.extend(this.params, criteria.params);
 
-  if ( criteria.limit > 0 )
+  if (criteria.limit > 0)
     this.limit = criteria.limit;
 
-  if ( criteria.offset >= 0 )
+  if (criteria.offset >= 0)
     this.offset = criteria.offset;
 
-  if ( criteria.alias !== null )
+  if (criteria.alias !== null)
     this.alias = criteria.alias;
 
-  if ( this.order !== criteria.order ) {
-    if ( this.order === '' )
+  if (this.order !== criteria.order) {
+    if (this.order === '')
       this.order = criteria.order;
-    else if ( criteria.order !== '' )
+    else if (criteria.order !== '')
       this.order = criteria.order + ', ' + this.order;
   }
 
-  if ( this.group !== criteria.group ) {
-    if ( this.group === '' )
+  if (this.group !== criteria.group) {
+    if (this.group === '')
       this.group = criteria.group;
-    else if ( criteria.group !== '' )
+    else if (criteria.group !== '')
       this.group += ', ' + criteria.group;
   }
 
-  if ( this.join !== criteria.join ) {
-    if ( this.join === '' )
+  if (this.join !== criteria.join) {
+    if (this.join === '')
       this.join = criteria.join;
-    else if ( criteria.join !== '' )
+    else if (criteria.join !== '')
       this.join += ' ' + criteria.join;
   }
 
-  if ( this.having !== criteria.having ) {
-    if ( this.having === '' )
+  if (this.having !== criteria.having) {
+    if (this.having === '')
       this.having = criteria.having;
-    else if ( criteria.having !== '' )
+    else if (criteria.having !== '')
       this.having = "(" + this.having + ") " + and + " (" + criteria.having + ")";
   }
 
-  if ( criteria.distinct > 0 )
+  if (criteria.distinct > 0)
     this.distinct = criteria.distinct;
 
-  if ( criteria.together != null ) this.together = criteria.together;
+  if (criteria.together != null) this.together = criteria.together;
 
-  if ( criteria.index != null )    this.index = criteria.index;
+  if (criteria.index != null)    this.index = criteria.index;
 
-  if ( !this.With )         this.With = criteria.With;
-  else if ( criteria.With ) this.With = Object.recursive_merge( this.With, criteria.With );
-}
+  if (!this.With)         this.With = criteria.With;
+  else if (criteria.With) this.With = _.merge(this.With, criteria.With);
+};

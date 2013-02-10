@@ -1,37 +1,23 @@
 var _ = require('underscore');
 
-Object.merge = function( obj1, obj2 ) {
-  obj1 = obj1 || {};
-  obj2 = obj2 || {};
+_.mixin({
+  merge: function (obj1, obj2) {
+    obj1 = obj1 || {};
+    obj2 = obj2 || {};
 
-  if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
+    if (!Object.isObject(obj1) || !Object.isObject(obj2)) throw new TypeError;
 
-  var res = Object.not_deep_clone( obj1 );
+    var res = Object.clone(obj1);
 
-  for ( var prop in obj2 ) {
-    res[ prop ] = obj2[ prop ];
+    for (var prop in obj2) {
+      if (res[ prop ] && res[ prop ] instanceof Object && obj2[ prop ] && obj2[ prop ] instanceof Object)
+        res[ prop ] = _.merge(res[ prop ], obj2[ prop ]);
+      else res[ prop ] = obj2[ prop ];
+    }
+
+    return res;
   }
-
-  return res;
-};
-
-
-Object.recursive_merge = function( obj1, obj2 ) {
-  obj1 = obj1 || {};
-  obj2 = obj2 || {};
-
-  if ( !Object.isObject( obj1 ) || !Object.isObject( obj2 ) ) throw new TypeError;
-
-  var res = Object.clone( obj1 );
-
-  for ( var prop in obj2 ) {
-    if ( res[ prop ] && res[ prop ] instanceof Object && obj2[ prop ] && obj2[ prop ] instanceof Object )
-      res[ prop ] = this.recursive_merge( res[ prop ], obj2[ prop ] );
-    else res[ prop ] = obj2[ prop ];
-  }
-
-  return res;
-};
+});
 
 
 //todo: delete
@@ -42,23 +28,23 @@ Object.values = function (obj) {
 };
 
 
-Object.isEmpty = function( v ) {
-  if ( !v ) return true;
-  if ( v instanceof Array && !v.length ) return true;
-  return v instanceof this && !this.keys( v ).length;
+Object.isEmpty = function (v) {
+  if (!v) return true;
+  if (v instanceof Array && !v.length) return true;
+  return v instanceof this && !this.keys(v).length;
 };
 
 
-Object.clone = function( obj ) {
-  if ( Array.isArray( obj ) ) return obj.map( function( item ) {
-    return Object.clone( item );
-  } );
+Object.clone = function (obj) {
+  if (Array.isArray(obj)) return obj.map(function (item) {
+    return Object.clone(item);
+  });
 
-  if ( !Object.isObject( obj ) ) return obj;
+  if (!Object.isObject(obj)) return obj;
 
   var result = {};
-  for ( var prop in obj ) {
-    result[ prop ] = this.clone( obj[ prop ] );
+  for (var prop in obj) {
+    result[ prop ] = this.clone(obj[ prop ]);
   }
 
   return result;
@@ -102,16 +88,16 @@ Function.prototype.inherits = function (super_class) {
 };
 
 
-Function.prototype.is_instantiate = function ( obj ) {
+Function.prototype.is_instantiate = function (obj) {
   return obj instanceof this;
 };
 
 
-String.prototype.format = function() {
+String.prototype.format = function () {
   var obj = arguments[0];
-  if ( Object.isObject( obj ) ) {
+  if (Object.isObject(obj)) {
     var res = this;
-    var re  = new RegExp( '(' + Object.keys( obj).join('|') + ')', 'g' );
+    var re = new RegExp('(' + Object.keys(obj).join('|') + ')', 'g');
     res = res.replace(re, function ($a, $1) {
       return obj[$1]
     });
@@ -120,9 +106,9 @@ String.prototype.format = function() {
 
   var i = 0;
   var args = arguments;
-  return this.replace( /%s|%d/g, function() {
+  return this.replace(/%s|%d/g, function () {
     return args[ i++ ];
-  } );
+  });
 };
 
 
@@ -156,8 +142,8 @@ String.unique = function () {
 
 Number.frequency_to_period = function (frequency) {
   var result = {
-    count:1,
-    period:0
+    count : 1,
+    period: 0
   };
 
   if (typeof frequency != 'string') return result;
@@ -171,12 +157,12 @@ Number.frequency_to_period = function (frequency) {
   if (isNaN(count) || isNaN(period)) return result;
 
   var factors = {
-    'sec':1000,
-    'min':60000,
-    'hou':360000,
-    'day':8.64e6,
-    'wee':5.901e7,
-    'mon':2.529e8
+    'sec': 1000,
+    'min': 60000,
+    'hou': 360000,
+    'day': 8.64e6,
+    'wee': 5.901e7,
+    'mon': 2.529e8
   };
 
   var factor = ar[1].match(/\W(\w{3})/);
@@ -238,27 +224,27 @@ Date.prototype.getUTCFormat = function (format) {
   });
 };
 
-var assert = require( 'assert' );
-assert.isReadOnly = function ( actual, actual_property, message ) {
-  var writable  = true;
+var assert = require('assert');
+assert.isReadOnly = function (actual, actual_property, message) {
+  var writable = true;
 
   try {
     actual[ actual_property ] = null;
   }
-  catch( e ) {
+  catch (e) {
     writable = false;
   }
 
   var removable = delete actual[ actual_property ];
 
-  if ( writable || removable ) {
-      assert.fail( actual_property, 0, message || "expected {actual} to be read only", "isReadOnly", assert.isReadOnly );
+  if (writable || removable) {
+    assert.fail(actual_property, 0, message || "expected {actual} to be read only", "isReadOnly", assert.isReadOnly);
   }
 };
 
 
-assert.isError = function ( actual, message ) {
-  assert.instanceOf( actual, Error, message );
+assert.isError = function (actual, message) {
+  assert.instanceOf(actual, Error, message);
 };
 
 
@@ -284,7 +270,7 @@ dust.filters.b = function (value) {
 };
 
 // disable whitespace compression
-dust.optimizers.format = function( ctx, node ) {
+dust.optimizers.format = function (ctx, node) {
   return node
 };
 
@@ -304,24 +290,24 @@ exports.get_dust_chunk_body_content = function (chunk, context, body) {
 };
 
 
-function two_pos( i ) {
+function two_pos(i) {
   return i < 10 ? '0' + i : i;
 }
 
 
-exports.next_tick = function( result, error, emitter, action ){
+exports.next_tick = function (result, error, emitter, action) {
   emitter = emitter || new process.EventEmitter;
 
-  process.nextTick( function() {
-    emitter.emit( action || ( error ? 'error' : 'success' ), error || result );
-  } );
+  process.nextTick(function () {
+    emitter.emit(action || ( error ? 'error' : 'success' ), error || result);
+  });
 
   return emitter;
 };
 
 var Listener = require('./listener');
-exports.create_async_listener = function( count, callback, params, options ) {
-  return new Listener( count, callback, params, options );
+exports.create_async_listener = function (count, callback, params, options) {
+  return new Listener(count, callback, params, options);
 };
 
 
