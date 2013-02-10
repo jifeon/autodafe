@@ -1,6 +1,7 @@
-var crypto     = require( 'crypto' );
+var crypto = require('crypto');
+var _ = require('underscore');
 
-module.exports = Model.inherits( global.autodafe.AppModule );
+module.exports = Model.inherits(global.autodafe.AppModule);
 
 /**
  * Базовый класс для всех моделей в приложении, обеспечивает удобную работы с атрибутам - специальными свойствами
@@ -11,8 +12,8 @@ module.exports = Model.inherits( global.autodafe.AppModule );
  * @constructor
  * @extends AppModule
  */
-function Model( params ) {
-  this._init( params );
+function Model(params) {
+  this._init(params);
 }
 
 
@@ -26,13 +27,13 @@ function Model( params ) {
  * @property {Function} trim Удаляет у атрибута крайние пробелы
  */
 Model.prototype.native_filters = {
-  md5 : function( v ){
-    return crypto.createHash('md5').update( v ).digest("hex");
+  md5 : function (v) {
+    return crypto.createHash('md5').update(v).digest("hex");
   },
-  trim : function( v ){
+  trim: function (v) {
     return typeof v == 'string' ? v.trim() : v;
   }
-}
+};
 
 
 /**
@@ -41,8 +42,8 @@ Model.prototype.native_filters = {
  * @param {Object} params параметры для инициализации, описаны в {@link Model}
  * @private
  */
-Model.prototype._init = function ( params ) {
-  Model.parent._init.call( this, params );
+Model.prototype._init = function (params) {
+  Model.parent._init.call(this, params);
 
   /**
    * Объект хранящий ошибки валидации модели в виде {'название атрибута' : 'текст ошибки'}
@@ -54,7 +55,7 @@ Model.prototype._init = function ( params ) {
    * @see Model.validate
    * @see Model.validate_attribute
    */
-  this._errors      = {};
+  this._errors = {};
 
   /**
    * Имена всех атрибутов модели
@@ -63,7 +64,7 @@ Model.prototype._init = function ( params ) {
    * @private
    * @see Model.get_attributes_names
    */
-  this._attributes  = [];
+  this._attributes = [];
 
   /**
    * Имена всех ключевых атрибутов
@@ -74,14 +75,14 @@ Model.prototype._init = function ( params ) {
    * @see Model.equals
    * @see Model.get_id
    */
-  this._keys        = [];
+  this._keys = [];
 
   /**
    * Алиас для {@link Application.models}, прокси для {@link ModelsManager}
    *
    * @type {Proxy}
    */
-  this.models       = this.app.models;
+  this.models = this.app.models;
 
   /**
    * Признак того, что модель инициализирована. Может использоваться при асинхронной загрузке моделей. Подробнее см. в
@@ -89,10 +90,10 @@ Model.prototype._init = function ( params ) {
    *
    * @type {Boolean}
    */
-  this.is_inited    = true;
+  this.is_inited = true;
 
   this._process_attributes();
-  this._after_init( Object.not_deep_clone(params) );
+  this._after_init(Object.not_deep_clone(params));
 };
 
 
@@ -101,19 +102,19 @@ Model.prototype._init = function ( params ) {
  *
  * @private
  */
-Model.prototype._process_attributes = function(){
-  var descriptions = this.app.tools.to_object( this.attributes(), 1 );
+Model.prototype._process_attributes = function () {
+  var descriptions = this.app.tools.to_object(this.attributes(), 1);
 
-  for ( var attr in descriptions ) {
-    this.create_attribute( attr, descriptions[attr] );
+  for (var attr in descriptions) {
+    this.create_attribute(attr, descriptions[attr]);
   }
 };
 
 
-Model.prototype._after_init = function( params ){
+Model.prototype._after_init = function (params) {
   delete params.app;
-  this.set_attributes( params );
-}
+  this.set_attributes(params);
+};
 
 
 /**
@@ -151,7 +152,7 @@ Model.prototype._after_init = function( params ){
  * };
  * </code></pre>
  */
-Model.prototype.attributes = function(){
+Model.prototype.attributes = function () {
   return {};
 };
 
@@ -168,11 +169,11 @@ Model.prototype.attributes = function(){
  * model.get_attributes( ['login', 'email', 'site'] ); // [ 'login', 'email' ]
  * </code></pre>
  */
-Model.prototype.get_attributes_names = function( names ){
-  if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
-  if ( !Array.isArray( names ) )  return this._attributes.slice(0);
+Model.prototype.get_attributes_names = function (names) {
+  if (typeof names == 'string') names = names.split(/\s*,\s*/);
+  if (!Array.isArray(names))  return this._attributes.slice(0);
 
-  return names.filter( this.is_attribute.bind( this ) );
+  return names.filter(this.is_attribute.bind(this));
 };
 
 
@@ -182,8 +183,8 @@ Model.prototype.get_attributes_names = function( names ){
  * @param {String} attr предпологаемое название атрибута
  * @return {Boolean}
  */
-Model.prototype.is_attribute = function( attr ){
-  return !!~this._attributes.indexOf( attr );
+Model.prototype.is_attribute = function (attr) {
+  return !!~this._attributes.indexOf(attr);
 };
 
 
@@ -195,34 +196,34 @@ Model.prototype.is_attribute = function( attr ){
  * @return {Boolean} Создан ли атрибут
  * @see Model.attributes
  */
-Model.prototype.create_attribute = function( attr, description ){
-  if ( !description ) return false;
+Model.prototype.create_attribute = function (attr, description) {
+  if (!description) return false;
 
-  this._[ attr ].get = function( descriptor ){
-    return this.get_attribute( descriptor.name );
-  }
+  this._[ attr ].get = function (descriptor) {
+    return this.get_attribute(descriptor.name);
+  };
 
-  this._[ attr ].set = function( value, descriptor ){
-    this.set_attribute( descriptor.name, value );
-  }
+  this._[ attr ].set = function (value, descriptor) {
+    this.set_attribute(descriptor.name, value);
+  };
 
-  description = this.app.tools.to_object( description, 1 );
+  description = this.app.tools.to_object(description, 1);
 
   // check for safe attribute, alternative errors and filters
-  [ 'safe', 'errors', 'prefilters', 'postfilters' ].forEach(function( rule ){
-    if ( description[ rule ] ) {
+  [ 'safe', 'errors', 'prefilters', 'postfilters' ].forEach(function (rule) {
+    if (description[ rule ]) {
       this._[ attr ].params[ rule ] = description[ rule ];
       delete description[ rule ];
     }
   }, this);
 
-  if ( description['key'] ) {
-    this._keys.push( attr );
+  if (description['key']) {
+    this._keys.push(attr);
     delete description['key'];
   }
 
   this._[ attr ].params.validation_rules = description;
-  this._attributes.push( attr );
+  this._attributes.push(attr);
 
   return true;
 };
@@ -234,12 +235,12 @@ Model.prototype.create_attribute = function( attr, description ){
  * @param {String} attr название атрибута
  * @return {Model}
  */
-Model.prototype.remove_attribute = function( attr ){
-  if ( !this.is_attribute( attr ) ) return this;
+Model.prototype.remove_attribute = function (attr) {
+  if (!this.is_attribute(attr)) return this;
 
   delete this._errors[ attr ];
-  this._attributes.splice( this._attributes.indexOf( attr ), 1 );
-  this._keys.splice( this._keys.indexOf( attr ), 1 );
+  this._attributes.splice(this._attributes.indexOf(attr), 1);
+  this._keys.splice(this._keys.indexOf(attr), 1);
   delete this._[ attr ];
 
   return this;
@@ -253,13 +254,13 @@ Model.prototype.remove_attribute = function( attr ){
  * @param {Boolean} [do_filters=true] Применять ли фильтры из секции postfilters в описании атрибутов
  * @return {*}
  */
-Model.prototype.get_attribute = function ( name, do_filters ) {
-  if ( !this.is_attribute( name ) ) return undefined;
+Model.prototype.get_attribute = function (name, do_filters) {
+  if (!this.is_attribute(name)) return undefined;
 
   var descriptor = this._[name];
-  var value      = descriptor.value;
-  if ( do_filters !== false && descriptor.params.disable_postfilters !== true )
-    value = this.filter( descriptor.value, descriptor.params['postfilters'] );
+  var value = descriptor.value;
+  if (do_filters !== false && descriptor.params.disable_postfilters !== true)
+    value = this.filter(descriptor.value, descriptor.params['postfilters']);
   return value === undefined ? null : value;
 };
 
@@ -277,15 +278,15 @@ Model.prototype.get_attribute = function ( name, do_filters ) {
  * model.get_attributes( [ 'login' ] );     // { login: 'user' }
  * </code></pre>
  */
-Model.prototype.get_attributes = function( names, do_filters ) {
-  if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
-  if ( !Array.isArray( names ) )  names = this._attributes;
+Model.prototype.get_attributes = function (names, do_filters) {
+  if (typeof names == 'string') names = names.split(/\s*,\s*/);
+  if (!Array.isArray(names))  names = this._attributes;
 
   var attrs = {};
 
-  names.forEach( function( name ){
-    attrs[ name ] = this.get_attribute( name, do_filters );
-  }, this );
+  names.forEach(function (name) {
+    attrs[ name ] = this.get_attribute(name, do_filters);
+  }, this);
 
   return attrs;
 };
@@ -299,12 +300,12 @@ Model.prototype.get_attributes = function( names, do_filters ) {
  * @param {Boolean} [do_filters=true] Применять ли фильтры из секции prefilters в описании атрибутов
  * @return {Model}
  */
-Model.prototype.set_attribute = function ( name, value, do_filters ) {
-  if ( !this.is_attribute( name ) ) return this;
+Model.prototype.set_attribute = function (name, value, do_filters) {
+  if (!this.is_attribute(name)) return this;
 
   var descriptor = this._[name];
   descriptor.value = do_filters !== false
-    ? this.filter( value, descriptor.params['prefilters'] )
+    ? this.filter(value, descriptor.params['prefilters'])
     : value;
   descriptor.params.disable_postfilters = false;
 
@@ -321,17 +322,17 @@ Model.prototype.set_attribute = function ( name, value, do_filters ) {
  * @return {Model}
  * @see Model.attributes
  */
-Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
-  if ( !Object.isObject( attributes ) ) {
-    this.log( 'First argument to `%s.set_attributes` should be an Object'.format( this.class_name ), 'warning' );
+Model.prototype.set_attributes = function (attributes, do_filters, forced) {
+  if (!_.isObject(attributes)) {
+    this.log('First argument to `%s.set_attributes` should be an Object'.format(this.class_name), 'warning');
     return this;
   }
 
-  for ( var attr in attributes ) {
-    if ( forced || this.is_safe_attribute( attr ) )
-      this.set_attribute( attr, attributes[ attr ], do_filters );
+  for (var attr in attributes) {
+    if (forced || this.is_safe_attribute(attr))
+      this.set_attribute(attr, attributes[ attr ], do_filters);
     else
-      this.log( '`%s.set_attributes` try to set the unsafe attribute `%s`'.format( this.class_name, attr ), 'warning' );
+      this.log('`%s.set_attributes` try to set the unsafe attribute `%s`'.format(this.class_name, attr), 'warning');
   }
 
   return this;
@@ -350,11 +351,11 @@ Model.prototype.set_attributes = function ( attributes, do_filters, forced ) {
  * model.clean_attributes( [ 'login', 'email' ] );
  * </code></pre>
  */
-Model.prototype.clean_attributes = function ( names ) {
-  if ( typeof names == 'string' ) names = names.split(/\s*,\s*/);
-  if ( !Array.isArray( names ) )  names = this._attributes;
+Model.prototype.clean_attributes = function (names) {
+  if (typeof names == 'string') names = names.split(/\s*,\s*/);
+  if (!Array.isArray(names))  names = this._attributes;
 
-  names.forEach(function( attr ){
+  names.forEach(function (attr) {
     this[attr] = null;
   }, this);
 
@@ -374,12 +375,12 @@ Model.prototype.clean_attributes = function ( names ) {
  * model.filter( 'pass', [ 'md5', function( v ){ return v.slice(2); } ] );
  * </code></pre>
  */
-Model.prototype.filter = function( value, filters ){
-  if ( !filters ) return value;
-  if ( !Array.isArray( filters ) ) filters = [filters];
-  filters.forEach(function( filter ){
-    if ( typeof filter == 'string'   ) filter = this.native_filters[ filter ];
-    if ( typeof filter == 'function' ) value = filter( value );
+Model.prototype.filter = function (value, filters) {
+  if (!filters) return value;
+  if (!Array.isArray(filters)) filters = [filters];
+  filters.forEach(function (filter) {
+    if (typeof filter == 'string') filter = this.native_filters[ filter ];
+    if (typeof filter == 'function') value = filter(value);
   }, this);
 
   return value;
@@ -392,8 +393,8 @@ Model.prototype.filter = function( value, filters ){
  * @param {String} name название атрибута
  * @return {Boolean}
  */
-Model.prototype.is_safe_attribute = function( name ){
-  return this.is_attribute( name ) && !!this._[ name ].params['safe'];
+Model.prototype.is_safe_attribute = function (name) {
+  return this.is_attribute(name) && !!this._[ name ].params['safe'];
 };
 
 
@@ -403,8 +404,8 @@ Model.prototype.is_safe_attribute = function( name ){
  * @param {String} name название атрибута
  * @return {Boolean}
  */
-Model.prototype.is_key_attribute = function( name ){
-  return !!~this._keys.indexOf( name );
+Model.prototype.is_key_attribute = function (name) {
+  return !!~this._keys.indexOf(name);
 };
 
 
@@ -447,21 +448,21 @@ Model.prototype.is_key_attribute = function( name ){
  * Сохраняем определенные атрибуты (callback указывать необязательно)
  * model.save('name, description');
  */
-Model.prototype.save = function ( callback, attributes ) {
+Model.prototype.save = function (callback, attributes) {
   var emitter = new process.EventEmitter;
-  var self    = this;
+  var self = this;
 
-  if ( typeof callback != 'function' ) {
+  if (typeof callback != 'function') {
     attributes = callback;
-    callback   = null;
+    callback = null;
   }
 
-  this.validate(function( e ){
-    if ( e ) return callback && callback( e );
-    if ( self.has_errors() ) return callback && callback( null, self );
+  this.validate(function (e) {
+    if (e) return callback && callback(e);
+    if (self.has_errors()) return callback && callback(null, self);
 
-    self.forced_save( callback, attributes ).re_emit( 'error', 'success', emitter );
-  }).re_emit( 'error', 'not_valid', emitter );
+    self.forced_save(callback, attributes).re_emit('error', 'success', emitter);
+  }).re_emit('error', 'not_valid', emitter);
 
   return emitter;
 };
@@ -477,13 +478,13 @@ Model.prototype.save = function ( callback, attributes ) {
  * @return {EventEmitter} События: "success" - при успешном сохранении, "error" - при возникновении системной ошибки
  * @see model.save
  */
-Model.prototype.forced_save = function( callback, attributes ){
-  var self    = this;
+Model.prototype.forced_save = function (callback, attributes) {
+  var self = this;
   var emitter = new process.EventEmitter;
 
-  process.nextTick(function(){
-    callback && callback( null );
-    emitter.emit( 'success', self );
+  process.nextTick(function () {
+    callback && callback(null);
+    emitter.emit('success', self);
   });
 
   return emitter;
@@ -497,13 +498,13 @@ Model.prototype.forced_save = function( callback, attributes ){
  * @param {Error} [callback.error] Системная ошибка возникшая во время удаления
  * @return {EventEmitter} События: "success" - при успешном удалении, "error" - при возникновении системной ошибки
  */
-Model.prototype.remove = function ( callback ) {
-  var self    = this;
+Model.prototype.remove = function (callback) {
+  var self = this;
   var emitter = new process.EventEmitter;
 
-  process.nextTick(function(){
-    callback && callback( null );
-    emitter.emit( 'success', self );
+  process.nextTick(function () {
+    callback && callback(null);
+    emitter.emit('success', self);
   });
 
   return emitter;
@@ -520,35 +521,35 @@ Model.prototype.remove = function ( callback ) {
  * @return {EventEmitter} Возможны действия 'success', 'error', 'not_valid'
  * @see Model.save
  */
-Model.prototype.validate = function ( callback, attributes ){
-  if ( typeof attributes == 'string' ) attributes = attributes.split(/\s*,\s*/);
-  if ( !Array.isArray( attributes ) )  attributes = this._attributes;
+Model.prototype.validate = function (callback, attributes) {
+  if (typeof attributes == 'string') attributes = attributes.split(/\s*,\s*/);
+  if (!Array.isArray(attributes))  attributes = this._attributes;
 
   this._errors = {};
 
 
-  var self     = this;
-  var emitter  = new process.EventEmitter;
+  var self = this;
+  var emitter = new process.EventEmitter;
   var listener = new global.autodafe.lib.Listener;
 
-  attributes.forEach( function( attr ){
-    this.validate_attribute( attr, listener.get_callback());
-  }, this );
+  attributes.forEach(function (attr) {
+    this.validate_attribute(attr, listener.get_callback());
+  }, this);
 
   listener
-    .error( function( e ){
-      callback && callback( e );
+    .error(function (e) {
+      callback && callback(e);
       emitter.emit('error', e);
     })
-    .success( function(){
-      callback && callback( null, !self.has_errors() );
+    .success(function () {
+      callback && callback(null, !self.has_errors());
 
-      if ( self.has_errors() ) emitter.emit('not_valid', self.get_errors())
+      if (self.has_errors()) emitter.emit('not_valid', self.get_errors())
       else                     emitter.emit('success', self);
     })
 
   return emitter;
-}
+};
 
 
 /**
@@ -560,30 +561,30 @@ Model.prototype.validate = function ( callback, attributes ){
  * @param {Error|null} [callback.validation_error] Ошибка валидации; если атрибут валиден, то null
  * @return {*}
  */
-Model.prototype.validate_attribute = function( name, callback ){
-  var rules   = this._[name].params.validation_rules;
-  var errors  = this._[name].params.errors || {};
+Model.prototype.validate_attribute = function (name, callback) {
+  var rules = this._[name].params.validation_rules;
+  var errors = this._[name].params.errors || {};
 
-  for ( var rule in rules ) {
-    if ( typeof this.app.validator[ rule ] != 'function' )
-      return callback( new Error(
+  for (var rule in rules) {
+    if (typeof this.app.validator[ rule ] != 'function')
+      return callback(new Error(
         '`{rule}` is undefined rule in description of attribute `{model}.{attr}`'.format({
-          '{rule}'  : rule,
-          '{model}' : this.class_name,
-          '{attr}'  : name
+          '{rule}' : rule,
+          '{model}': this.class_name,
+          '{attr}' : name
         })
       ));
 
     var error = this.app.validator[ rule ](
       name,
-      this.get_attribute( name, false ),
+      this.get_attribute(name, false),
       rules[ rule ],
-      errors[ rule ] );
+      errors[ rule ]);
 
-    if ( error ) this._errors[ name ] = error;
+    if (error) this._errors[ name ] = error;
   }
 
-  process.nextTick( callback.bind( null, null, error || null ));
+  process.nextTick(callback.bind(null, null, error || null));
 };
 
 
@@ -593,8 +594,8 @@ Model.prototype.validate_attribute = function( name, callback ){
  * @return {Boolean}
  */
 Model.prototype.has_errors = function () {
-  return !!Object.keys( this._errors ).length;
-}
+  return !!Object.keys(this._errors).length;
+};
 
 
 /**
@@ -602,9 +603,9 @@ Model.prototype.has_errors = function () {
  *
  * @return {Object} В виде {'название атрибута' : 'текст ошибки'}
  */
-Model.prototype.get_errors = function(){
+Model.prototype.get_errors = function () {
   return this._errors;
-}
+};
 
 
 /**
@@ -615,17 +616,17 @@ Model.prototype.get_errors = function(){
  * @return {Boolean}
  * @see Model.get_id
  */
-Model.prototype.equals = function ( model ) {
-  if ( this.constructor != model.constructor ) return false;
+Model.prototype.equals = function (model) {
+  if (this.constructor != model.constructor) return false;
 
-  if ( !this._keys.length ) {
-    this.log( 'Model `%s` does not have keys, so it can\'t be compared'.format( this.class_name ), 'warning' );
+  if (!this._keys.length) {
+    this.log('Model `%s` does not have keys, so it can\'t be compared'.format(this.class_name), 'warning');
     return false;
   }
 
-  for ( var i = 0, i_ln = this._keys.length; i < i_ln; i++ ) {
+  for (var i = 0, i_ln = this._keys.length; i < i_ln; i++) {
     var key = this._keys[i];
-    if ( this[key] != model[key] ) return false;
+    if (this[key] != model[key]) return false;
   }
 
   return true;
@@ -641,8 +642,8 @@ Model.prototype.equals = function ( model ) {
  * атрибутов, а значения - это значения этих атрибутов
  * @see Model.attributes
  */
-Model.prototype.get_id = function(){
-  switch ( this._keys.length ) {
+Model.prototype.get_id = function () {
+  switch (this._keys.length) {
     case 0:
       return null;
 
@@ -651,9 +652,9 @@ Model.prototype.get_id = function(){
 
     default:
       var result = {};
-      this._keys.forEach( function( key ){
+      this._keys.forEach(function (key) {
         result[ key ] = this[ key ];
-      }, this );
+      }, this);
       return result;
   }
 };

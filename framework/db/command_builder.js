@@ -280,8 +280,8 @@ CommandBuilder.prototype.create_pk_criteria = function (table, pk, condition, pa
   var criteria = this.create_criteria(condition, params);
   if (criteria.alias != '') prefix = this.db_schema.quote_table_name(criteria.alias) + '.';
 
-  if (!Object.isObject(pk) && !Array.isArray(pk)) pk = [ pk ];
-  if (table.primary_key instanceof Array && Object.isObject(pk) && !_.isEmpty(pk)) // single composite key
+  if (!_.isObject(pk)) pk = [ pk ];
+  if (table.primary_key instanceof Array && !Array.isArray(pk) && !_.isEmpty(pk)) // single composite key
     pk = [ pk ];
 
   condition = this.create_in_condition(table, table.primary_key, pk, prefix);

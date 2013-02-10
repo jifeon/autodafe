@@ -1,5 +1,6 @@
 var RolesSet = require('./roles_set');
 var _ = require('underscore');
+
 module.exports = ModelsRolesSet.inherits( RolesSet );
 
 function ModelsRolesSet( params ) {

@@ -108,22 +108,6 @@ vows.describe( 'components manager' ).addBatch({
         // preload загружается до инициализации моделей
         assert.isNull( app.preload.models_in_app );
       }
-    },
-
-    'user and system component with same name' : function(){
-      throw 'no test';
-    },
-
-    'widgets tests' : function(){
-      throw 'no test';
-    },
-
-    'get system component' : function(){
-      throw 'no test';
-    },
-
-    'get user component' : function(){
-      throw 'no test';
     }
   }
 }).export( module );

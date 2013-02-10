@@ -123,7 +123,7 @@ StatElement.prototype._query_one_many = function (callback) {
 
     var command = builder.db_connection.create_command(sql);
 
-    if (Object.isObject(relation.params))
+    if (_.isObject(relation.params))
       command.bind_values(relation.params);
 
     command.execute(function (e, result) {
@@ -166,7 +166,7 @@ StatElement.prototype._query_one_many = function (callback) {
       where, '(', condition, ') group by ', Object.keys(cols).join(', '), group, having, order ].join('');
 
     var command = builder.db_connection.create_command(sql);
-    if (Object.isObject(relation.params))
+    if (_.isObject(relation.params))
       command.bind_values(relation.params);
 
     command.execute(function (e, result) {
@@ -323,7 +323,7 @@ StatElement.prototype._query_many_many = function (join_table_name, keys, callba
       having, order ].join('');
 
     var command = builder.db_connection.create_command(sql);
-    if (Object.isObject(relation.params))
+    if (_.isObject(relation.params))
       command.bind_values(relation.params);
 
     command.execute(function (e, result) {

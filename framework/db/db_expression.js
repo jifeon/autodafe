@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 module.exports = DbExpression;
 
 /**
@@ -18,7 +20,7 @@ function DbExpression( expression, params ) {
  * @param {Object} params
  */
 DbExpression.prototype._init = function( expression, params ) {
-  if ( Object.isObject( expression ) ) {
+  if ( _.isObject( expression ) ) {
     this.expression = expression.expression;
     this.params     = expression.params || {};
   }

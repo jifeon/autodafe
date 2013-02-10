@@ -39,39 +39,39 @@ ActiveFinder.prototype._init = function( params ) {
 };
 
 
-ActiveFinder.prototype.query = function( criteria, all, callback ) {
+ActiveFinder.prototype.query = function (criteria, all, callback) {
   all = all || false;
 
   this.join_all = !!criteria.together;
 //  this._join_tree.before_find(false);
 
-  if( criteria.alias ) {
-    this._join_tree.table_alias     = criteria.alias;
-    this._join_tree.raw_table_alias = this._builder.db_schema.quote_table_name( criteria.alias );
+  if (criteria.alias) {
+    this._join_tree.table_alias = criteria.alias;
+    this._join_tree.raw_table_alias = this._builder.db_schema.quote_table_name(criteria.alias);
   }
 
   var self = this;
-  this._join_tree.find( criteria, function( err ) {
-    if ( err ) return callback( err );
+  this._join_tree.find(criteria, function (err) {
+    if (err) return callback(err);
 
     self._join_tree.after_find();
 
     var result = [];
-    if( all ) self._join_tree.enum_records( function( record ) {
-      if ( criteria.index ) result[ record.index ] = record;
-      else result.push( record );
-    } );
+    if (all) self._join_tree.enum_records(function (record) {
+      if (criteria.index) result[ record.index ] = record;
+      else result.push(record);
+    });
 
-    else if( self._join_tree.has_records() )
-      result = self._join_tree.get_record( 0, true );
+    else if (self._join_tree.has_records())
+      result = self._join_tree.get_record(0, true);
 
     else
       result = null;
 
     self._destroy_join_tree();
-    callback( null, result );
-  } );
-}
+    callback(null, result);
+  });
+};
 
 //  /**
 //   * this method is internally called.
@@ -136,42 +136,42 @@ ActiveFinder.prototype.query = function( criteria, all, callback ) {
 //    return n;
 //  }
 
-ActiveFinder.prototype.lazy_find = function( base_record, callback ) {
+ActiveFinder.prototype.lazy_find = function (base_record, callback) {
   var self = this;
 
-  this._join_tree.lazy_find( base_record, function( err ) {
-    if ( err ) return callback( err );
+  this._join_tree.lazy_find(base_record, function (err) {
+    if (err) return callback(err);
 
-    var child = Object.reset( self._join_tree.children );
-    if( child ) {
+    var child = Object.reset(self._join_tree.children);
+    if (child) {
       child.after_find();
     }
 
     self._destroy_join_tree();
 
     callback();
-  } );
-}
+  });
+};
 
-ActiveFinder.prototype._destroy_join_tree = function() {
-  if( this._join_tree ) this._join_tree.destroy();
+ActiveFinder.prototype._destroy_join_tree = function () {
+  if (this._join_tree) this._join_tree.destroy();
   this._join_tree = null;
-}
+};
 
 
-ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
+ActiveFinder.prototype._build_join_tree = function (parent, With, options) {
   options = options || null;
 
-  if( parent instanceof StatElement ) throw new Error(
-    'The stat relation `%s` cannot have child relations.'.format( parent.relation.name )
+  if (parent instanceof StatElement) throw new Error(
+    'The stat relation `%s` cannot have child relations.'.format(parent.relation.name)
   );
 
-  if( typeof With == "string" ) {
+  if (typeof With == "string") {
 
-    var pos = With.lastIndexOf( '.' );
-    if( ~pos ) {
-      parent = this._build_join_tree( parent, With.substr( 0, pos ) );
-      With   = With.substr( pos + 1 );
+    var pos = With.lastIndexOf('.');
+    if (~pos) {
+      parent = this._build_join_tree(parent, With.substr(0, pos));
+      With = With.substr(pos + 1);
     }
 
 //    // named scope
@@ -181,11 +181,11 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
 //      With=substr(With,0,pos);
 //    }
 
-    if( parent.children[ With ] ) return parent.children[ With ];
+    if (parent.children[ With ]) return parent.children[ With ];
 
     var relation = parent.model.get_relations()[ With ];
-    if( !relation ) throw new Error(
-      'relation `%s` is not defined in active record class %s.'.format( With, parent.model.class_name )
+    if (!relation) throw new Error(
+      'relation `%s` is not defined in active record class %s.'.format(With, parent.model.class_name)
     );
 
     relation = relation.copy();
@@ -193,9 +193,9 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
     var model = relation.model;
     var old_alias;
 
-    if( relation instanceof ActiveRelation ) {
-      old_alias = model.get_table_alias( false/*, false*/ );
-      model.set_table_alias( relation.alias || relation.name );
+    if (relation instanceof ActiveRelation) {
+      old_alias = model.get_table_alias(false/*, false*/);
+      model.set_table_alias(relation.alias || relation.name);
     }
 
 //    if((scope=model.default_scope())!==array())
@@ -215,43 +215,43 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
 //    }
 
     // dynamic options
-    if( options ) relation.merge_with( options );
+    if (options) relation.merge_with(options);
 
-    if( relation instanceof ActiveRelation ) model.set_table_alias( old_alias );
+    if (relation instanceof ActiveRelation) model.set_table_alias(old_alias);
 
-    if( relation instanceof StatRelation ) return new StatElement( {
-      app       : this.app,
-      finder    : this,
-      relation  : relation,
-      parent    : parent
-    } );
-
-    var element = parent.children[ With ] = new JoinElement( {
-      app         : this.app,
-      finder      : this,
-      relation    : relation,
-      parent      : parent,
-      id          : ++this._join_count
+    if (relation instanceof StatRelation) return new StatElement({
+      app     : this.app,
+      finder  : this,
+      relation: relation,
+      parent  : parent
     });
 
-    if( !_.isEmpty( relation.With ) )
-      this._build_join_tree( element, relation.With );
+    var element = parent.children[ With ] = new JoinElement({
+      app     : this.app,
+      finder  : this,
+      relation: relation,
+      parent  : parent,
+      id      : ++this._join_count
+    });
+
+    if (!_.isEmpty(relation.With))
+      this._build_join_tree(element, relation.With);
 
     return element;
   }
 
-  if ( Array.isArray( With ) ) With.forEach( function( With ){
-    this._build_join_tree( parent, With );
-  }, this );
-  else for ( var key in With ) {
+  if (Array.isArray(With)) With.forEach(function (With) {
+    this._build_join_tree(parent, With);
+  }, this);
+  else for (var key in With) {
     var value = With[ key ];
 
-    if( typeof value == 'string' )  // the value is a relation name
-      this._build_join_tree( parent, value );
-    else if( Object.isObject( value ) )
-      this._build_join_tree( parent, key, value );
+    if (typeof value == 'string')  // the value is a relation name
+      this._build_join_tree(parent, value);
+    else if (_.isObject(value))
+      this._build_join_tree(parent, key, value);
   }
-}
+};
 
 
 

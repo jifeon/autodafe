@@ -133,7 +133,7 @@ DbCommand.prototype.set_text = function ( text ) {
  * @returns {DbCommand} Возвращает текущую команду
  */
 DbCommand.prototype.bind_values = function ( params ) {
-  if ( !Object.isObject( params ) || Array.isArray( params ) ) {
+  if ( !_.isObject( params ) || Array.isArray( params ) ) {
     this.log( "`params` to `bind_values` should be instance of Object and not an Array", 'warning' );
     return this;
   }

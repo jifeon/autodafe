@@ -1,7 +1,8 @@
-var path      = require('path');
-var fs        = require('fs');
+var path = require('path');
+var fs = require('fs');
+var _ = require('underscore');
 
-module.exports = ComponentsManager.inherits( autodafe.AppModule );
+module.exports = ComponentsManager.inherits(autodafe.AppModule);
 
 
 /**
@@ -22,8 +23,8 @@ module.exports = ComponentsManager.inherits( autodafe.AppModule );
  * @extends AppModule
  * @param {Object} params см. {@link ComponentsManager._init}
  */
-function ComponentsManager( params ) {
-  this._init( params );
+function ComponentsManager(params) {
+  this._init(params);
 }
 
 
@@ -41,13 +42,13 @@ function ComponentsManager( params ) {
  * @property {Function} http {@link HTTPServer}
  */
 ComponentsManager._system_components = {
-  'web_sockets'        : require('../client_connections/web_sockets/web_sockets_server'),
-  'users'              : require('../users/users_manager'),
-  'db'                 : require('../db/db_controller'),
-  'log_router'         : require('../logging/log_router'),
-  'mail'               : require('../mailing/mailer'),
-  'http'               : require('../client_connections/http/http_server'),
-  'i18n'               : require('../i18n/i18n')
+  'web_sockets': require('../client_connections/web_sockets/web_sockets_server'),
+  'users'      : require('../users/users_manager'),
+  'db'         : require('../db/db_controller'),
+  'log_router' : require('../logging/log_router'),
+  'mail'       : require('../mailing/mailer'),
+  'http'       : require('../client_connections/http/http_server'),
+  'i18n'       : require('../i18n/i18n')
 };
 
 
@@ -57,8 +58,8 @@ ComponentsManager._system_components = {
  * @private
  * @param {Object} params нет параметров для ComponentsManager, см {@link AppModule._init}
  */
-ComponentsManager.prototype._init = function( params ) {
-  ComponentsManager.parent._init.call( this, params );
+ComponentsManager.prototype._init = function (params) {
+  ComponentsManager.parent._init.call(this, params);
 
   /**
    * Хэш хранящий информацию о загруженных компонентах
@@ -69,7 +70,7 @@ ComponentsManager.prototype._init = function( params ) {
    * @private
    * @type {Object}
    */
-  this._loaded          = {};
+  this._loaded = {};
 
   /**
    * Хэш хранящий пользовательские компоненты
@@ -93,7 +94,7 @@ ComponentsManager.prototype._init = function( params ) {
    * @private
    * @type {Object}
    */
-  this._system_widgets  = null;
+  this._system_widgets = null;
 };
 
 
@@ -104,26 +105,26 @@ ComponentsManager.prototype._init = function( params ) {
  * {@link Application.register_component}
  *
  * @param {String} name имя загружаемого компонента, либо путь до него начиная от {@link Application.base_dir}
- * @param {Object} [params={}] параметры для загружаемого компонента
+ * @param {Object|Boolean} [params={}] параметры для загружаемого компонента
  * @throws {Error} если не может найти файл с компонентом
  */
-ComponentsManager.prototype.load = function ( name, params ) {
-  if ( this._loaded[ name ] ) return false;
+ComponentsManager.prototype.load = function (name, params) {
+  if (this._loaded[ name ]) return false;
 
-  this.log( 'Load component `%s`'.format( name ), 'trace' );
+  this.log('Load component `%s`'.format(name), 'trace');
 
-  var component_class = this.get_user_component( name ) || this.get_system_component( name );
-  if ( !component_class || component_class.prototype instanceof autodafe.Component == false )
-    throw new Error( 'Try to load unknown component `%s`'.format( name ) );
-  
-  if ( !Object.isObject( params ) ) params = {};
-  params.name = path.basename( name, '.js' );
-  params.app  = this.app;
+  var component_class = this.get_user_component(name) || this.get_system_component(name);
+  if (!component_class || component_class.prototype instanceof autodafe.Component == false)
+    throw new Error('Try to load unknown component `%s`'.format(name));
 
-  var component = new component_class( params );
+  if (!_.isObject(params)) params = {};
+  params.name = path.basename(name, '.js');
+  params.app = this.app;
+
+  var component = new component_class(params);
   this._loaded[ name ] = true;
-  this.app.register_component( component );
-  this.log( 'Component `%s` is loaded'.format( component.name ), 'info' );
+  this.app.register_component(component);
+  this.log('Component `%s` is loaded'.format(component.name), 'info');
 };
 
 
@@ -133,7 +134,7 @@ ComponentsManager.prototype.load = function ( name, params ) {
  * @param {String} name имя компонента
  * @returns {Function} конструктор компонента {@link Component}
  */
-ComponentsManager.prototype.get_system_component = function ( name ) {
+ComponentsManager.prototype.get_system_component = function (name) {
   return ComponentsManager._system_components[ name ];
 };
 
@@ -149,25 +150,26 @@ ComponentsManager.prototype.get_system_component = function ( name ) {
  * @param {String} name имя искомого компонента
  * @returns {Function} конструктор компонента {@link Component}
  */
-ComponentsManager.prototype.get_user_component = function ( name ) {
-  if ( !this._user_components ) {
+ComponentsManager.prototype.get_user_component = function (name) {
+  if (!this._user_components) {
     var components_path = this.app.path_to_components;
 
     this._user_components = {};
-    if ( fs.existsSync( components_path ) ) {
-      this.log( 'Collecting user components in ' + components_path );
-      this._collect_components_in_path( components_path, this._user_components );
+    if (fs.existsSync(components_path)) {
+      this.log('Collecting user components in ' + components_path);
+      this._collect_components_in_path(components_path, this._user_components);
     }
-    else this.log( 'Folder with user components `%s` is not found'.format( components_path ), 'warning' );
+    else this.log('Folder with user components `%s` is not found'.format(components_path), 'warning');
   }
 
-  if ( typeof this._user_components[ name ] == "string" )
-    this._user_components[ name ] = require( this._user_components[ name ] );
+  if (typeof this._user_components[ name ] == "string")
+    this._user_components[ name ] = require(this._user_components[ name ]);
 
-  else if ( typeof this._user_components[ name ] == 'undefined' ) try {
-    this._user_components[ name ] = require( path.join( this.app.base_dir, name ) );
+  else if (typeof this._user_components[ name ] == 'undefined') try {
+    this._user_components[ name ] = require(path.join(this.app.base_dir, name));
   }
-  catch(e){}
+  catch (e) {
+  }
 
   return this._user_components[ name ];
 };
@@ -179,7 +181,7 @@ ComponentsManager.prototype.get_user_component = function ( name ) {
  * @param {String} name имя компонента
  * @param {String|Function} component путь до файла, где описан компонент или конструктор компонента
  */
-ComponentsManager.prototype.add_user_component = function( name, component ){
+ComponentsManager.prototype.add_user_component = function (name, component) {
   this._user_components[ name ] = component;
 };
 
@@ -195,29 +197,29 @@ ComponentsManager.prototype.add_user_component = function( name, component ){
  * @param {Object} components объект в который собираются пути до файлов. Ключи - названия файлов без расширения,
  * значения - имена файлов
  */
-ComponentsManager.prototype._collect_components_in_path = function ( components_path, components ) {
-  if ( path.basename( components_path ) == 'lib' ) return;
+ComponentsManager.prototype._collect_components_in_path = function (components_path, components) {
+  if (path.basename(components_path) == 'lib') return;
 
   try {
-    var stats = fs.statSync( components_path );
+    var stats = fs.statSync(components_path);
   }
-  catch( e ){
-    this.log( 'Path `%s` for collecting components is not found'.format( components_path ), 'warning' );
+  catch (e) {
+    this.log('Path `%s` for collecting components is not found'.format(components_path), 'warning');
     return false;
   }
 
-  if ( stats.isDirectory() ) fs.readdirSync( components_path ).forEach( function( file ) {
-      this._collect_components_in_path( path.join( components_path, file ), components );
-    }, this );
+  if (stats.isDirectory()) fs.readdirSync(components_path).forEach(function (file) {
+    this._collect_components_in_path(path.join(components_path, file), components);
+  }, this);
 
-  else if ( stats.isFile() ) {
-    var component_name = path.basename( components_path, '.js' );
+  else if (stats.isFile()) {
+    var component_name = path.basename(components_path, '.js');
 
-    if ( components[ component_name ] )
-      this.log( 'Two or more user components with same name "%s" are found'.format( component_name ), 'warning' );
+    if (components[ component_name ])
+      this.log('Two or more user components with same name "%s" are found'.format(component_name), 'warning');
     else {
       components[ component_name ] = components_path;
-      this.log( 'User component is found: %s'.format( component_name ) );
+      this.log('User component is found: %s'.format(component_name));
     }
   }
 };
@@ -232,19 +234,19 @@ ComponentsManager.prototype._collect_components_in_path = function ( components_
  * @param {Object} [params={}] параметры для виджета
  * @returns {Widget} виджет
  */
-ComponentsManager.prototype.create_widget = function ( name, params ) {
+ComponentsManager.prototype.create_widget = function (name, params) {
 
-  this.log( 'Creating widget `%s`'.format( name ), 'trace' );
+  this.log('Creating widget `%s`'.format(name), 'trace');
 
-  var WidgetClass = this.get_user_component( name ) || this.get_system_widget( name );
-  if ( !WidgetClass || WidgetClass.prototype instanceof autodafe.Widget == false )
-    throw new Error( 'Try to load unknown widget: `%s`'.format( name ) );
+  var WidgetClass = this.get_user_component(name) || this.get_system_widget(name);
+  if (!WidgetClass || WidgetClass.prototype instanceof autodafe.Widget == false)
+    throw new Error('Try to load unknown widget: `%s`'.format(name));
 
-  params      = params || {};
+  params = params || {};
   params.name = name;
-  params.app  = this.app;
+  params.app = this.app;
 
-  return new WidgetClass( params );
+  return new WidgetClass(params);
 };
 
 
@@ -256,19 +258,19 @@ ComponentsManager.prototype.create_widget = function ( name, params ) {
  * @param {String} name имя виджета
  * @returns {Function} конструктор виджета {@link Widget}
  */
-ComponentsManager.prototype.get_system_widget = function ( name ) {
-  if ( !this._system_widgets ) {
-    var widgets_path = path.join( __dirname, 'widgets' );
+ComponentsManager.prototype.get_system_widget = function (name) {
+  if (!this._system_widgets) {
+    var widgets_path = path.join(__dirname, 'widgets');
 
     this._system_widgets = {};
-    if ( fs.existsSync( widgets_path ) ) {
-      this.log( 'Collecting system widgets' );
-      this._collect_components_in_path( widgets_path, this._system_widgets );
+    if (fs.existsSync(widgets_path)) {
+      this.log('Collecting system widgets');
+      this._collect_components_in_path(widgets_path, this._system_widgets);
     }
   }
 
-  if ( typeof this._system_widgets[ name ] == "string" )
-    this._system_widgets[ name ] = require( this._system_widgets[ name ] );
+  if (typeof this._system_widgets[ name ] == "string")
+    this._system_widgets[ name ] = require(this._system_widgets[ name ]);
 
   return this._system_widgets[ name ];
 };

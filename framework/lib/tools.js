@@ -22,7 +22,7 @@ _.mixin({
       return _.deepClone(item);
     });
 
-    if (!Object.isObject(obj)) return obj;
+    if (!_.isObject(obj)) return obj;
 
     var result = {};
     for (var prop in obj)
@@ -34,16 +34,11 @@ _.mixin({
 });
 
 
-Object.isObject = function (v) {
-  return v && v instanceof this && !Array.isArray(v) && typeof v != 'function';
-};
-
-
 Object.not_deep_clone = function (obj) {
 
   if (Array.isArray(obj)) return obj.slice(0);
 
-  if (!Object.isObject(obj)) return obj;
+  if (!_.isObject(obj)) return obj;
 
   var result = {};
   for (var prop in obj)
@@ -58,7 +53,7 @@ Object.not_deep_clone = function (obj) {
 Object.reset = function (obj) {
   if (_.isEmpty(obj)) return null;
   if (Array.isArray(obj)) return obj[0];
-  if (this.isObject(obj)) return obj[ this.keys(obj)[0] ];
+  if (_.isObject(obj)) return obj[ this.keys(obj)[0] ];
   return null;
 };
 
@@ -73,7 +68,7 @@ Function.prototype.inherits = function (super_class) {
 
 String.prototype.format = function () {
   var obj = arguments[0];
-  if (Object.isObject(obj)) {
+  if (_.isObject(obj)) {
     var res = this;
     var re = new RegExp('(' + Object.keys(obj).join('|') + ')', 'g');
     res = res.replace(re, function ($a, $1) {
@@ -296,21 +291,19 @@ exports.to_object = function (obj, deep, current_deep) {
 
   if (typeof obj == 'string') obj = [obj];
 
-  if (Object.isObject(obj))
-    for (var key in obj) {
-      var transformed = this.to_object(obj[ key ], deep, current_deep + 1);
-      key.split(/\s+/).forEach(function (item) {
-        result[ item ] = transformed;
-      });
-    }
-
-  else if (Array.isArray(obj)) obj.forEach(function (item) {
-    if (Object.isObject(item) || Array.isArray(item))
+  if (Array.isArray(obj)) obj.forEach(function (item) {
+    if (_.isObject(item))
       _.extend(result, exports.to_object(item, deep, current_deep + 1));
     else if (typeof item == 'string') item.split(/\s+/).forEach(function (item) {
       result[ item ] = true;
     });
   });
+  else if (_.isObject(obj)) for (var key in obj) {
+    var transformed = this.to_object(obj[ key ], deep, current_deep + 1);
+    key.split(/\s+/).forEach(function (item) {
+      result[ item ] = transformed;
+    });
+  }
 
   else result = obj;
 
