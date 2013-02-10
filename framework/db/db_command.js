@@ -1,4 +1,5 @@
 var AppModule = global.autodafe.AppModule;
+var _ = require('underscore');
 
 module.exports = DbCommand.inherits( AppModule );
 
@@ -137,7 +138,7 @@ DbCommand.prototype.bind_values = function ( params ) {
     return this;
   }
 
-  if ( Object.isEmpty( params ) ) return this;
+  if ( _.isEmpty( params ) ) return this;
   this._params         = Object.not_deep_clone( params );
   this._params_applied = false;
 

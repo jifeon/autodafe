@@ -375,7 +375,7 @@ JoinElement.prototype._apply_lazy_condition = function( query, record, callback 
         }, this );
       }
 
-      if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition ) ) {
+      if( !_.isEmpty( parent_condition ) && !_.isEmpty( child_condition ) ) {
         var join = 'INNER JOIN ' + join_table.raw_name + ' ' + join_alias + ' ON ';
         join +=
           '(' + _.values( parent_condition ).join( ') AND (' ) +
@@ -946,7 +946,7 @@ JoinElement.prototype._join_many_many = function( join_table, fks, parent ) {
     }
   }
 
-  if( !Object.isEmpty( parent_condition ) && !Object.isEmpty( child_condition )) {
+  if( !_.isEmpty( parent_condition ) && !_.isEmpty( child_condition )) {
     var join = this.relation.join_type + ' ' + join_table.raw_name + ' ' + join_alias;
     join += ' ON (' + _.values( parent_condition ).join( ') AND (' ) + ')';
     join += ' ' + this.relation.join_type + ' ' + this.get_table_name_with_alias();

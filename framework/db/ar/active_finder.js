@@ -3,6 +3,7 @@ var JoinElement     = require('./join_element');
 var StatElement     = require('./stat_element');
 var ActiveRelation  = require('./relations/active_relation');
 var StatRelation    = require('./relations/stat_relation');
+var _ = require('underscore');
 
 module.exports = ActiveFinder.inherits( AppModule );
 
@@ -234,7 +235,7 @@ ActiveFinder.prototype._build_join_tree = function( parent, With, options ) {
       id          : ++this._join_count
     });
 
-    if( !Object.isEmpty( relation.With ) )
+    if( !_.isEmpty( relation.With ) )
       this._build_join_tree( element, relation.With );
 
     return element;

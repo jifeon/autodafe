@@ -285,7 +285,7 @@ CommandBuilder.prototype.create_pk_criteria = function (table, pk, condition, pa
   if (criteria.alias != '') prefix = this.db_schema.quote_table_name(criteria.alias) + '.';
 
   if (!Object.isObject(pk) && !Array.isArray(pk)) pk = [ pk ];
-  if (table.primary_key instanceof Array && Object.isObject(pk) && !Object.isEmpty(pk)) // single composite key
+  if (table.primary_key instanceof Array && Object.isObject(pk) && !_.isEmpty(pk)) // single composite key
     pk = [ pk ];
 
   condition = this.create_in_condition(table, table.primary_key, pk, prefix);
@@ -349,7 +349,7 @@ CommandBuilder.prototype.__get_exist_column = function (table, column_name) {
 
 
 CommandBuilder.prototype.create_in_condition = function (table, column_name, values, prefix) {
-  if (Object.isEmpty(values)) return '0=1';
+  if (_.isEmpty(values)) return '0=1';
 
   if (!prefix) prefix = table.raw_name + '.';
 

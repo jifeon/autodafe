@@ -39,27 +39,6 @@ function clone_test(deep) {
 vows.describe('tools').addBatch({
   'Object': {
 
-    '.isEmpty': function () {
-      assert.isTrue(Object.isEmpty({}));
-      assert.isFalse(Object.isEmpty({ d: 5 }));
-
-      assert.isTrue(Object.isEmpty([]));
-      assert.isFalse(Object.isEmpty([ 42 ]));
-      assert.isFalse(Object.isEmpty([ undefined ]));
-      assert.isFalse(Object.isEmpty([ false ]));
-
-      assert.isTrue(Object.isEmpty(''));
-      assert.isFalse(Object.isEmpty('aa'));
-      assert.isFalse(Object.isEmpty('0'));
-
-      assert.isTrue(Object.isEmpty(false));
-      assert.isTrue(Object.isEmpty(null));
-      assert.isTrue(Object.isEmpty(undefined));
-
-      assert.isTrue(Object.isEmpty(0));
-      assert.isFalse(Object.isEmpty(1));
-    },
-
     '.clone': clone_test(true),
 
     '.not_deep_clone': clone_test(false)

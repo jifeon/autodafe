@@ -1,6 +1,8 @@
 var DbCriteria        = global.autodafe.db.Criteria;
 var Emitter           = process.EventEmitter;
 var ActiveFinder      = require('./active_finder');
+var _ = require('underscore');
+
 var active_relations  = {
   belongs_to  : require('./relations/belongs_to_relation'),
   stat        : require('./relations/stat_relation'),
@@ -274,7 +276,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
     '%s does not have relation `%s`'.format( this.class_name, name )
   );
 
-  if ( this[ name ] != null && !refresh && Object.isEmpty( params ) )
+  if ( this[ name ] != null && !refresh && _.isEmpty( params ) )
     return this.app.tools.next_tick( this[ name ] );
 
   this.log( 'Load relation `%s`'.format( name ), 'trace' );
@@ -285,7 +287,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
 
   var saved_relation  = null;
   var With = {};
-  if ( !Object.isEmpty( params ) ) {
+  if ( !_.isEmpty( params ) ) {
     saved_relation = this[ name ] == null ? null : this[ name ];
     With[ name ] = params;
   }
@@ -313,7 +315,7 @@ ActiveRecord.prototype.get_related = function ( name, refresh, params ) {
 
     var result = self[ name ];
 
-    if ( !Object.isEmpty( params ) )
+    if ( !_.isEmpty( params ) )
       if( saved_relation != null ) self._[ name ] = saved_relation;
       else                  delete self._[ name ];
 
@@ -642,7 +644,7 @@ ActiveRecord.prototype.query = function ( criteria, all ) {
   criteria    = this.apply_scopes( criteria );
   var emitter = new Emitter;
 
-  if ( Object.isEmpty( criteria.With ) ) {
+  if ( _.isEmpty( criteria.With ) ) {
     if( !all ) criteria.limit = 1;
 
     var command = this.get_command_builder().create_find_command( this.table, criteria );

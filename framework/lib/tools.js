@@ -20,13 +20,6 @@ _.mixin({
 });
 
 
-Object.isEmpty = function (v) {
-  if (!v) return true;
-  if (v instanceof Array && !v.length) return true;
-  return v instanceof this && !this.keys(v).length;
-};
-
-
 Object.clone = function (obj) {
   if (Array.isArray(obj)) return obj.map(function (item) {
     return Object.clone(item);
@@ -65,7 +58,7 @@ Object.not_deep_clone = function (obj) {
 
 //todo: delete
 Object.reset = function (obj) {
-  if (this.isEmpty(obj)) return null;
+  if (_.isEmpty(obj)) return null;
   if (Array.isArray(obj)) return obj[0];
   if (this.isObject(obj)) return obj[ this.keys(obj)[0] ];
   return null;

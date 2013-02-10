@@ -283,7 +283,7 @@ StatElement.prototype._query_many_many = function( join_table_name, keys, callba
       });
     }
 
-    if( Object.isEmpty( join_condition ) || Object.isEmpty( map ) ) return callback( new Error(
+    if( _.isEmpty( join_condition ) || _.isEmpty( map ) ) return callback( new Error(
       'The relation `{relation}` in active record class `{class}` is specified with an incomplete foreign key.\
        The foreign key must consist of columns referencing both joining tables.'.format({
         '{relation}'  : relation.name,
