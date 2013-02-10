@@ -320,18 +320,6 @@ vows.describe( 'controller' ).addBatch({
             }
           }
         }
-      },
-
-      '.connect_client' : function(){
-        throw 'no test';
-      },
-
-      '.create_url' : function(){
-        throw 'no test';
-      },
-
-      '.create_widget' : function(){
-        throw 'no test';
       }
     },
 

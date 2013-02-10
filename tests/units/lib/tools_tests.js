@@ -34,37 +34,9 @@ vows.describe('tools').addBatch({
 
     '.format': function (date) {
       assert.equal(date.format('Y-M-D h:m:s(x)'), '2011-03-22 00:39:40(032)');
-    },
-
-    '.getUTCFormat': function () {
-      throw 'no tests';
     }
   },
 
-
-  'Function': {
-    '.inherits': function () {
-      throw 'no tests';
-    }
-  },
-
-
-  'Number': {
-    '.frequency_to_period': function () {
-      throw 'no tests';
-    }
-  },
-
-
-  'EventEmitter': {
-    '.re_emit': function () {
-      throw 'no tests';
-    }
-  },
-
-  'next_tick': function () {
-    throw 'no tests';
-  },
 
   'to_object': function () {
     assert.deepEqual(tools.to_object([

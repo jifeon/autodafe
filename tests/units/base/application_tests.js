@@ -79,10 +79,6 @@ vows.describe( 'application' ).addBatch({
       assert.isReadOnly( app, 'path_to_components' )
     },
 
-    'custom paths' : function(  ){
-      throw 'no test';
-    },
-
     '.logger' : function( app ) {
       assert.instanceOf( app.logger, Logger );
     },
@@ -93,10 +89,6 @@ vows.describe( 'application' ).addBatch({
 
     '.components' : function( app ) {
       assert.instanceOf( app.components, ComponentsManager );
-    },
-
-    '.views loaded' : function(  ){
-      throw 'no test';
     },
 
     '.tools' : function( app ){
@@ -184,14 +176,6 @@ vows.describe( 'application' ).addBatch({
       assert.isFalse( app.get_param( 'param3' ) );
       assert.isNull( app.get_param( 'param4' ) );
       assert.isNull( app.get_param( 'param5' ) );
-    },
-
-    'get param from application without params' : function(){
-      throw 'no test';
-    },
-
-    '.load_views()' : function(  ){
-      throw 'no test';
     },
 
     '.run() before' : function( app ) {
@@ -373,9 +357,5 @@ vows.describe( 'application' ).addBatch({
         assert.instanceOf( app, Application );
       }
     }
-  },
-
-  'changing default controller ' : function(  ){
-    throw( 'no tests' );
   }
 }).export( module );
