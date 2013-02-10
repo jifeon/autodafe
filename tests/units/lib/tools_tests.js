@@ -39,8 +39,6 @@ function clone_test(deep) {
 vows.describe('tools').addBatch({
   'Object': {
 
-    '.clone': clone_test(true),
-
     '.not_deep_clone': clone_test(false)
   },
 

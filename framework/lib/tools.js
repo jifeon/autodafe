@@ -1,11 +1,10 @@
 var _ = require('underscore');
 
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
 _.mixin({
   merge: function (obj) {
-    var slice = Array.prototype.slice;
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-
-    _.each(slice.call(arguments, 1), function(source) {
+    _.each(Array.prototype.slice.call(arguments, 1), function(source) {
       for (var prop in source) {
         if (!hasOwnProperty.call(source, prop)) continue;
 
@@ -16,24 +15,23 @@ _.mixin({
     });
 
     return obj;
+  },
+
+  deepClone: function(obj){
+    if (Array.isArray(obj)) return obj.map(function (item) {
+      return _.deepClone(item);
+    });
+
+    if (!Object.isObject(obj)) return obj;
+
+    var result = {};
+    for (var prop in obj)
+      if (hasOwnProperty.call(obj, prop))
+        result[ prop ] = _.deepClone(obj[ prop ]);
+
+    return result;
   }
 });
-
-
-Object.clone = function (obj) {
-  if (Array.isArray(obj)) return obj.map(function (item) {
-    return Object.clone(item);
-  });
-
-  if (!Object.isObject(obj)) return obj;
-
-  var result = {};
-  for (var prop in obj) {
-    result[ prop ] = this.clone(obj[ prop ]);
-  }
-
-  return result;
-};
 
 
 Object.isObject = function (v) {

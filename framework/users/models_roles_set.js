@@ -1,5 +1,5 @@
 var RolesSet = require('./roles_set');
-
+var _ = require('underscore');
 module.exports = ModelsRolesSet.inherits( RolesSet );
 
 function ModelsRolesSet( params ) {
@@ -19,14 +19,14 @@ ModelsRolesSet.prototype._init = function( params ) {
 
 
 ModelsRolesSet.prototype._init_roles = function ( params ) {
-  this.roles = Object.clone( this.parent_set.roles );
+  this.roles = _.deepClone( this.parent_set.roles );
 
   ModelsRolesSet.parent._init_roles.call( this, params );
 };
 
 
 ModelsRolesSet.prototype._init_roles_groups = function ( params ) {
-  this.roles_groups = Object.clone( this.parent_set.roles_groups );
+  this.roles_groups = _.deepClone(this.parent_set.roles_groups);
 
   for( var group in params.roles_groups ) {
     var roles_str   = params.roles_groups[ group ].trim();
@@ -51,12 +51,12 @@ ModelsRolesSet.prototype._init_roles_groups = function ( params ) {
 
 
 ModelsRolesSet.prototype._apply_rights = function ( params ) {
-  this.roles_rights = Object.clone( this.parent_set.roles_rights );
+  this.roles_rights = _.deepClone(this.parent_set.roles_rights);
 
   ModelsRolesSet.parent._apply_rights.call( this, params.model, this.roles_rights );
 
   for ( var attr_name in params.attributes ){
-    this.attrs_rights[ attr_name ] = Object.clone( this.roles_rights );
+    this.attrs_rights[ attr_name ] = _.deepClone(this.roles_rights);
     ModelsRolesSet.parent._apply_rights.call( this, params.attributes[ attr_name ], this.attrs_rights[ attr_name ] );
   }
 };
