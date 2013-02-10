@@ -1,21 +1,21 @@
 var _ = require('underscore');
 
 _.mixin({
-  merge: function (obj1, obj2) {
-    obj1 = obj1 || {};
-    obj2 = obj2 || {};
+  merge: function (obj) {
+    var slice = Array.prototype.slice;
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
 
-    if (!Object.isObject(obj1) || !Object.isObject(obj2)) throw new TypeError;
+    _.each(slice.call(arguments, 1), function(source) {
+      for (var prop in source) {
+        if (!hasOwnProperty.call(source, prop)) continue;
 
-    var res = Object.clone(obj1);
+        if (obj[prop] instanceof Object && source[prop] instanceof Object)
+          _.merge(obj[prop], source[prop]);
+        else obj[prop] = source[prop];
+      }
+    });
 
-    for (var prop in obj2) {
-      if (res[ prop ] && res[ prop ] instanceof Object && obj2[ prop ] && obj2[ prop ] instanceof Object)
-        res[ prop ] = _.merge(res[ prop ], obj2[ prop ]);
-      else res[ prop ] = obj2[ prop ];
-    }
-
-    return res;
+    return obj;
   }
 });
 
