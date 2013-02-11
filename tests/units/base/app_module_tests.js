@@ -64,10 +64,6 @@ vows.describe( 'app_module' ).addBatch({
 //            } );
 //          }
         }
-      },
-
-      '.t() is stub for feature i18l' : function( app_module ){
-        assert.equal( app_module.t( 'some text' ), 'some text' );
       }
     },
 

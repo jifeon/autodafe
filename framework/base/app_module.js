@@ -130,9 +130,11 @@ AppModule.prototype.default_callback = function (e) {
  * Функция заглушка для будующего i18n
  *
  * @param {String} text текст который нужно получить на текущем языке
- * @param {Object} params
+ * @param {Response} response
  * @return {String}
  */
 AppModule.prototype.t = function (text, response) {
-  return this.app.i18n.get_text(text, response);
+  return this.app.i18n
+    ? this.app.i18n.get_text(text, response)
+    : text;
 };

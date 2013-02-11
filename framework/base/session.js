@@ -34,6 +34,8 @@ Session.prototype.add_client = function ( client ) {
     return false;
   }
 
+  this.clients.push( client );
+
   var self = this;
   client.once( 'disconnect', function(){
     self.remove_client( client );
