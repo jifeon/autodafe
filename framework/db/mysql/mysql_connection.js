@@ -57,7 +57,7 @@ MysqlConnection.prototype._init = function( params ) {
 
 
 MysqlConnection.prototype.get_new_connection = function ( params ) {
-  return Mysql.createClient( params );
+  return Mysql.createConnection( params );
 };
 
 

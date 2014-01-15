@@ -480,6 +480,7 @@ Application.prototype._init_core = function () {
 Application.prototype.load_views = function ( view_path ) {
   if ( !view_path && this.views_loaded && this._config.cache_views !== false ) return true;
 
+  view_path = view_path || '';
   var full_view_path = path.join( this.path_to_views, view_path );
   var stats          = null;
 
