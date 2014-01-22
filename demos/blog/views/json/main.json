@@ -1,4 +1,0 @@
-{
-  "result" : {?errors}null{:else}{?result}"{result}"{:else}{+result}null{/result}{/result}{/errors},
-  "errors" : {+errors}null{/errors}
-}

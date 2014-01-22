@@ -1,5 +1,0 @@
-{>"{cd}/main.json"/}
-{<errors}
-{ "user[login]" : "{errors.login}",
-  "user[pass]"  : "{errors.pass}" }
-{/errors}
