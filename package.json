@@ -20,7 +20,7 @@
         "example": "./demos"
     },
     "scripts": {
-        "test": "vows tests/*"
+        "test": "vows tests/* --spec"
     },
     "dependencies": {
 
