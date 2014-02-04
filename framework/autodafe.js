@@ -6,22 +6,25 @@ var AtdClass = require('../lib/AtdClass'),
  * @extends AtdClass
  */
 var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
+    /**
+     * @protected
+     */
     _props: function () {
         this._super();
 
         /**
+         * {@link Component} constructor
          * @public
          * @type {Function}
          */
         this.Component = require('./Component');
     },
 
-    _init: function () {
-        this._super();
-
-
-    },
-
+    /**
+     * Creates new application
+     * @public
+     * @returns {Application}
+     */
     createApplication: function () {
         return new Application;
     }

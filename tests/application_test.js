@@ -11,6 +11,10 @@ vows.describe('Autodafe').addBatch({
             assert.doesNotThrow(function () {
                 new autodafe.Component({name: 'test'});
             });
+        },
+        'should be able to return them names': function () {
+            var component = new autodafe.Component({name: 'test'});
+            assert.equal(component.getName(), 'test');
         }
     },
     'application': {
@@ -22,20 +26,24 @@ vows.describe('Autodafe').addBatch({
                 return new autodafe.Component({name: 'test'});
             },
             'load them': function (component) {
+                var application = this.context.topics[1];
                 assert.doesNotThrow(function () {
                     application.load(component);
                 });
             },
-            'throw an error while loading a component with the same name': function (component, application) {
+            'throw an error while loading a component with the same name': function (component) {
+                var application = this.context.topics[1];
                 assert.throws(function () {
                     application.load(component);
                 });
             },
-            'get the component by a name': function (component, application) {
+            'get the component by a name': function (component) {
+                var application = this.context.topics[1];
                 assert.equal(application.get('test'), component);
                 assert.isNull(application.get('test2'));
             },
-            'unload them': function (component, application) {
+            'unload them': function () {
+                var application = this.context.topics[1];
                 application.unload('test');
                 assert.isNull(application.get('test'));
             }
