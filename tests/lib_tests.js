@@ -91,6 +91,26 @@ vows.describe('library tests').addBatch({
                     }
                 });
             });
+        },
+        'options passed to constructor should be accessible by `_options` property': function () {
+            var options;
+            var MyClass = AtdClass.extend({
+                _props: function () {
+                    this._super();
+
+                    options = this._options;
+                }
+            });
+
+            new MyClass({
+                a: true
+            });
+            assert.deepEqual(options, {
+                a: true
+            });
+
+            new MyClass;
+            assert.deepEqual(options, {});
         }
     }
 }).export(module);

@@ -21,7 +21,7 @@ vows.describe('Autodafe').addBatch({
             topic: function () {
                 return new autodafe.Component({name: 'test'});
             },
-            'load them': function (component, application) {
+            'load them': function (component) {
                 assert.doesNotThrow(function () {
                     application.load(component);
                 });
