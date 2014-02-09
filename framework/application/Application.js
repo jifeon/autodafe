@@ -1,4 +1,5 @@
-var AtdClass = require('../lib/AtdClass');
+var AtdClass = require('../../lib/AtdClass'),
+    ApplicationLogStream = require('./ApplicationLogStream');
 
 /**
  * @class Application
@@ -17,6 +18,8 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
          * @private
          */
         this._components = {};
+
+        this._logStream = new ApplicationLogStream;
     },
 
     /**
@@ -31,6 +34,8 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         }
 
         this._components[componentName] = component;
+
+        component.getLogStream().pipe(this._logStream);
     },
 
     /**
@@ -38,7 +43,11 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      * @param {string} componentName
      */
     unload: function (componentName) {
-        delete this._components[componentName];
+        var component = this._components[componentName];
+        if (component) {
+            component.getLogStream().unpipe(this._logStream);
+            delete this._components[componentName];
+        }
     },
 
     /**
@@ -48,6 +57,14 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      */
     get: function (componentName) {
         return this._components[componentName] || null;
+    },
+
+    getLogStream: function () {
+        return this._logStream;
+    },
+
+    log: function (message, type) {
+        this._logStream.write(message);
     }
 });
 

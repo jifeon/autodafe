@@ -1,4 +1,5 @@
-var AtdClass = require('../lib/AtdClass');
+var AtdClass = require('../../lib/AtdClass'),
+    ComponentLogStream = require('./ComponentLogStream');
 
 /**
  * @class Component
@@ -23,6 +24,9 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
          * @private
          */
         this._name = this._options.name;
+
+        this._logStream = new ComponentLogStream;
+
     },
 
     /**
@@ -32,6 +36,17 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
      */
     getName: function () {
         return this._name;
+    },
+
+    /**
+     * @public
+     * @returns {ComponentLogStream}
+     */
+    getLogStream: function () {
+        return this._logStream;
+    },
+
+    log: function (message, type) {
+        this._logStream.log(message);
     }
 });
-

@@ -1,5 +1,5 @@
 var AtdClass = require('../lib/AtdClass'),
-    Application = require('./Application');
+    Application = require('./application/Application');
 
 /**
  * @class Autodafe
@@ -17,7 +17,7 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
          * @public
          * @type {Function}
          */
-        this.Component = require('./Component');
+        this.Component = require('./component/Component');
     },
 
     /**
