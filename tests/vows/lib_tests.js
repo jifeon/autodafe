@@ -1,6 +1,6 @@
 var vows = require('vows'),
     assert = require('assert'),
-    AtdClass = require('../lib/AtdClass');
+    AtdClass = require('../../lib/AtdClass');
 
 vows.describe('library tests').addBatch({
     'AtdClass': {

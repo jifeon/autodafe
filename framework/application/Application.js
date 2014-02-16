@@ -29,6 +29,8 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      */
     load: function (component) {
         var componentName = component.getName();
+        this.log('Loading a component:', componentName, 'debug');
+
         if (this._components[componentName]) {
             throw new Error('Try to load more than one component with the same name');
         }
@@ -43,10 +45,14 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      * @param {string} componentName
      */
     unload: function (componentName) {
+        this.log('Unloading a component:', componentName, 'debug');
         var component = this._components[componentName];
         if (component) {
             component.getLogStream().unpipe(this._logStream);
             delete this._components[componentName];
+        }
+        else {
+            this.log('Trying to unload not loaded component', componentName, 'notice');
         }
     },
 
@@ -63,6 +69,21 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         return this._logStream;
     },
 
+    /**
+     *
+     * @param {string...} message
+     * @param {string} [type="debug"] message level. Can be
+     * <ul>
+     *  <li>'emergency' - system unusable</li>
+     *  <li>'alert' - immediate action required</li>
+     *  <li>'critical' - condition critical</li>
+     *  <li>'error' - condition error</li>
+     *  <li>'warning' - condition warning</li>
+     *  <li>'notice' - condition normal, but significant</li>
+     *  <li>'info' - a purely informational message</li>
+     *  <li>'debug' - debugging information</li>
+     * </ul>
+     */
     log: function (message, type) {
         this._logStream.write(message);
     }

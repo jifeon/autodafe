@@ -1,6 +1,7 @@
 var vows = require('vows'),
     assert = require('assert'),
-    autodafe = require('../framework/autodafe');
+    autodafe = require('../../framework/autodafe'),
+    tools = require('../tools');
 
 vows.describe('Autodafe').addBatch({
     'components': {
@@ -19,7 +20,7 @@ vows.describe('Autodafe').addBatch({
     },
     'application': {
         topic: function () {
-            return autodafe.createApplication();
+            return tools.getApp();
         },
         'should work with components:': {
             topic: function () {

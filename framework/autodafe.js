@@ -24,9 +24,17 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
      * Creates new application
      * @public
      * @returns {Application}
+     * @param {object} [options]
+     * @param {boolean} [options.silent] set to true if it's unnecessary to pipe application log to process.stdout
      */
-    createApplication: function () {
-        return new Application;
+    createApplication: function (options) {
+        options = options || {};
+
+        var application = new Application;
+        if (options.silent !== true) {
+            application.getLogStream().pipe(process.stdout);
+        }
+        return application;
     }
 });
 

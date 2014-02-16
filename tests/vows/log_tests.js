@@ -1,6 +1,7 @@
 var vows = require('vows'),
     assert = require('assert'),
-    autodafe = require('../framework/autodafe');
+    autodafe = require('../../framework/autodafe'),
+    tools = require('../tools');
 
 vows.describe('logger').addBatch({
     'component': {
@@ -16,7 +17,7 @@ vows.describe('logger').addBatch({
         },
         'application': {
             topic: function () {
-                return autodafe.createApplication();
+                return tools.getApp();
             },
             'should have a log stream too': function (application) {
                 var logStream = application.getLogStream();
