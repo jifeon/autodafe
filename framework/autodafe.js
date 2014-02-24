@@ -35,6 +35,10 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
             application.getLogStream().pipe(process.stdout);
         }
         return application;
+    },
+
+    config: function (config) {
+        return this.createApplication(config);
     }
 });
 

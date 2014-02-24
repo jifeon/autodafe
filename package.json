@@ -6,7 +6,7 @@
     "version": "1.0.0",
     "author": "Andrey Balakirev <balakirev.andrey@gmail.com>",
     "contributors": [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
-    "main": "./framework/Autodafe",
+    "main": "./framework/autodafe",
     "bugs": {
         "url": "https://github.com/jifeon/autodafe/issues",
         "email": "balakirev.andrey@gmail.com"
