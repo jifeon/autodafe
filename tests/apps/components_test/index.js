@@ -1,3 +1,3 @@
-require("autodafe").config({
+module.exports = require("autodafe").config({
     'test-component': true
-}).run();
+});
