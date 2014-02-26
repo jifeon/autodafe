@@ -24,22 +24,26 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
      * Creates new application
      * @public
      * @returns {Application}
-     * @param {object} [options]
+     * @param {object} [options] params for {@link Application}
      * @param {boolean} [options.silent] set to true if it's unnecessary to pipe application log to process.stdout
-     * @param {object} [options.config] params for {@link Application}
      */
-    createApplication: function (options, config) {
+    createApplication: function (options) {
         options = options || {};
+        options.baseUrl = options.baseUrl || this._detectBaseUrl();
 
-        var application = new Application(config);
+        var application = new Application(options);
         if (options.silent !== true) {
             application.getLogStream().pipe(process.stdout);
         }
         return application;
     },
 
+    _detectBaseUrl: function () {
+        return '';
+    },
+
     config: function (config) {
-        return this.createApplication(null, config);
+        return this.createApplication(config);
     }
 });
 

@@ -4,6 +4,9 @@ var AtdClass = require('../../lib/AtdClass'),
 /**
  * @class Application
  * @extends AtdClass
+ * @param {object} [options]
+ * @param {object} [options.component] keys - names of components, values - configs for components
+ * @param {object} [options.baseUrl] location of application, using for components loading
  */
 var Application = module.exports = AtdClass.extend(/**@lends Application*/{
     /**
@@ -19,7 +22,30 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
          */
         this._components = {};
 
+        /**
+         * @type {string}
+         * @private
+         */
+        this._baseUrl = this._options.baseUrl;
+
         this._logStream = new ApplicationLogStream;
+    },
+
+    _init: function () {
+        this._super();
+
+        this._loadComponents(this._options.components);
+    },
+
+    _loadComponents: function (components) {
+        for (var componentName in components) {
+            if (!components.hasOwnProperty(componentName)) {
+                continue;
+            }
+
+            var Component = require('autodafe-' + componentName);
+            this.load(new Component(components[componentName]));
+        }
     },
 
     /**

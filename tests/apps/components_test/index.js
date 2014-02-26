@@ -1,3 +1,6 @@
+console.dir(process.argv);
 module.exports = require("autodafe").config({
-    'test-component': true
+    components: {
+        'test-component': true
+    }
 });
