@@ -23,7 +23,7 @@
         "test": "vows tests/vows/* --spec"
     },
     "dependencies": {
-
+        "optimist": "0.6.x"
     },
     "devDependencies": {
         "vows": ">=0.5.8"

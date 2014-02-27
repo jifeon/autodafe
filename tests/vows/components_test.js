@@ -11,6 +11,6 @@ vows.describe('components').addBatch({
         });
         assert.instanceOf(app, Application);
         assert.instanceOf(test = app.get('test-component'), autodafe.Component);
-        assert.equals(test.get(42), 42);
+        assert.equal(test.get(42), 42);
     }
 }).export(module);

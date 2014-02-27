@@ -1,5 +1,6 @@
 var AtdClass = require('../../lib/AtdClass'),
-    ApplicationLogStream = require('./ApplicationLogStream');
+    ApplicationLogStream = require('./ApplicationLogStream'),
+    path = require('path');
 
 /**
  * @class Application
@@ -28,6 +29,10 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
          */
         this._baseUrl = this._options.baseUrl;
 
+        /**
+         * @type {ApplicationLogStream}
+         * @private
+         */
         this._logStream = new ApplicationLogStream;
     },
 
@@ -43,8 +48,16 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
                 continue;
             }
 
-            var Component = require('autodafe-' + componentName);
-            this.load(new Component(components[componentName]));
+            var componentParams = components[componentName];
+            if (componentParams === true) {
+                componentParams = {};
+            }
+            componentParams.name = componentParams.name || componentName;
+
+            var componentPath = path.join(this._baseUrl, 'node_modules', 'autodafe-' + componentName),
+                Component = require(componentPath);
+
+            this.load(new Component(componentParams));
         }
     },
 

@@ -11,20 +11,29 @@ var AtdClass = require('../../lib/AtdClass'),
 var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     /**
      * @protected
+     * @type {string}
+     */
+    _name: null,
+
+    /**
+     * @protected
      */
     _props: function () {
         this._super();
 
-        if (this._options.name === undefined) {
-            throw new Error('A component should have a name');
+        if (this._name == null) {
+            if (this._options.name == null) {
+                throw new Error('A component should have a name');
+            }
+            else {
+                this._name = this._options.name;
+            }
         }
 
         /**
-         * @type {string}
+         * @type {ComponentLogStream}
          * @private
          */
-        this._name = this._options.name;
-
         this._logStream = new ComponentLogStream;
 
     },

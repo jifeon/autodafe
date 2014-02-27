@@ -1,5 +1,7 @@
 var AtdClass = require('../lib/AtdClass'),
-    Application = require('./application/Application');
+    Application = require('./application/Application'),
+    argv = require('optimist').argv,
+    path = require('path');
 
 /**
  * @class Autodafe
@@ -39,7 +41,20 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
     },
 
     _detectBaseUrl: function () {
-        return '';
+        var mainPath = argv._[0];
+        if (!mainPath) {
+            return '';
+        }
+
+        var mainFile;
+        try {
+            mainFile = require.resolve(mainPath);
+        }
+        catch (e) {
+            return '';
+        }
+
+        return path.dirname(mainFile);
     },
 
     config: function (config) {
