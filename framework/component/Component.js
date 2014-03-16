@@ -5,8 +5,11 @@ var AtdClass = require('../../lib/AtdClass'),
  * @class Component
  * @extends AtdClass
  * @params {object} options
- * @param {string} options.name The name of the component
- * @throws {Error} is the name is not specified
+ * @param {string} [options.name] The name of the component. Should be specified inside the options or by the
+ * {@link Component._name} protected property
+ * @param {Application} [options.app] Will be set automatically if a component loaded through
+ * {@link Application._loadComponents} method (you specified it in config for application)
+ * @throws {Error} if the name is not specified
  */
 var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     /**
@@ -31,11 +34,20 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         }
 
         /**
+         * @type {?Application}
+         * @protected
+         */
+        this._app = this._options.app;
+
+        if (!this._app) {
+            // todo: log warning
+        }
+
+        /**
          * @type {ComponentLogStream}
          * @private
          */
         this._logStream = new ComponentLogStream;
-
     },
 
     /**
@@ -48,6 +60,7 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     },
 
     /**
+     * Returns log stream for the component
      * @public
      * @returns {ComponentLogStream}
      */
@@ -55,6 +68,13 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         return this._logStream;
     },
 
+    /**
+     * The log stream usually is piped to {@link Application._logStream}
+     * @public
+     * @param {string} message
+     * @param {string} type
+     * @see {@link Application.log} for arguments description
+     */
     log: function (message, type) {
         this._logStream.log(message);
     }

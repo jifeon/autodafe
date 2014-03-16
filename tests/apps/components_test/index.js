@@ -1,5 +1,5 @@
 module.exports = require("autodafe").config({
-    baseUrl: __dirname,
+    basePath: __dirname,
 
     components: {
         'test-component': true

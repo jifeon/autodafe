@@ -23,7 +23,10 @@
         "test": "vows tests/vows/* --spec"
     },
     "dependencies": {
-        "optimist": "0.6.x"
+        "optimist": "0.6.x",
+        "sprintf-js": ">=0.0.7",
+        "underscore": "*",
+        "http-auth": "*"
     },
     "devDependencies": {
         "vows": ">=0.5.8"

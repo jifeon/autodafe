@@ -9,18 +9,31 @@ var AtdClass = require('../lib/AtdClass'),
  */
 var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
     /**
-     * @protected
+     * {@link AtdClass} constructor
+     * @public
+     * @type {Function}
      */
-    _props: function () {
-        this._super();
+    AtdClass: AtdClass,
 
-        /**
-         * {@link Component} constructor
-         * @public
-         * @type {Function}
-         */
-        this.Component = require('./component/Component');
-    },
+    /**
+     * {@link Component} constructor
+     * @public
+     * @type {Function}
+     */
+    Component: require('./component/Component'),
+
+    /**
+     * @type {function}
+     * @see https://github.com/alexei/sprintf.js
+     * @public
+     */
+    sprintf: require('sprintf-js').sprintf,
+
+    /**
+     * @type {function}
+     * @see http://underscorejs.org
+     */
+    _: require('underscore'),
 
     /**
      * Creates new application
@@ -28,10 +41,14 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
      * @returns {Application}
      * @param {object} [options] params for {@link Application}
      * @param {boolean} [options.silent] set to true if it's unnecessary to pipe application log to process.stdout
+     * @param {string} [options.basePath] path to root folder of application; should be specified if application is not
+     * run directly through <code>node path/to/app/index.js</code>, otherwise it will be set as path to folder contained
+     * running file.
+     * @see {@link Application} for other options
      */
     createApplication: function (options) {
         options = options || {};
-        options.baseUrl = options.baseUrl || this._detectBaseUrl();
+        options.basePath = options.basePath || this._detectBasePath();
 
         var application = new Application(options);
         if (options.silent !== true) {
@@ -40,7 +57,12 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
         return application;
     },
 
-    _detectBaseUrl: function () {
+    /**
+     * Returns the path to folder that contained running file
+     * @returns {string}
+     * @private
+     */
+    _detectBasePath: function () {
         var mainPath = argv._[0];
         if (!mainPath) {
             return '';
@@ -57,6 +79,11 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
         return path.dirname(mainFile);
     },
 
+    /**
+     * Now it's just the alias for {@link Autodafe.createApplication} reserved for further features.
+     * @param {object} config see options in {@link Autodafe.createApplication}
+     * @returns {Application}
+     */
     config: function (config) {
         return this.createApplication(config);
     }

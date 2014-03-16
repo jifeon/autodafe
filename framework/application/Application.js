@@ -1,4 +1,5 @@
 var AtdClass = require('../../lib/AtdClass'),
+    _ = require('underscore'),
     ApplicationLogStream = require('./ApplicationLogStream'),
     path = require('path');
 
@@ -6,8 +7,10 @@ var AtdClass = require('../../lib/AtdClass'),
  * @class Application
  * @extends AtdClass
  * @param {object} [options]
- * @param {object} [options.component] keys - names of components, values - configs for components
- * @param {object} [options.baseUrl] location of application, using for components loading
+ * @param {object.<string, boolean|object>} [options.component] components to load while application initialization;
+ * keys - names of components, values - configs for components. The components are looking by name inside
+ * {@link Application._basePath}/node_modules folder
+ * @param {string} [options.basePath] location of application, using for components loading
  */
 var Application = module.exports = AtdClass.extend(/**@lends Application*/{
     /**
@@ -24,10 +27,11 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         this._components = {};
 
         /**
+         * The path to the application location
          * @type {string}
          * @private
          */
-        this._baseUrl = this._options.baseUrl;
+        this._basePath = this._options.basePath;
 
         /**
          * @type {ApplicationLogStream}
@@ -36,12 +40,21 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         this._logStream = new ApplicationLogStream;
     },
 
+    /**
+     * @constructs
+     * @protected
+     */
     _init: function () {
         this._super();
 
         this._loadComponents(this._options.components);
     },
 
+    /**
+     * @param {object.<string, boolean|object>} components
+     * @see {@link Application} options.components parameter for full description
+     * @private
+     */
     _loadComponents: function (components) {
         for (var componentName in components) {
             if (!components.hasOwnProperty(componentName)) {
@@ -52,9 +65,15 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
             if (componentParams === true) {
                 componentParams = {};
             }
-            componentParams.name = componentParams.name || componentName;
 
-            var componentPath = path.join(this._baseUrl, 'node_modules', 'autodafe-' + componentName),
+            if (!_.isObject(componentParams)) {
+                continue;
+            }
+
+            componentParams.name = componentParams.name || componentName;
+            componentParams.app = this;
+
+            var componentPath = path.join(this._basePath, 'node_modules', 'autodafe-' + componentName),
                 Component = require(componentPath);
 
             this.load(new Component(componentParams));
@@ -65,6 +84,8 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      * Loads a component for the application
      * @public
      * @param {Component} component
+     * @throws {Error} if a component with the same name has been already loaded
+     * @returns {Application} this
      */
     load: function (component) {
         var componentName = component.getName();
@@ -77,11 +98,13 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         this._components[componentName] = component;
 
         component.getLogStream().pipe(this._logStream);
+        return this;
     },
 
     /**
      * Removes component with specified name from the application
      * @param {string} componentName
+     * @returns {Application} this
      */
     unload: function (componentName) {
         this.log('Unloading a component:', componentName, 'debug');
@@ -93,6 +116,7 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         else {
             this.log('Trying to unload not loaded component', componentName, 'notice');
         }
+        return this;
     },
 
     /**
@@ -104,6 +128,10 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         return this._components[componentName] || null;
     },
 
+    /**
+     * Returns applications log stream than can be piped to anywhere you want write log
+     * @returns {ApplicationLogStream}
+     */
     getLogStream: function () {
         return this._logStream;
     },
@@ -125,6 +153,16 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      */
     log: function (message, type) {
         this._logStream.write(message);
+    },
+
+    //todo: tests
+    /**
+     * @public
+     * @returns {string}
+     * @see {@link Application._basePath}
+     */
+    getBasePath: function () {
+        return this._basePath;
     }
 });
 
