@@ -48,14 +48,18 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         this._super();
 
         this._loadComponents(this._options.components);
+        this.log('Application is ready', 'info');
     },
 
     /**
      * @param {object.<string, boolean|object>} components
      * @see {@link Application} options.components parameter for full description
      * @private
+     * @returns {boolean|Array} true if all components are loaded or array of not loaded components
      */
     _loadComponents: function (components) {
+        this.log('Loading components');
+        var notLoadedComponents = [];
         for (var componentName in components) {
             if (!components.hasOwnProperty(componentName)) {
                 continue;
@@ -73,11 +77,32 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
             componentParams.name = componentParams.name || componentName;
             componentParams.app = this;
 
-            var componentPath = path.join(this._basePath, 'node_modules', 'autodafe-' + componentName),
-                Component = require(componentPath);
+            var componentPath = path.join(this._basePath, 'node_modules', 'autodafe-' + componentName);
+            this.log('Searching the %s component in path %s', componentName, componentPath);
 
-            this.load(new Component(componentParams));
+            try {
+                var Component = require(componentPath);
+                this.log('Instantiation the %s component', componentName);
+                this.load(new Component(componentParams));
+            }
+            catch (e) {
+                this.log('Error while loading component %s', componentName, 'error');
+                this.log(e);
+                notLoadedComponents.push(componentName);
+            }
+
         }
+
+        if (notLoadedComponents.length) {
+            this.log(
+                'Loading components complete. Application working without following components:',
+                notLoadedComponents.join(' '), 'warning'
+            );
+            return notLoadedComponents;
+        }
+
+        this.log('Components are loaded successfully', 'info');
+        return true;
     },
 
     /**
@@ -89,12 +114,11 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      */
     load: function (component) {
         var componentName = component.getName();
-        this.log('Loading a component:', componentName, 'debug');
+        this.log('Loading the %s component', componentName, 'debug');
 
         if (this._components[componentName]) {
             throw new Error('Try to load more than one component with the same name');
         }
-
         this._components[componentName] = component;
 
         component.getLogStream().pipe(this._logStream);
@@ -107,7 +131,7 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      * @returns {Application} this
      */
     unload: function (componentName) {
-        this.log('Unloading a component:', componentName, 'debug');
+        this.log('Unloading the %s component', componentName);
         var component = this._components[componentName];
         if (component) {
             component.getLogStream().unpipe(this._logStream);
@@ -137,9 +161,15 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
     },
 
     /**
-     *
+     * Allowed log levels
+     * @private
+     * @type {Array.<string>}
+     */
+    _logLevels: ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
+
+    /**
      * @param {string...} message
-     * @param {string} [type="debug"] message level. Can be
+     * @param {string|Error} [type="debug"] message level. Can be
      * <ul>
      *  <li>'emergency' - system unusable</li>
      *  <li>'alert' - immediate action required</li>
@@ -152,7 +182,20 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      * </ul>
      */
     log: function (message, type) {
-        this._logStream.write(message);
+
+        if (message instanceof Error) {
+            type = 'error';
+            message = message.stack;
+        }
+
+        // todo: move logic to ApplicationLogStream
+        var args = Array.prototype.slice.call(arguments, 0);
+        type = args.pop();
+        if (!~this._logLevels.indexOf(type)) {
+            args.push(type);
+            type = 'debug';
+        }
+        this._logStream.write(args.join(' ') + '\n');
     },
 
     //todo: tests

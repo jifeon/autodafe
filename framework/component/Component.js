@@ -40,7 +40,7 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         this._app = this._options.app;
 
         if (!this._app) {
-            // todo: log warning
+            this.log('Component working outside of application', 'warning');
         }
 
         /**
