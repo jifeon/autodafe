@@ -1,6 +1,5 @@
 var AtdClass = require('../lib/AtdClass'),
     Application = require('./application/Application'),
-    argv = require('optimist').argv,
     path = require('path');
 
 /**
@@ -63,7 +62,7 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
      * @private
      */
     _detectBasePath: function () {
-        var mainPath = argv._[0];
+        var mainPath = process.mainModule.filename;
         if (!mainPath) {
             return '';
         }
