@@ -34,6 +34,12 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         }
 
         /**
+         * @type {ComponentLogStream}
+         * @private
+         */
+        this._logStream = new ComponentLogStream;
+
+        /**
          * @type {?Application}
          * @protected
          */
@@ -42,12 +48,6 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         if (!this._app) {
             this.log('Component working outside of application', 'warning');
         }
-
-        /**
-         * @type {ComponentLogStream}
-         * @private
-         */
-        this._logStream = new ComponentLogStream;
     },
 
     /**

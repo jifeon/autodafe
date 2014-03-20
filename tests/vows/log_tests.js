@@ -7,6 +7,7 @@ vows.describe('logger').addBatch({
     'component': {
         topic: function () {
             return new autodafe.Component({
+                app: {},
                 name: 'test'
             });
         },
@@ -21,8 +22,9 @@ vows.describe('logger').addBatch({
             },
             'should have a log stream too': function (application) {
                 var logStream = application.getLogStream();
+                logStream.read();
                 application.log('some log message for app');
-                assert.equal(logStream.read(), 'some log message for app');
+                assert.equal(logStream.read(), 'some log message for app\n');
             },
             'should proxy log messages from any component': {
                 topic: function (application) {
