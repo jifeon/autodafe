@@ -1,5 +1,6 @@
 var AtdClass = require('../../lib/AtdClass'),
-    ComponentLogStream = require('./ComponentLogStream');
+    ComponentLogStream = require('./ComponentLogStream'),
+    Request = require('../Request');
 
 /**
  * @class Component
@@ -48,6 +49,30 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         if (!this._app) {
             this.log('Component working outside of application', 'warning');
         }
+    },
+
+    /**
+     * @param {object} options for creating request
+     * @returns {Request}
+     * @protected
+     */
+    _createRequest: function (options) {
+        options = options || {};
+        options.type = options.type || this.getName();
+        var request = new Request(options);
+        if (this._app) {
+            this._app.processRequest(request);
+        }
+        return request;
+    },
+
+    /**
+     * @public
+     * @param {Request} request
+     * @param {Callback} callback
+     */
+    processRequest: function (request, callback) {
+        callback();
     },
 
     /**

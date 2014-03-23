@@ -1,5 +1,7 @@
 var AtdClass = require('../../lib/AtdClass'),
+    AtdError = require('../../lib/AtdError'),
     _ = require('underscore'),
+    s = require('sprintf-js'),
     ApplicationLogStream = require('./ApplicationLogStream'),
     path = require('path');
 
@@ -168,8 +170,71 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
     _logLevels: ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
 
     /**
-     * @param {string...} message
-     * @param {string|Error} [type="debug"] message level. Can be
+     * @public
+     * @param {Request} request
+     * @param {Callback} [callback]
+     */
+    processRequest: function (request, callback) {
+        if (typeof callback != 'function') {
+            callback = this._stdCallback;
+        }
+
+        var components = Object.keys(this._components),
+            requestType = request.getType(),
+            lastComponentId = components.indexOf(requestType);
+
+        if (~lastComponentId) {
+            components.splice(lastComponentId, 1);
+            components.push(requestType);
+        }
+
+        this._processRequestForComponents(request, components, callback);
+    },
+
+    /**
+     * @param {Request} request
+     * @param {Array.<string>} components
+     * @param {Callback} callback
+     * @private
+     */
+    _processRequestForComponents: function (request, components, callback) {
+        if (!components.length) {
+            callback(null);
+            return;
+        }
+
+        var componentName = components.shift(),
+            component = this.get(componentName);
+        if (!component) {
+            // todo: use AtdError
+            var error = new Error('The %s component is not found during processing a request ' + componentName);
+            this.log(error);
+            callback(error);
+        }
+
+        try {
+            var self = this;
+            component.processRequest(request, function (e) {
+                if (e) {
+                    self.log('Error during processing a request by the `%s` component', componentName, 'error');
+                    self.log(e);
+                    callback(e);
+                    return;
+                }
+
+                self._processRequestForComponents(request, components, callback);
+            });
+        }
+        catch (e) {
+            this.log('Error during processing a request by the `%s` component', componentName, 'error');
+            this.log(e);
+            callback(e);
+        }
+    },
+
+    /**
+     * @param {string|Error...} message
+     * @param {string} [type="debug"] message level. Can be
      * <ul>
      *  <li>'emergency' - system unusable</li>
      *  <li>'alert' - immediate action required</li>

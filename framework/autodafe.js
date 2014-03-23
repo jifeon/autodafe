@@ -22,6 +22,13 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
     Component: require('./component/Component'),
 
     /**
+     * {@link Request} constructor
+     * @public
+     * @type {Function}
+     */
+    Request: require('./Request'),
+
+    /**
      * @type {function}
      * @see https://github.com/alexei/sprintf.js
      * @public

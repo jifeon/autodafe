@@ -3,6 +3,7 @@ module.exports = require("autodafe").config({
     silent: true,
 
     components: {
-        'test-component': true
+        'test-component': true,
+        'test-component2': true
     }
 });
