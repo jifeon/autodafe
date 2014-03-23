@@ -2,7 +2,8 @@ var vows = require('vows'),
     assert = require('assert'),
     autodafe = require('../../framework/autodafe'),
     Application = require('../../framework/application/Application'),
-    Request = require('../../framework/Request');
+    Request = require('../../framework/Request'),
+    TestRequest = require('../apps/components_test/node_modules/autodafe-test-component/TestRequest');
 
 vows.describe('components').addBatch({
     'application': {
@@ -33,6 +34,7 @@ vows.describe('components').addBatch({
                 components.test.makeRequest();
                 assert.ok(components.test2.isRequestProcessed());
                 assert.instanceOf(components.test2.getRequest(), Request);
+                assert.instanceOf(components.test2.getRequest(), TestRequest);
             },
             'process requests in any order, but the component created the request should be last': function (components) {
                 assert.deepEqual(components.test2.getRequest().order, ['test-component2', 'test-component']);

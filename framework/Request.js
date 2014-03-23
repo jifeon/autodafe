@@ -29,5 +29,14 @@ var Request = module.exports = AtdClass.extend(/**@lends Request*/{
      */
     getType: function () {
         return this._type;
+    },
+
+    /**
+     * @public
+     * @abstract
+     * @param {Callback} callback
+     */
+    process: function (callback) {
+        callback();
     }
 });

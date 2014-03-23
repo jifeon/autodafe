@@ -20,6 +20,12 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     _name: null,
 
     /**
+     * @type {Function}
+     * @protected
+     */
+    _RequestConstructor: Request,
+
+    /**
      * @protected
      */
     _props: function () {
@@ -59,7 +65,8 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     _createRequest: function (options) {
         options = options || {};
         options.type = options.type || this.getName();
-        var request = new Request(options);
+        var Request = this._RequestConstructor,
+            request = new Request(options);
         if (this._app) {
             this._app.processRequest(request);
         }
