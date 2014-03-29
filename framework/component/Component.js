@@ -111,13 +111,33 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     },
 
     /**
+     * Allowed log levels
+     * @private
+     * @type {Array.<string>}
+     */
+    _logLevels: ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
+
+    /**
      * The log stream usually is piped to {@link Application._logStream}
      * @public
      * @param {string} message
      * @param {string} type
      * @see {@link Application.log} for arguments description
+     * todo: make mixin WithLogger for Component and Application
      */
     log: function (message, type) {
-        this._logStream.log(message);
+        if (message instanceof Error) {
+            type = 'error';
+            message = message.stack;
+        }
+
+        // todo: move logic to ApplicationLogStream
+        var args = Array.prototype.slice.call(arguments, 0);
+        type = args.pop();
+        if (!~this._logLevels.indexOf(type)) {
+            args.push(type);
+            type = 'debug';
+        }
+        this._logStream.log(args.join(' ') + '\n');
     }
 });
