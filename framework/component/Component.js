@@ -10,6 +10,8 @@ var AtdClass = require('../../lib/AtdClass'),
  * {@link Component._name} protected property
  * @param {Application} [options.app] Will be set automatically if a component loaded through
  * {@link Application._loadComponents} method (you specified it in config for application)
+ * @param {string} [options.path] The path that was used to load component by application. May be relative to
+ * {@link Application._basePath} or absolute
  * @throws {Error} if the name is not specified
  */
 var Component = module.exports = AtdClass.extend(/**@lends Component*/{
@@ -39,6 +41,14 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
                 this._name = this._options.name;
             }
         }
+
+        /**
+         * The path that was used to load component by application. May be relative to {@link Application._basePath} or
+         * absolute
+         * @type {string}
+         * @private
+         */
+        this._path = this._options.path || '';
 
         /**
          * @type {ComponentLogStream}

@@ -4,6 +4,8 @@ module.exports = require("autodafe").config({
 
     components: {
         'test-component': true,
-        'test-component2': true
+        'test-component2': {
+            path: 'node_modules/test-component2'
+        }
     }
 });

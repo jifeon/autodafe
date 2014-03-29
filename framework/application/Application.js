@@ -78,8 +78,9 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
 
             componentParams.name = componentParams.name || componentName;
             componentParams.app = this;
+            componentParams.path = componentParams.path || path.join('node_modules', 'autodafe-' + componentName);
 
-            var componentPath = path.join(this._basePath, 'node_modules', 'autodafe-' + componentName);
+            var componentPath = path.resolve(this._basePath, componentParams.path);
             this.log('Searching the %s component in path %s', componentName, componentPath);
 
             try {
