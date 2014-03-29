@@ -14,7 +14,7 @@ vows.describe('logger').addBatch({
         'should have a log stream': function (component) {
             var logStream = component.getLogStream();
             component.log('some log message');
-            assert.equal(logStream.read(), 'some log message');
+            assert.equal(logStream.read(), 'some log message\n');
         },
         'application': {
             topic: function () {
@@ -36,7 +36,7 @@ vows.describe('logger').addBatch({
                     }.bind(this));
                 },
                 'with component name prefix': function (message) {
-                    assert.equal(message, 'some log message for app');
+                    assert.equal(message, 'some log message for app\n');
                 }
             }
         }

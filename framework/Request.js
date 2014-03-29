@@ -31,6 +31,14 @@ var Request = module.exports = AtdClass.extend(/**@lends Request*/{
         return this._type;
     },
 
+    getPath: function () {
+        return '';
+    },
+
+    getParams: function () {
+        return {};
+    },
+
     /**
      * @public
      * @abstract
