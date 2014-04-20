@@ -1,6 +1,6 @@
-var AtdClass = require('../../lib/AtdClass'),
-    ComponentLogStream = require('./ComponentLogStream'),
-    Request = require('../Request');
+var AtdClass = require('../lib/AtdClass'),
+    ComponentLogStream = require('./logging/ComponentLogStream'),
+    Request = require('./Request');
 
 /**
  * @class Component

@@ -1,5 +1,6 @@
 var AtdClass = require('../lib/AtdClass'),
-    Application = require('./application/Application'),
+    Application = require('./Application'),
+    ConsoleLogStream = require('./logging/ConsoleLogStream'),
     path = require('path');
 
 /**
@@ -19,7 +20,7 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
      * @public
      * @type {Function}
      */
-    Component: require('./component/Component'),
+    Component: require('./Component'),
 
     /**
      * {@link Request} constructor
@@ -41,6 +42,16 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
      */
     _: require('underscore'),
 
+    _init: function () {
+        this._super();
+
+        /**
+         * @type {ConsoleLogStream}
+         * @private
+         */
+        this._logStream = new ConsoleLogStream;
+    },
+
     /**
      * Creates new application
      * @public
@@ -58,7 +69,7 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
 
         var application = new Application(options);
         if (options.silent !== true) {
-            application.getLogStream().pipe(process.stdout);
+            application.getLogStream().pipe(this._logStream);
         }
         return application;
     },

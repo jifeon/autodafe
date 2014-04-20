@@ -25,6 +25,7 @@
     "dependencies": {
         "optimist": "0.6.x",
         "sprintf-js": ">=0.0.7",
+        "moment": "2.6.x",
         "underscore": "*",
         "http-auth": "2.1.6"
     },

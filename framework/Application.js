@@ -1,8 +1,8 @@
-var AtdClass = require('../../lib/AtdClass'),
-    AtdError = require('../../lib/AtdError'),
+var AtdClass = require('../lib/AtdClass'),
+    AtdError = require('../lib/AtdError'),
     _ = require('underscore'),
     s = require('sprintf-js'),
-    ApplicationLogStream = require('./ApplicationLogStream'),
+    ApplicationLogStream = require('./logging/ApplicationLogStream'),
     path = require('path');
 
 /**
@@ -124,7 +124,7 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         }
         this._components[componentName] = component;
 
-        component.getLogStream().pipe(this._logStream);
+//        component.getLogStream().pipe(this._logStream);
         return this;
     },
 
@@ -235,7 +235,7 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
 
     /**
      * @param {string|Error...} message
-     * @param {string} [type="debug"] message level. Can be
+     * @param {string} [level="debug"] message level. Can be
      * <ul>
      *  <li>'emergency' - system unusable</li>
      *  <li>'alert' - immediate action required</li>
@@ -247,21 +247,24 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
      *  <li>'debug' - debugging information</li>
      * </ul>
      */
-    log: function (message, type) {
+    log: function (message, level) {
 
         if (message instanceof Error) {
-            type = 'error';
+            level = 'error';
             message = message.stack;
         }
 
         // todo: move logic to ApplicationLogStream
         var args = Array.prototype.slice.call(arguments, 0);
-        type = args.pop();
-        if (!~this._logLevels.indexOf(type)) {
-            args.push(type);
-            type = 'debug';
+        level = args.pop();
+        if (!~this._logLevels.indexOf(level)) {
+            args.push(level);
+            level = 'debug';
         }
-        this._logStream.write(args.join(' ') + '\n');
+        this._logStream.write({
+            message: args.join(' ') + '\n',
+            level: level
+        });
     },
 
     //todo: tests

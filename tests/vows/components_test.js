@@ -1,7 +1,7 @@
 var vows = require('vows'),
     assert = require('assert'),
     autodafe = require('../../framework/autodafe'),
-    Application = require('../../framework/application/Application'),
+    Application = require('../../framework/Application'),
     Request = require('../../framework/Request'),
     TestRequest = require('../apps/components_test/node_modules/autodafe-test-component/TestRequest');
 
