@@ -22,7 +22,7 @@ _.mixin({
       return _.deep_clone(item);
     });
 
-    //fix if obj is a function, not need to clone, it is ok to return it not to clone it .
+    //fix if obj is a function, not need to clone, just return it not to clone it .
     if( _.isFunction(obj)) return obj;
     
     if (!_.isObject(obj)) return obj;
