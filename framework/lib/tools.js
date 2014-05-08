@@ -24,7 +24,6 @@ _.mixin({
 
     //fix if obj is a function, not need to clone, just return it not to clone it .
     if (!_.isObject(obj) || _.isFunction(obj)) return obj;
-    
 
     var result = {};
     for (var prop in obj)
