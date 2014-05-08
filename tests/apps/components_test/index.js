@@ -1,4 +1,4 @@
-module.exports = require("autodafe").config({
+module.exports = require("../../../").config({
     basePath: __dirname,
     silent: true,
 
