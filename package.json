@@ -3,7 +3,7 @@
     "description": "Just framework providing application factory. The power is in the components for applications.",
     "keywords": ["framework", "application", "components"],
     "homepage": "http://autodafe.ws",
-    "version": "1.0.0-alpha",
+    "version": "1.0.0-alpha.1",
     "author": "Andrey Balakirev <balakirev.andrey@gmail.com>",
     "contributors": [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
     "main": "./framework/autodafe",
