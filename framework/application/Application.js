@@ -1,9 +1,10 @@
 var AtdClass = require('../../lib/AtdClass'),
     AtdError = require('../../lib/AtdError'),
     _ = require('underscore'),
-    s = require('sprintf-js'),
+    s = require('sprintf-js').sprintf,
     ApplicationLogStream = require('./ApplicationLogStream'),
-    path = require('path');
+    path = require('path'),
+    vow = require('vow');
 
 /**
  * @class Application
@@ -125,6 +126,7 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         this._components[componentName] = component;
 
         component.getLogStream().pipe(this._logStream);
+        component.on('request', this._onComponentRequest.bind(this));
         return this;
     },
 
@@ -171,66 +173,59 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
     _logLevels: ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
 
     /**
-     * @public
+     * @private
      * @param {Request} request
-     * @param {Callback} [callback]
      */
-    processRequest: function (request, callback) {
-        if (typeof callback != 'function') {
-            callback = this._stdCallback;
-        }
-
+    _onComponentRequest: function (request) {
         var components = Object.keys(this._components),
-            requestType = request.getType(),
-            lastComponentId = components.indexOf(requestType);
-
-        if (~lastComponentId) {
-            components.splice(lastComponentId, 1);
-            components.push(requestType);
-        }
-
-        this._processRequestForComponents(request, components, callback);
+            requestsMap = {};
+        vow.Promise
+            .all(components.map(function (componentName) {
+                var component = this.get(componentName),
+                    dependencies = component.getDependentComponents(),
+                    promise;
+                if (!dependencies.length) {
+                    promise = component.processRequest(request);
+                    if (!vow.isPromise(promise)) {
+                        promise = vow.reject(s('`processRequest` method of %s component must return promise', componentName));
+                    }
+                }
+                else {
+                    promise = this._waitForDependentComponents(dependencies, requestsMap, function () {
+                        return component.processRequest(request);
+                    });
+                }
+                requestsMap[componentName] = promise;
+                return promise;
+            }, this))
+            .fail(function (reason) {
+                request.getResponse().sendError(reason);
+                this.emit('request:failed', request, reason);
+            }, this)
+            .done(function () {
+                this.emit('request:processed', request);
+            }, this);
     },
 
-    /**
-     * @param {Request} request
-     * @param {Array.<string>} components
-     * @param {Callback} callback
-     * @private
-     */
-    _processRequestForComponents: function (request, components, callback) {
-        if (!components.length) {
-            callback(null);
-            return;
-        }
-
-        var componentName = components.shift(),
-            component = this.get(componentName);
-        if (!component) {
-            // todo: use AtdError
-            var error = new Error('The %s component is not found during processing a request ' + componentName);
-            this.log(error);
-            callback(error);
-        }
-
-        try {
-            var self = this;
-            component.processRequest(request, function (e) {
-                if (e) {
-                    self.log('Error during processing a request by the `%s` component', componentName, 'error');
-                    self.log(e);
-                    callback(e);
-                    return;
+    _waitForDependentComponents: function (dependencies, requestsMap, onFulfilled) {
+        var deferred = vow.defer();
+        process.nextTick(function () {
+            var promises = dependencies.map(function (componentName) {
+                var dependentPromise = requestsMap[componentName];
+                if (!dependentPromise) {
+                    return vow.reject(s(
+                        'Dependent component %s does not found',
+                        componentName
+                    ));
                 }
-
-                self._processRequestForComponents(request, components, callback);
+                return dependentPromise;
             });
-        }
-        catch (e) {
-            this.log('Error during processing a request by the `%s` component', componentName, 'error');
-            this.log(e);
-            callback(e);
-        }
+
+            vow.Promise.all(promises).done(function () {
+                onFulfilled().done(deferred.resolve, deferred.reject, deferred);
+            }, deferred.reject, deferred);
+        });
+        return deferred.promise();
     },
 
     /**

@@ -5,6 +5,17 @@ var vows = require('vows'),
     Request = require('../../framework/Request'),
     TestRequest = require('../apps/components_test/node_modules/autodafe-test-component/TestRequest');
 
+var t = function (f) {
+    var d = require('domain').create();
+    d.on('error', function(er) {
+      console.error(er);
+    });
+    d.run(function() {
+        f();
+        throw new Error;
+    });
+};
+
 vows.describe('components').addBatch({
     'application': {
         topic: function () {
@@ -29,31 +40,27 @@ vows.describe('components').addBatch({
                 assert.equal(tests.test2.get(42), 42);
             },
             'and should allow them': {
-                'process requests': function (components) {
-                    assert.isFalse(components.test2.isRequestProcessed());
+                topic: function (components, app) {
+                    var self = this;
                     components.test.makeRequest();
+                    app
+                        .on('request:processed', function (request) {
+                            self.callback(null, request);
+                        })
+                        .on('request:failed', function (request, reason) {
+                            self.callback(new Error('Request processing failed cause ' + reason));
+                        });
+                },
+                'process requests': function (request) {
+                    var components = this.context.topics[1];
+
                     assert.ok(components.test2.isRequestProcessed());
+                    assert.equal(components.test2.getRequest(), request);
                     assert.instanceOf(components.test2.getRequest(), Request);
                     assert.instanceOf(components.test2.getRequest(), TestRequest);
                 },
-                'process requests in any order, but the component created the request should be last': function (components) {
-                    assert.deepEqual(components.test2.getRequest().order, ['test-component2', 'test-component']);
-                },
-                'process request async': {
-                    topic: function (components) {
-                        return components.test.makeAsyncRequest();
-                    },
-                    'that should not be processed on same tick': function (request) {
-                        assert.isFalse(request.processed);
-                    },
-                    'that should be processed': {
-                        topic: function (request) {
-                            setTimeout(this.callback.bind(this, null, request), 30);
-                        },
-                        'in 30 ms': function (request) {
-                            assert.ok(request.processed);
-                        }
-                    }
+                'process requests in any order, but the component created the request should be last': function (request) {
+                    assert.deepEqual(request.order, ['test-component2', 'test-component']);
                 }
             }
         }

@@ -1,4 +1,5 @@
-var AtdClass = require('../lib/AtdClass');
+var AtdClass = require('../lib/AtdClass'),
+    Response = require('./Response');
 
 /**
  * @class Request
@@ -12,6 +13,8 @@ var Request = module.exports = AtdClass.extend(/**@lends Request*/{
         this._super();
 
         this._type = this._options.type || '';
+
+        this._response = new Response;
     },
 
     /**
@@ -46,5 +49,9 @@ var Request = module.exports = AtdClass.extend(/**@lends Request*/{
      */
     process: function (callback) {
         callback();
+    },
+
+    getResponse: function () {
+        return this._response;
     }
 });

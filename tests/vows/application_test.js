@@ -13,7 +13,7 @@ vows.describe('Autodafe').addBatch({
                 new autodafe.Component({name: 'test'});
             });
         },
-        'should be able to return them names': function () {
+        'should be able to return their names': function () {
             var component = new autodafe.Component({name: 'test'});
             assert.equal(component.getName(), 'test');
         }

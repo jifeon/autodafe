@@ -1,36 +1,44 @@
 {
-    "name": "autodafe",
-    "description": "Just framework providing application factory. The power is in the components for applications.",
-    "keywords": ["framework", "application", "components"],
-    "homepage": "http://autodafe.ws",
-    "version": "1.0.0-alpha.1",
-    "author": "Andrey Balakirev <balakirev.andrey@gmail.com>",
-    "contributors": [ "Vladimir Balakirev <bvlvl2003@rambler.ru>" ],
-    "main": "./framework/autodafe",
-    "bugs": {
-        "url": "https://github.com/jifeon/autodafe/issues",
-        "email": "balakirev.andrey@gmail.com"
-    },
-    "repository": {
-        "type": "git",
-        "url": "http://github.com/jifeon/autodafe.git"
-    },
-    "directories": {
-        "lib": "./framework",
-        "example": "./demos"
-    },
-    "scripts": {
-        "test": "vows tests/vows/* --spec"
-    },
-    "dependencies": {
-        "optimist": "0.6.x",
-        "sprintf-js": ">=0.0.7",
-        "underscore": "*"
-    },
-    "devDependencies": {
-        "vows": ">=0.5.8"
-    },
-    "engines": {
-        "node": ">=0.10.0"
-    }
+  "name": "autodafe",
+  "description": "Just framework providing application factory. The power is in the components for applications.",
+  "keywords": [
+    "framework",
+    "application",
+    "components"
+  ],
+  "homepage": "http://autodafe.ws",
+  "version": "1.0.0-alpha.1",
+  "author": "Andrey Balakirev <balakirev.andrey@gmail.com>",
+  "contributors": [
+    "Vladimir Balakirev <bvlvl2003@rambler.ru>"
+  ],
+  "main": "./framework/autodafe",
+  "bugs": {
+    "url": "https://github.com/jifeon/autodafe/issues",
+    "email": "balakirev.andrey@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jifeon/autodafe.git"
+  },
+  "directories": {
+    "lib": "./framework",
+    "example": "./demos"
+  },
+  "scripts": {
+    "test": "vows tests/vows/* --spec"
+  },
+  "dependencies": {
+    "optimist": "0.6.x",
+    "sprintf-js": ">=0.0.7",
+    "underscore": "*",
+    "vow": "~0.4.3",
+    "lodash-node": "~2.4.1"
+  },
+  "devDependencies": {
+    "vows": ">=0.5.8"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  }
 }

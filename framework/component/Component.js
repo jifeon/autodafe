@@ -1,6 +1,6 @@
 var AtdClass = require('../../lib/AtdClass'),
     ComponentLogStream = require('./ComponentLogStream'),
-    Request = require('../Request');
+    vow = require('vow');
 
 /**
  * @class Component
@@ -25,7 +25,7 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
      * @type {Function}
      * @protected
      */
-    _RequestConstructor: Request,
+    _RequestConstructor: require('../Request'),
 
     /**
      * @protected
@@ -68,28 +68,35 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
     },
 
     /**
-     * @param {object} options for creating request
+     * @param {object} [options] options for creating request
      * @returns {Request}
      * @protected
+     * @fires Component#request
      */
     _createRequest: function (options) {
         options = options || {};
         options.type = options.type || this.getName();
         var Request = this._RequestConstructor,
             request = new Request(options);
-        if (this._app) {
-            this._app.processRequest(request);
-        }
+
+        /**
+         * @event Component#request
+         * @param {Request} request
+         */
+        process.nextTick(this.emit.bind(this, 'request', request));
         return request;
     },
 
     /**
      * @public
      * @param {Request} request
-     * @param {Callback} callback
      */
-    processRequest: function (request, callback) {
-        callback();
+    processRequest: function (request) {
+        return vow.cast(true);
+    },
+
+    getDependentComponents: function () {
+        return [];
     },
 
     /**
@@ -139,5 +146,9 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
             type = 'debug';
         }
         this._logStream.log(args.join(' ') + '\n');
+    },
+
+    _completeRequest: function () {
+        return vow.cast(true);
     }
 });
