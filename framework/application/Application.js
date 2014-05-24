@@ -203,6 +203,7 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
                 this.emit('request:failed', request, reason);
             }, this)
             .done(function () {
+                request.complete();
                 this.emit('request:processed', request);
             }, this);
     },
