@@ -43,8 +43,7 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
         }
 
         /**
-         * The path that was used to load component by application. May be relative to {@link Application._basePath} or
-         * absolute
+         * The absolute path have been used to load component by application.
          * @type {string}
          * @private
          */
@@ -115,6 +114,10 @@ var Component = module.exports = AtdClass.extend(/**@lends Component*/{
      */
     getLogStream: function () {
         return this._logStream;
+    },
+
+    getPath: function () {
+        return this._path;
     },
 
     /**

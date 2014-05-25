@@ -22,6 +22,13 @@ var Autodafe = AtdClass.extend(/**@lends Autodafe*/{
     Component: require('./component/Component'),
 
     /**
+     * {@link Injection} constructor
+     * @public
+     * @type {Function}
+     */
+    Injection: require('./component/Injection'),
+
+    /**
      * {@link Request} constructor
      * @public
      * @type {Function}

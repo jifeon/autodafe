@@ -17,6 +17,8 @@ var Request = module.exports = AtdClass.extend(/**@lends Request*/{
         this._response = new Response;
 
         this._completed = false;
+
+        this._data = {};
     },
 
     /**
@@ -59,5 +61,13 @@ var Request = module.exports = AtdClass.extend(/**@lends Request*/{
 
     complete: function () {
         this._completed = true;
+    },
+
+    setData: function (name, data) {
+        this._data[name] = data;
+    },
+
+    getData: function (name) {
+        return this._data[name] || null;
     }
 });

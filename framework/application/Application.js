@@ -3,8 +3,10 @@ var AtdClass = require('../../lib/AtdClass'),
     _ = require('underscore'),
     s = require('sprintf-js').sprintf,
     ApplicationLogStream = require('./ApplicationLogStream'),
+    fs = require('fs'),
     path = require('path'),
-    vow = require('vow');
+    vow = require('vow'),
+    intersection = require('lodash-node/modern/arrays/intersection');
 
 /**
  * @class Application
@@ -51,7 +53,9 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
         this._super();
 
         this._loadComponents(this._options.components);
-        this.log('Application is ready', 'info');
+        this._resolveComponentDependencies().done(function () {
+            this.log('Application is ready', 'info');
+        }, this);
     },
 
     /**
@@ -79,9 +83,11 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
 
             componentParams.name = componentParams.name || componentName;
             componentParams.app = this;
-            componentParams.path = componentParams.path || path.join('node_modules', 'autodafe-' + componentName);
 
-            var componentPath = path.resolve(this._basePath, componentParams.path);
+            var componentPath = componentParams.path || path.join('node_modules', 'autodafe-' + componentName);
+            componentPath = path.resolve(this._basePath, componentPath);
+            componentParams.path = componentPath;
+
             this.log('Searching the %s component in path %s', componentName, componentPath);
 
             try {
@@ -94,7 +100,6 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
                 this.log(e);
                 notLoadedComponents.push(componentName);
             }
-
         }
 
         if (notLoadedComponents.length) {
@@ -107,6 +112,40 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
 
         this.log('Components are loaded successfully', 'info');
         return true;
+    },
+
+    _resolveComponentDependencies: function () {
+        this.log('Load component dependency injections');
+        var componentNames = Object.keys(this._components);
+        var promises = componentNames.map(function (componentName) {
+            var deferred = vow.defer(),
+                component = this._components[componentName],
+                pathToDI = path.resolve(component.getPath(), 'DI'),
+                self = this;
+            fs.readdir(pathToDI, function (e, files) {
+                if (e) {
+                    deferred.resolve();
+                    return;
+                }
+
+                var promises = intersection(files, componentNames).map(function (injectionName) {
+                    self.log('inject %s dependency for %s component', injectionName, componentName);
+                    try {
+                        var Injection = require(path.join(pathToDI, injectionName, 'Injection'));
+                        return vow.cast(new Injection({
+                            app: self
+                        }).inject());
+                    } catch (e) {
+                        self.log(e);
+                        return vow.reject(s('%s injection for %s component is broken', injectionName, componentName));
+                    }
+                });
+                vow.all(promises).then(deferred.resolve, deferred.reject, deferred);
+            });
+            return deferred.promise();
+        }, this);
+
+        return vow.all(promises);
     },
 
     /**
@@ -187,19 +226,24 @@ var Application = module.exports = AtdClass.extend(/**@lends Application*/{
                 if (!dependencies.length) {
                     promise = component.processRequest(request);
                     if (!vow.isPromise(promise)) {
-                        promise = vow.reject(s('`processRequest` method of %s component must return promise', componentName));
+                        promise = vow.fulfill(true);
                     }
                 }
                 else {
                     promise = this._waitForDependentComponents(dependencies, requestsMap, function () {
-                        return component.processRequest(request);
+                        var promise = component.processRequest(request);
+                        if (!vow.isPromise(promise)) {
+                            promise = vow.fulfill(true);
+                        }
+                        return promise;
                     });
                 }
                 requestsMap[componentName] = promise;
                 return promise;
             }, this))
             .fail(function (reason) {
-                request.getResponse().sendError(reason);
+                this.log(reason, 'warning');
+                request.sendError(reason);
                 this.emit('request:failed', request, reason);
             }, this)
             .done(function () {
