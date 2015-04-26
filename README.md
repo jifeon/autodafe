@@ -1,1 +1,3 @@
-[Autodafe](http://autodafe.ws/)
+It's obsolete. Srrry :(
+
+:boar:
